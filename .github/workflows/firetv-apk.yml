@@ -15,7 +15,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.9' }
       - run: gradle -p firetv-app assembleRelease --no-daemon
-      - run: cp firetv-app/app/build/outputs/apk/release/app-release.apk AbendKino.apk
+      - run: |
+          cp firetv-app/app/build/outputs/apk/release/app-release.apk AbendKino.apk
+          echo '{"versionCode": ${{ github.run_number }}}' > version.json
       - uses: actions/upload-artifact@v4
         with: { name: AbendKino, path: AbendKino.apk }
       - uses: softprops/action-gh-release@v2
@@ -23,6 +25,9 @@ jobs:
           tag_name: firetv
           name: AbendKino (Fire TV)
           make_latest: false
-          files: AbendKino.apk
+          files: |
+            AbendKino.apk
+            version.json
           body: |
-            Downloader-Link: https://github.com/${{ github.repository }}/releases/download/firetv/AbendKino.apk
+            Downloader-Code: 5263007 (aftv.news/5263007)
+            Direkt-Link: https://github.com/${{ github.repository }}/releases/download/firetv/AbendKino.apk

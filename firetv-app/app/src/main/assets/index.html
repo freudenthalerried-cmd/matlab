@@ -458,11 +458,31 @@ function mine() {
   if (lines.length < 2) msg('Noch leer. Mit der Menü-Taste ☰ merkst du dir Filme.');
   finish();
 }
+/* ---------- self update ---------- */
+var UPD = 'https://github.com/freudenthalerried-cmd/matlab/releases/download/firetv/';
+var newVer = 0;
+function curVer() { return A.version ? A.version() : 0; }
+function checkUpdate(manual) {
+  http(UPD + 'version.json').then(function (t) {
+    newVer = +JSON.parse(t).versionCode || 0;
+    if (newVer > curVer()) toast('Update verfügbar – Einstellungen → Jetzt aktualisieren');
+    else if (manual) toast('AbendKino ist aktuell (v' + curVer() + ')');
+    if (view === 'set') settings();
+  }).catch(function () { if (manual) toast('Update-Prüfung fehlgeschlagen'); });
+}
+window.onUpdate = function (st) {
+  toast({permission:'Bitte „Unbekannte Apps installieren“ erlauben, dann nochmal OK',
+    install:'Installation startet …', error:'Download fehlgeschlagen'}[st] || 'Update lädt … ' + st);
+};
+
 function settings() {
   var keep = view === 'set' && lines[L] ? [L, lines[L].i] : null; // stay on the toggled button
   begin();
   var strict = A.load('strict') !== '0';
   var tt = topTags(12);
+  addRow('Version v' + curVer() + (newVer > curVer() ? ' – Update auf v' + newVer + ' verfügbar' : ''), [
+    ['Jetzt aktualisieren', function () { if (A.update) A.update(UPD + 'AbendKino.apk'); }],
+    ['Nach Update suchen', function () { checkUpdate(true); }]], 'btn');
   addRow('Werbeblocker', [[(strict ? '● Streng (empfohlen)' : '○ Streng'), function () { A.save('strict', '1'); toast('Werbeblocker: streng'); settings(); }],
     [(!strict ? '● Normal (falls Videos nicht starten)' : '○ Normal (falls Videos nicht starten)'), function () { A.save('strict', '0'); toast('Werbeblocker: normal'); settings(); }]], 'btn');
   addRow('Quellen (mehr Quellen = mehr Filme)', Object.keys(SRC).map(function (k) {
@@ -480,6 +500,7 @@ function settings() {
 }
 
 go('home');
+setTimeout(function () { checkUpdate(false); }, 4000);
 </script>
 </body>
 </html>

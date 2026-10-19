@@ -8,8 +8,10 @@ URL in Downloader eingeben:
 
     https://github.com/freudenthalerried-cmd/matlab/releases/download/firetv/AbendKino.apk
 
-Kurzcode: URL unter https://go.aftvnews.com registrieren → Zahlencode für Downloader.
-Updates: gleicher Link, einfach drüberinstallieren (gleiche Signatur).
+**Downloader-Code: `5263007`** (bzw. aftv.news/5263007) – zeigt immer auf die neueste Version.
+
+Updates: in der App unter Einstellungen → „Jetzt aktualisieren“ (App prüft beim Start automatisch).
+Beim ersten Update einmal „Unbekannte Apps installieren“ für AbendKino erlauben.
 
 ## Bedienung
 - OK: abspielen / Pause · ◀ ▶: ±15 s · ▲ ▼: ±2 min · Zurück: Player schließen

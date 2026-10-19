@@ -2,10 +2,13 @@ package at.sf.abendkino;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -23,7 +26,10 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -217,6 +223,11 @@ public class MainActivity extends Activity {
         if (playerVisible()) player.evaluateJavascript("window.__ctl&&window.__ctl('pause')", null);
     }
 
+    private void updateState(String st) {
+        final String js = "window.onUpdate&&onUpdate(" + JSONObject.quote(st) + ")";
+        runOnUiThread(() -> ui.evaluateJavascript(js, null));
+    }
+
     public class Bridge {
         @JavascriptInterface
         public String load(String key) { return prefs.getString(key, ""); }
@@ -255,6 +266,52 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 im.showSoftInput(ui, InputMethodManager.SHOW_IMPLICIT);
+            });
+        }
+
+        @JavascriptInterface
+        public int version() {
+            try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode; }
+            catch (Exception e) { return 0; }
+        }
+
+        /** Downloads the APK and hands it to the system installer. Progress goes to JS onUpdate(state). */
+        @JavascriptInterface
+        public void update(final String url) {
+            if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+                updateState("permission");
+                runOnUiThread(() -> startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName()))));
+                return;
+            }
+            pool.execute(() -> {
+                try {
+                    // before Android 7 the installer can only read a world-readable file:// path
+                    File f = Build.VERSION.SDK_INT >= 24 ? ApkProvider.file(MainActivity.this)
+                            : new File(getExternalCacheDir(), "update.apk");
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(10000);
+                    c.setReadTimeout(30000);
+                    int total = c.getContentLength(), done = 0, n, last = -1;
+                    byte[] buf = new byte[65536];
+                    try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(f)) {
+                        while ((n = in.read(buf)) > 0) {
+                            out.write(buf, 0, n);
+                            done += n;
+                            int pct = total > 0 ? done * 100 / total : 0;
+                            if (pct / 10 != last) { last = pct / 10; updateState(pct + "%"); }
+                        }
+                    }
+                    Uri uri = Build.VERSION.SDK_INT >= 24
+                            ? Uri.parse("content://" + ApkProvider.AUTHORITY + "/update.apk") : Uri.fromFile(f);
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setDataAndType(uri, "application/vnd.android.package-archive");
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    updateState("install");
+                    runOnUiThread(() -> startActivity(i));
+                } catch (Exception e) {
+                    updateState("error");
+                }
             });
         }
 
