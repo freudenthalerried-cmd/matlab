@@ -58,6 +58,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b0b10;color:#eee;f
 #gsub{font-size:2.2vh;color:#999}
 #ghelp{position:absolute;bottom:5vh;font-size:2.2vh;color:#888}
 #lock{position:fixed;top:0;left:0;right:0;bottom:0;z-index:30;background:#0b0b10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;font-size:3.4vh}
+#upd{position:fixed;top:0;left:0;right:0;bottom:0;z-index:25;background:#000c;display:none;align-items:center;justify-content:center}
+#upd .box{width:60vw;padding:5vh 4vw;border-radius:2vh;background:#1b1b24;box-shadow:0 0 6vh #e5091455;text-align:center}
+#upd h1{font-size:4.4vh;margin-bottom:2vh}
+#upd p{font-size:2.8vh;color:#ccc;margin-bottom:3vh}
+#upd .k{font-size:2.4vh;color:#888}
 #ldots{font-size:6vh;letter-spacing:2vw;min-height:8vh}
 .disc .card img{filter:blur(2vh)}
 .disc .card.foc img{filter:none}
@@ -72,6 +77,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b0b10;color:#eee;f
 <div id="game"><div id="ghead"></div><div id="gtimer"></div>
   <div id="gcard"><div id="gwho"></div><div id="gtitle"></div><div id="gbody"></div><div id="gsub"></div></div><div id="ghelp"></div></div>
 <div id="lock"><div id="ltitle"></div><div id="ldots"></div><div style="font-size:2.2vh;color:#888">4 Pfeiltasten drücken · Zurück = Beenden</div></div>
+<div id="upd"><div class="box"><h1 id="uh"></h1><p id="un"></p><div class="k">OK = jetzt aktualisieren · Zurück = später</div></div></div>
 <script src="games.js"></script>
 <script>
 'use strict';
@@ -333,6 +339,7 @@ function focus() {
 document.addEventListener('keydown', function (ev) {
   var k = ev.key, ln = lines[L];
   if (lockOn) { lockKey(k); ev.preventDefault(); return; }
+  if (updOn) { if (k === 'Enter') { hideUpd(); A.update(UPD + 'AbendKino.apk'); } ev.preventDefault(); return; }
   if (Games.active()) { if (/^Arrow|Enter/.test(k)) { Games.key(k); ev.preventDefault(); } return; }
   if (!ln) return;
   var cur = ln.items[ln.i];
@@ -351,6 +358,7 @@ document.addEventListener('keydown', function (ev) {
 });
 window.onBack = function () {
   if (lockOn) return false;
+  if (updOn) { hideUpd(); return true; }
   if (Games.active()) { Games.close(); return true; }
   var ln = lines[L];
   if (ln && ln.items[ln.i] && ln.items[ln.i].tagName === 'INPUT') { ln.items[ln.i].blur(); }
@@ -535,12 +543,22 @@ function mine() {
 }
 /* ---------- self update ---------- */
 var UPD = 'https://github.com/freudenthalerried-cmd/matlab/releases/download/firetv/';
-var newVer = 0;
+var newVer = 0, updOn = false;
+function showUpd(notes) {
+  $('uh').textContent = 'Neue Version v' + newVer + ' verfügbar';
+  $('un').textContent = notes || 'Verbesserungen und Fehlerbehebungen.';
+  $('upd').style.display = 'flex'; updOn = true;
+}
+function hideUpd() { $('upd').style.display = 'none'; updOn = false; }
 function curVer() { return A.version ? A.version() : 0; }
 function checkUpdate(manual) {
   http(UPD + 'version.json').then(function (t) {
-    newVer = +JSON.parse(t).versionCode || 0;
-    if (newVer > curVer()) toast('Update verfügbar – Einstellungen → Jetzt aktualisieren');
+    var j = JSON.parse(t);
+    newVer = +j.versionCode || 0;
+    // popup once per new version (or every time when checked by hand)
+    if (newVer > curVer() && A.update && (manual || load('updSeen', 0) < newVer) && !lockOn) {
+      save('updSeen', newVer); showUpd(j.notes);
+    } else if (newVer > curVer()) toast('Update verfügbar – Einstellungen → Jetzt aktualisieren');
     else if (manual) toast('AbendKino ist aktuell (v' + curVer() + ')');
     if (view === 'set') settings();
   }).catch(function () { if (manual) toast('Update-Prüfung fehlgeschlagen'); });

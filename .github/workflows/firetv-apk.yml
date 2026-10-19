@@ -17,7 +17,11 @@ jobs:
       - run: gradle -p firetv-app assembleRelease --no-daemon
       - run: |
           cp firetv-app/app/build/outputs/apk/release/app-release.apk AbendKino.apk
-          echo '{"versionCode": ${{ github.run_number }}}' > version.json
+          python3 -c 'import json,os; m=(os.environ.get("MSG") or "").splitlines(); print(json.dumps({"versionCode": int(os.environ["N"]), "notes": m[0] if m else ""}, ensure_ascii=False))' > version.json
+          cat version.json
+        env:
+          N: ${{ github.run_number }}
+          MSG: ${{ github.event.head_commit.message }}
       - uses: actions/upload-artifact@v4
         with: { name: AbendKino, path: AbendKino.apk }
       - uses: softprops/action-gh-release@v2
