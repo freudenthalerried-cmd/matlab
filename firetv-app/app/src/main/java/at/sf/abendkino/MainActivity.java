@@ -153,9 +153,9 @@ public class MainActivity extends Activity {
     private void openPlayer(String url, String id) {
         playingId = id;
         String h = Uri.parse(url).getHost();
-        String[] p = h == null ? new String[0] : h.split("\\.");
+        String[] parts = h == null ? new String[0] : h.split("\\.");
         // site domain (e.g. embed.redtube.com -> redtube.com) so same-site redirects still work
-        playingHost = p.length >= 2 ? p[p.length - 2] + "." + p[p.length - 1] : String.valueOf(h);
+        playingHost = parts.length >= 2 ? parts[parts.length - 2] + "." + parts[parts.length - 1] : String.valueOf(h);
         WebView p = player();
         p.onResume();
         p.loadUrl(url);
