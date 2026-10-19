@@ -28,6 +28,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b0b10;color:#eee;f
 .card img{width:100%;height:100%;object-fit:cover;display:block}
 .card .d{position:absolute;right:.5vw;bottom:.6vh;background:#000c;font-size:1.8vh;padding:.2vh .5vw;border-radius:.4vh}
 .card .w{position:absolute;left:0;bottom:0;height:.6vh;background:#e50914}
+.card .s{position:absolute;right:.5vw;top:.5vh;background:#000a;font-size:1.4vh;padding:.1vh .4vw;border-radius:.4vh;color:#bbb}
 .card .fav{position:absolute;left:.5vw;top:.5vh;font-size:2.2vh;color:#e50914}
 .card .t{position:absolute;left:0;right:0;bottom:0;padding:2vh .6vw .6vh;font-size:1.8vh;background:linear-gradient(#0000,#000e);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0}
@@ -84,13 +85,60 @@ function http(url) {
   });
 }
 
-/* ---------- API ---------- */
+/* ---------- sources ----------
+   All sources share one query format: {query, order, page}. order uses the Eporner names
+   (top-weekly, top-monthly, top-rated, most-popular, latest) and is mapped per source. */
+function qs(o) {
+  return Object.keys(o).filter(function (k) { return o[k] !== '' && o[k] != null; })
+    .map(function (k) { return k + '=' + encodeURIComponent(o[k]); }).join('&');
+}
+function secs(d) {
+  if (typeof d === 'number') return d;
+  return String(d || '').split(':').reduce(function (s, x) { return s * 60 + (+x || 0); }, 0);
+}
+function eporner(o) {
+  var q = {query:o.query || 'all', per_page:40, page:o.page || 1, thumbsize:'big', order:o.order || 'top-weekly', gay:0, lq:0, format:'json'};
+  return http(API + '?' + qs(q)).then(function (t) {
+    return (JSON.parse(t).videos || []).map(function (v) { v.src = 'ep'; return v; });
+  });
+}
+// Pornhub and RedTube share the same public webmaster API format.
+var MG_ORDER = {'top-weekly':['mostviewed','weekly'], 'top-monthly':['mostviewed','monthly'], 'top-rated':['rating','alltime'],
+  'most-popular':['mostviewed','alltime'], 'latest':['newest','']};
+function webmaster(base, pre, thumbsize, embed) {
+  return function (o) {
+    var ord = MG_ORDER[o.order] || MG_ORDER['top-weekly'];
+    var q = {search:o.query && o.query !== 'all' ? o.query : '', ordering:ord[0], period:ord[1], page:o.page || 1, thumbsize:thumbsize};
+    return http(base + qs(q)).then(function (t) {
+      return (JSON.parse(t).videos || []).map(function (m) {
+        m = m.video || m;
+        var tags = (m.tags || []).map(function (x) { return x.tag_name || x; })
+          .concat((m.categories || []).map(function (x) { return x.category || x; }));
+        var r = parseFloat(m.rating) || 0;
+        var th = (m.thumbs || []).map(function (x) { return {src:x.src}; });
+        return {id:pre + ':' + m.video_id, src:pre, title:m.title, keywords:tags.join(', '), views:+m.views || 0,
+          rate:(r > 5 ? r / 20 : r).toFixed(2), length_sec:secs(m.duration), embed:embed + m.video_id,
+          default_thumb:{src:m.default_thumb || m.thumb || (th[0] && th[0].src) || ''}, thumbs:th};
+      });
+    });
+  };
+}
+var SRC = {
+  ep:{name:'Eporner', get:eporner},
+  ph:{name:'Pornhub', get:webmaster('https://www.pornhub.com/webmasters/search?', 'ph', 'large_hd', 'https://www.pornhub.com/embed/')},
+  rt:{name:'RedTube', get:webmaster('https://api.redtube.com/?data=redtube.Videos.searchVideos&output=json&', 'rt', 'big', 'https://embed.redtube.com/?id=')}
+};
+var srcOn = load('sources', {});
+function activeSrc() { return Object.keys(SRC).filter(function (k) { return srcOn[k] !== false; }); }
+
 function api(o) {
-  var q = {query:'all', per_page:60, page:1, thumbsize:'big', order:'top-weekly', gay:0, lq:0, format:'json'};
-  for (var k in o) q[k] = o[k];
-  var s = Object.keys(q).map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&');
-  return http(API + '?' + s).then(function (t) { return (JSON.parse(t).videos || []).filter(okVid); })
-    .catch(function () { return []; });
+  return Promise.all(activeSrc().map(function (k) { return SRC[k].get(o).catch(function () { return []; }); }))
+    .then(function (lists) {
+      // interleave so every row mixes all sources
+      var out = [], n = Math.max.apply(null, lists.map(function (l) { return l.length; }).concat(0));
+      for (var i = 0; i < n; i++) lists.forEach(function (l) { if (l[i]) out.push(l[i]); });
+      return uniq(out.filter(okVid));
+    });
 }
 function okVid(v) {
   return v && v.id && +v.length_sec >= MIN_SEC && !BLOCK.test(v.title + ' ' + (v.keywords || ''));
@@ -124,16 +172,20 @@ function topTags(n) {
 function rnd(n) { return 1 + Math.floor(Math.random() * n); }
 function uniq(list) {
   var s = {};
-  return list.filter(function (v) { if (s[v.id]) return false; s[v.id] = 1; return true; });
+  return list.filter(function (v) {
+    var t = 't' + String(v.title || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40); // same film on several sites
+    if (s[v.id] || s[t]) return false;
+    s[v.id] = s[t] = 1; return true;
+  });
 }
 function personal(list) {
   return uniq(list).sort(function (a, b) { return score(b) - score(a); });
 }
-function forYou() {
+function forYou(page) {
   var tt = topTags(6);
   if (tt.length < 2) return Promise.resolve([]);
   var picks = tt.slice(0, 3).concat([tt[3 + Math.floor(Math.random() * (tt.length - 3))]]).filter(Boolean);
-  return Promise.all(picks.map(function (t) { return api({query:t, order:'top-rated', page:rnd(3), per_page:40}); }))
+  return Promise.all(picks.map(function (t) { return api({query:t, order:'top-rated', page:page || rnd(2)}); }))
     .then(function (r) { return personal([].concat.apply([], r)).slice(0, 40); });
 }
 function catPick(n) {
@@ -163,10 +215,30 @@ function renderNav() {
 function cardHTML(v) {
   var w = P.watched[v.id], pct = w ? Math.min(100, w / v.length_sec * 100) : 0;
   return '<div class="card f"><img src="' + esc(v.default_thumb && v.default_thumb.src || '') + '">' +
-    '<span class="d">' + dur(v.length_sec) + '</span>' + (isFav(v.id) ? '<span class="fav">♥</span>' : '') +
+    '<span class="d">' + dur(v.length_sec) + '</span><span class="s">' + (SRC[v.src || 'ep'] || SRC.ep).name + '</span>' + (isFav(v.id) ? '<span class="fav">♥</span>' : '') +
     (pct ? '<span class="w" style="width:' + pct + '%"></span>' : '') + '<div class="t">' + esc(v.title) + '</div></div>';
 }
-function addRow(title, list, kind) {
+// spec = serializable description of the row ({query, order, page} or {fy:1}); lets rows load endlessly
+function moreFn(spec) {
+  if (!spec) return null;
+  return function (k) {
+    var p = spec.fy ? forYou(k) : api(Object.assign({}, spec, {page:(spec.page || 1) + k - 1}));
+    return p.then(spec.fy ? function (l) { return l; } : personalLight);
+  };
+}
+function bindCard(e, x) { e._v = x; e._act = function () { play(x); }; }
+function extend(ln) {
+  if (!ln.more || ln.busy || ln.done || ln.i < ln.items.length - 6) return;
+  ln.busy = true;
+  ln.more(++ln.page).then(function (list) {
+    ln.busy = false;
+    list = list.filter(function (v) { if (ln.seen[v.id]) return false; ln.seen[v.id] = 1; return true; });
+    if (!list.length) { ln.done = true; return; }
+    var tmp = document.createElement('div'); tmp.innerHTML = list.map(cardHTML).join('');
+    [].slice.call(tmp.children).forEach(function (e, i) { bindCard(e, list[i]); ln.strip.appendChild(e); ln.items.push(e); });
+  }, function () { ln.busy = false; });
+}
+function addRow(title, list, kind, spec) {
   if (!list || !list.length) return;
   var r = document.createElement('div'); r.className = 'row';
   var html = list.map(function (x) {
@@ -182,9 +254,11 @@ function addRow(title, list, kind) {
     var x = list[i];
     if (kind === 'cat') e._act = function () { learnCat(x); openCat(x); };
     else if (kind === 'btn') e._act = x[1];
-    else { e._v = x; e._act = function () { play(x); }; }
+    else bindCard(e, x);
   });
-  lines.push({el:r, strip:r.querySelector('.strip'), items:items, i:0});
+  var seen = {};
+  if (!kind) list.forEach(function (v) { seen[v.id] = 1; });
+  lines.push({el:r, strip:r.querySelector('.strip'), items:items, i:0, more:moreFn(spec), page:1, seen:seen});
 }
 function begin() {
   $('rows').innerHTML = ''; $('rows').style.transform = '';
@@ -249,6 +323,7 @@ document.addEventListener('keydown', function (ev) {
   else return;
   ev.preventDefault();
   focus();
+  extend(lines[L]);
 });
 window.onBack = function () {
   var ln = lines[L];
@@ -295,16 +370,15 @@ function learnCat(c) { P.tags[c[1]] = (P.tags[c[1]] || 0) + 0.5; save('profile',
 function go(v) { view = v; ({home:home, cats:cats, search:search, mine:mine, set:settings})[v](); }
 
 function homeRows(cb) {
-  var cp = catPick(3);
-  var jobs = [
-    ['Für dich', forYou()],
-    ['Top dieser Woche', api({order:'top-weekly'}).then(personalLight)],
-    ['Bestbewertet', api({order:'top-rated', page:rnd(5)}).then(personalLight)],
-    ['Trend des Monats', api({order:'top-monthly', page:rnd(2)}).then(personalLight)]
-  ].concat(cp.map(function (c) { return [c[0], api({query:c[1], order:'top-rated', page:rnd(3)}).then(personalLight)]; }))
-   .concat([['Neu', api({order:'latest'})]]);
-  Promise.all(jobs.map(function (j) { return j[1]; })).then(function (res) {
-    cb(jobs.map(function (j, i) { return [j[0], res[i].slice(0, 30)]; }).filter(function (r) { return r[1].length; }));
+  var specs = [
+    ['Für dich', {fy:1}],
+    ['Top dieser Woche', {order:'top-weekly'}],
+    ['Bestbewertet', {order:'top-rated', page:rnd(5)}],
+    ['Trend des Monats', {order:'top-monthly', page:rnd(2)}]
+  ].concat(catPick(3).map(function (c) { return [c[0], {query:c[1], order:'top-rated', page:rnd(3)}]; }))
+   .concat([['Neu', {order:'latest'}]]);
+  Promise.all(specs.map(function (j) { return moreFn(j[1])(1); })).then(function (res) {
+    cb(specs.map(function (j, i) { return [j[0], res[i].slice(0, 30), j[1]]; }).filter(function (r) { return r[1].length; }));
   });
 }
 function personalLight(list) {
@@ -314,7 +388,7 @@ function personalLight(list) {
 }
 function drawRows(rows) {
   begin();
-  rows.forEach(function (r) { addRow(r[0], r[1].map(function (v) { return v; })); });
+  rows.forEach(function (r) { addRow(r[0], r[1], null, r[2]); });
   if (!rows.length) msg('Keine Verbindung – bitte Internet prüfen und mit OK auf „Start“ neu laden.');
   finish();
 }
@@ -323,7 +397,7 @@ function home() {
   moved = false;
   if (cache && cache.length) drawRows(cache); else { begin(); msg('Lade die besten Filme …'); finish(); }
   homeRows(function (rows) {
-    var slimRows = rows.map(function (r) { return [r[0], r[1].map(slim)]; });
+    var slimRows = rows.map(function (r) { return [r[0], r[1].map(slim), r[2]]; });
     save('cache_home', slimRows);
     if (view === 'home' && (!moved || !cache)) drawRows(rows);
   });
@@ -336,19 +410,16 @@ function cats() {
 function openCat(c) {
   view = 'cat';
   begin(); msg('Lade ' + c[0] + ' …'); finish();
-  Promise.all([
-    api({query:c[1], order:'top-rated', page:rnd(2)}),
-    api({query:c[1], order:'top-weekly'}),
-    api({query:c[1], order:'most-popular'}),
-    api({query:c[1], order:'latest'})
-  ]).then(function (r) {
+  var sp = [{query:c[1], order:'top-rated', page:rnd(2)}, {query:c[1], order:'top-weekly'},
+    {query:c[1], order:'most-popular'}, {query:c[1], order:'latest'}];
+  Promise.all(sp.map(api)).then(function (r) {
     if (view !== 'cat') return;
     begin();
-    addRow(c[0] + ' – passend für dich', personal(r[0].concat(r[1], r[2])).slice(0, 30));
-    addRow(c[0] + ' – Bestbewertet', r[0]);
-    addRow(c[0] + ' – Diese Woche', r[1]);
-    addRow(c[0] + ' – Beliebt', r[2]);
-    addRow(c[0] + ' – Neu', r[3]);
+    addRow(c[0] + ' – passend für dich', personal(r[0].concat(r[1], r[2])).slice(0, 30), null, sp[0]);
+    addRow(c[0] + ' – Bestbewertet', r[0], null, sp[0]);
+    addRow(c[0] + ' – Diese Woche', r[1], null, sp[1]);
+    addRow(c[0] + ' – Beliebt', r[2], null, sp[2]);
+    addRow(c[0] + ' – Neu', r[3], null, sp[3]);
     if (lines.length < 2) msg('Nichts gefunden.');
     finish();
   });
@@ -369,11 +440,13 @@ function search() {
 function doSearch(q) {
   save('lastq', q);
   P.tags[q.toLowerCase()] = (P.tags[q.toLowerCase()] || 0) + 0.5; save('profile', P);
-  Promise.all([api({query:q, order:'top-rated'}), api({query:q, order:'most-popular'}), api({query:q, order:'latest'})])
+  var sp = [{query:q, order:'top-rated'}, {query:q, order:'most-popular'}, {query:q, order:'latest'}];
+  Promise.all(sp.map(api))
     .then(function (r) {
       while (lines.length > 2) { lines.pop().el.remove(); }
-      addRow('Treffer – für dich sortiert', personal(r[0].concat(r[1])).slice(0, 40));
-      addRow('Neu', r[2]);
+      addRow('Treffer – für dich sortiert', personal(r[0].concat(r[1])).slice(0, 40), null, sp[0]);
+      addRow('Beliebt', r[1], null, sp[1]);
+      addRow('Neu', r[2], null, sp[2]);
       if (lines.length < 3) msg('Nichts gefunden.');
       L = Math.min(2, lines.length - 1); focus();
     });
@@ -386,15 +459,24 @@ function mine() {
   finish();
 }
 function settings() {
+  var keep = view === 'set' && lines[L] ? [L, lines[L].i] : null; // stay on the toggled button
   begin();
   var strict = A.load('strict') !== '0';
   var tt = topTags(12);
   addRow('Werbeblocker', [[(strict ? '● Streng (empfohlen)' : '○ Streng'), function () { A.save('strict', '1'); toast('Werbeblocker: streng'); settings(); }],
     [(!strict ? '● Normal (falls Videos nicht starten)' : '○ Normal (falls Videos nicht starten)'), function () { A.save('strict', '0'); toast('Werbeblocker: normal'); settings(); }]], 'btn');
+  addRow('Quellen (mehr Quellen = mehr Filme)', Object.keys(SRC).map(function (k) {
+    return [(srcOn[k] !== false ? '● ' : '○ ') + SRC[k].name, function () {
+      srcOn[k] = srcOn[k] === false;
+      if (!activeSrc().length) srcOn[k] = true;
+      save('sources', srcOn); save('cache_home', null); settings();
+    }];
+  }), 'btn');
   addRow('Gelernte Vorlieben: ' + (tt.length ? tt.join(', ') : 'noch keine'), [['Vorlieben zurücksetzen', function () { P.tags = {}; save('profile', P); toast('Zurückgesetzt'); settings(); }],
     ['Verlauf löschen', function () { P.hist = []; P.watched = {}; save('profile', P); toast('Verlauf gelöscht'); settings(); }]], 'btn');
   addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen']], 'btn');
   finish();
+  if (keep && lines[keep[0]]) { L = keep[0]; lines[L].i = keep[1]; focus(); }
 }
 
 go('home');

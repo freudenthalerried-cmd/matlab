@@ -41,6 +41,9 @@ public class MainActivity extends Activity {
                     + "doubleclick|googlesyndication|googletagmanager|google-analytics|adtng|tsyndicate|realsrv|"
                     + "magsrv|ad-maven|clickadu|hilltopads|trafficstars|adspyglass|adsterra|onclick|pushnami|"
                     + "dtscout|mgid|taboola|outbrain|syndication|popunder|adserver|^ads?\\.|\\.ads?\\.)");
+    // Strict mode: only the video sites themselves and their CDNs may load anything.
+    private static final String[] ALLOWED = {"eporner.com", "pornhub.com", "phncdn.com", "redtube.com", "rdtcdn.com",
+            "cdnjs.cloudflare.com", "ajax.googleapis.com", "jsdelivr.net"};
     private static final Pattern MEDIA = Pattern.compile("\\.(mp4|m3u8|ts|m4s|webm)(\\?|$)");
 
     private FrameLayout root;
@@ -49,6 +52,7 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
     private String playingId = "";
+    private String playingHost = "";
     private volatile boolean strict = true;
 
     @Override
@@ -100,10 +104,9 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
-                Uri u = r.getUrl();
-                String h = u.getHost() == null ? "" : u.getHost();
-                // only the embed player may load, every click-through is swallowed
-                return !(h.endsWith("eporner.com") && u.getPath() != null && u.getPath().startsWith("/embed/"));
+                // only the embed player's own host may load, every click-through / ad redirect is swallowed
+                String h = r.getUrl().getHost();
+                return h == null || !(h.equals(playingHost) || h.endsWith("." + playingHost));
             }
 
             @Override
@@ -121,8 +124,8 @@ public class MainActivity extends Activity {
         String url = u.toString().toLowerCase();
         if (MEDIA.matcher(url).find()) return false;
         if (strict) {
-            return !(h.endsWith("eporner.com") || h.endsWith("cdnjs.cloudflare.com")
-                    || h.endsWith("ajax.googleapis.com") || h.endsWith("jsdelivr.net"));
+            for (String a : ALLOWED) if (h.equals(a) || h.endsWith("." + a)) return false;
+            return true;
         }
         return AD_HOSTS.matcher(h).find();
     }
@@ -149,6 +152,10 @@ public class MainActivity extends Activity {
 
     private void openPlayer(String url, String id) {
         playingId = id;
+        String h = Uri.parse(url).getHost();
+        String[] p = h == null ? new String[0] : h.split("\\.");
+        // site domain (e.g. embed.redtube.com -> redtube.com) so same-site redirects still work
+        playingHost = p.length >= 2 ? p[p.length - 2] + "." + p[p.length - 1] : String.valueOf(h);
         WebView p = player();
         p.onResume();
         p.loadUrl(url);

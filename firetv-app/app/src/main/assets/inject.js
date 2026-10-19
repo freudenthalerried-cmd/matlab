@@ -37,12 +37,15 @@
 
   // Start playback automatically and pick the highest quality the player offers.
   var started = false, userPaused = false, clicks = 0;
+  var PLAY = '.vjs-big-play-button,.mgp_playIcon,.mgp_bigPlay,[class*="bigPlay"],[class*="big-play"],' +
+    '[class*="play-button"],[class*="playButton"],[class*="playbtn"]';
   var iv = setInterval(function () {
     var e = v();
-    if (!e) {
-      var b = document.querySelector('.vjs-big-play-button,[class*="play-button"],[class*="playbtn"]');
-      if (b && clicks++ < 4) b.click();
-      return;
+    // some players (Pornhub/RedTube) only start through their own play button
+    if (!e || (e.paused && !userPaused && !started && clicks < 6)) {
+      var b = document.querySelector(PLAY);
+      if (b) { b.click(); clicks++; }
+      if (!e) return;
     }
     e.muted = false;
     if (!started && e.paused && !userPaused) {
@@ -51,7 +54,7 @@
     if (!started && !e.paused) {
       started = true;
       show('▶ ' + fmt(e.duration));
-      var q = [].slice.call(document.querySelectorAll('.vjs-menu-item,[data-quality],[class*="quality"] li'))
+      var q = [].slice.call(document.querySelectorAll('.vjs-menu-item,[data-quality],[class*="quality"] li,[class*="Quality"] li'))
         .filter(function (i) { return /2160|1440|1080/.test(i.textContent); });
       if (q.length) q[0].click();
     }

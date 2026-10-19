@@ -1,6 +1,7 @@
 # AbendKino – Fire TV App
 
-Werbefreier Film-Browser für Fire TV (Quelle: öffentliche Eporner-API). Nur Filme ≥ 10 Min., ohne Low-Quality.
+Werbefreier Film-Browser für Fire TV. Quellen: Eporner, Pornhub, RedTube (öffentliche APIs), gemischt und ohne Duplikate.
+Nur Filme ≥ 10 Min. Reihen laden beim Scrollen endlos nach. Quellen einzeln abschaltbar unter Einstellungen.
 
 ## Installieren (Downloader)
 URL in Downloader eingeben:
