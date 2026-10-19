@@ -9,6 +9,7 @@
         android:icon="@drawable/icon"
         android:banner="@drawable/banner"
         android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         <activity
             android:name=".MainActivity"

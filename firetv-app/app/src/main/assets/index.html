@@ -395,7 +395,7 @@ window.onMenu = function () {
 var lastPlayed = null;
 function slim(v) {
   return {id:v.id, title:v.title, keywords:v.keywords, views:v.views, rate:v.rate, length_sec:v.length_sec,
-    embed:v.embed, default_thumb:v.default_thumb, thumbs:(v.thumbs || []).slice(0, 8)};
+    embed:v.embed, urls:v.urls, src:v.src, channel:v.channel, topic:v.topic, desc:v.desc, date:v.date, default_thumb:v.default_thumb, thumbs:(v.thumbs || []).slice(0, 8)};
 }
 function play(v) {
   lastPlayed = v;
@@ -405,6 +405,7 @@ function play(v) {
   // continue where it was left off (not in the first minute or the last two)
   var pos = P.watched[v.id] || 0, start = pos > 60 && pos < v.length_sec - 120 ? pos : 0;
   if (start) toast('Weiter bei ' + Math.floor(start / 60) + ':' + ('0' + start % 60).slice(-2));
+  if (v.src === 'mv' && A.playDirect) return A.playDirect(JSON.stringify(v.urls || [v.embed]), v.id, start);
   A.play(v.embed || ('https://www.eporner.com/embed/' + v.id + '/'), v.id, start);
 }
 window.onPlayerClosed = function (id, sec) {
@@ -464,8 +465,14 @@ function mvPost(body) {
   });
 }
 function mvItem(r) {
-  var url = (r.url_video_hd || r.url_video || '').replace(/^http:/, 'https:');
-  return {id:'mv:' + (r.id || url), src:'mv', channel:r.channel, title:r.title, topic:r.topic, desc:r.description || '',
+  // HD first, then normal and low quality; https before http
+  var urls = [];
+  [r.url_video_hd, r.url_video, r.url_video_low].forEach(function (u) {
+    if (!u) return;
+    [u.replace(/^http:/, 'https:'), u].forEach(function (x) { if (urls.indexOf(x) < 0) urls.push(x); });
+  });
+  var url = urls[0] || '';
+  return {id:'mv:' + (r.id || url), src:'mv', urls:urls.slice(0, 6), channel:r.channel, title:r.title, topic:r.topic, desc:r.description || '',
     date:r.timestamp, length_sec:+r.duration || 0, embed:url, keywords:'', views:0, rate:0, default_thumb:{src:''}, thumbs:[]};
 }
 function movies(o) {

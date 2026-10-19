@@ -22,8 +22,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 import android.widget.FrameLayout;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
@@ -63,6 +65,28 @@ public class MainActivity extends Activity {
     private String playingId = "";
     private String playingHost = "";
     private int playStart = 0;
+    private String playingUrl = "";
+    private String directHtml = null; // set while a broadcaster film plays in our own <video> page
+    private boolean lenient = false;  // second attempt with the normal instead of the strict ad blocker
+    // 15 s after start: if nothing plays, retry once with the lenient blocker, then tell the user
+    private final Runnable watchdog = new Runnable() {
+        @Override public void run() {
+            if (!playerVisible()) return;
+            player.evaluateJavascript("(function(){var v=document.querySelector('video');"
+                    + "return (v&&v.currentTime>0)||window.__ak_state==='playing'?'ok':String(window.__ak_state||'none')})()", r -> {
+                if (r != null && r.contains("ok")) return;
+                if (directHtml == null && strict && !lenient) {
+                    lenient = true;
+                    Toast.makeText(MainActivity.this, "Zweiter Versuch ohne strengen Werbeblocker …", Toast.LENGTH_LONG).show();
+                    player.loadUrl(playingUrl);
+                    handler.postDelayed(watchdog, 15000);
+                } else {
+                    Toast.makeText(MainActivity.this, "Video lässt sich nicht abspielen – evtl. Ländersperre oder offline. Zurück = schließen",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable sleepRun = this::finish;
     private volatile boolean strict = true;
@@ -135,7 +159,8 @@ public class MainActivity extends Activity {
         String h = u.getHost() == null ? "" : u.getHost().toLowerCase();
         String url = u.toString().toLowerCase();
         if (MEDIA.matcher(url).find()) return false;
-        if (strict) {
+        if (directHtml != null) return false; // broadcaster CDNs, no ads
+        if (strict && !lenient) {
             for (String a : ALLOWED) if (h.equals(a) || h.endsWith("." + a)) return false;
             return true;
         }
@@ -169,14 +194,46 @@ public class MainActivity extends Activity {
         String[] parts = h == null ? new String[0] : h.split("\\.");
         // site domain (e.g. embed.redtube.com -> redtube.com) so same-site redirects still work
         playingHost = parts.length >= 2 ? parts[parts.length - 2] + "." + parts[parts.length - 1] : String.valueOf(h);
+        playingUrl = url;
+        directHtml = null;
+        lenient = false;
         WebView p = player();
         p.onResume();
         p.loadUrl(url);
         p.setVisibility(View.VISIBLE);
         p.requestFocus();
+        handler.removeCallbacks(watchdog);
+        handler.postDelayed(watchdog, 15000);
+    }
+
+    /** Plays direct video URLs (Mediathek films) in a minimal page: tries each URL in turn, HLS via hls.js. */
+    private void openDirect(JSONArray urls, String id, int start) {
+        playingId = id;
+        playStart = start;
+        playingHost = "";
+        lenient = false;
+        directHtml = "<!doctype html><html><head><meta name=viewport content='width=device-width'>"
+                + "<script src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js'></script></head>"
+                + "<body style='margin:0;background:#000'><video id=v autoplay playsinline style='width:100vw;height:100vh'></video><script>"
+                + "var U=" + urls.toString() + ",i=0,v=document.getElementById('v');window.__ak_state='loading';"
+                + "function next(){if(i>=U.length){window.__ak_state='error';return;}var u=U[i++];"
+                + "if(/\\.m3u8/.test(u)&&!v.canPlayType('application/vnd.apple.mpegurl')&&window.Hls&&Hls.isSupported()){"
+                + "var h=new Hls();h.loadSource(u);h.attachMedia(v);h.on(Hls.Events.ERROR,function(e,d){if(d.fatal){h.destroy();next();}});}"
+                + "else{v.src=u;}var p=v.play();if(p&&p.catch)p.catch(function(){});}"
+                + "v.addEventListener('error',next);v.addEventListener('playing',function(){window.__ak_state='playing';});next();"
+                + "</script></body></html>";
+        WebView p = player();
+        p.onResume();
+        p.loadDataWithBaseURL("https://abendkino.app/", directHtml, "text/html", "UTF-8", null);
+        p.setVisibility(View.VISIBLE);
+        p.requestFocus();
+        handler.removeCallbacks(watchdog);
+        handler.postDelayed(watchdog, 20000);
     }
 
     private void closePlayer() {
+        handler.removeCallbacks(watchdog);
+        directHtml = null;
         player.evaluateJavascript("window.__pos?window.__pos():0", v -> {
             int sec = 0;
             try { sec = (int) Double.parseDouble(v); } catch (Exception ignored) { }
@@ -296,6 +353,20 @@ public class MainActivity extends Activity {
                 final String js = "__cb(" + JSONObject.quote(cb) + "," + ok + "," + JSONObject.quote(body) + ")";
                 runOnUiThread(() -> ui.evaluateJavascript(js, null));
             });
+        }
+
+        @JavascriptInterface
+        public void playDirect(final String urlsJson, final String id, final int start) {
+            JSONArray out = new JSONArray();
+            try {
+                JSONArray in = new JSONArray(urlsJson);
+                for (int i = 0; i < in.length() && out.length() < 6; i++) {
+                    String u = in.optString(i, "");
+                    if (u.startsWith("https://") || u.startsWith("http://")) out.put(u);
+                }
+            } catch (Exception ignored) { }
+            if (out.length() == 0) return;
+            runOnUiThread(() -> openDirect(out, id, start));
         }
 
         @JavascriptInterface

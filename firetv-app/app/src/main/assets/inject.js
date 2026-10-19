@@ -53,6 +53,7 @@
     }
     if (!started && !e.paused) {
       started = true;
+      window.__ak_state = 'playing';
       if (window.__start > 0) { e.currentTime = window.__start; window.__start = 0; } // continue watching
       show('▶ ' + fmt(e.currentTime) + ' / ' + fmt(e.duration));
       var q = [].slice.call(document.querySelectorAll('.vjs-menu-item,[data-quality],[class*="quality"] li,[class*="Quality"] li'))
