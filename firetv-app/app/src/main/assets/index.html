@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AbendKino</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0b0b10;color:#eee;font-family:sans-serif}
+#nav{position:fixed;top:0;left:0;right:0;height:9vh;display:flex;align-items:center;gap:1.2vw;padding:0 3vw;z-index:5;
+  background:linear-gradient(#000c,#0000)}
+#nav .logo{font-weight:800;font-size:3.4vh;color:#e50914;margin-right:2vw}
+.tab{font-size:2.5vh;padding:.8vh 1.4vw;border-radius:3vh;color:#bbb}
+.tab.on{color:#fff;font-weight:700}
+#hero{position:fixed;top:0;left:0;right:0;height:52vh;background:#000 center/cover no-repeat;transition:background-image .3s}
+#hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0b0b10 0%,#0b0b10cc 35%,#0b0b1000 70%),linear-gradient(#0b0b1000 60%,#0b0b10 100%)}
+#info{position:absolute;left:3vw;top:13vh;width:44vw;z-index:2}
+#info h1{font-size:4vh;line-height:1.2;max-height:10vh;overflow:hidden}
+#info .meta{margin-top:1.4vh;font-size:2.3vh;color:#ccc}
+#info .meta b{color:#46d369}
+#info .tags{margin-top:1.2vh;font-size:2vh;color:#999;max-height:5vh;overflow:hidden}
+#main{position:fixed;top:50vh;bottom:0;left:0;right:0;overflow:hidden}
+#rows{transition:transform .25s}
+.row{height:27vh;padding-left:3vw}
+.row h2{font-size:2.6vh;margin:1vh 0 1vh;color:#ddd}
+.strip{display:flex;gap:1vw;transition:transform .25s}
+.card{flex:0 0 18vw;height:18vh;border-radius:.8vh;overflow:hidden;position:relative;background:#222;transition:transform .15s}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card .d{position:absolute;right:.5vw;bottom:.6vh;background:#000c;font-size:1.8vh;padding:.2vh .5vw;border-radius:.4vh}
+.card .w{position:absolute;left:0;bottom:0;height:.6vh;background:#e50914}
+.card .fav{position:absolute;left:.5vw;top:.5vh;font-size:2.2vh;color:#e50914}
+.card .t{position:absolute;left:0;right:0;bottom:0;padding:2vh .6vw .6vh;font-size:1.8vh;background:linear-gradient(#0000,#000e);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0}
+.cat{flex:0 0 14.5vw;height:12vh;border-radius:.8vh;display:flex;align-items:center;justify-content:center;font-size:2.6vh;font-weight:700;
+  background:linear-gradient(135deg,#2a1a2e,#5a1020)}
+.btn{flex:0 0 auto;height:7vh;padding:0 2vw;border-radius:.8vh;display:flex;align-items:center;font-size:2.4vh;background:#222}
+.f.foc{outline:.5vh solid #fff;transform:scale(1.07);z-index:3}
+.tab.foc{background:#fff;color:#000;outline:none;transform:none}
+.card.foc .t{opacity:1}
+#q{height:7vh;width:50vw;font-size:3vh;padding:0 1.5vw;border-radius:.8vh;border:0;background:#222;color:#fff}
+#q.foc{outline:.5vh solid #fff}
+.msg{font-size:2.4vh;color:#888;padding:2vh 0}
+#toast{position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);background:#222;padding:1.4vh 2vw;border-radius:1vh;font-size:2.4vh;
+  opacity:0;transition:opacity .3s;z-index:9}
+#help{position:fixed;right:3vw;top:3vh;font-size:1.8vh;color:#666;z-index:6}
+</style>
+</head>
+<body>
+<div id="hero"><div id="info"><h1 id="ht"></h1><div class="meta" id="hm"></div><div class="tags" id="hg"></div></div></div>
+<div id="nav"></div>
+<div id="help">OK = abspielen · ☰ = Merken</div>
+<div id="main"><div id="rows"></div></div>
+<div id="toast"></div>
+<script>
+'use strict';
+var API = 'https://www.eporner.com/api/v2/video/search/';
+var MIN_SEC = 600;
+// Safety: never show anything hinting at minors or non-consent.
+var BLOCK = /\b(underage|under age|minors?|child|children|kids?|preteen|pre-teen|jailbait|loli|lolita|shota|schoolgirls?|school girl|young girl|little girl|1[0-7] ?(yo|y\/o|y\.o|years? old|jahre)|rape|raped|forced|drugged|unconscious|passed out|sleeping|asleep|hidden cam|spy ?cam|voyeur)\b/i;
+var STOP = {porn:1, sex:1, xxx:1, hd:1, video:1, videos:1, eporner:1, 'hd sex':1, 'hd porn':1, porno:1, free:1, fuck:1, fucking:1, 'full movie':1};
+var CATS = [
+  ['Amateur','amateur'],['Paare','couple'],['Romantisch','romantic'],['Deutsch','german'],['MILF','milf'],
+  ['Blond','blonde'],['Brünett','brunette'],['Rothaarig','redhead'],['Lesbisch','lesbian'],['Dreier','threesome'],
+  ['POV','pov'],['Massage','massage'],['Outdoor','outdoor'],['Dessous','lingerie'],['Große Brüste','big tits'],
+  ['Natürlich','natural'],['Latina','latina'],['Asiatisch','asian'],['Ebony','ebony'],['Anal','anal'],
+  ['Blowjob','blowjob'],['Creampie','creampie'],['Solo','solo'],['Hardcore','hardcore'],['Erotik','erotic'],
+  ['Vintage','vintage'],['Reif','mature'],['Kurvig','curvy'],['Fitness','fitness'],['Gruppe','orgy']
+];
+
+/* ---------- storage / bridge ---------- */
+var A = window.Android || {load:function(k){return localStorage.getItem(k)||''},save:function(k,v){localStorage.setItem(k,v)},
+  get:function(u,cb){fetch(u).then(function(r){return r.text()}).then(function(t){__cb(cb,true,t)},function(e){__cb(cb,false,''+e)})},
+  play:function(u){window.open(u)},keyboard:function(){},exit:function(){}};
+function load(k, d) { try { var s = A.load(k); return s ? JSON.parse(s) : d; } catch (e) { return d; } }
+function save(k, v) { A.save(k, JSON.stringify(v)); }
+var P = load('profile', {tags:{}, watched:{}, favs:[], hist:[]});
+var cbs = {}, cbn = 0;
+window.__cb = function (id, ok, body) { var c = cbs[id]; delete cbs[id]; if (c) c(ok, body); };
+function http(url) {
+  return new Promise(function (res, rej) {
+    var id = 'c' + (++cbn);
+    cbs[id] = function (ok, body) { ok ? res(body) : rej(body); };
+    A.get(url, id);
+  });
+}
+
+/* ---------- API ---------- */
+function api(o) {
+  var q = {query:'all', per_page:60, page:1, thumbsize:'big', order:'top-weekly', gay:0, lq:0, format:'json'};
+  for (var k in o) q[k] = o[k];
+  var s = Object.keys(q).map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&');
+  return http(API + '?' + s).then(function (t) { return (JSON.parse(t).videos || []).filter(okVid); })
+    .catch(function () { return []; });
+}
+function okVid(v) {
+  return v && v.id && +v.length_sec >= MIN_SEC && !BLOCK.test(v.title + ' ' + (v.keywords || ''));
+}
+function tagsOf(v) {
+  if (!v._t) v._t = (v.keywords || '').toLowerCase().split(',').map(function (s) { return s.trim(); })
+    .filter(function (s) { return s.length > 2 && !STOP[s]; }).slice(0, 15);
+  return v._t;
+}
+
+/* ---------- learning ---------- */
+function learn(v, w) {
+  var t = P.tags;
+  for (var k in t) { t[k] *= 0.985; if (Math.abs(t[k]) < 0.05) delete t[k]; }
+  tagsOf(v).forEach(function (g) { t[g] = (t[g] || 0) + w; });
+  save('profile', P);
+}
+function affinity(v) {
+  var s = 0, tg = tagsOf(v);
+  tg.forEach(function (g) { s += P.tags[g] || 0; });
+  return tg.length ? s / Math.sqrt(tg.length) : 0;
+}
+function score(v) {
+  var seen = P.watched[v.id];
+  return affinity(v) + (+v.rate || 0) * 0.8 + Math.log(1 + (+v.views || 0)) / Math.LN10 * 0.3 - (seen ? 6 : 0);
+}
+function topTags(n) {
+  return Object.keys(P.tags).filter(function (k) { return P.tags[k] > 0; })
+    .sort(function (a, b) { return P.tags[b] - P.tags[a]; }).slice(0, n);
+}
+function rnd(n) { return 1 + Math.floor(Math.random() * n); }
+function uniq(list) {
+  var s = {};
+  return list.filter(function (v) { if (s[v.id]) return false; s[v.id] = 1; return true; });
+}
+function personal(list) {
+  return uniq(list).sort(function (a, b) { return score(b) - score(a); });
+}
+function forYou() {
+  var tt = topTags(6);
+  if (tt.length < 2) return Promise.resolve([]);
+  var picks = tt.slice(0, 3).concat([tt[3 + Math.floor(Math.random() * (tt.length - 3))]]).filter(Boolean);
+  return Promise.all(picks.map(function (t) { return api({query:t, order:'top-rated', page:rnd(3), per_page:40}); }))
+    .then(function (r) { return personal([].concat.apply([], r)).slice(0, 40); });
+}
+function catPick(n) {
+  // categories weighted by learned taste plus some randomness to keep discovering
+  return CATS.map(function (c) {
+    return {c:c, s:(P.tags[c[1]] || 0) + Math.random() * 3};
+  }).sort(function (a, b) { return b.s - a.s; }).slice(0, n).map(function (x) { return x.c; });
+}
+
+/* ---------- rendering & focus ---------- */
+var lines = [], L = 0, view = 'home', moved = false;
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function dur(s) { s = +s; var m = Math.floor(s / 60); return m >= 60 ? Math.floor(m / 60) + ':' + ('0' + m % 60).slice(-2) + ' h' : m + ' min'; }
+function toast(t) { var e = $('toast'); e.textContent = t; e.style.opacity = 1; clearTimeout(e.t); e.t = setTimeout(function () { e.style.opacity = 0; }, 1600); }
+function isFav(id) { return P.favs.some(function (v) { return v.id === id; }); }
+
+var TABS = [['home','Start'],['cats','Kategorien'],['search','Suche'],['mine','Meine Liste'],['set','Einstellungen']];
+function renderNav() {
+  $('nav').innerHTML = '<span class="logo">AbendKino</span>' + TABS.map(function (t) {
+    return '<span class="tab f' + (t[0] === view ? ' on' : '') + '" data-v="' + t[0] + '">' + t[1] + '</span>';
+  }).join('');
+  var items = [].slice.call($('nav').querySelectorAll('.tab'));
+  items.forEach(function (e) { e._act = function () { go(e.dataset.v); }; });
+  return {el:$('nav'), items:items, i:Math.max(0, TABS.findIndex(function (t) { return t[0] === view; })), nav:true};
+}
+function cardHTML(v) {
+  var w = P.watched[v.id], pct = w ? Math.min(100, w / v.length_sec * 100) : 0;
+  return '<div class="card f"><img src="' + esc(v.default_thumb && v.default_thumb.src || '') + '">' +
+    '<span class="d">' + dur(v.length_sec) + '</span>' + (isFav(v.id) ? '<span class="fav">♥</span>' : '') +
+    (pct ? '<span class="w" style="width:' + pct + '%"></span>' : '') + '<div class="t">' + esc(v.title) + '</div></div>';
+}
+function addRow(title, list, kind) {
+  if (!list || !list.length) return;
+  var r = document.createElement('div'); r.className = 'row';
+  var html = list.map(function (x) {
+    if (kind === 'cat') return '<div class="cat f">' + esc(x[0]) + '</div>';
+    if (kind === 'btn') return '<div class="btn f">' + esc(x[0]) + '</div>';
+    return cardHTML(x);
+  }).join('');
+  r.innerHTML = (title ? '<h2>' + esc(title) + '</h2>' : '') + '<div class="strip">' + html + '</div>';
+  if (kind === 'cat' || kind === 'btn') r.style.height = '16vh';
+  $('rows').appendChild(r);
+  var items = [].slice.call(r.querySelectorAll('.f'));
+  items.forEach(function (e, i) {
+    var x = list[i];
+    if (kind === 'cat') e._act = function () { learnCat(x); openCat(x); };
+    else if (kind === 'btn') e._act = x[1];
+    else { e._v = x; e._act = function () { play(x); }; }
+  });
+  lines.push({el:r, strip:r.querySelector('.strip'), items:items, i:0});
+}
+function begin() {
+  $('rows').innerHTML = ''; $('rows').style.transform = '';
+  lines = [renderNav()];
+  L = 1;
+}
+function msg(t) { var d = document.createElement('div'); d.className = 'msg row'; d.style.height = 'auto'; d.textContent = t; $('rows').appendChild(d); }
+function finish() {
+  if (lines.length < 2) L = 0;
+  L = Math.min(L, lines.length - 1);
+  focus();
+}
+
+var heroT;
+function hero(v) {
+  clearInterval(heroT);
+  if (!v) { $('hero').style.backgroundImage = ''; $('ht').textContent = ''; $('hm').innerHTML = ''; $('hg').textContent = ''; return; }
+  var th = (v.thumbs || []).map(function (t) { return t.src; }).filter(Boolean);
+  var big = v.default_thumb && v.default_thumb.src || th[0] || '';
+  $('hero').style.backgroundImage = 'url("' + big + '")';
+  $('ht').textContent = v.title;
+  $('hm').innerHTML = '<b>★ ' + (+v.rate || 0).toFixed(1) + '</b> · ' + dur(v.length_sec) + ' · ' +
+    (+v.views || 0).toLocaleString('de-AT') + ' Aufrufe' + (P.watched[v.id] ? ' · gesehen' : '');
+  $('hg').textContent = tagsOf(v).slice(0, 8).join(' · ');
+  // preview: cycle through the scene thumbnails like a mini trailer
+  var i = 0;
+  if (th.length > 1) heroT = setInterval(function () {
+    i = (i + 1) % th.length;
+    var img = new Image(); img.onload = function () { $('hero').style.backgroundImage = 'url("' + th[i] + '")'; }; img.src = th[i];
+  }, 1400);
+}
+function focus() {
+  var old = document.querySelector('.foc'); if (old) old.classList.remove('foc');
+  var ln = lines[L]; if (!ln || !ln.items.length) return;
+  ln.i = Math.max(0, Math.min(ln.i, ln.items.length - 1));
+  var e = ln.items[ln.i]; e.classList.add('foc');
+  if (e.tagName === 'INPUT') e.focus(); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (!ln.nav) {
+    // vertical: keep the focused row at the top of the list area
+    $('rows').style.transform = 'translateY(' + (-ln.el.offsetTop) + 'px)';
+    // horizontal: keep focused card in view
+    if (ln.strip) {
+      var off = Math.max(0, e.offsetLeft - ln.strip.parentNode.clientWidth * 0.06);
+      var max = Math.max(0, ln.strip.scrollWidth - ln.strip.parentNode.clientWidth + 40);
+      ln.strip.style.transform = 'translateX(' + (-Math.min(off, max)) + 'px)';
+    }
+  }
+  if (e._v) hero(e._v); else if (view !== 'home' || !ln.nav) { if (!e._v && !ln.nav) hero(null); }
+}
+document.addEventListener('keydown', function (ev) {
+  var k = ev.key, ln = lines[L];
+  if (!ln) return;
+  var cur = ln.items[ln.i];
+  if (cur && cur.tagName === 'INPUT' && (k === 'ArrowLeft' || k === 'ArrowRight')) return;
+  moved = true;
+  if (k === 'ArrowRight') ln.i++;
+  else if (k === 'ArrowLeft') ln.i--;
+  else if (k === 'ArrowDown') L = Math.min(lines.length - 1, L + 1);
+  else if (k === 'ArrowUp') L = Math.max(0, L - 1);
+  else if (k === 'Enter' || k === 'MediaPlayPause' || k === ' ') { if (cur && cur._act) cur._act(); ev.preventDefault(); return; }
+  else if (k === 'ContextMenu') { onMenu(); }
+  else return;
+  ev.preventDefault();
+  focus();
+});
+window.onBack = function () {
+  var ln = lines[L];
+  if (ln && ln.items[ln.i] && ln.items[ln.i].tagName === 'INPUT') { ln.items[ln.i].blur(); }
+  if (view !== 'home') { go(view === 'cat' ? 'cats' : 'home'); return true; }
+  if (L !== 0) { L = 0; focus(); return true; }
+  return false;
+};
+window.onMenu = function () {
+  var ln = lines[L], e = ln && ln.items[ln.i];
+  if (!e || !e._v) return;
+  var v = e._v;
+  if (isFav(v.id)) { P.favs = P.favs.filter(function (x) { return x.id !== v.id; }); learn(v, -2); toast('Aus Meine Liste entfernt'); }
+  else { P.favs.unshift(slim(v)); learn(v, 3); toast('♥ Zu Meine Liste hinzugefügt'); }
+  save('profile', P);
+  var f = e.querySelector('.fav');
+  if (f) f.remove(); else if (isFav(v.id)) e.insertAdjacentHTML('beforeend', '<span class="fav">♥</span>');
+};
+
+/* ---------- playback ---------- */
+var lastPlayed = null;
+function slim(v) {
+  return {id:v.id, title:v.title, keywords:v.keywords, views:v.views, rate:v.rate, length_sec:v.length_sec,
+    embed:v.embed, default_thumb:v.default_thumb, thumbs:(v.thumbs || []).slice(0, 8)};
+}
+function play(v) {
+  lastPlayed = v;
+  learn(v, 1);
+  P.hist = [slim(v)].concat(P.hist.filter(function (x) { return x.id !== v.id; })).slice(0, 60);
+  save('profile', P);
+  A.play(v.embed || ('https://www.eporner.com/embed/' + v.id + '/'), v.id);
+}
+window.onPlayerClosed = function (id, sec) {
+  var v = lastPlayed; if (!v || v.id !== id) return;
+  P.watched[id] = Math.max(P.watched[id] || 0, sec);
+  var ids = Object.keys(P.watched); if (ids.length > 3000) delete P.watched[ids[0]];
+  if (sec >= 300) learn(v, 2);           // really watched -> strong positive signal
+  else if (sec < 45) learn(v, -1.5);     // skipped quickly -> not my taste
+  save('profile', P);
+};
+function learnCat(c) { P.tags[c[1]] = (P.tags[c[1]] || 0) + 0.5; save('profile', P); }
+
+/* ---------- views ---------- */
+function go(v) { view = v; ({home:home, cats:cats, search:search, mine:mine, set:settings})[v](); }
+
+function homeRows(cb) {
+  var cp = catPick(3);
+  var jobs = [
+    ['Für dich', forYou()],
+    ['Top dieser Woche', api({order:'top-weekly'}).then(personalLight)],
+    ['Bestbewertet', api({order:'top-rated', page:rnd(5)}).then(personalLight)],
+    ['Trend des Monats', api({order:'top-monthly', page:rnd(2)}).then(personalLight)]
+  ].concat(cp.map(function (c) { return [c[0], api({query:c[1], order:'top-rated', page:rnd(3)}).then(personalLight)]; }))
+   .concat([['Neu', api({order:'latest'})]]);
+  Promise.all(jobs.map(function (j) { return j[1]; })).then(function (res) {
+    cb(jobs.map(function (j, i) { return [j[0], res[i].slice(0, 30)]; }).filter(function (r) { return r[1].length; }));
+  });
+}
+function personalLight(list) {
+  // keep API order mostly, but lift what matches the taste and push watched ones back
+  return list.map(function (v, i) { return {v:v, s:-i * 0.08 + affinity(v) - (P.watched[v.id] ? 4 : 0)}; })
+    .sort(function (a, b) { return b.s - a.s; }).map(function (x) { return x.v; });
+}
+function drawRows(rows) {
+  begin();
+  rows.forEach(function (r) { addRow(r[0], r[1].map(function (v) { return v; })); });
+  if (!rows.length) msg('Keine Verbindung – bitte Internet prüfen und mit OK auf „Start“ neu laden.');
+  finish();
+}
+function home() {
+  var cache = load('cache_home', null);
+  moved = false;
+  if (cache && cache.length) drawRows(cache); else { begin(); msg('Lade die besten Filme …'); finish(); }
+  homeRows(function (rows) {
+    var slimRows = rows.map(function (r) { return [r[0], r[1].map(slim)]; });
+    save('cache_home', slimRows);
+    if (view === 'home' && (!moved || !cache)) drawRows(rows);
+  });
+}
+function cats() {
+  begin();
+  for (var i = 0; i < CATS.length; i += 6) addRow(i ? '' : 'Kategorien', CATS.slice(i, i + 6), 'cat');
+  finish();
+}
+function openCat(c) {
+  view = 'cat';
+  begin(); msg('Lade ' + c[0] + ' …'); finish();
+  Promise.all([
+    api({query:c[1], order:'top-rated', page:rnd(2)}),
+    api({query:c[1], order:'top-weekly'}),
+    api({query:c[1], order:'most-popular'}),
+    api({query:c[1], order:'latest'})
+  ]).then(function (r) {
+    if (view !== 'cat') return;
+    begin();
+    addRow(c[0] + ' – passend für dich', personal(r[0].concat(r[1], r[2])).slice(0, 30));
+    addRow(c[0] + ' – Bestbewertet', r[0]);
+    addRow(c[0] + ' – Diese Woche', r[1]);
+    addRow(c[0] + ' – Beliebt', r[2]);
+    addRow(c[0] + ' – Neu', r[3]);
+    if (lines.length < 2) msg('Nichts gefunden.');
+    finish();
+  });
+}
+function search() {
+  begin();
+  var r = document.createElement('div'); r.className = 'row'; r.style.height = '12vh';
+  r.innerHTML = '<h2>Suche (englische Begriffe liefern mehr Treffer)</h2><input id="q" class="f" type="search" placeholder="OK drücken und tippen …">';
+  $('rows').appendChild(r);
+  var inp = r.querySelector('input');
+  inp._act = function () { inp.focus(); A.keyboard(); };
+  inp.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && inp.value.trim()) { e.stopPropagation(); e.preventDefault(); inp.blur(); doSearch(inp.value.trim()); }
+  });
+  lines.push({el:r, items:[inp], i:0});
+  finish();
+}
+function doSearch(q) {
+  save('lastq', q);
+  P.tags[q.toLowerCase()] = (P.tags[q.toLowerCase()] || 0) + 0.5; save('profile', P);
+  Promise.all([api({query:q, order:'top-rated'}), api({query:q, order:'most-popular'}), api({query:q, order:'latest'})])
+    .then(function (r) {
+      while (lines.length > 2) { lines.pop().el.remove(); }
+      addRow('Treffer – für dich sortiert', personal(r[0].concat(r[1])).slice(0, 40));
+      addRow('Neu', r[2]);
+      if (lines.length < 3) msg('Nichts gefunden.');
+      L = Math.min(2, lines.length - 1); focus();
+    });
+}
+function mine() {
+  begin();
+  addRow('Meine Liste (☰ zum Entfernen)', P.favs);
+  addRow('Zuletzt angesehen', P.hist);
+  if (lines.length < 2) msg('Noch leer. Mit der Menü-Taste ☰ merkst du dir Filme.');
+  finish();
+}
+function settings() {
+  begin();
+  var strict = A.load('strict') !== '0';
+  var tt = topTags(12);
+  addRow('Werbeblocker', [[(strict ? '● Streng (empfohlen)' : '○ Streng'), function () { A.save('strict', '1'); toast('Werbeblocker: streng'); settings(); }],
+    [(!strict ? '● Normal (falls Videos nicht starten)' : '○ Normal (falls Videos nicht starten)'), function () { A.save('strict', '0'); toast('Werbeblocker: normal'); settings(); }]], 'btn');
+  addRow('Gelernte Vorlieben: ' + (tt.length ? tt.join(', ') : 'noch keine'), [['Vorlieben zurücksetzen', function () { P.tags = {}; save('profile', P); toast('Zurückgesetzt'); settings(); }],
+    ['Verlauf löschen', function () { P.hist = []; P.watched = {}; save('profile', P); toast('Verlauf gelöscht'); settings(); }]], 'btn');
+  addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen']], 'btn');
+  finish();
+}
+
+go('home');
+</script>
+</body>
+</html>
