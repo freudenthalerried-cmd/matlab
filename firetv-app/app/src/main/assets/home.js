@@ -34,7 +34,7 @@ var WX = {0:['☀️','Sonnig'], 1:['🌤','Heiter'], 2:['⛅','Wolkig'], 3:['�
   95:['⛈','Gewitter'], 96:['⛈','Gewitter'], 99:['⛈','Gewitter']};
 var DAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 function wx(c) { return WX[c] || ['🌡', '']; }
-function wxLoc() { return load('wxloc', {name:'Ried im Innkreis', lat:48.21, lon:13.49}); }
+function wxLoc() { return load('wxloc', {name:'Ried in der Riedmark', lat:48.27, lon:14.53}); }
 
 function tickClock() {
   var d = new Date();
