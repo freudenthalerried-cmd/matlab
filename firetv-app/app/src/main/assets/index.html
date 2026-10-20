@@ -254,7 +254,7 @@ function dur(s) { s = +s; var m = Math.floor(s / 60); return m >= 60 ? Math.floo
 function toast(t) { var e = $('toast'); e.textContent = t; e.style.opacity = 1; clearTimeout(e.t); e.t = setTimeout(function () { e.style.opacity = 0; }, 1600); }
 function isFav(id) { return P.favs.some(function (v) { return v.id === id; }); }
 
-var TABS = [['home','Start'],['movies','Filme'],['rand','Zufall'],['cats','Kategorien'],['search','Suche'],['mine','Meine Liste'],['games','Paar-Spiele'],['set','Einstellungen']];
+var TABS = [['home','Start'],['movies','Filme'],['rand','Zufall'],['cats','Kategorien'],['search','🎤 Suche'],['mine','Meine Liste'],['games','Paar-Spiele'],['set','Einstellungen']];
 function renderNav() {
   $('nav').innerHTML = '<span class="logo">AbendKino</span>' + TABS.map(function (t) {
     return '<span class="tab f' + (t[0] === view ? ' on' : '') + '" data-v="' + t[0] + '">' + t[1] + '</span>';
@@ -384,6 +384,7 @@ document.addEventListener('keydown', function (ev) {
   else if (k === 'ArrowUp') L = Math.max(0, L - 1);
   else if (k === 'Enter' || k === 'MediaPlayPause' || k === ' ') { if (cur && cur._act) cur._act(); ev.preventDefault(); return; }
   else if (k === 'ContextMenu') { onMenu(); }
+  else if (k === 'MediaRewind') { voiceSearch(); ev.preventDefault(); return; }
   else return;
   ev.preventDefault();
   focus();
@@ -696,26 +697,61 @@ function openCat(c) {
 function search() {
   begin();
   var r = document.createElement('div'); r.className = 'row'; r.style.height = '12vh';
-  r.innerHTML = '<h2>Suche (englische Begriffe liefern mehr Treffer)</h2><input id="q" class="f" type="search" placeholder="OK drücken und tippen …">';
+  r.innerHTML = '<h2>Sprachsuche: OK drücken, dann 🎤-Taste gedrückt halten und sprechen (oder tippen)</h2>' +
+    '<input id="q" class="f" type="search" placeholder="z. B. „Tatort“, „Komödie mit Til Schweiger“, „Zufall“, „Würfel spielen“ …">';
   $('rows').appendChild(r);
   var inp = r.querySelector('input');
   inp._act = function () { inp.focus(); A.keyboard(); };
   inp.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && inp.value.trim()) { e.stopPropagation(); e.preventDefault(); inp.blur(); doSearch(inp.value.trim()); }
+    if (e.key === 'Enter' && inp.value.trim()) { e.stopPropagation(); e.preventDefault(); inp.blur(); doCommand(inp.value.trim()); }
   });
   lines.push({el:r, items:[inp], i:0});
   finish();
 }
-function doSearch(q) {
+// ⏪ anywhere (outside the player): jump into the voice search with the keyboard open
+function voiceSearch() {
+  go('search'); L = 1; focus();
+  var inp = lines[1].items[0]; inp.value = ''; inp.focus(); A.keyboard();
+}
+
+/* Spoken or typed commands: games, random film, categories, film rows; otherwise search everywhere. */
+var GAME_WORDS = [[/würfel/, 'dice'], [/wahrheit|pflicht/, 'tod'], [/karte/, 'cards'], [/noch nie/, 'never'],
+  [/stellung|roulette/, 'pos'], [/massage/, 'massage']];
+// word list instead of \b: \b treats umlauts as word breaks ("komödie" would lose "die")
+var FILLER = {zeig:1, zeige:1, mir:1, uns:1, spiel:1, spiele:1, start:1, starte:1, such:1, suche:1, nach:1, bitte:1, ein:1, eine:1,
+  einen:1, der:1, die:1, das:1, den:1, dem:1, mit:1, von:1, kategorie:1, film:1, filme:1, abspielen:1, öffne:1, ich:1, will:1, möchte:1, sehen:1};
+function doCommand(text) {
+  var q = text.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/zufall|überrasch|irgendwas/.test(q)) return randomPlay();
+  if (/spiel/.test(q)) {
+    for (var i = 0; i < GAME_WORDS.length; i++) if (GAME_WORDS[i][0].test(q)) return Games.open(GAME_WORDS[i][1]);
+    return go('games');
+  }
+  if (/^(start|startseite|home)$/.test(q)) return go('home');
+  if (/^(einstellungen|meine liste)$/.test(q)) return go(q === 'meine liste' ? 'mine' : 'set');
+  var rest = q.split(' ').filter(function (w) { return !FILLER[w]; }).join(' ') || q;
+  var cat = CATS.filter(function (c) { return c[0].toLowerCase() === rest || c[1] === rest; })[0];
+  if (cat && !/film/.test(q)) { learnCat(cat); return openCat(cat); }
+  var row = MV_ROWS.filter(function (r) { return r[0].toLowerCase().indexOf(rest) >= 0 || r[1].q === rest; })[0];
+  doSearch(rest, row ? row[1] : null, /film|tatort|krimi|komödie|drama|doku/.test(q));
+}
+// searches the Mediathek films and the adult sources; films first when the words point to normal films
+function doSearch(q, mvRow, filmsFirst) {
   save('lastq', q);
-  P.tags[q.toLowerCase()] = (P.tags[q.toLowerCase()] || 0) + 0.5; save('profile', P);
+  if (!filmsFirst) { P.tags[q.toLowerCase()] = (P.tags[q.toLowerCase()] || 0) + 0.5; save('profile', P); }
+  toast('Suche „' + q + '“ …');
   var sp = [{query:q, order:'top-rated'}, {query:q, order:'most-popular'}, {query:q, order:'latest'}];
-  Promise.all(sp.map(api))
+  var mv = Object.assign({mv:1, page:1}, mvRow || {q:q, f:TTD, min:3600});
+  Promise.all(sp.map(api).concat([movies(mv)]))
     .then(function (r) {
+      if (view !== 'search') return;
       while (lines.length > 2) { lines.pop().el.remove(); }
+      [].slice.call($('rows').querySelectorAll('.msg')).forEach(function (m) { m.remove(); });
+      if (filmsFirst) addRow('Filme: „' + q + '“', r[3], null, mv);
       addRow('Treffer – für dich sortiert', personal(r[0].concat(r[1])).slice(0, 40), null, sp[0]);
       addRow('Beliebt', r[1], null, sp[1]);
       addRow('Neu', r[2], null, sp[2]);
+      if (!filmsFirst) addRow('Filme: „' + q + '“', r[3], null, mv);
       if (lines.length < 3) msg('Nichts gefunden.');
       L = Math.min(2, lines.length - 1); focus();
     });
@@ -788,7 +824,7 @@ function settings() {
     ['Ausgeblendete wieder zeigen (' + (Object.keys(P.bad).length + Object.keys(pat).filter(function (k) { return patBad('https://' + k); }).length) + ')', function () {
       P.bad = {}; mvOk = {}; srcStats = {}; pat = {}; save('profile', P); save('mvOk', {}); save('srcStats', {}); save('pat', {}); toast('Alle Videos wieder sichtbar'); settings(); }],
     ['Verlauf löschen', function () { P.hist = []; P.watched = {}; save('profile', P); toast('Verlauf gelöscht'); settings(); }]], 'btn');
-  addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen']], 'btn');
+  addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen'], ['⏪: Sprachsuche']], 'btn');
   finish();
   if (keep && lines[keep[0]]) { L = keep[0]; lines[L].i = keep[1]; focus(); }
 }

@@ -301,6 +301,10 @@ public class MainActivity extends Activity {
                 ui.evaluateJavascript("onBack()", v -> { if (!"true".equals(v)) finish(); });
             return true;
         }
+        if (k == KeyEvent.KEYCODE_MEDIA_REWIND) { // ⏪ = voice search (dictate with the keyboard's mic)
+            if (e.getAction() == KeyEvent.ACTION_DOWN) ui.evaluateJavascript("voiceSearch()", null);
+            return true;
+        }
         if (k == KeyEvent.KEYCODE_MENU) {
             if (e.getAction() == KeyEvent.ACTION_DOWN) ui.evaluateJavascript("onMenu()", null);
             return true;
