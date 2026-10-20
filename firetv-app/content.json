@@ -1,5 +1,5 @@
 {
- "_hilfe": "Inhalte von AbendKino. Nach dem Speichern auf GitHub sind sie in ca. 1 Minute am Fire TV (nach App-Neustart). Spiele: je 3 Stufen [Romantisch, Prickelnd, Heiß]. Karten/Massage: [Text, Sekunden]. Filme: [Name, Suchbegriff, tt=Titel/Thema oder ttd=auch Beschreibung, Mindestlänge in Sekunden].",
+ "_hilfe": "Inhalte von AbendKino. Nach dem Speichern auf GitHub sind sie in ca. 1 Minute am Fire TV (nach App-Neustart). Spiele: je 3 Stufen [Romantisch, Prickelnd, Heiß]. Karten/Massage: [Text, Sekunden]. Radio: [Name, https-Stream-Adresse]. Filme: [Name, Suchbegriff, tt=Titel/Thema oder ttd=auch Beschreibung, Mindestlänge in Sekunden].",
  "version": 1,
  "categories": [
    ["Amateur", "amateur"],
@@ -45,6 +45,17 @@
    ["Drama", "drama", "ttd", 4800],
    ["Kino bei arte", "arte kino", "ttd", 4800],
    ["Dokumentationen", "dokumentation", "tt", 2700]
+ ],
+ "radio": [
+   ["Ö3", "https://orf-live.ors-shoutcast.at/oe3-q2a"],
+   ["FM4", "https://orf-live.ors-shoutcast.at/fm4-q2a"],
+   ["Ö1", "https://orf-live.ors-shoutcast.at/oe1-q2a"],
+   ["Radio Oberösterreich", "https://orf-live.ors-shoutcast.at/ooe-q2a"],
+   ["Radio Salzburg", "https://orf-live.ors-shoutcast.at/sbg-q2a"],
+   ["Radio Wien", "https://orf-live.ors-shoutcast.at/wie-q2a"],
+   ["Kronehit", "https://secureonair.krone.at/kronehit-hp.mp3"],
+   ["Antenne Bayern", "https://stream.antenne.de/antenne"],
+   ["Bayern 3", "https://dispatcher.rndfnk.com/br/br3/live/mp3/mid"]
  ],
  "games": {
   "dice": {

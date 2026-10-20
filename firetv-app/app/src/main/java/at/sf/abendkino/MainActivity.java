@@ -405,6 +405,13 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** Opens the native RTSP live view for the saved Tapo cameras, starting with camera {@code index}. */
+        @JavascriptInterface
+        public void camera(final String camsJson, final int index) {
+            runOnUiThread(() -> startActivity(new Intent(MainActivity.this, CameraActivity.class)
+                    .putExtra("cams", camsJson).putExtra("index", index)));
+        }
+
         @JavascriptInterface
         public void playDirect(final String urlsJson, final String id, final int start) {
             JSONArray out = new JSONArray();

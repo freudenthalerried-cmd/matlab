@@ -39,3 +39,8 @@ GitHub Actions (`.github/workflows/firetv-apk.yml`) baut bei jedem Push und aktu
 `firetv-app/content.json` enthält alle Spieltexte, Kategorien und Film-Reihen (nur Daten, kein Code).
 Auf GitHub bearbeiten und speichern → nach ca. 1 Minute veröffentlicht → beim nächsten App-Start übernommen.
 Ungültige Einträge werden ignoriert, dann gelten die eingebauten Inhalte.
+
+## HomeTV (Startbild)
+Uhr, Wetter (Open-Meteo, Ort in Einstellungen), ORF-Nachrichten, Kacheln: Filme, Kameras (Tapo per RTSP-Kamerakonto,
+nur im Heimnetz), Radio (Liste in content.json), Suche, Privat. **Privat**: Passwort-Abfrage zur Tarnung – 3× schnell OK
+schaltet frei, beim Zurück zu Home wird wieder gesperrt. Die öffentliche Suche findet nur Mediathek-Filme.
