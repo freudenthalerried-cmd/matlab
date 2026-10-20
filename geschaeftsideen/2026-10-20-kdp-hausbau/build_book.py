@@ -1,6 +1,6 @@
 """Erzeugt den Innenteil (A4, s/w) für KDP: 'Unser Hausbau – Bautagebuch für Bauherren in Österreich'.
 Aufruf: python3 build_book.py <ausgabeordner>"""
-import sys
+import sys, re, glob, os
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
@@ -29,6 +29,8 @@ S = dict(
     h1=ParagraphStyle("h1", fontName="B", fontSize=19, leading=24, textColor=INK, spaceAfter=4 * mm),
     h2=ParagraphStyle("h2", fontName="B", fontSize=12.5, leading=16, textColor=INK, spaceBefore=4 * mm, spaceAfter=2 * mm),
     body=ParagraphStyle("body", fontName="R", fontSize=9.6, leading=13.6, textColor=INK, spaceAfter=2 * mm),
+    h3=ParagraphStyle("h3", fontName="B", fontSize=10.4, leading=14, textColor=INK, spaceBefore=2.5 * mm, spaceAfter=1.2 * mm),
+    letter=ParagraphStyle("letter", fontName="R", fontSize=9.4, leading=13.2, textColor=INK),
     small=ParagraphStyle("small", fontName="R", fontSize=8, leading=10.5, textColor=INK),
     cell=ParagraphStyle("cell", fontName="R", fontSize=8.3, leading=10.4, textColor=INK),
     cellb=ParagraphStyle("cellb", fontName="B", fontSize=8.3, leading=10.4, textColor=INK),
@@ -175,21 +177,76 @@ def front():
     return st
 
 
+def md_inline(t):
+    """Markdown-Inline (**fett**) -> reportlab-Markup; Sonderzeichen escapen."""
+    t = t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+
+
+def md_table(rows):
+    cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+    cells = [r for r in cells if not all(re.fullmatch(r":?-{3,}:?", c) for c in r)]
+    n = len(cells[0])
+    wid = [max(6, min(40, max(len(r[k]) for r in cells))) for k in range(n)]
+    return [grid([md_inline(c) for c in cells[0]], len(cells) - 1, wid, rowh=None,
+                 prefill=[[md_inline(c) for c in r] for r in cells[1:]]), Spacer(1, 3 * mm)]
+
+
+def md_letter(lines):
+    """Musterbrief im Kasten; Zeilen bleiben erhalten."""
+    body = "<br/>".join(md_inline(l) if l.strip() else "" for l in lines)
+    t = Table([[P(body, "letter")]], colWidths=[CW])
+    t.setStyle(TableStyle([("BOX", (0, 0), (-1, -1), 0.6, INK), ("LEFTPADDING", (0, 0), (-1, -1), 5 * mm),
+                           ("RIGHTPADDING", (0, 0), (-1, -1), 5 * mm), ("TOPPADDING", (0, 0), (-1, -1), 4 * mm),
+                           ("BOTTOMPADDING", (0, 0), (-1, -1), 4 * mm)]))
+    return [Spacer(1, 1 * mm), t, Spacer(1, 4 * mm)]
+
+
+BOXES = {"TIPP": "Praxistipp", "ACHTUNG": "Achtung", "BEISPIEL": "Beispiel", "FEHLER": "Typischer Fehler",
+         "PRAXIS": "Aus der Baustelle", "RECHT": "Rechtslage"}
+
+
+def md_chapter(path):
+    """Kapitel-Markdown -> Flowables. Syntax: # Titel, ## / ###, Absätze, '- [ ] ' Checkliste, '- ' Aufzählung,
+    '> TIPP: …' (bzw. ACHTUNG/BEISPIEL/FEHLER/PRAXIS/RECHT) Kasten, '|' Tabellen, ```brief … ``` Musterbrief."""
+    st, para, lines = [], [], open(path, encoding="utf-8").read().split("\n")
+
+    def flush():
+        if para:
+            st.append(P(md_inline(" ".join(para)))); para.clear()
+    i = 0
+    while i < len(lines):
+        l = lines[i].rstrip(); i += 1
+        if l.startswith("<!--"):
+            while "-->" not in l and i < len(lines): l = lines[i]; i += 1
+            continue
+        if not l.strip(): flush(); continue
+        if l.startswith("```"):
+            flush(); buf = []
+            while i < len(lines) and not lines[i].startswith("```"): buf.append(lines[i].rstrip()); i += 1
+            i += 1; st += md_letter(buf); continue
+        if l.startswith("# "): flush(); st += [PageBreak(), P(md_inline(l[2:]), "h1")]; continue
+        if l.startswith("## "): flush(); st += [CondPageBreak(40 * mm), P(md_inline(l[3:]), "h2")]; continue
+        if l.startswith("### "): flush(); st += [CondPageBreak(25 * mm), P(md_inline(l[4:]), "h3")]; continue
+        if l.startswith("- [ ] "): flush(); st += checklist([md_inline(l[6:])]); continue
+        if l.startswith("- "): flush(); st.append(P("•&nbsp;&nbsp;" + md_inline(l[2:]), "check")); continue
+        if l.startswith("> "):
+            flush(); key, _, txt = l[2:].partition(":")
+            while i < len(lines) and lines[i].startswith("> "): txt += " " + lines[i][2:].strip(); i += 1
+            st += tip(md_inline(txt.strip()), BOXES.get(key.strip(), key.strip())); continue
+        if l.startswith("|"):
+            flush(); rows = [l]
+            while i < len(lines) and lines[i].startswith("|"): rows.append(lines[i]); i += 1
+            st += md_table(rows); continue
+        para.append(l.strip())
+    flush()
+    return st
+
+
 def knowledge():
-    st = part(1, "Wissen & Ablauf", "Was Bauherren in Österreich wissen und erledigen müssen – Schritt für Schritt")
-    for sec in KNOWLEDGE:
-        st += [CondPageBreak(60 * mm)] if not sec.get("newpage", True) else [PageBreak()]
-        st += h1(sec["title"])
-        for blk in sec["blocks"]:
-            kind, val = blk[0], blk[1]
-            if kind == "p": st.append(P(val))
-            elif kind == "h2": st += [CondPageBreak(35 * mm), P(val, "h2")]
-            elif kind == "check": st += checklist(val)
-            elif kind == "tip": st += tip(val)
-            elif kind == "warn": st += tip(val, "Achtung")
-            elif kind == "table":
-                hdr, rows, wid = val
-                st.append(grid(hdr, len(rows), wid, rowh=None, prefill=rows)); st.append(Spacer(1, 3 * mm))
+    st = part(1, "Der Ratgeber", "Vom Grundstück bis zum Einzug – was Bauherren in Österreich wissen müssen")
+    for f in sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "kapitel", "*.md"))):
+        st += md_chapter(f)
     return st
 
 
@@ -395,6 +452,13 @@ def build(out):
     return doc.page
 
 
+def preview(md, out):
+    """Einzelkapitel als PDF zum Gegenlesen."""
+    doc = Doc(out); doc.multiBuild(md_chapter(md)[1:]); return doc.page
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 2:
+        print(preview(sys.argv[2], sys.argv[1])); sys.exit()
     n = build(sys.argv[1] + "/innenteil.pdf")
     print(n)
