@@ -256,6 +256,18 @@ const BAUSTEINE = [
     sicherheit: false,
     freq: 1,
     related: ['gelaender_ok', 'besprochen']
+  },
+  {
+    id: 'hitze_schutzkleidung',
+    titel: 'Hitzeschutz / UV-Schutzkleidung',
+    kuerzel: ['hitze', 'uv'],
+    keywords: ['hitze', 'hitzeschutz', 'uv', 'sonne', 'sonnenschutz', 'schutzkleidung', 't-shirt', 'sommer'],
+    kurz: 'UV-Schutzkleidung ist zur Verfügung zu stellen und zu tragen.',
+    text: 'Arbeitgeberinnen und Arbeitgeber müssen Schutzkleidung gegen natürliche UV-Strahlung zur Verfügung stellen, die den Körper ausreichend bedeckt, wie zumindest T-Shirts mit UV-Schutzfunktion bis zur Mitte des Oberarms und Hosen mit UV-Schutzfunktion bis zum Knie, und dafür sorgen, dass diese getragen werden.',
+    mangel: 'MANGEL: Es wird keine ausreichende UV-Schutzkleidung getragen. T-Shirts bis zur Mitte des Oberarms und Hosen bis zum Knie mit UV-Schutzfunktion sind umgehend zur Verfügung zu stellen und zu tragen.',
+    gesetz: { ref: 'Hitze-V, BGBl. II Nr. 325/2025, § 5 Abs. 2; PSA-V § 16 Abs. 2 Z 7', text: 'Arbeitgeberinnen und Arbeitgeber müssen Schutzkleidung im Sinn des § 16 Abs. 2 Z 7 der Verordnung Persönliche Schutzausrüstung – PSA-V, BGBl. II Nr. 77/2014, gegen natürliche UV-Strahlung zur Verfügung stellen, die den Körper ausreichend bedeckt, wie zumindest T-Shirts mit UV-Schutzfunktion bis zur Mitte des Oberarms und Hosen mit UV-Schutzfunktion bis zum Knie, und dafür sorgen, dass diese getragen werden.' },
+    freq: 1,
+    related: ['psa']
   }
 ];
 
