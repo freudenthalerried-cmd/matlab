@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
     private WebView player;
     private SharedPreferences prefs;
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
+    private final ExecutorService checkPool = Executors.newFixedThreadPool(8);
     private String playingId = "";
     private String playingHost = "";
     private int playStart = 0;
@@ -74,15 +75,16 @@ public class MainActivity extends Activity {
             if (!playerVisible()) return;
             player.evaluateJavascript("(function(){var v=document.querySelector('video');"
                     + "return (v&&v.currentTime>0)||window.__ak_state==='playing'?'ok':String(window.__ak_state||'none')})()", r -> {
-                if (r != null && r.contains("ok")) return;
+                if (r != null && r.contains("ok")) { reportResult(true); return; }
                 if (directHtml == null && strict && !lenient) {
                     lenient = true;
                     Toast.makeText(MainActivity.this, "Zweiter Versuch ohne strengen Werbeblocker …", Toast.LENGTH_LONG).show();
                     player.loadUrl(playingUrl);
                     handler.postDelayed(watchdog, 15000);
                 } else {
-                    Toast.makeText(MainActivity.this, "Video lässt sich nicht abspielen – evtl. Ländersperre oder offline. Zurück = schließen",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Video nicht verfügbar – wird künftig ausgeblendet", Toast.LENGTH_LONG).show();
+                    reportResult(false);
+                    closePlayer();
                 }
             });
         }
@@ -231,6 +233,28 @@ public class MainActivity extends Activity {
         handler.postDelayed(watchdog, 20000);
     }
 
+    /** Tells the UI whether the current video really played, so broken ones get hidden. */
+    private void reportResult(boolean ok) {
+        ui.evaluateJavascript("window.onPlayResult&&onPlayResult(" + JSONObject.quote(playingId) + "," + ok + ")", null);
+    }
+
+    /** Is the video really reachable from this device (geo blocks, expired films)? Asks for 2 bytes only. */
+    private static boolean reachable(String url) {
+        try {
+            HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+            c.setConnectTimeout(6000);
+            c.setReadTimeout(6000);
+            c.setRequestProperty("User-Agent", UA);
+            c.setRequestProperty("Range", "bytes=0-1");
+            int code = c.getResponseCode();
+            String type = String.valueOf(c.getContentType());
+            c.disconnect();
+            return (code == 200 || code == 206) && !type.startsWith("text/html");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void closePlayer() {
         handler.removeCallbacks(watchdog);
         directHtml = null;
@@ -351,6 +375,25 @@ public class MainActivity extends Activity {
                     body = String.valueOf(ex.getMessage());
                 }
                 final String js = "__cb(" + JSONObject.quote(cb) + "," + ok + "," + JSONObject.quote(body) + ")";
+                runOnUiThread(() -> ui.evaluateJavascript(js, null));
+            });
+        }
+
+        /** Checks a list of video URLs in parallel; answers __cb with a JSON array of booleans. */
+        @JavascriptInterface
+        public void check(final String urlsJson, final String cb) {
+            pool.execute(() -> {
+                JSONArray res = new JSONArray();
+                try {
+                    JSONArray in = new JSONArray(urlsJson);
+                    java.util.List<java.util.concurrent.Callable<Boolean>> jobs = new java.util.ArrayList<>();
+                    for (int i = 0; i < in.length() && i < 200; i++) {
+                        final String u = in.optString(i, "");
+                        jobs.add(() -> reachable(u));
+                    }
+                    for (java.util.concurrent.Future<Boolean> f : checkPool.invokeAll(jobs)) res.put(f.get());
+                } catch (Exception ignored) { }
+                final String js = "__cb(" + JSONObject.quote(cb) + ",true," + JSONObject.quote(res.toString()) + ")";
                 runOnUiThread(() -> ui.evaluateJavascript(js, null));
             });
         }

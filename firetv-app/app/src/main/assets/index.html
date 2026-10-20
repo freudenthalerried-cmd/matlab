@@ -107,6 +107,8 @@ function load(k, d) { try { var s = A.load(k); return s ? JSON.parse(s) : d; } c
 function save(k, v) { A.save(k, JSON.stringify(v)); }
 var P = load('profile', {tags:{}, watched:{}, favs:[], hist:[]});
 MIN_SEC = load('minlen', 10) * 60;
+P.bad = P.bad || {};       // videos that did not play on this device -> hidden
+var srcStats = load('srcStats', {}); // last play results per source
 var cbs = {}, cbn = 0;
 window.__cb = function (id, ok, body) { var c = cbs[id]; delete cbs[id]; if (c) c(ok, body); };
 function http(url) {
@@ -173,7 +175,7 @@ function api(o) {
     });
 }
 function okVid(v) {
-  return v && v.id && +v.length_sec >= MIN_SEC && !BLOCK.test(v.title + ' ' + (v.keywords || ''));
+  return v && v.id && +v.length_sec >= MIN_SEC && !BLOCK.test(v.title + ' ' + (v.keywords || '')) && !P.bad[v.id];
 }
 function tagsOf(v) {
   if (!v._t) v._t = (v.keywords || '').toLowerCase().split(',').map(function (s) { return s.trim(); })
@@ -408,6 +410,26 @@ function play(v) {
   if (v.src === 'mv' && A.playDirect) return A.playDirect(JSON.stringify(v.urls || [v.embed]), v.id, start);
   A.play(v.embed || ('https://www.eporner.com/embed/' + v.id + '/'), v.id, start);
 }
+// from the player watchdog: did the video really start?
+window.onPlayResult = function (id, ok) {
+  var v = lastPlayed; if (!v || v.id !== id) return;
+  var src = v.src || 'ep';
+  if (!ok) {
+    P.bad[id] = 1;
+    var b = Object.keys(P.bad); if (b.length > 3000) delete P.bad[b[0]];
+    if (v.urls) mvOk[v.urls[0]] = [false, Date.now()], save('mvOk', mvOk);
+    save('profile', P);
+  }
+  if (src === 'mv') return;
+  // a source that keeps failing on this device is switched off automatically
+  var st = (srcStats[src] = (srcStats[src] || []).concat([ok ? 1 : 0]).slice(-6));
+  save('srcStats', srcStats);
+  var fails = st.filter(function (x) { return !x; }).length;
+  if (st.length >= 4 && fails >= 4 && activeSrc().length > 1) {
+    srcOn[src] = false; save('sources', srcOn); save('cache_home', null);
+    toast(SRC[src].name + ' automatisch abgeschaltet – Videos liefen nicht');
+  }
+};
 window.onPlayerClosed = function (id, sec) {
   var v = lastPlayed; if (!v || v.id !== id) return;
   P.watched[id] = Math.max(P.watched[id] || 0, sec);
@@ -479,8 +501,29 @@ function movies(o) {
   var size = 30;
   return mvPost({queries:[{fields:o.f || TT, query:o.q}], sortBy:'timestamp', sortOrder:'desc', future:false,
       offset:((o.page || 1) - 1) * size, size:size, duration_min:o.min || 4800}) // full length: 80+ minutes
-    .then(function (t) { return uniq((JSON.parse(t).result.results || []).map(mvItem).filter(function (v) { return v.embed; })); })
+    .then(function (t) { return uniq((JSON.parse(t).result.results || []).map(mvItem).filter(function (v) { return v.embed && !P.bad[v.id]; })); })
+    .then(playable)
     .catch(function () { return []; });
+}
+// Only films whose video is really reachable from this device (geo block, expired). Results cached 24 h.
+var mvOk = load('mvOk', {});
+function playable(list) {
+  var now = Date.now(), DAY = 864e5;
+  var need = list.filter(function (v) { var c = mvOk[v.urls[0]]; return !c || now - c[1] > DAY; });
+  var done = function () { return list.filter(function (v) { var c = mvOk[v.urls[0]]; return c && c[0]; }); };
+  if (!need.length || !A.check) return Promise.resolve(A.check ? done() : list);
+  return new Promise(function (res) {
+    var id = 'c' + (++cbn);
+    cbs[id] = function (ok, body) {
+      var r = []; try { r = JSON.parse(body); } catch (e) { }
+      need.forEach(function (v, i) { mvOk[v.urls[0]] = [r[i] === true, now]; });
+      var keys = Object.keys(mvOk);
+      if (keys.length > 3000) keys.slice(0, keys.length - 3000).forEach(function (k) { delete mvOk[k]; });
+      save('mvOk', mvOk);
+      res(done());
+    };
+    A.check(JSON.stringify(need.map(function (v) { return v.urls[0]; })), id);
+  });
 }
 function filme() {
   begin();
@@ -712,6 +755,8 @@ function settings() {
       if (A.sleep) A.sleep(sleepMin);
       toast(sleepMin ? 'App schließt in ' + sleepMin + ' Minuten' : 'Sleep-Timer aus'); settings(); }]], 'btn');
   addRow('Gelernte Vorlieben: ' + (tt.length ? tt.join(', ') : 'noch keine'), [['Vorlieben zurücksetzen', function () { P.tags = {}; save('profile', P); toast('Zurückgesetzt'); settings(); }],
+    ['Ausgeblendete wieder zeigen', function () {
+      P.bad = {}; mvOk = {}; srcStats = {}; save('profile', P); save('mvOk', {}); save('srcStats', {}); toast('Alle Videos wieder sichtbar'); settings(); }],
     ['Verlauf löschen', function () { P.hist = []; P.watched = {}; save('profile', P); toast('Verlauf gelöscht'); settings(); }]], 'btn');
   addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen']], 'btn');
   finish();
