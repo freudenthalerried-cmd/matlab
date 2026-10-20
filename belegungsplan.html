@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Belegungsplan</title>
+  <link rel="stylesheet" href="belegungsplan.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🗓️</span>
+        <h1>Belegungsplan</h1>
+      </div>
+
+      <div class="month-nav">
+        <button id="prev-month" class="nav-btn" type="button" aria-label="Vorheriger Monat">‹</button>
+        <div id="month-label" class="month-label" aria-live="polite"></div>
+        <button id="next-month" class="nav-btn" type="button" aria-label="Nächster Monat">›</button>
+      </div>
+
+      <button id="today-btn" class="today-btn" type="button">Heute</button>
+    </header>
+
+    <section id="stats" class="stats" aria-label="Monatsübersicht"></section>
+
+    <section class="calendar-card">
+      <div class="weekdays">
+        <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div class="wk">Sa</div><div class="wk">So</div>
+      </div>
+      <div id="grid" class="grid" role="grid"></div>
+    </section>
+
+    <section class="legend" aria-label="Legende">
+      <span class="legend-item"><span class="dot d-frei"></span>Frei</span>
+      <span class="legend-item"><span class="dot d-anreise"></span>Anreise</span>
+      <span class="legend-item"><span class="dot d-belegt"></span>Belegt</span>
+      <span class="legend-item"><span class="dot d-abreise"></span>Abreise</span>
+      <span class="legend-item"><span class="dot d-reserviert"></span>Reserviert</span>
+    </section>
+  </div>
+
+  <div id="overlay" class="overlay" hidden></div>
+
+  <div id="day-menu" class="day-menu" role="dialog" aria-modal="true" aria-labelledby="menu-date" hidden>
+    <header class="menu-header">
+      <div>
+        <div id="menu-date" class="menu-date"></div>
+        <div id="menu-sub" class="menu-sub"></div>
+      </div>
+      <button id="menu-close" class="menu-close" type="button" aria-label="Schließen">✕</button>
+    </header>
+
+    <div id="menu-suggestion" class="suggestion" hidden>
+      <button id="suggestion-btn" class="suggestion-btn" type="button"></button>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-label">Status</div>
+      <div id="status-chips" class="status-chips" role="radiogroup" aria-label="Status wählen"></div>
+    </div>
+
+    <div class="menu-section fields">
+      <label class="field">
+        <span class="menu-label">Gast</span>
+        <input id="f-guest" type="text" placeholder="Name des Gastes" autocomplete="off">
+      </label>
+      <label class="field field-small">
+        <span class="menu-label">Personen</span>
+        <input id="f-persons" type="number" min="1" max="20" placeholder="2">
+      </label>
+    </div>
+
+    <div class="menu-section">
+      <label class="field">
+        <span class="menu-label">Notiz</span>
+        <input id="f-note" type="text" placeholder="z.&nbsp;B. Anzahlung erhalten" autocomplete="off">
+      </label>
+    </div>
+
+    <div class="menu-section">
+      <label class="field">
+        <span class="menu-label">Bis einschließlich <em>(optional, für Zeitraum)</em></span>
+        <input id="f-until" type="date">
+      </label>
+      <p class="hint">Bei einem Zeitraum mit Status „Belegt“ werden An- und Abreisetag automatisch markiert.</p>
+    </div>
+
+    <footer class="menu-footer">
+      <button id="btn-delete" class="btn btn-danger" type="button">Löschen</button>
+      <button id="btn-save" class="btn btn-primary" type="button">Speichern</button>
+    </footer>
+  </div>
+
+  <script src="belegungsplan.js"></script>
+</body>
+</html>
