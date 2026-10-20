@@ -35,17 +35,17 @@ Bei Wohnimmobilienkrediten an Verbraucher gilt das Hypothekar- und Immobilienkre
 - [ ] **Effektivzinssatz** statt Sollzinssatz vergleichen – er enthält die meisten Nebenkosten.
 - [ ] **Gesamtbetrag** aller Zahlungen über die Laufzeit ansehen.
 - [ ] **Fixzinsdauer** und Regelung danach: Wie wird der neue Zinssatz bestimmt?
-- [ ] **Nebenkosten:** Bearbeitungsgebühr, Schätzgebühr, Kontoführung, Pfandrechtseintragung (1,2 %), verlangte Versicherungen
+- [ ] **Nebenkosten:** Bearbeitungsgebühr, Schätzgebühr, Kontoführung, Pfandrechtseintragung (1,2 % des eingetragenen Höchstbetrags, der meist über der Kreditsumme liegt), verlangte Versicherungen
 - [ ] **Vorzeitige Rückzahlung und Sondertilgungen:** Wann ist eine Entschädigung fällig und wie hoch?
 - [ ] **Auszahlung in Teilbeträgen:** Wie werden Rechnungen eingereicht, wie schnell wird ausbezahlt, fällt eine Bereitstellungsprovision an?
 - [ ] **Tilgungsfreie Anlaufzeit** während der Bauphase – wie lange, was kostet sie?
-- [ ] **Bindung des Angebots:** Wie lange gilt das Angebot?
+- [ ] **Bindung des Angebots:** An ein verbindliches Angebot ist die Bank nach dem HIKrG mindestens sieben Tage gebunden – nutzen Sie diese Zeit zum Vergleichen.
 
-> RECHT: Nach dem HIKrG kann ein Verbraucher einen Kredit jederzeit ganz oder teilweise vorzeitig zurückzahlen. Bei Krediten mit fixem Zinssatz kann die Bank für die Zeit der Zinsbindung eine Entschädigung verlangen; das Gesetz setzt dafür Grenzen. Lassen Sie sich die Berechnung im Angebot zeigen.
+> RECHT: Sie können einen Wohnkredit grundsätzlich jederzeit ganz oder teilweise vorzeitig zurückzahlen. Bei hypothekarisch besicherten Krediten darf aber eine Kündigungsfrist von bis zu sechs Monaten bzw. bis zum Ende der Fixzinsperiode vereinbart werden. Eine Entschädigung darf die Bank nur verlangen, wenn die Rückzahlung in eine Fixzinsperiode fällt; sie muss angemessen sein und ist gesetzlich begrenzt – für bis Ende 2026 geschlossene Verträge auf 1 % des zurückgezahlten Betrags (0,5 % bei höchstens einem Jahr Restlaufzeit), für Verträge ab 1. Jänner 2027 auf bis zu 3 %. Lassen Sie sich die Berechnung im Angebot zeigen und vereinbaren Sie entschädigungsfreie Sondertilgungen ausdrücklich.
 
 ### Verlangte Versicherungen
 
-Banken verlangen häufig eine Gebäude- bzw. Feuerversicherung, die zugunsten der Bank vinkuliert wird, und manchmal eine Ablebensversicherung. Sie müssen diese Versicherungen nicht zwingend bei der Bank abschließen. Vergleichen Sie Prämien und Leistungen und lassen Sie sich bestätigen, dass ein externer Vertrag akzeptiert wird.
+Banken verlangen häufig eine Gebäude- bzw. Feuerversicherung, die zugunsten der Bank vinkuliert wird, und manchmal eine Ablebensversicherung. Sie müssen diese Versicherungen nicht bei der Bank abschließen: Eine gleichwertige Polizze eines anderen Anbieters muss die Bank akzeptieren (§ 23 HIKrG). Vergleichen Sie Prämien und Leistungen.
 
 ### Typische Unterlagen für die Bank
 
@@ -73,7 +73,7 @@ Jedes Bundesland hat eine eigene Wohnbauförderung für die Errichtung von Eigen
 
 ### Bundesförderungen
 
-Förderungen des Bundes für Heizungstausch, thermische Sanierung und andere Klimaschutzmaßnahmen werden über umweltfoerderung.at abgewickelt. Sie richten sich überwiegend an bestehende Gebäude. Die Budgets sind begrenzt und können vorzeitig ausgeschöpft sein – 2026 war das bei der Sanierungsoffensive bereits im Juli der Fall.
+Förderungen des Bundes für Heizungstausch, thermische Sanierung und andere Klimaschutzmaßnahmen werden über umweltfoerderung.at abgewickelt. Sie richten sich überwiegend an bestehende Gebäude. Die Budgets sind begrenzt und können vorzeitig ausgeschöpft sein – 2026 wurde der Sanierungsbonus für thermische Sanierung bereits Anfang Februar für neue Anträge geschlossen, beim Kesseltausch endete die Registrierung im Juli.
 
 ### Photovoltaik und Speicher
 

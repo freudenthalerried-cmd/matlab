@@ -17,302 +17,7 @@ IMPRESSUM = [
     "Verbindlich sind die jeweils geltenden Gesetze, Bescheide und Verträge sowie die Auskünfte Ihrer Baubehörde.",
 ]
 
-# ------------------------------------------------------------------ Teil 1
-KNOWLEDGE = [
- {"title": "So nutzen Sie dieses Buch", "blocks": [
-  ("p", "Ein Hausbau besteht aus hunderten Entscheidungen, Terminen und Rechnungen. Wer sauber dokumentiert, behält die Kosten "
-        "im Griff, erkennt Fehler früh und hat bei Streitigkeiten Beweise in der Hand. Dieses Buch begleitet Sie vom Grundstück "
-        "bis zur Wartung nach dem Einzug."),
-  ("h2", "Aufbau"),
-  ("check", ["<b>Teil 1 – Wissen & Ablauf:</b> alle Phasen eines Hausbaus in Österreich mit Checklisten, Pflichten und typischen Fehlern.",
-             "<b>Teil 2 – Planung & Kosten:</b> Projekt-Steckbrief, Kontakte, Kostenplan nach ÖNORM B 1801-1, Finanzierung, "
-             "Rechnungsjournal, Angebotsvergleich je Gewerk, Bauzeitenplan, Bemusterung und Elektroplanung Raum für Raum.",
-             "<b>Teil 3 – Bautagebuch:</b> 160 Tageseinträge für die Dokumentation der Baustelle.",
-             "<b>Teil 4 – Kontrolle & Abnahme:</b> Besprechungsprotokolle, Kontroll-Checklisten je Gewerk, Abnahmeprotokolle, Mängellisten.",
-             "<b>Teil 5 – Hausakte & Wartung:</b> Unterlagen, Gewährleistungsfristen, Wartungsplan, Zählerstände, Begriffe, Skizzen."]),
-  ("h2", "Drei Grundregeln"),
-  ("check", ["<b>Alles schriftlich.</b> Mündliche Zusagen auf der Baustelle sind im Streitfall kaum beweisbar. Wichtige Absprachen "
-             "im Bautagebuch notieren und per E-Mail bestätigen.",
-             "<b>Alles mit Datum und Foto.</b> Fotos mit Datum, Ort und Foto-Nummer im Tagebuch vermerken.",
-             "<b>Nichts unterschreiben oder bezahlen, was Sie nicht geprüft haben.</b> Regieberichte, Rechnungen und Abnahmen "
-             "zuerst kontrollieren."]),
-  ("tip", "Legen Sie zusätzlich einen Ordner (Papier oder digital) mit derselben Gliederung an. Dieses Buch ist das Steuerungs- "
-          "und Nachweisbuch, der Ordner nimmt Verträge, Pläne, Bescheide und Rechnungen auf."),
-  ("warn", "Bau- und Raumordnungsrecht ist in Österreich Landessache. Bezeichnungen wie Bauanzeige, Baubewilligung, "
-           "Fertigstellungsanzeige oder Benützungsbewilligung unterscheiden sich je Bundesland. Fragen Sie im Zweifel immer "
-           "zuerst bei Ihrer Baubehörde (Gemeinde) nach."),
- ]},
- {"title": "Der Hausbau in 10 Phasen", "blocks": [
-  ("p", "Die Reihenfolge gilt für ein typisches Einfamilienhaus in Massivbauweise. Bei Fertighäusern verkürzt sich die Bauphase, "
-        "die Schritte davor und danach bleiben gleich."),
-  ("table", (["Phase", "Was passiert", "Ergebnis"], [
-    ["1  Bedarf & Budget", "Raumprogramm, Wünsche, finanzieller Rahmen, Haushaltsrechnung", "Budgetrahmen inkl. Nebenkosten und Reserve"],
-    ["2  Grundstück", "Suche, Prüfung von Widmung, Bebauungsbestimmungen, Gefahrenzonen, Boden, Aufschließung; Kauf", "Kaufvertrag, Grundbucheintragung"],
-    ["3  Finanzierung", "Kreditangebote einholen und vergleichen, Förderungen klären", "Finanzierungszusage"],
-    ["4  Planung", "Planer beauftragen, Entwurf, Einreichplan, Baubeschreibung, Energieausweis, Statik", "Einreichunterlagen"],
-    ["5  Behördenverfahren", "Bauansuchen bzw. Bauanzeige, ggf. Bauverhandlung mit Nachbarn, Bescheid", "Rechtskräftige Bewilligung"],
-    ["6  Ausschreibung & Vergabe", "Leistungen beschreiben, Angebote einholen und vergleichen, Verträge", "Unterschriebene Werkverträge, Bauzeitenplan"],
-    ["7  Bauausführung", "Baustelleneinrichtung, Rohbau, Dach, Fenster, Haustechnik, Putz, Estrich, Ausbau", "Fertiges Gebäude"],
-    ["8  Fertigstellung & Abnahme", "Abnahme je Gewerk, Mängel, Befunde sammeln, Fertigstellung melden", "Abnahmeprotokolle, Befunde"],
-    ["9  Einzug", "Meldezettel, Verträge (Strom, Internet), Versicherungen umstellen", "Bewohnbares Zuhause"],
-    ["10 Gewährleistung & Wartung", "Mängel innerhalb der Fristen geltend machen, Rücklässe freigeben, warten", "Werterhalt"],
-   ], [1.6, 4.2, 2.6])),
-  ("tip", "Die teuersten Fehler passieren in den Phasen 2, 4 und 6 – also bevor der erste Bagger kommt. Nehmen Sie sich dort Zeit."),
- ]},
- {"title": "Phase 1: Bedarf & Budget", "blocks": [
-  ("h2", "Raumprogramm"),
-  ("check", ["Wie viele Personen wohnen jetzt und in 10–20 Jahren im Haus? (Kinder, Eltern, Homeoffice)",
-             "Welche Räume werden gebraucht, welche Größe? Schlafzimmer im Erdgeschoß für das Alter?",
-             "Barrierefreiheit von Anfang an mitdenken: schwellenlose Dusche, breite Türen, ebenerdiger Zugang.",
-             "Stauraum: Abstellraum, Technikraum, Garage/Carport, Fahrräder, Gartengeräte.",
-             "Keller ja oder nein? (Kosten vs. Nutzfläche; Grundwasser und Hanglage prüfen)",
-             "Heizsystem und Energiestandard festlegen (Wärmepumpe, Fernwärme, Biomasse; Photovoltaik).",
-             "Wunschliste in Muss / Soll / Kann einteilen – das erleichtert später das Sparen."]),
-  ("h2", "Budget"),
-  ("p", "Rechnen Sie nicht nur mit den reinen Baukosten. Zum Gesamtbudget gehören Grundstück, Erwerbsnebenkosten, "
-        "Aufschließung, Planung, Gebühren, Außenanlagen, Küche, Einrichtung, Umzug und eine Reserve. Die Nebenkosten-Checkliste "
-        "in Teil 2 hilft, nichts zu vergessen."),
-  ("check", ["Haushaltsrechnung erstellen: monatliches Nettoeinkommen minus Lebenshaltung = möglicher Spielraum für die Kreditrate.",
-             "Puffer für Zinsänderung, Jobverlust oder Elternkarenz einplanen.",
-             "Eigenmittel ehrlich bewerten (Ersparnisse, Bausparvertrag, Wertpapiere, Familienhilfe).",
-             "Eigenleistung nur einplanen, wenn Zeit, Können und Helfer wirklich vorhanden sind.",
-             "Reserve von 10–15 % der Baukosten fix im Budget vorsehen."]),
-  ("tip", "Lassen Sie sich die Kosten pro m² Wohnnutzfläche von mehreren Baufirmen für Ihre Region nennen und vergleichen Sie "
-          "nur gleiche Leistungsumfänge (z. B. „schlüsselfertig“ ist kein genormter Begriff)."),
- ]},
- {"title": "Phase 2: Grundstück prüfen und kaufen", "blocks": [
-  ("p", "Ein Grundstück lässt sich nachträglich kaum verändern. Prüfen Sie deshalb vor dem Kauf, ob Sie dort so bauen dürfen "
-        "und können, wie Sie es vorhaben."),
-  ("h2", "Rechtliche Prüfung"),
-  ("check", ["<b>Grundbuchauszug</b> anfordern: Eigentümer, Lasten (Pfandrechte), Dienstbarkeiten (Servitute, z. B. Wegerecht, Leitungsrecht), Vorkaufsrechte.",
-             "<b>Flächenwidmungsplan</b> (Gemeinde): Ist das Grundstück als Bauland gewidmet? Welche Kategorie (z. B. Wohngebiet, Dorfgebiet)? Gibt es eine Aufschließungszone oder Bausperre?",
-             "<b>Bebauungsplan / Bebauungsbestimmungen</b>: Bauweise (offen, gekuppelt), Bebauungsdichte, Gebäudehöhe, Baufluchtlinien, Dachform, Abstände.",
-             "<b>Gefahrenzonenplan</b>: Hochwasser, Wildbach, Lawine, Rutschung. Online über das Geoinformationssystem Ihres Landes einsehbar.",
-             "<b>Altlasten- und Verdachtsflächenkataster</b> (Umweltbundesamt) bzw. Auskunft des Landes.",
-             "<b>Leitungen</b> im Grundstück (Strom, Gas, Wasser, Kanal, Telekom): Auskunft bei den Leitungsträgern einholen.",
-             "<b>Baulandsicherungsverträge, Bebauungsfristen oder Infrastrukturbeiträge</b> der Gemeinde erfragen.",
-             "Bei Grundstücken aus einer Teilung: Ist die Teilung genehmigt und im Grundbuch durchgeführt?"]),
-  ("h2", "Technische Prüfung"),
-  ("check", ["<b>Aufschließung:</b> Zufahrt, Wasser, Kanal (Schmutz- und Regenwasser), Strom, ggf. Gas/Fernwärme, Internet. Wer zahlt welche Anschlüsse? "
-             "Liegt ein öffentlicher Kanal in der Nähe, besteht nach Landesrecht meist Anschlusspflicht.",
-             "<b>Boden:</b> Bodengutachten (Tragfähigkeit, Grundwasser, Versickerungsfähigkeit für Regenwasser) – besonders bei Hang, Keller oder Lehmboden.",
-             "<b>Hanglage:</b> Stützmauern und Erdbewegungen können sehr teuer werden.",
-             "<b>Lage und Umgebung:</b> Lärm (Straße, Bahn, Gewerbe), Besonnung, Ausrichtung, Nachbarbebauung, geplante Bauprojekte.",
-             "<b>Grenzen:</b> Sind die Grenzpunkte vermessen und in der Natur ersichtlich? Grenzkataster oder Grundsteuerkataster?"]),
-  ("h2", "Kauf"),
-  ("check", ["Kaufvertrag durch Notar oder Rechtsanwalt errichten lassen; Abwicklung über ein Treuhandkonto.",
-             "Kaufpreis erst zahlen, wenn die lastenfreie Eintragung gesichert ist (Rangordnung, Treuhand).",
-             "Erwerbsnebenkosten einplanen: Grunderwerbsteuer, Grundbuch-Eintragungsgebühr, Vertragserrichtung/Treuhand, ggf. Maklerprovision.",
-             "Grunderwerbsteuer und Eintragungsgebühr werden in der Regel vom Vertragserrichter selbst berechnet und abgeführt."]),
-  ("table", (["Erwerbsnebenkosten (Richtwerte)", "Höhe", "Hinweis"], [
-    ["Grunderwerbsteuer", "3,5 % der Gegenleistung", "Grunderwerbsteuergesetz 1987"],
-    ["Grundbuch-Eintragungsgebühr Eigentum", "1,1 %", "Gerichtsgebührengesetz"],
-    ["Eintragung Pfandrecht (Kredit)", "1,2 % des Pfandbetrags", "Gerichtsgebührengesetz"],
-    ["Vertragserrichtung / Treuhand", "nach Vereinbarung bzw. Tarif", "vorab schriftliches Angebot einholen"],
-    ["Maklerprovision (Käufer)", "höchstens 3 % zzgl. 20 % USt", "Höchstsatz bei Kaufpreis über 48.448,51 €"],
-   ], [3, 2.6, 3])),
-  ("warn", "Die befristete Befreiung von den Grundbuchgebühren für den Hauptwohnsitz (§ 25a GGG) galt für Anträge von Juli 2024 "
-           "bis Juni 2026 und ist ausgelaufen. Fragen Sie Ihren Vertragserrichter, ob zum Zeitpunkt Ihres Kaufs eine neue Begünstigung gilt."),
- ]},
- {"title": "Phase 3: Finanzierung", "blocks": [
-  ("p", "Holen Sie mindestens drei Kreditangebote ein und vergleichen Sie nicht nur den Zinssatz, sondern die Gesamtkosten. "
-        "Banken müssen Ihnen vor Vertragsabschluss ein Europäisches Standardisiertes Merkblatt (ESIS) aushändigen – damit lassen "
-        "sich Angebote vergleichen."),
-  ("h2", "Worauf achten"),
-  ("check", ["<b>Effektivzinssatz</b> (enthält Gebühren) statt nur Sollzinssatz vergleichen.",
-             "<b>Fixzins, variabler Zins oder Mischform</b>: Wie lange ist der Zins fix? Was passiert danach?",
-             "<b>Laufzeit und Rate</b>: Rate auch bei steigenden Zinsen leistbar?",
-             "<b>Nebenkosten</b>: Bearbeitungsgebühr, Schätzgebühr, Kontoführung, Pfandrechtseintragung (1,2 %), Versicherungen.",
-             "<b>Sondertilgungen</b> und vorzeitige Rückzahlung: kostenlos möglich? Entschädigung?",
-             "<b>Auszahlung nach Baufortschritt</b>: Bereitstellungsprovision? Wie werden Rechnungen eingereicht?",
-             "<b>Förderdarlehen</b> des Landes mit dem Bankkredit abstimmen (Rangordnung im Grundbuch)."]),
-  ("h2", "Typische Unterlagen für die Bank"),
-  ("check", ["Lohn-/Gehaltszettel der letzten Monate bzw. Einkommensteuerbescheide (Selbständige: Bilanzen/E/A-Rechnungen)",
-             "Kontoauszüge, Nachweis der Eigenmittel, bestehende Kredite und Leasingverträge",
-             "Grundbuchauszug, Kaufvertrag, Lageplan",
-             "Einreichplan, Baubeschreibung, Kostenaufstellung bzw. Angebote, Baubewilligung (sobald vorhanden)",
-             "Lichtbildausweis, Meldezettel"]),
-  ("tip", "Lassen Sie sich die Finanzierungszusage erst geben, wenn die Kostenschätzung realistisch ist. Eine nachträgliche "
-          "Aufstockung ist teurer und nicht garantiert."),
- ]},
- {"title": "Phase 4: Planung", "blocks": [
-  ("p", "Der Einreichplan muss von einer befugten Person erstellt werden, etwa einem Baumeister, Architekten oder "
-        "Zivilingenieur. Achten Sie bei der Auswahl auf Referenzen und darauf, was im Honorar enthalten ist "
-        "(Entwurf, Einreichung, Ausführungsplanung, Ausschreibung, Bauaufsicht)."),
-  ("h2", "Checkliste Planung"),
-  ("check", ["Planungsvertrag mit klar definierten Leistungsphasen und Honorar abschließen.",
-             "Vermessung / Lage- und Höhenplan des Grundstücks erstellen lassen.",
-             "Bebauungsbestimmungen, Abstände zu Nachbargrenzen und Stellplatzverpflichtung berücksichtigen.",
-             "Ausrichtung: Wohnräume nach Süden/Westen, Nebenräume nach Norden; sommerlichen Wärmeschutz (Verschattung) einplanen.",
-             "Haustechnik früh planen: Lage Technikraum, Schächte, Lüftung, Wärmepumpe (Schall zum Nachbarn!), PV-Ausrichtung.",
-             "Energieausweis erstellen lassen (wird im Bauverfahren benötigt; Zeitpunkt der Vorlage je nach Bundesland).",
-             "Statik / Tragwerksplanung beauftragen.",
-             "Baubeschreibung mit Materialien und Qualitäten erstellen – Grundlage für Angebote.",
-             "Möblierung in den Plan einzeichnen: Passen Bett, Schrank, Küche, Esstisch? Türanschläge prüfen.",
-             "Elektroplanung Raum für Raum (Teil 2) vor der Rohinstallation abschließen."]),
-  ("tip", "Änderungen am Papier kosten fast nichts – Änderungen auf der Baustelle kosten viel. Gehen Sie den Plan Raum für "
-          "Raum gedanklich durch einen ganzen Tag durch: Aufstehen, Kochen, Einkauf ausladen, Wäsche, Müll, Gäste."),
- ]},
- {"title": "Phase 5: Behördenverfahren", "blocks": [
-  ("p", "Baubehörde erster Instanz ist in der Regel die Gemeinde (Bürgermeister bzw. in Wien der Magistrat). Je nach Bundesland "
-        "und Vorhaben ist eine Baubewilligung nötig oder eine Bauanzeige ausreichend. Ein Einfamilienhaus ist fast überall "
-        "bewilligungspflichtig."),
-  ("h2", "Typischer Ablauf"),
-  ("check", ["Vorbesprechung bei der Baubehörde bzw. dem Bausachverständigen der Gemeinde (spart Zeit und Nachreichungen).",
-             "Bauansuchen mit Einreichplänen, Baubeschreibung, Energieausweis, Grundbuchauszug und weiteren geforderten Unterlagen einreichen.",
-             "Ggf. Bauverhandlung an Ort und Stelle: Nachbarn (Anrainer) können Einwendungen erheben, die Behörde prüft die Vorschriften.",
-             "Baubewilligungsbescheid abwarten – erst nach Rechtskraft (Ablauf der Beschwerdefrist) bauen.",
-             "Bauführer und Baubeginn der Behörde melden, sofern vorgeschrieben.",
-             "Auflagen im Bescheid lesen und auf der Baustelle bekanntgeben (z. B. Höhenlage, Oberflächenwasser, Bepflanzung)."]),
-  ("h2", "Baurecht der Bundesländer"),
-  ("table", (["Bundesland", "Wichtigste Rechtsgrundlage"], [
-    ["Burgenland", "Burgenländisches Baugesetz 1997"],
-    ["Kärnten", "Kärntner Bauordnung 1996, Kärntner Bauvorschriften"],
-    ["Niederösterreich", "NÖ Bauordnung 2014, NÖ Bautechnikverordnung 2014"],
-    ["Oberösterreich", "Oö. Bauordnung 1994, Oö. Bautechnikgesetz 2013"],
-    ["Salzburg", "Baupolizeigesetz 1997, Bautechnikgesetz 2015"],
-    ["Steiermark", "Steiermärkisches Baugesetz 1995"],
-    ["Tirol", "Tiroler Bauordnung 2022"],
-    ["Vorarlberg", "Baugesetz 2001, Bautechnikverordnung"],
-    ["Wien", "Bauordnung für Wien"],
-   ], [2, 6])),
-  ("p", "Die bautechnischen Anforderungen (Statik, Brandschutz, Schallschutz, Energie, Barrierefreiheit) stützen sich in allen "
-        "Bundesländern weitgehend auf die OIB-Richtlinien. Alle Gesetze finden Sie kostenlos im Rechtsinformationssystem "
-        "des Bundes (RIS) unter ris.bka.gv.at."),
-  ("tip", "Sprechen Sie vor dem Einreichen mit den Nachbarn und zeigen Sie ihnen den Plan. Das verhindert viele Einwendungen."),
- ]},
- {"title": "Phase 6: Ausschreibung, Angebote, Verträge", "blocks": [
-  ("p", "Sie können ein Haus über einen Generalunternehmer (ein Vertrag, ein Ansprechpartner), einen Bauträger (Haus mit "
-        "Grundstück) oder durch Einzelvergabe an die Gewerke (mehr Steuerungsaufwand, oft günstiger) errichten."),
-  ("h2", "Angebote vergleichbar machen"),
-  ("check", ["Allen Firmen dieselbe Leistungsbeschreibung bzw. dasselbe Leistungsverzeichnis geben.",
-             "Mindestens drei Angebote je Gewerk einholen (Vergleichsseiten in Teil 2).",
-             "Was ist nicht enthalten? (Baustelleneinrichtung, Gerüst, Entsorgung, Baustrom, Reinigung)",
-             "Einheitspreis (Abrechnung nach Aufmaß) oder Pauschalpreis? Bei Pauschale den Leistungsumfang genau festlegen.",
-             "Gewerbeberechtigung im Gewerbeinformationssystem Austria (GISA) und Firmenbuch prüfen.",
-             "Referenzen anrufen, fertige Bauten ansehen.",
-             "Termine und Bauzeit verbindlich vereinbaren, ggf. mit Vertragsstrafe (Pönale)."]),
-  ("h2", "Inhalt eines guten Bauvertrags"),
-  ("check", ["Vertragspartner, Leistungsumfang (Leistungsverzeichnis, Pläne, Baubeschreibung als Vertragsbestandteil)",
-             "Preis, Preisart (fest/veränderlich), Umsatzsteuer, Regiepreise für Zusatzleistungen",
-             "Ausführungsfristen, Beginn und Fertigstellung, Folgen von Verzug",
-             "Zahlungsplan nach erbrachtem Baufortschritt – keine großen Vorauszahlungen",
-             "Haftrücklass bzw. Bankgarantie zur Absicherung der Gewährleistung",
-             "Ob die ÖNORM B 2110 (Allgemeine Vertragsbestimmungen für Bauleistungen) gelten soll – sie gilt nur, wenn sie vereinbart ist",
-             "Regelung für Zusatzaufträge: nur schriftlich, mit Preis vor Ausführung",
-             "Abnahme, Übergabe der Unterlagen (Pläne, Befunde, Anleitungen)"]),
-  ("warn", "Beim Kauf von einem Bauträger mit Vorauszahlungen gilt das Bauträgervertragsgesetz (BTVG): Ihre Zahlungen müssen "
-           "abgesichert sein, z. B. nach Ratenplan mit grundbücherlicher Sicherstellung. Lassen Sie solche Verträge immer "
-           "von Notar oder Anwalt prüfen."),
-  ("tip", "Regiearbeiten (Abrechnung nach Stunden) nur anordnen, wenn sie unvermeidbar sind, und die Regieberichte täglich "
-          "kontrollieren und abzeichnen – nicht erst Wochen später."),
- ]},
- {"title": "Phase 7: Pflichten als Bauherr", "blocks": [
-  ("p", "Auch private Bauherren haben auf der Baustelle Pflichten. Viele davon betreffen Sicherheit und Haftung."),
-  ("h2", "Bauarbeitenkoordinationsgesetz (BauKG)"),
-  ("check", ["Werden auf der Baustelle Arbeitnehmer mehrerer Arbeitgeber tätig, muss der Bauherr einen "
-             "<b>Planungskoordinator</b> und einen <b>Baustellenkoordinator</b> bestellen (das kann auch der Planer oder Baumeister sein).",
-             "Ein <b>Sicherheits- und Gesundheitsschutzplan (SiGe-Plan)</b> ist zu erstellen, wenn eine Vorankündigung nötig ist "
-             "oder besonders gefährliche Arbeiten anfallen.",
-             "Eine <b>Vorankündigung</b> an das Arbeitsinspektorat ist nötig, wenn die Arbeiten voraussichtlich länger als 30 "
-             "Arbeitstage dauern und dabei mehr als 20 Arbeitnehmer gleichzeitig beschäftigt werden, oder wenn der Umfang "
-             "500 Personentage übersteigt – spätestens zwei Wochen vor Baubeginn.",
-             "Eine <b>Unterlage für spätere Arbeiten</b> am Bauwerk (z. B. Dachwartung) ist zu erstellen und aufzubewahren.",
-             "Der Bauherr kann diese Pflichten einem geeigneten Projektleiter übertragen – schriftlich festhalten.",
-             "Wer ausschließlich selbst bzw. mit Nachbarschaftshilfe ohne Arbeitnehmer baut, fällt nicht unter das BauKG."]),
-  ("h2", "Weitere Pflichten und Empfehlungen"),
-  ("check", ["Bauführer bestellen und der Behörde melden, sofern die Landesbauordnung dies vorsieht.",
-             "Benützung von öffentlichem Gut (Gehsteig, Straße für Kran, Container, Material) vorher bewilligen lassen (§ 82 bzw. § 90 StVO).",
-             "Vor Grabungen Leitungsauskünfte einholen.",
-             "Beweissicherung: Nachbargebäude, Straße und Zaun vor Baubeginn fotografieren (mit Datum).",
-             "Baustelle absichern (Absperrung, Beleuchtung, Zutritt Unbefugter verhindern).",
-             "Baustrom und Bauwasser rechtzeitig beim Netzbetreiber bzw. der Gemeinde beantragen.",
-             "Baustellen-WC und Müllentsorgung organisieren (Baurestmassen getrennt sammeln)."]),
-  ("h2", "Versicherungen"),
-  ("check", ["<b>Bauherren-Haftpflicht</b>: Schäden Dritter durch die Baustelle (oft in der Haushalts- oder Eigenheimversicherung prüfen).",
-             "<b>Rohbau-/Feuerrohbauversicherung</b>: Feuer, Sturm, Hagel während der Bauzeit; später in die Eigenheimversicherung umwandeln.",
-             "<b>Bauwesenversicherung</b>: unvorhergesehene Schäden am Bauwerk während der Errichtung.",
-             "<b>Unfallversicherung</b> für private Helfer – bei Nachbarschaftshilfe beraten lassen."]),
-  ("warn", "Schwarzarbeit ist verboten und für Bauherren riskant: keine Gewährleistung, keine Haftung, kein Versicherungsschutz "
-           "bei Unfällen, und Förderungen verlangen Rechnungen befugter Unternehmen."),
- ]},
- {"title": "Phase 7: Bauablauf und Gewerke", "blocks": [
-  ("p", "Die folgende Reihenfolge ist typisch für ein massiv errichtetes Einfamilienhaus. Einzelne Arbeiten überschneiden sich. "
-        "Entscheidend sind die Übergabepunkte zwischen den Gewerken – dort entstehen die meisten Fehler."),
-  ("table", (["Schritt", "Gewerk", "Vorher prüfen / Übergabepunkt"], [
-    ["1", "Absteckung, Erdarbeiten, Aushub", "Höhenlage lt. Bescheid, Schnurgerüst durch Vermesser, Leitungen"],
-    ["2", "Fundament / Bodenplatte", "Fundamenterder durch Elektriker, Leerverrohrungen, Bewehrungsabnahme vor dem Betonieren"],
-    ["3", "Abdichtung erdberührter Bauteile, Drainage", "Abdichtung lückenlos, Schutzschicht vor dem Verfüllen"],
-    ["4", "Mauerwerk, Decken, Stiegen", "Maße, Öffnungen, Schlitze und Aussparungen lt. Plan, Bewehrungsabnahme Decken"],
-    ["5", "Dachstuhl, Dachdeckung, Spengler", "Unterdach dicht, Anschlüsse, Dachrinnen; Gebäude ist dann „dicht“"],
-    ["6", "Fenster und Außentüren", "Einbau mit abgedichteter Anschlussfuge, Fensterbank-Anschlüsse"],
-    ["7", "Rohinstallation Elektro, Sanitär, Heizung, Lüftung", "Fotos aller Leitungen mit Maßband; Druckprobe der Rohrleitungen"],
-    ["8", "Innenputz", "Installationen geprüft, Steckdosenhöhen kontrolliert, Luftdichtheit"],
-    ["9", "Estrich (ggf. Fußbodenheizung)", "Fußbodenheizung abgedrückt, Randdämmstreifen, Höhen; danach Trocknungszeit"],
-    ["10", "Fassade / Wärmedämmung", "Anschlüsse an Fenster, Sockel, Dach; Witterung"],
-    ["11", "Fliesen, Bodenbeläge, Maler", "Belegreife des Estrichs per CM-Messung, Aufheizprotokoll bei Fußbodenheizung"],
-    ["12", "Innentüren, Fertiginstallation, Küche", "Steckdosen, Schalter, Sanitärobjekte, Endmontage Heizung"],
-    ["13", "Außenanlagen", "Gefälle weg vom Haus, Sockelschutz, Regenwasser, Zufahrt"],
-   ], [0.7, 3.2, 5])),
-  ("tip", "Planen Sie die Estrich-Trocknung realistisch ein. Faustregel bei Zementestrich: etwa eine Woche pro Zentimeter Dicke "
-          "bei guten Bedingungen bis 4 cm, darüber deutlich länger. Bodenbeläge erst nach bestätigter Belegreife verlegen."),
- ]},
- {"title": "Förderungen", "blocks": [
-  ("p", "Förderungen für Neubau und Sanierung gibt es von Land, Bund, Gemeinde und teilweise von Energieversorgern. "
-        "Höhe und Bedingungen ändern sich häufig – prüfen Sie den aktuellen Stand immer vor der Auftragsvergabe."),
-  ("h2", "Wo nachfragen"),
-  ("check", ["<b>Wohnbauförderung des Landes</b>: Darlehen oder Zuschüsse für Eigenheime; oft an Energiestandard, Einkommen "
-             "und Hauptwohnsitz gebunden. Informationen auf der Website Ihres Landes.",
-             "<b>Bundesförderungen</b> (z. B. für Heizungstausch, thermische Sanierung): Information, Registrierung und Antrag über "
-             "umweltfoerderung.at. Achtung: Die Mittel sind oft begrenzt – 2026 waren sie bereits im Juli ausgeschöpft. Früh registrieren.",
-             "<b>Photovoltaik und Speicher</b>: Förderungen bzw. Investitionszuschüsse je nach aktueller Rechtslage – beim "
-             "Energieberater des Landes nachfragen.",
-             "<b>Gemeinde</b>: viele Gemeinden fördern z. B. Photovoltaik, Regenwassernutzung oder Begrünung.",
-             "<b>Energieberatung</b> des Landes nutzen – oft kostenlos oder günstig und mit aktuellem Überblick."]),
-  ("h2", "Regeln, damit die Förderung nicht verloren geht"),
-  ("check", ["Viele Förderungen müssen <b>vor</b> Baubeginn bzw. vor Auftragserteilung beantragt oder registriert werden.",
-             "Förderbedingungen (Energiekennzahl, Dämmstärken, Heizsystem) in die Planung und Ausschreibung übernehmen.",
-             "Nur Rechnungen befugter Unternehmen werden anerkannt; Zahlungsnachweise aufbewahren.",
-             "Fristen für Endabrechnung bzw. Nachweise im Kalender eintragen.",
-             "Förderzusagen und -bescheide in der Hausakte ablegen; Auflagen (z. B. Hauptwohnsitz für bestimmte Dauer) beachten."]),
-  ("table", (["Förderung", "Stelle", "Antrag bis / gestellt am", "Zusage", "Betrag"], [["", "", "", "", ""]] * 6, [2.4, 2.2, 2, 1.4, 1.4])),
- ]},
- {"title": "Phase 8–9: Fertigstellung und Einzug", "blocks": [
-  ("h2", "Vor der Fertigstellung"),
-  ("check", ["Abnahmen je Gewerk durchführen und protokollieren (Teil 4).",
-             "Befunde und Bestätigungen sammeln – je nach Bundesland und Anlage z. B.: Elektro-Prüfbefund und Anlagenbuch, "
-             "Befund des Rauchfangkehrers für Fänge und Feuerstätten, Dichtheitsnachweis Kanal, Bestätigung des Bauführers, "
-             "Energieausweis (endgültig), Aufheizprotokoll Fußbodenheizung, Druckprobe Heizung/Sanitär.",
-             "Fertigstellung der Baubehörde anzeigen bzw. Benützungsbewilligung beantragen – wie es Ihre Landesbauordnung vorsieht.",
-             "Abweichungen vom bewilligten Plan klären – eventuell ist eine Planänderung einzureichen.",
-             "Hausnummer bei der Gemeinde beantragen bzw. bestätigen lassen."]),
-  ("h2", "Beim Einzug"),
-  ("check", ["Wohnsitz innerhalb von drei Tagen nach dem Bezug anmelden (Meldegesetz).",
-             "Adressänderungen: Arbeitgeber, Bank, Versicherungen, Zulassungsschein (Kfz), Post-Nachsendeauftrag.",
-             "Strom-, Gas-/Wärme- und Internetverträge abschließen; Zählerstände bei Übernahme notieren.",
-             "Rohbauversicherung in eine Eigenheimversicherung umwandeln.",
-             "Müllabfuhr und Kanal bei der Gemeinde anmelden (Gebührenbescheide).",
-             "Rauchwarnmelder prüfen bzw. montieren."]),
-  ("tip", "Machen Sie am Tag der Schlüsselübergabe eine Fotodokumentation jedes Raumes. Mängel, die beim Einzug durch Möbel "
-          "entstehen, lassen sich sonst nicht mehr von Baumängeln unterscheiden."),
- ]},
- {"title": "Phase 10: Gewährleistung und Garantie", "blocks": [
-  ("p", "<b>Gewährleistung</b> ist die gesetzliche Haftung des Unternehmers dafür, dass seine Leistung bei Übergabe mangelfrei "
-        "ist. Für Bauleistungen an unbeweglichen Sachen beträgt die Gewährleistungsfrist <b>drei Jahre ab Übergabe</b> "
-        "(§ 933 ABGB). Seit 2022 kann der Anspruch noch drei Monate nach Ablauf dieser Frist gerichtlich geltend gemacht werden. "
-        "Vertraglich können längere oder – unter Unternehmern – kürzere Fristen vereinbart sein."),
-  ("p", "<b>Garantie</b> ist eine freiwillige Zusage eines Herstellers oder Unternehmers mit eigenen Bedingungen "
-        "(z. B. 10 Jahre auf Fenster nur bei jährlicher Wartung). Garantiebedingungen aufbewahren und einhalten."),
-  ("h2", "So sichern Sie Ihre Ansprüche"),
-  ("check", ["Mängel sofort schriftlich (E-Mail oder eingeschriebener Brief) mit Foto und Frist zur Behebung melden.",
-             "Ende jeder Gewährleistungsfrist in der Übersicht (Teil 5) und im Kalender eintragen.",
-             "Vor Ablauf der Gewährleistung eine Begehung machen (am besten mit Sachverständigem) und alle Mängel melden.",
-             "Haftrücklass bzw. Bankgarantie erst freigeben, wenn alle gemeldeten Mängel behoben sind.",
-             "Bei Streit: Sachverständigen beiziehen, Beweise sichern, Fristen nicht verstreichen lassen, rechtzeitig Rechtsberatung."]),
-  ("warn", "Verlassen Sie sich nicht darauf, dass Gespräche über einen Mangel die Frist verlängern. Lassen Sie sich im Zweifel "
-           "rechtzeitig beraten, bevor eine Frist abläuft."),
- ]},
-]
+# Teil 1 (Ratgeber) steht in kapitel/*.md
 
 # ------------------------------------------------------------------ Teil 2
 KOSTEN_INTRO = ("Die ÖNORM B 1801-1 gliedert die Kosten eines Bauprojekts in Kostenbereiche. Wer von Anfang an nach dieser "
@@ -329,13 +34,13 @@ NEBENKOSTEN = [
     ("Grundbuch Pfandrecht", "1,2 % vom Pfandbetrag"), ("Notar / Anwalt / Treuhand", "Angebot einholen"),
     ("Maklerprovision", "max. 3 % + USt"), ("Vermessung, Teilung, Absteckung", "Vermesser"),
     ("Bodengutachten", "vor Planung"), ("Aufschließungsabgabe / Bauabgabe", "Gemeinde – vorab erfragen"),
-    ("Kanal-/Wasseranschlussgebühr", "Gemeinde"), ("Stromanschluss / Netzzutritt", "Netzbetreiber"),
+    ("Kanal-/Wasseranschlussgebühr", "Gemeinde"), ("Stromanschluss", "Netzbetreiber"),
     ("Internetanschluss / Glasfaser", "Anbieter"), ("Planung, Einreichung, Bauaufsicht", "Honorarangebot"),
     ("Statik, Energieausweis", "Honorarangebot"), ("Baustellenkoordination (BauKG)", "falls erforderlich"),
     ("Baustrom, Bauwasser, Baustellen-WC", "laufende Kosten"), ("Versicherungen Bauzeit", "Haftpflicht, Rohbau"),
     ("Kreditnebenkosten", "Bearbeitung, Schätzung, Zinsen in der Bauzeit"), ("Behördengebühren, Verwaltungsabgaben", "Gemeinde"),
     ("Außenanlagen, Zaun, Zufahrt", "oft unterschätzt"), ("Küche, Beleuchtung, Möbel, Vorhänge", ""),
-    ("Umzug, Doppelmiete", ""), ("Reserve 10–15 %", "für Unvorhergesehenes"),
+    ("Umzug, Doppelmiete", ""), ("Reserve 10–15 % der Bauwerkskosten", "für Unvorhergesehenes"),
 ]
 KREDIT_VERGLEICH = ["Kreditbetrag", "Laufzeit", "Sollzinssatz / Zinsbindung", "Effektivzinssatz", "Monatliche Rate",
                     "Gesamtbetrag lt. ESIS", "Bearbeitungs-/Schätzgebühr", "Sondertilgung möglich?", "Bereitstellungsprovision",
@@ -388,12 +93,12 @@ KONTROLLE = [
   "items": ["Absteckung und Höhenlage (Fußbodenoberkante) entsprechen Plan und Bescheid; durch Vermesser bestätigt.",
             "Leitungsauskünfte liegen vor; vorhandene Leitungen markiert.",
             "Aushub-Material: Was bleibt für die Hinterfüllung, was wird abtransportiert?",
-            "Fundamenterder vom Elektriker eingelegt und dokumentiert (Foto, Messprotokoll).",
+            "Erder nach OVE E 8014 verlegt (bei gedämmter Bodenplatte: Ringerder außerhalb der Dämmung) und dokumentiert (Foto, Messprotokoll).",
             "Leerrohre für Hausanschlüsse (Strom, Wasser, Kanal, Telekom) lagerichtig eingelegt; Hauseinführungen dicht.",
-            "Bewehrung vor dem Betonieren durch Statiker/Bauleiter abgenommen (Protokoll).",
-            "Betonieren nicht bei Frost; Nachbehandlung (feucht halten) bei Hitze.",
+            "Bewehrung vor dem Betonieren durch Tragwerksplaner bzw. Prüfingenieur abgenommen (Protokoll).",
+            "Betonieren nur bei geeigneter Witterung bzw. mit Schutzmaßnahmen; Nachbehandlung (feucht halten) bei Hitze.",
             "Abdichtung erdberührter Bauteile lückenlos, Anschlüsse und Durchdringungen sauber ausgeführt, fotografiert.",
-            "Drainage und Schutzschicht vor dem Verfüllen kontrolliert."],
+            "Schutzschicht und – falls geplant – Drainage vor dem Verfüllen kontrolliert (Drainage ersetzt keine Abdichtung)."],
   "tip": "Lassen Sie sich die Bewehrungsabnahme immer schriftlich bestätigen. Nach dem Betonieren ist nichts mehr zu sehen."},
  {"title": "Rohbau", "intro": "Kontrollieren Sie Maße und Öffnungen, solange Änderungen noch einfach möglich sind.",
   "items": ["Raummaße, Wandstärken und Raumhöhen stimmen mit dem Polierplan überein.",
@@ -418,7 +123,7 @@ KONTROLLE = [
             "Befestigung nach Herstellervorgabe, keine Montageschaum-Verklebung als alleinige Befestigung.",
             "Fensterbänke innen/außen mit Gefälle und dichten seitlichen Anschlüssen.",
             "Funktion geprüft: Öffnen, Kippen, Schließen, Dichtungen, Haustürschloss.",
-            "Schutzfolien und Abdeckungen bis zum Ende der Putzarbeiten."]},
+            "Schutzabdeckungen bis zum Ende der Putzarbeiten; Rahmen-Schutzfolien laut Hersteller rechtzeitig entfernen."]},
  {"title": "Elektro-Rohinstallation", "intro": "Vor dem Verputzen ist die letzte Chance für Änderungen ohne Stemmarbeiten.",
   "items": ["Alle Auslässe lt. Elektroplanung (Teil 2) vorhanden – Raum für Raum abhaken.",
             "Höhen von Steckdosen und Schaltern kontrolliert (Küche: über Arbeitsplatte, Bad: Schutzbereiche).",
@@ -441,13 +146,13 @@ KONTROLLE = [
             "Luftdichtheitsmessung (Blower-Door-Test) einplanen, solange Leckagen noch zugänglich sind – oft Voraussetzung für Förderungen.",
             "Putzoberflächen eben, Kanten gerade, keine Risse; Oberflächenqualität wie vereinbart.",
             "Estrich: Randdämmstreifen umlaufend, Trittschalldämmung lückenlos, Höhen gemessen.",
-            "Estrich nicht bei Frost einbringen; in den ersten Tagen vor Zugluft und direkter Sonne schützen.",
+            "Estrich nur bei mind. +5 °C (Luft und Untergrund) einbringen; danach laut Hersteller frostfrei halten, vor Zugluft und direkter Sonne schützen.",
             "Konsequent stoßlüften; Bautrockner nach Absprache.",
             "Bei Fußbodenheizung: Funktions- und Belegreifheizen nach Protokoll; Protokoll aufbewahren.",
             "Vor dem Belag: Belegreife durch CM-Messung des Bodenlegers bestätigen lassen."],
   "tip": "Zu frühes Verlegen auf feuchtem Estrich ist eine Hauptursache für gewölbte Parkettböden und lose Fliesen."},
  {"title": "Ausbau: Fliesen, Böden, Maler, Türen", "intro": "Optische Mängel sind jetzt leicht zu erkennen – prüfen Sie bei gutem Licht.",
-  "items": ["Fliesen: Fugenbild, Höhenversatz, Gefälle in der Dusche zum Ablauf, Abdichtung im Nassbereich vor dem Fliesen.",
+  "items": ["Fliesen: Fugenbild, Höhenversatz, Gefälle in der Dusche zum Ablauf, Verbundabdichtung im Nassbereich (ÖNORM B 3407) vor dem Fliesen.",
             "Silikonfugen sauber und vollständig (Wartungsfugen!).",
             "Parkett/Boden: Dehnfugen zu Wänden, Übergänge, keine Hohlstellen, Sockelleisten.",
             "Maler: gleichmäßige Deckung, keine Ansätze, Kanten sauber, Farbe lt. Bemusterung.",
@@ -462,8 +167,9 @@ KONTROLLE = [
             "Bepflanzung mit Abstand zu Gebäude, Leitungen und Nachbargrenze."]},
 ]
 ABNAHME_WISSEN = [
- ("p", "Mit der Abnahme bestätigen Sie, dass eine Leistung im Wesentlichen vertragsgemäß erbracht wurde. Ab der Übergabe läuft "
-       "in der Regel die Gewährleistungsfrist. Nehmen Sie sich Zeit und lassen Sie sich nicht drängen."),
+ ("p", "Mit der Übernahme (Abnahme) nehmen Sie eine Leistung als erbracht entgegen. Ab der Übergabe läuft in der Regel die "
+       "Gewährleistungsfrist; offensichtliche Mängel müssen Sie dabei rügen. Nehmen Sie sich Zeit und lassen Sie sich nicht drängen. "
+       "Ausführlich dazu: Kapitel 12."),
  ("h2", "Vorbereitung"),
  ("check", ["Termin bei Tageslicht vereinbaren; Taschenlampe, Wasserwaage, Maßband, Kamera und dieses Buch mitnehmen.",
             "Vertrag, Pläne, Baubeschreibung und Bemusterungsliste griffbereit haben.",
@@ -474,7 +180,7 @@ ABNAHME_WISSEN = [
             "Ein gemeinsames, von beiden Seiten unterschriebenes Protokoll anfertigen.",
             "Behebungsfrist für jeden Mangel vereinbaren.",
             "Unterlagen übernehmen: Bestandspläne, Prüfbefunde, Bedienungsanleitungen, Garantiescheine, Wartungshinweise.",
-            "Bei wesentlichen Mängeln, die die Benutzung beeinträchtigen, kann die Abnahme verweigert werden."]),
+            "Bei wesentlichen Mängeln kann die Übernahme verweigert werden (Voraussetzungen siehe Kapitel 12) – dann die Leistung nicht in Gebrauch nehmen."]),
  ("tip", "Unterschreiben Sie kein Protokoll mit dem Satz „mängelfrei übernommen“, wenn Ihnen Mängel aufgefallen sind. Lassen "
          "Sie diese Mängel ausdrücklich ins Protokoll schreiben."),
 ]
@@ -513,7 +219,7 @@ WARTUNG = [
     ("Sickerschacht / Drainage", "alle paar Jahre", "Fachfirma", "Funktion prüfen, ggf. spülen"),
 ]
 GLOSSAR = [
-    ("Abnahme", "Formelle Übernahme einer Bauleistung durch den Auftraggeber; meist Beginn der Gewährleistungsfrist."),
+    ("Abnahme / Übernahme", "Formelle Übernahme einer Bauleistung durch den Auftraggeber; meist Beginn der Gewährleistungsfrist."),
     ("Anrainer", "Nachbarn, die im Bauverfahren Parteistellung haben können."),
     ("Aufschließung", "Anbindung eines Grundstücks an Straße, Wasser, Kanal, Strom usw."),
     ("Baubewilligung", "Bescheid der Baubehörde, der ein Bauvorhaben erlaubt."),
@@ -529,7 +235,7 @@ GLOSSAR = [
     ("Energieausweis", "Dokument über die energetische Qualität eines Gebäudes (z. B. Heizwärmebedarf HWB)."),
     ("ESIS", "Europäisches Standardisiertes Merkblatt – Pflichtinformation der Bank zu einem Wohnkredit."),
     ("Flächenwidmungsplan", "Verordnung der Gemeinde, die festlegt, wie Flächen genutzt werden dürfen (z. B. Bauland, Grünland)."),
-    ("Fundamenterder", "Erdungsanlage im Fundament, vom Elektriker vor dem Betonieren eingelegt."),
+    ("Fundamenterder", "Erdungsanlage im Fundament nach OVE E 8014, vor dem Betonieren verlegt; bei gedämmter Bodenplatte als Ringerder im Erdreich."),
     ("Garantie", "Freiwillige Zusage eines Herstellers oder Unternehmers über die gesetzliche Gewährleistung hinaus."),
     ("Gewährleistung", "Gesetzliche Haftung für Mängel, die bei Übergabe vorhanden sind; bei Bauleistungen meist drei Jahre."),
     ("GISA", "Gewerbeinformationssystem Austria – öffentliche Abfrage von Gewerbeberechtigungen."),

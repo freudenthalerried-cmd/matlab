@@ -67,11 +67,11 @@ class Doc(BaseDocTemplate):
             if f.style.name == "h1":
                 self.section = txt
             # wiederholte Formularseiten nur einmal ins Inhaltsverzeichnis
-            key = txt.split(":")[0].split(" (")[0].split(" –")[0]
+            key = txt if txt.startswith(("Kapitel", "Anhang")) else txt.split(":")[0].split(" (")[0].split(" –")[0]
             seen = self.__dict__.setdefault("_toc_seen", set())
             if txt != "Inhalt" and (f.style.name == "part" or key not in seen):
                 seen.add(key)
-                self.notify("TOCEntry", (0 if f.style.name == "part" else 1, key if ":" in txt else txt, self.page))
+                self.notify("TOCEntry", (0 if f.style.name == "part" else 1, key, self.page))
 
     def handle_documentBegin(self):
         self._toc_seen = set()
@@ -276,7 +276,7 @@ def project():
                    [3.3, 1.5, 1.7, 1.6, 1.6], rowh=11 * mm, prefill=[[k, "", "", "", ""] for k in KOSTENBEREICHE]))
     st += [Spacer(1, 3 * mm), grid(["", "Budget €", "Auftrag/Angebot €", "Abgerechnet €", "Abweichung €"], 1,
                                     [3.3, 1.5, 1.7, 1.6, 1.6], rowh=11 * mm, prefill=[["<b>Gesamtkosten</b>", "", "", "", ""]])]
-    st += tip("Planen Sie eine Reserve von 10–15 % der Baukosten ein. Fast jedes Bauvorhaben hat unvorhergesehene Mehrkosten "
+    st += tip("Planen Sie eine Reserve von 10–15 % der Bauwerkskosten ein. Fast jedes Bauvorhaben hat unvorhergesehene Mehrkosten "
               "(Boden, Wetter, Änderungswünsche, Preissteigerungen).")
     st += [PageBreak()] + h1("Nebenkosten – Checkliste & Budget")
     st.append(P(NEBENKOSTEN_INTRO))
@@ -438,17 +438,24 @@ def archive():
     st += [PageBreak()] + h1("Begriffe von A bis Z")
     for k, v in GLOSSAR:
         st.append(P(f"<b>{k}</b> – {v}", "body"))
-    for i in range(7):
+    for i in range(7 + EXTRA_NOTES):
         st += [PageBreak()] + h1("Skizzen" if i < 3 else "Notizen")
         if i < 3: st.append(DotGrid(CW, H - M_TOP - M_BOT - 20 * mm))
         else: st += lines(29)
     return st
 
 
+EXTRA_NOTES = 0
+
+
 def build(out):
+    """Baut das Buch; bei ungerader Seitenzahl wird eine Notizseite ergänzt (KDP: gerade Seitenzahl)."""
+    global EXTRA_NOTES
     doc = Doc(out)
-    story = front() + knowledge() + project() + diary() + control() + archive()
-    doc.multiBuild(story)
+    doc.multiBuild(front() + knowledge() + project() + diary() + control() + archive())
+    if doc.page % 2:
+        EXTRA_NOTES += 1
+        return build(out)
     return doc.page
 
 

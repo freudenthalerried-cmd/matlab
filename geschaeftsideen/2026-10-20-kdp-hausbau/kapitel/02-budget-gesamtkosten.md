@@ -29,7 +29,7 @@ Zum Kaufpreis kommen die Erwerbsnebenkosten. Die Grunderwerbsteuer beträgt 3,5 
 
 ### Aufschließung
 
-Je nach Gemeinde und Bundesland verlangt die Gemeinde eine Aufschließungsabgabe oder einen ähnlich bezeichneten Beitrag für Straße und Infrastruktur. Dazu kommen die einmaligen Anschlussgebühren für Kanal und Wasser, die die Gemeinde in ihrer Gebührenordnung festlegt, sowie die Kosten für den Stromanschluss beim Netzbetreiber (Netzzutritts- und Netzbereitstellungsentgelt). Erfragen Sie diese Beträge vor dem Grundstückskauf schriftlich bei der Gemeinde und beim Netzbetreiber – sie hängen oft von Grundstücksgröße, Gebäudegröße oder Anschlussleistung ab.
+Je nach Gemeinde und Bundesland verlangt die Gemeinde eine Aufschließungsabgabe oder einen ähnlich bezeichneten Beitrag für Straße und Infrastruktur. Dazu kommen die einmaligen Anschlussgebühren für Kanal und Wasser, die die Gemeinde in ihrer Gebührenordnung festlegt, sowie die Kosten für den Stromanschluss beim Netzbetreiber. Bis Ende 2026 sind das das Netzzutritts- und das Netzbereitstellungsentgelt; für Anschlussverträge ab 1. Jänner 2027 tritt an ihre Stelle ein einheitliches Netzanschlussentgelt. Erfragen Sie diese Beträge vor dem Grundstückskauf schriftlich bei der Gemeinde und beim Netzbetreiber – sie hängen oft von Grundstücksgröße, Gebäudegröße oder Anschlussleistung ab.
 
 ### Bauwerk
 
@@ -47,7 +47,7 @@ Während der Bauzeit zahlen Sie häufig schon Zinsen auf die bereits ausbezahlte
 
 ### Reserve
 
-Planen Sie eine Reserve von **10 bis 15 % der Baukosten** fix ein – nicht als „wenn etwas übrig bleibt“, sondern als eigene Budgetposition. Bei Umbauten, Hanglagen oder schwierigen Böden darf es mehr sein. Die Reserve ist kein Spielgeld für Ausstattungs-Upgrades, sondern deckt Unvorhergesehenes: schlechter Boden, Wetter, Preissteigerungen, Fehler in der Planung.
+Planen Sie eine Reserve von **10 bis 15 % der Bauwerkskosten** (Rohbau, Technik, Ausbau) fix ein – nicht als „wenn etwas übrig bleibt“, sondern als eigene Budgetposition. Bei Umbauten, Hanglagen oder schwierigen Böden darf es mehr sein. Die Reserve ist kein Spielgeld für Ausstattungs-Upgrades, sondern deckt Unvorhergesehenes: schlechter Boden, Wetter, Preissteigerungen, Fehler in der Planung.
 
 ## Was können wir uns leisten?
 
@@ -59,7 +59,7 @@ Erstellen Sie eine ehrliche Haushaltsrechnung auf Basis der letzten zwölf Monat
 
 ### Orientierungswerte der Banken
 
-Bis Mitte 2025 schrieb die Kreditinstitute-Immobilienfinanzierungsmaßnahmen-Verordnung (KIM-VO) Obergrenzen für Wohnkredite vor: eine Beleihungsquote von höchstens 90 % – weil die Erwerbsnebenkosten nicht beliehen werden, bedeutete das in der Praxis rund 20 % Eigenmittel bezogen auf die Gesamtkosten, eine Kreditrate von höchstens 40 % des Nettoeinkommens und eine Laufzeit von höchstens 35 Jahren. Die Verordnung ist mit 30. Juni 2025 ausgelaufen; die Finanzmarktaufsicht erwartet aber weiterhin eine nachhaltige Kreditvergabe, und viele Banken orientieren sich weiterhin an diesen Werten. Planen Sie selbst eher vorsichtiger.
+Von August 2022 bis 30. Juni 2025 schrieb die Kreditinstitute-Immobilienfinanzierungsmaßnahmen-Verordnung (KIM-VO) Obergrenzen für Wohnkredite vor. Seither gilt ein Rundschreiben der Finanzmarktaufsicht mit denselben Richtwerten: eine Beleihungsquote von höchstens 90 %, eine Schuldendienstquote (alle Kreditraten zusammen) von höchstens 40 % des verfügbaren Haushaltsnettoeinkommens und eine Laufzeit von höchstens 35 Jahren. Das Rundschreiben ist kein Gesetz – Banken dürfen im Einzelfall abweichen, richten den Großteil ihrer Kredite aber danach aus. Weil Nebenkosten den Wert der Sicherheit nicht erhöhen, ergeben sich beim Kauf einer Immobilie mit rund 10 % Nebenkosten etwa 20 % Eigenmittel bezogen auf den Kaufpreis. Beim Hausbau hängt der nötige Anteil davon ab, wie hoch die Bank Grundstück und Gebäude bewertet. Planen Sie selbst eher vorsichtiger.
 
 > TIPP: Rechnen Sie Ihre Rate zusätzlich mit einem um 2 bis 3 Prozentpunkte höheren Zinssatz durch. Wenn Sie diese Rate nicht mehr leisten könnten, ist entweder der Kredit zu hoch oder ein langer Fixzinssatz besonders wichtig.
 
@@ -72,8 +72,8 @@ Ein Eigenheim ist mietfrei, aber nicht kostenlos. Rechnen Sie die laufenden Kost
 - Strom, Heizung bzw. Wärme, Warmwasser
 - Eigenheimversicherung (Gebäude, Haushalt, Haftpflicht)
 - Rauchfangkehrer, Wartung von Heizung, Lüftung und Photovoltaik
-- Internet, Rundfunk
-- Instandhaltungsrücklage: als Faustregel rund 1 % der Baukosten pro Jahr, damit Dach, Fassade, Fenster und Haustechnik in 20 bis 30 Jahren erneuert werden können
+- Internet, ORF-Beitrag (pro Hauptwohnsitz)
+- Instandhaltungsrücklage: als Faustregel rund 1 % (0,8–1,5 %) der Bauwerkskosten pro Jahr, damit Haustechnik (nach ca. 15–25 Jahren) sowie Fenster, Fassade und Dach (nach ca. 30–50 Jahren) erneuert werden können
 
 ## Wo sparen sinnvoll ist – und wo nie
 
@@ -110,7 +110,7 @@ Tragen Sie Ihre Werte ein. Den detaillierten Kostenplan führen Sie in Teil 2 di
 | + Einrichtung (Küche, Leuchten, Möbel) | |
 | + Außenanlagen | |
 | + Nebenleistungen (Gebühren, Versicherung, Finanzierung, Übergangsmiete) | |
-| + Reserve 10–15 % der Baukosten | |
+| + Reserve 10–15 % der Bauwerkskosten | |
 | **= Gesamtkosten** | |
 | – Eigenmittel | |
 | – Förderungen (nur fix zugesagte) | |
@@ -121,6 +121,6 @@ Tragen Sie Ihre Werte ein. Den detaillierten Kostenplan führen Sie in Teil 2 di
 - [ ] Alle zehn Kostenbereiche sind mit einem Betrag belegt – auch wenn es zunächst Schätzungen sind.
 - [ ] Alle Beträge sind brutto (inkl. USt).
 - [ ] Anschluss- und Aufschließungskosten sind bei Gemeinde und Netzbetreiber erfragt.
-- [ ] Eine Reserve von 10–15 % ist als eigene Position eingeplant.
+- [ ] Eine Reserve von 10–15 % der Bauwerkskosten ist als eigene Position eingeplant.
 - [ ] Die Haushaltsrechnung enthält die laufenden Hauskosten.
 - [ ] Die Kreditrate ist auch mit höherem Zinssatz leistbar.

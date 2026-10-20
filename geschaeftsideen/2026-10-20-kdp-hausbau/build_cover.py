@@ -67,8 +67,8 @@ c.rect(kx - 1.38 * inch, base + 3.2 * inch, 0.16 * inch, 0.15 * inch, stroke=1, 
 
 # Merkmale + Autor
 c.setFillColor(WHITE); c.setFont("R", 11.5)
-feats = ["Alle Bauphasen mit Checklisten", "Kostenplan nach ÖNORM B 1801-1", "160 Bautagebuch-Einträge",
-         "Abnahme, Mängel & Hausakte"]
+feats = ["Ratgeber in 14 Kapiteln", "7 Musterbriefe & Checklisten", "160 Bautagebuch-Einträge",
+         "Kostenplan, Abnahme & Hausakte"]
 y = 2.35 * inch
 for i, f in enumerate(feats):
     xx = fx + (i % 2) * fw / 2; yy = y - (i // 2) * 0.32 * inch
@@ -95,7 +95,8 @@ txt = [Paragraph("Bauen ohne böse Überraschungen.", h),
        Paragraph("<br/>Dieses Buch begleitet Bauherren in Österreich vom Grundstück bis zum Einzug – und darüber hinaus. "
                  "Es vereint Ratgeber, Planungswerkzeug und Bautagebuch in einem Band und hilft, Kosten im Griff zu "
                  "behalten, Fehler früh zu erkennen und im Streitfall Beweise in der Hand zu haben.", b)]
-for t in ["<b>Alle Phasen erklärt:</b> Grundstück, Finanzierung, Planung, Behörde, Vergabe, Bauablauf, Abnahme, Gewährleistung",
+for t in ["<b>Ratgeber in 14 Kapiteln:</b> Grundstück, Kauf, Finanzierung, Planung, Behörde, Verträge, Bauablauf Gewerk für Gewerk, Übernahme, Gewährleistung",
+          "<b>Musterbriefe:</b> Mängelrüge, Nachfrist, Nachtrag, Übernahme unter Vorbehalt u. v. m. – dazu Fragenkataloge und die 20 häufigsten Fehler",
           "<b>Speziell für Österreich:</b> Grunderwerbsteuer und Grundbuch, Bauarbeitenkoordinationsgesetz, ÖNORM B 1801-1 und "
           "B 2110, Baugesetze aller Bundesländer, Förderstellen",
           "<b>Kosten im Griff:</b> Kostenplan, Nebenkosten-Checkliste, Kreditvergleich, Rechnungs- und Zahlungsjournal",

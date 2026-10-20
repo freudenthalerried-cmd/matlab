@@ -30,7 +30,7 @@ Viele Gemeinden schließen beim Verkauf von Bauland Verträge, die eine **Bebauu
 
 ### Grundverkehr
 
-Der Erwerb von Grundstücken ist in den Grundverkehrsgesetzen der Länder geregelt. Je nach Bundesland und Grundstück kann eine Genehmigung der Grundverkehrsbehörde oder eine Erklärung nötig sein – etwa bei land- und forstwirtschaftlichen Flächen, für Personen ohne EU- oder EWR-Staatsbürgerschaft oder in Ländern mit strengen Regeln gegen Freizeitwohnsitze. Ihr Vertragserrichter klärt das; fragen Sie trotzdem früh nach.
+Der Erwerb von Grundstücken ist in den Grundverkehrsgesetzen der Länder geregelt. Je nach Bundesland und Grundstück kann eine Genehmigung der Grundverkehrsbehörde oder eine Erklärung nötig sein – etwa bei land- und forstwirtschaftlichen Flächen, für ausländische Personen (EU- und EWR-Bürger sind meist gleichgestellt, je nach Land auch weitere Staatsangehörige aufgrund von Staatsverträgen) oder in Ländern mit strengen Regeln gegen Freizeitwohnsitze. Ihr Vertragserrichter klärt das; fragen Sie trotzdem früh nach.
 
 ## Was steht im Grundbuch?
 
@@ -42,20 +42,22 @@ Ein aktueller Grundbuchauszug zeigt die rechtliche Situation des Grundstücks. E
 | B-Blatt (Eigentumsblatt) | Eigentümer und deren Anteile | Ist der Verkäufer wirklich (alleiniger) Eigentümer? |
 | C-Blatt (Lastenblatt) | Belastungen: Pfandrechte, Dienstbarkeiten, Vorkaufsrechte, Belastungs- und Veräußerungsverbote | Werden Pfandrechte gelöscht? Welche Dienstbarkeiten bleiben? |
 
-**Dienstbarkeiten (Servitute)** bleiben auch nach dem Verkauf bestehen. Ein Leitungsrecht kann bedeuten, dass Sie über einer Leitung nicht bauen dürfen; ein Wegerecht, dass der Nachbar über Ihr Grundstück fahren darf. Lassen Sie sich jede Eintragung im C-Blatt erklären.
+Im C-Blatt eingetragene **Dienstbarkeiten (Servitute)** bleiben auch nach dem Verkauf bestehen. Ein Leitungsrecht kann bedeuten, dass Sie über einer Leitung nicht bauen dürfen; ein Wegerecht, dass der Nachbar über Ihr Grundstück fahren darf. Lassen Sie sich jede Eintragung im C-Blatt erklären.
+
+> ACHTUNG: Auch nicht im Grundbuch eingetragene, aber offenkundige Dienstbarkeiten – etwa ein sichtbar benutzter Weg oder Leitungsschächte – können nach der Rechtsprechung gegen Sie wirken. Achten Sie bei der Besichtigung auf solche Anzeichen und fragen Sie den Verkäufer ausdrücklich danach.
 
 ## Gefahren und Umwelt
 
 ### Naturgefahren
 
-- [ ] **Gefahrenzonenpläne** der Wildbach- und Lawinenverbauung und der Bundeswasserbauverwaltung einsehen (Gemeinde oder Geoinformationssystem des Landes). In roten Zonen ist eine Bebauung in der Regel nicht möglich, in gelben Zonen sind besondere Schutzmaßnahmen nötig.
+- [ ] **Gefahrenzonenpläne** der Wildbach- und Lawinenverbauung und der Bundeswasserbauverwaltung einsehen (Gemeinde oder Geoinformationssystem des Landes). In roten Zonen ist eine Bebauung in der Regel nicht möglich, in gelben Zonen meist nur mit Auflagen bzw. Schutzmaßnahmen. Achten Sie auch auf rot-gelbe Abfluss- und Retentionsbereiche, schraffierte Restrisikobereiche hinter Schutzbauten sowie blaue, braune (z. B. Rutschung, Steinschlag) und violette Bereiche. Gefahrenzonenpläne sind Fachgutachten; rechtlich wirksam werden sie über Raumordnung und Baurecht der Länder.
 - [ ] **Hochwasser und Starkregen:** Die Plattform HORA (hora.gv.at) zeigt Hochwasser-Gefährdungen und Hinweise auf Oberflächenabfluss bei Starkregen.
 - [ ] **Rutschungen, Steinschlag, Hangwasser:** besonders bei Hanglagen das Geoinformationssystem des Landes und ortskundige Nachbarn befragen.
 - [ ] **Radon:** Prüfen, ob die Gemeinde in einem Radonschutz- oder Radonvorsorgegebiet liegt (Informationen unter radon.gv.at). Dann sind beim Neubau bauliche Schutzmaßnahmen vorzusehen.
 
-### Altlasten und Verdachtsflächen
+### Altlasten
 
-Das Umweltbundesamt führt den Altlastenatlas und den Verdachtsflächenkataster. Ehemalige Deponien, Gewerbe- oder Tankstellenflächen können verunreinigt sein. Eine Sanierung kann extrem teuer werden. Fragen Sie auch die Gemeinde und den Verkäufer nach der früheren Nutzung und lassen Sie sich im Kaufvertrag zusichern, dass dem Verkäufer keine Kontaminationen bekannt sind.
+Das Umweltbundesamt führt im Auftrag des Bundes das Altlastenportal (altlasten.gv.at) mit dem Altlastenatlas und einer Flächenabfrage. Den früheren Verdachtsflächenkataster gibt es seit 2025 nicht mehr. Fragen Sie zusätzlich beim Amt der Landesregierung nach, denn die Länder erheben Altablagerungen und Altstandorte. Ehemalige Deponien, Gewerbe- oder Tankstellenflächen können verunreinigt sein. Eine Sanierung kann extrem teuer werden. Fragen Sie auch die Gemeinde und den Verkäufer nach der früheren Nutzung und lassen Sie sich im Kaufvertrag zusichern, dass dem Verkäufer keine Kontaminationen bekannt sind.
 
 ## Technische Prüfung
 
@@ -80,7 +82,7 @@ Viele Gemeinden verlangen, dass Regenwasser auf dem eigenen Grundstück versicke
 
 ### Grenzen und Vermessung
 
-Prüfen Sie, ob das Grundstück im **Grenzkataster** oder nur im Grundsteuerkataster eingetragen ist. Beim Grenzkataster sind die Grenzen rechtsverbindlich festgelegt. Beim Grundsteuerkataster dient die Katastermappe nur als Orientierung – die tatsächlichen Grenzen können abweichen. Lassen Sie im Zweifel die Grenzpunkte von einem Vermesser (Ingenieurkonsulent für Vermessungswesen) kennzeichnen, bevor Sie planen.
+Prüfen Sie, ob das Grundstück im **Grenzkataster** oder nur im Grundsteuerkataster eingetragen ist. Beim Grenzkataster sind die Grenzen rechtsverbindlich festgelegt. Beim Grundsteuerkataster dient die Katastermappe nur als Orientierung – die tatsächlichen Grenzen können abweichen. Lassen Sie im Zweifel die Grenzen von einem Ingenieurkonsulenten für Vermessungswesen ermitteln und kennzeichnen, bevor Sie planen. Bei Grundstücken im Grundsteuerkataster ist das nur eine Rekonstruktion nach der Mappe – Rechtssicherheit bringt erst eine Grenzverhandlung mit Zustimmung der Nachbarn und die Umwandlung in den Grenzkataster.
 
 ## Lage und Umgebung
 
@@ -112,7 +114,7 @@ Ein Termin beim Bauamt ist kostenlos oder kostet wenig – und liefert die wicht
 
 - [ ] Widmung, Bebauungsbestimmungen und Gemeinde-Verträge sind geklärt.
 - [ ] Ein aktueller Grundbuchauszug liegt vor, alle Eintragungen sind verstanden.
-- [ ] Gefahrenzonen, Hochwasser, Radon und Altlasten sind geprüft.
+- [ ] Gefahrenzonen, Hochwasser, Radon und Altlasten (altlasten.gv.at, Land) sind geprüft.
 - [ ] Der Boden ist untersucht oder das Risiko im Vertrag geregelt.
 - [ ] Aufschließung und Anschlusskosten sind schriftlich bestätigt.
 - [ ] Eine Bebauungsstudie zeigt, dass das gewünschte Haus auf das Grundstück passt.
