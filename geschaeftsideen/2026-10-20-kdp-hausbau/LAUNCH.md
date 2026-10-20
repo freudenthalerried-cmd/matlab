@@ -18,7 +18,7 @@
   - Elektroplanung für 20 Räume samt „häufig vergessen“-Liste
 - **Teil 3 – Bautagebuch:** 160 Tageseinträge.
 - **Teil 4 – Kontrolle & Abnahme:** 12 Besprechungsprotokolle, 9 Kontroll-Checklisten je Gewerk, Abnahme-Leitfaden, 8 Abnahmeprotokolle, 6 Seiten Mängelliste.
-- **Teil 5 – Hausakte & Wartung:** Liste mit 22 Unterlagen, Gewährleistungsübersicht, Wartungsplan mit 14 Positionen, Wartungsnachweis, Zählerstände, Glossar mit 35 Begriffen, Skizzen- und Notizseiten.
+- **Teil 5 – Hausakte & Wartung:** Liste mit 22 Unterlagen, Gewährleistungsübersicht, Wartungsplan mit 14 Positionen, Wartungsnachweis, Zählerstände, Glossar mit 34 Begriffen, Skizzen- und Notizseiten.
 
 ## Fakten-Check
 Ein eigener Recherche-Durchgang hat 18 rechtliche Kernaussagen gegen Quellen geprüft (BMF/USP, oesterreich.gv.at, WKO, AK, OIB, Austrian Standards, BMLUK). Ergebnis:
