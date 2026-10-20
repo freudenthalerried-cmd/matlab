@@ -73,7 +73,7 @@ Ein Eigenheim ist mietfrei, aber nicht kostenlos. Rechnen Sie die laufenden Kost
 - Eigenheimversicherung (Gebäude, Haushalt, Haftpflicht)
 - Rauchfangkehrer, Wartung von Heizung, Lüftung und Photovoltaik
 - Internet, ORF-Beitrag (pro Hauptwohnsitz)
-- Instandhaltungsrücklage: als Faustregel rund 1 % (0,8–1,5 %) der Bauwerkskosten pro Jahr, damit Haustechnik (nach ca. 15–25 Jahren) sowie Fenster, Fassade und Dach (nach ca. 30–50 Jahren) erneuert werden können
+- Instandhaltungsrücklage: als Faustregel rund 1 % (0,8–1,5 %) der Bauwerkskosten pro Jahr, damit Haustechnik, Fenster, Fassade und Dach nach Ablauf ihrer Nutzungsdauer erneuert werden können (Richtwerte in Kapitel 14)
 
 ## Wo sparen sinnvoll ist – und wo nie
 

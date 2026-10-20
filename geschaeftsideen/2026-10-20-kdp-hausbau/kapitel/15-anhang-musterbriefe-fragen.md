@@ -2,7 +2,7 @@
 
 ## So verwenden Sie die Musterbriefe
 
-Die folgenden Vorlagen helfen Ihnen, wichtige Mitteilungen klar, sachlich und nachweisbar zu formulieren. Passen Sie Namen, Daten und Inhalte an Ihren Fall an und streichen Sie, was nicht zutrifft. Senden Sie wichtige Briefe per E-Mail mit Lesebestätigung **und** zusätzlich eingeschrieben, wenn es um Fristen geht. Bewahren Sie Kopien und Zustellnachweise in der Hausakte auf.
+Die folgenden Vorlagen helfen Ihnen, wichtige Mitteilungen klar, sachlich und nachweisbar zu formulieren. Passen Sie Namen, Daten und Inhalte an Ihren Fall an und streichen Sie, was nicht zutrifft. Senden Sie wichtige Briefe per E-Mail **und** zusätzlich eingeschrieben (bei wichtigen Fristen mit Rückschein). Ein Einschreiben beweist den Zugang, aber nicht den Inhalt – bewahren Sie deshalb eine Kopie des Inhalts und den Zustellnachweis in der Hausakte auf. Wichtig: Ein Brief hält die Verjährung nicht auf. Gewährleistungsansprüche müssen spätestens drei Monate nach Ablauf der Gewährleistungsfrist gerichtlich geltend gemacht oder durch einen schriftlichen Verjährungsverzicht des Unternehmens gesichert werden.
 
 > ACHTUNG: Die Musterbriefe ersetzen keine Rechtsberatung. Wenn hohe Beträge im Spiel sind, Fristen ablaufen oder die Gegenseite einen Anwalt einschaltet, lassen Sie sich beraten, bevor Sie schreiben.
 
@@ -54,10 +54,12 @@ Antwort erhalten.
 
 Ich setze Ihnen hiermit eine letzte Frist zur Behebung bis [Datum].
 
-Sollten die Mängel bis dahin nicht behoben sein, werde ich die mir zustehenden Rechte geltend
-machen und mir insbesondere Preisminderung, die Behebung durch ein anderes Unternehmen auf Ihre
-Kosten sowie Schadenersatz vorbehalten. Bis zur Behebung behalte ich mir vor, offene Zahlungen
-zurückzubehalten.
+Sollten die Mängel bis dahin nicht behoben sein, werde ich sie durch ein anderes Unternehmen
+beheben lassen und die Kosten als Schadenersatz (§ 933a ABGB) von Ihnen fordern bzw. mit Ihrem
+Werklohn verrechnen. Preisminderung und weitergehender Schadenersatz bleiben vorbehalten.
+
+Bis zur ordnungsgemäßen Behebung halte ich den offenen Werklohn [ggf. in Höhe von ___ €]
+zurück (§ 1052 ABGB).
 
 Mit freundlichen Grüßen
 [Unterschrift]
@@ -101,7 +103,7 @@ Mit freundlichen Grüßen
 [Name]
 ```
 
-## Musterbrief 5: Regieberichte und Aufmaß anfordern
+## Musterbrief 5: Regieberichte und Ausmaß anfordern
 
 ```brief
 Betreff: Bauvorhaben [Adresse] – Regieberichte / Aufmaß zu Ihrer Rechnung Nr. [__]
@@ -111,7 +113,7 @@ Sehr geehrte Damen und Herren,
 zur Prüfung Ihrer Rechnung Nr. [__] vom [Datum] ersuche ich um Übermittlung folgender Unterlagen:
 
 - die von mir bzw. meiner Bauaufsicht abgezeichneten Regieberichte zu den Positionen [__]
-- das Aufmaß bzw. die Mengenermittlung zu den Positionen [__]
+- die Ausmaßfeststellung (Aufmaß) bzw. Mengenermittlung zu den Positionen [__]
 
 Bis zum Eingang der Unterlagen kann ich die betreffenden Positionen nicht prüfen. Den unstrittigen
 Betrag von [__] € überweise ich fristgerecht.
@@ -120,7 +122,7 @@ Mit freundlichen Grüßen
 [Name]
 ```
 
-## Musterbrief 6: Abnahme unter Vorbehalt bzw. Verweigerung
+## Musterbrief 6: Übernahme unter Vorbehalt bzw. Verweigerung der Übernahme
 
 ```brief
 Betreff: Bauvorhaben [Adresse] – Übernahme [Gewerk] am [Datum]
@@ -132,17 +134,18 @@ bei der gemeinsamen Begehung am [Datum] wurden die im Protokoll angeführten Mä
 [Variante A] Ich übernehme die Leistung unter dem ausdrücklichen Vorbehalt dieser Mängel und ersuche
 um Behebung bis [Datum].
 
-[Variante B] Wegen der wesentlichen Mängel [kurz bezeichnen], die eine bestimmungsgemäße Nutzung
+[Variante B – nur nach Beratung; die Leistung dann nicht in Gebrauch nehmen, siehe Kapitel 12]
+Wegen der wesentlichen Mängel [kurz bezeichnen], die eine bestimmungsgemäße Nutzung
 erheblich beeinträchtigen, verweigere ich die Übernahme. Bitte teilen Sie mir einen neuen Termin
 nach Behebung der Mängel mit.
 
 Mit freundlichen Grüßen
 [Name]
 
-Beilage: Begehungsprotokoll vom [Datum]
+Beilage: Übernahmeprotokoll vom [Datum]
 ```
 
-## Musterbrief 7: Mitteilung einer Behinderung bzw. eines Terminverzugs
+## Musterbrief 7: Mitteilung eines Terminverzugs
 
 ```brief
 Betreff: Bauvorhaben [Adresse] – Terminverzug [Gewerk]
@@ -155,8 +158,10 @@ sollen. Am [Datum] waren die Arbeiten noch nicht abgeschlossen; derzeit ist [Sta
 Dadurch können die nachfolgenden Arbeiten [Gewerk] nicht wie geplant beginnen. Ich ersuche Sie,
 mir bis [Datum] schriftlich mitzuteilen, bis wann Sie die Arbeiten fertigstellen.
 
-Ansprüche aus dem Verzug, insbesondere eine vereinbarte Vertragsstrafe und Schadenersatz,
-behalte ich mir ausdrücklich vor.
+Ansprüche aus dem Verzug, insbesondere eine vereinbarte Pönale (Vertragsstrafe) und – soweit
+vertraglich zulässig – darüber hinausgehender Schadenersatz, behalte ich mir vor. Sollten die
+Arbeiten nicht bis [angemessene Nachfrist] fertiggestellt sein, behalte ich mir den Rücktritt
+vom Vertrag hinsichtlich der ausstehenden Leistungen vor (§ 918 ABGB).
 
 Mit freundlichen Grüßen
 [Name]

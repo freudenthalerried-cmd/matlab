@@ -1,7 +1,7 @@
 # Buch „Unser Hausbau“ auf Amazon KDP veröffentlichen
 
 **Budget-Klasse:** Spielgeld (0 € Investition)
-**Dateien:** `out/innenteil.pdf` (A4, 190 Seiten, s/w, Schriften eingebettet) und `out/umschlag.pdf` (Umschlag mit Beschnitt, Buchrücken 0,428")
+**Dateien:** `out/innenteil.pdf` (A4, 230 Seiten, s/w, Schriften eingebettet) und `out/umschlag.pdf` (Umschlag mit Beschnitt, Buchrücken 0,518")
 **Neu erzeugen:** `python3 build_book.py out` und danach `python3 build_cover.py out <Seitenzahl>`
 
 ## Inhalt
