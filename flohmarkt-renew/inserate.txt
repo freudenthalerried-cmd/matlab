@@ -1,0 +1,9 @@
+# Eine Inserat-ID pro Zeile. Text nach "#" wird ignoriert.
+# Stand: Mails vom 2026-07-19 an office365@aon.at ("Ihr Inserat laeuft morgen ab!")
+# Verlängerbar laut Mail noch bis 2026-07-28.
+
+5473679   # Lager Container - Enns
+5473680   # Lager Container - Enns
+5472724   # Baumeisterkonzession als gewerberechtlicher Geschäftsführer
+5470239   # Baumeisterkonzession als gewerberechtlicher Geschäftsführer
+5470240   # Baumeisterkonzession als gewerberechtlicher Geschäftsführer
