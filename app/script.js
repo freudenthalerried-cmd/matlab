@@ -20,14 +20,26 @@
   const infoVerteiler = document.getElementById('info-verteiler');
   const infoProtokolle = document.getElementById('info-protokolle');
   const infoPosition = document.getElementById('info-position');
+  const infoAdresse = document.getElementById('info-adresse');
+  const infoGeocode = document.getElementById('info-geocode');
+  const infoGeoStatus = document.getElementById('info-geo-status');
+  const standortAdresse = document.getElementById('standort-adresse');
 
   const form = document.getElementById('chat-form');
   const input = document.getElementById('chat-input');
   const sendButton = document.getElementById('send-button');
   const messages = document.getElementById('messages');
   const ortInput = document.getElementById('ort-input');
-  const kiPanel = document.getElementById('ki-vorschlaege');
-  const kiChips = document.getElementById('ki-chips');
+  const kiFenster = document.getElementById('ki-fenster');
+  const kiEingabe = document.getElementById('ki-eingabe');
+  const kiBild = document.getElementById('ki-bild');
+  const kiKeinBild = document.getElementById('ki-kein-bild');
+  const kiQuelle = document.getElementById('ki-quelle');
+  const kiSaetze = document.getElementById('ki-saetze');
+  const kiVorschau = document.getElementById('ki-vorschau');
+  const kiButton = document.getElementById('ki-button');
+  const kiTextButton = document.getElementById('ki-text-button');
+  const kiSchliessen = document.getElementById('ki-schliessen');
   const fotoInput = document.getElementById('foto-input');
   const galerieInput = document.getElementById('galerie-input');
   const fotoHinweis = document.getElementById('foto-hinweis');
@@ -40,8 +52,6 @@
   const fotoPreview = document.getElementById('foto-preview');
   const fotoPreviewImg = document.getElementById('foto-preview-img');
   const fotoRemove = document.getElementById('foto-remove');
-  const fotoKategorien = document.getElementById('foto-kategorien');
-  const fotoKategorienChips = document.getElementById('foto-kategorien-chips');
   const bausteineButton = document.getElementById('bausteine-button');
   const bausteinePanel = document.getElementById('bausteine-panel');
   const bausteineClose = document.getElementById('bausteine-close');
@@ -68,6 +78,7 @@
   const standortSchliessen = document.getElementById('standort-schliessen');
 
   let aktuellesFoto = null;
+  let kiNurText = false;      // Vorschaufenster im reinen Text-Modus (ohne Foto)
   let bearbeitetIndex = null;   // Index im gefilterten Eintrags-Array
   let eingefuegt = [];
   let eintragTyp = 'hinweis';
@@ -98,6 +109,7 @@
   let detailStufe = ladeJson('bp_detail', 1);
   let verteiler = ladeJson('bp_verteiler', {});      // Baustellen-ID -> Verteiler-Text
   let standorte = ladeJson('bp_standorte', {});      // Baustellen-ID -> {lat, lng}
+  let adressen = ladeJson('bp_adressen', {});        // Baustellen-ID -> Adresstext
   let eigene = ladeJson('bp_baustellen_eigene', []); // selbst angelegte Baustellen
   let gruppenOffen = ladeJson('bp_gruppen_offen', { 'SEENTOUR Gmunden': true });
   let koepfe = ladeJson('bp_koepfe', {}); // "<BaustellenID>:<Nr>" -> Kopfdaten
@@ -121,6 +133,49 @@
   function score(b) {
     return b.freq + (nutzung[b.id] || 0) * 2;
   }
+
+  // ---------- Ebenen: Zurueck-Taste geht eine Ebene zurueck ----------
+
+  // Jede geoeffnete Ebene (Protokoll, Panel, Fenster) legt einen Eintrag in der
+  // Browser-History an. Die Zurueck-Taste des Handys schliesst dann die oberste
+  // Ebene, statt die App zu verlassen. Erst auf der Baustellen-Liste beendet
+  // Zurueck die App. Auch die Knoepfe in der App gehen ueber ebeneVerlassen(),
+  // damit History und Ansicht nicht auseinanderlaufen.
+
+  const ebenen = [];   // offene Ebenen, unterste zuerst
+
+  function ebeneOffen(name) {
+    return ebenen.some(function (e) { return e.name === name; });
+  }
+
+  function ebeneOeffnen(name, schliessen) {
+    if (ebeneOffen(name)) return;
+    ebenen.push({ name: name, schliessen: schliessen });
+    history.pushState({ bp: ebenen.length }, '');
+  }
+
+  // Schliesst die Ebene ueber die History, damit ihr Eintrag mitgeht.
+  // Die eigentliche Arbeit macht der popstate-Handler.
+  function ebeneVerlassen(name) {
+    if (ebeneOffen(name)) history.back();
+  }
+
+  // Oeffnen und Schliessen in einem – fuer Knoepfe, die ein Panel umschalten.
+  function ebeneUmschalten(name, oeffnen, schliessen) {
+    if (ebeneOffen(name)) {
+      ebeneVerlassen(name);
+    } else {
+      oeffnen();
+      ebeneOeffnen(name, schliessen);
+    }
+  }
+
+  window.addEventListener('popstate', function () {
+    const e = ebenen.pop();
+    if (e) e.schliessen();
+  });
+
+  history.replaceState({ bp: 0 }, '');
 
   // ---------- Baustellen-Daten ----------
 
@@ -210,10 +265,13 @@
         neuGruppe.appendChild(o);
       });
       neuName.focus();
+      ebeneOeffnen('neu', function () { neuForm.hidden = true; });
+    } else {
+      ebeneVerlassen('neu');
     }
   });
 
-  neuAbbrechen.addEventListener('click', function () { neuForm.hidden = true; });
+  neuAbbrechen.addEventListener('click', function () { ebeneVerlassen('neu'); });
 
   neuForm.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -232,14 +290,16 @@
     speichereJson('bp_gruppen_offen', gruppenOffen);
     neuName.value = '';
     neuOrt.value = '';
-    neuForm.hidden = true;
+    ebeneVerlassen('neu');
     renderGruppen();
   });
 
   listeDrucken.addEventListener('click', function () { window.print(); });
   listeBausteine.addEventListener('click', function () {
-    bausteinePanel.hidden = false;
-    renderBausteine();
+    ebeneUmschalten('bausteine', function () {
+      bausteinePanel.hidden = false;
+      renderBausteine();
+    }, function () { bausteinePanel.hidden = true; });
   });
 
   // ---------- Ansicht 2: Protokoll ----------
@@ -304,6 +364,7 @@
     infoPanel.hidden = true;
     standortBanner.hidden = true;
     renderAlleEintraege();
+    ebeneOeffnen('protokoll', zurueckZurListe);
   }
 
   function zurueckZurListe() {
@@ -315,11 +376,15 @@
     renderGruppen();
   }
 
-  zurueckButton.addEventListener('click', zurueckZurListe);
+  zurueckButton.addEventListener('click', function () {
+    ebeneVerlassen('protokoll');
+  });
 
   infoButton.addEventListener('click', function () {
-    infoPanel.hidden = !infoPanel.hidden;
-    if (!infoPanel.hidden) renderInfo();
+    ebeneUmschalten('info', function () {
+      infoPanel.hidden = false;
+      renderInfo();
+    }, function () { infoPanel.hidden = true; });
   });
 
   function renderInfo() {
@@ -354,6 +419,16 @@
     infoPosition.textContent = standorte[bs.id]
       ? 'Position gespeichert – neu setzen'
       : 'Aktuelle Position speichern';
+    infoAdresse.value = adresseFuer(bs);
+    infoGeoStatus.textContent = koordinatenFuer(bs)
+      ? 'Koordinaten vorhanden – Baustelle wird per GPS erkannt.'
+      : 'Noch keine Koordinaten – Adresse eintragen und ermitteln, oder vor Ort die Position speichern.';
+  }
+
+  function adresseFuer(bs) {
+    if (adressen[bs.id]) return adressen[bs.id];
+    // Vorbelegung aus den Stammdaten, damit das Feld nicht leer bleibt
+    return [bs.name, bs.ort].filter(Boolean).join(', ');
   }
 
   infoVerteiler.addEventListener('change', function () {
@@ -361,6 +436,50 @@
     if (v) verteiler[aktuelleBaustelle.id] = v;
     else delete verteiler[aktuelleBaustelle.id];
     speichereJson('bp_verteiler', verteiler);
+  });
+
+  infoAdresse.addEventListener('change', function () {
+    if (!aktuelleBaustelle) return;
+    const a = infoAdresse.value.trim();
+    if (a) adressen[aktuelleBaustelle.id] = a;
+    else delete adressen[aktuelleBaustelle.id];
+    speichereJson('bp_adressen', adressen);
+  });
+
+  // Adresse -> Koordinaten uber OpenStreetMap (Nominatim). Wird nur auf
+  // Knopfdruck aufgerufen; das Ergebnis bleibt dauerhaft gespeichert, damit
+  // die Erkennung danach auch ohne Netz funktioniert.
+  infoGeocode.addEventListener('click', function () {
+    if (!aktuelleBaustelle) return;
+    const bs = aktuelleBaustelle;
+    const adresse = infoAdresse.value.trim();
+    if (!adresse) {
+      infoGeoStatus.textContent = 'Bitte zuerst eine Adresse eintragen.';
+      return;
+    }
+    adressen[bs.id] = adresse;
+    speichereJson('bp_adressen', adressen);
+
+    infoGeocode.disabled = true;
+    infoGeoStatus.textContent = 'Adresse wird gesucht …';
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=at&q=' +
+      encodeURIComponent(adresse);
+    fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.status)); })
+      .then(function (daten) {
+        if (!daten.length) {
+          infoGeoStatus.textContent = 'Adresse nicht gefunden – bitte genauer angeben (Straße, PLZ, Ort).';
+          return;
+        }
+        standorte[bs.id] = { lat: parseFloat(daten[0].lat), lng: parseFloat(daten[0].lon) };
+        speichereJson('bp_standorte', standorte);
+        infoGeoStatus.textContent = 'Koordinaten gespeichert: ' + (daten[0].display_name || adresse);
+        infoPosition.textContent = 'Position gespeichert – neu setzen';
+      })
+      .catch(function () {
+        infoGeoStatus.textContent = 'Adresssuche nicht erreichbar – vor Ort die Position speichern.';
+      })
+      .then(function () { infoGeocode.disabled = false; });
   });
 
   infoPosition.addEventListener('click', function () {
@@ -386,10 +505,10 @@
   }
 
   detailMinus.addEventListener('click', function () {
-    if (detailStufe > 0) { detailStufe--; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+    if (detailStufe > 0) { detailStufe--; speichereJson('bp_detail', detailStufe); rendereKiSaetze(); }
   });
   detailPlus.addEventListener('click', function () {
-    if (detailStufe < 2) { detailStufe++; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+    if (detailStufe < 2) { detailStufe++; speichereJson('bp_detail', detailStufe); rendereKiSaetze(); }
   });
 
   function bausteinText(b) {
@@ -445,7 +564,6 @@
       autoGrow();
       updateSendState();
     }
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
   }
 
   typHinweisKnopf.addEventListener('click', function () { setzeTyp('hinweis'); });
@@ -533,34 +651,99 @@
     return treffer.slice(0, 3).map(function (x) { return x.baustein; });
   }
 
-  function chipFuer(b, onClick) {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip';
+  // Ohne Text im Eingabefeld wird das Foto ausgewertet: die gebrauchlichsten
+  // Sicherheitsbausteine, damit auch ohne Tippen ein Vorschlag dasteht.
+  function fotoVorschlaege() {
+    return sicherheitsBausteine()
+      .slice()
+      .sort(function (a, b) { return score(b) - score(a); })
+      .slice(0, 3);
+  }
+
+  // Ein Vorschlag ist hochstens drei Satze lang.
+  function dreiSaetze(text) {
+    const saetze = String(text || '').trim().match(/[^.!?]+[.!?]*/g) || [];
+    return saetze
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(' ');
+  }
+
+  function satzZeile(b) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'ki-satz';
     if (b.icon && ICONS[b.icon]) {
       const span = document.createElement('span');
       span.className = 'chip-icon';
       span.innerHTML = ICONS[b.icon];
-      chip.appendChild(span);
+      knopf.appendChild(span);
     }
-    chip.appendChild(document.createTextNode(b.titel));
-    chip.title = varianten[b.id] || b.text;
-    chip.addEventListener('click', onClick);
-    return chip;
+    knopf.appendChild(document.createTextNode(dreiSaetze(bausteinText(b))));
+    knopf.addEventListener('click', function () {
+      fuegeTextEin(b);
+      ebeneVerlassen('ki');
+    });
+    return knopf;
   }
 
-  function zeigeVorschlaege(liste) {
-    kiChips.innerHTML = '';
-    if (!liste.length) {
-      kiPanel.hidden = true;
-      return;
+  // Steht Text im Eingabefeld, wird er fur die Vorschlage verwendet;
+  // ist es leer, wird das Foto analysiert. Im Text-Modus bleibt das Foto aussen vor.
+  function rendereKiSaetze() {
+    const text = kiEingabe.value.trim();
+    const ausText = text.length > 0;
+    const foto = !kiNurText && aktuellesFoto;
+    const liste = ausText ? vorschlaegeFuer(text) : (foto ? fotoVorschlaege() : []);
+
+    if (ausText) {
+      kiQuelle.textContent = 'KI-Vorschlag aus deinem Text:';
+    } else if (foto) {
+      kiQuelle.textContent = 'KI-Vorschlag aus dem Foto:';
+    } else if (kiNurText) {
+      kiQuelle.textContent = 'Bitte Text eingeben.';
+    } else {
+      kiQuelle.textContent = 'Bitte Text eingeben oder ein Foto aufnehmen.';
     }
-    liste.forEach(function (b) {
-      kiChips.appendChild(chipFuer(b, function () { fuegeTextEin(b); }));
+
+    kiSaetze.innerHTML = '';
+    liste.slice(0, 3).forEach(function (b) {
+      kiSaetze.appendChild(satzZeile(b));
     });
     zeigeDetailStufe();
-    kiPanel.hidden = false;
   }
+
+  // nurText = true: Fenster ohne Foto-Vorschau, Vorschlage nur aus dem Eingabefeld.
+  function oeffneKiFenster(nurText) {
+    kiNurText = !!nurText;
+    kiVorschau.hidden = kiNurText;
+    kiBild.src = kiNurText ? '' : (aktuellesFoto || '');
+    kiBild.hidden = kiNurText || !aktuellesFoto;
+    kiKeinBild.hidden = kiNurText || !!aktuellesFoto;
+    kiEingabe.placeholder = kiNurText
+      ? 'Text eingeben'
+      : 'Text eingeben \u2013 leer lassen, dann wird das Foto analysiert';
+    kiEingabe.value = '';
+    rendereKiSaetze();
+    kiFenster.hidden = false;
+    kiEingabe.focus();
+    ebeneOeffnen('ki', schliesseKiFenster);
+  }
+
+  function schliesseKiFenster() {
+    kiFenster.hidden = true;
+  }
+
+  kiEingabe.addEventListener('input', rendereKiSaetze);
+  kiButton.addEventListener('click', function () { oeffneKiFenster(false); });
+  kiTextButton.addEventListener('click', function () { oeffneKiFenster(true); });
+  kiSchliessen.addEventListener('click', function () { ebeneVerlassen('ki'); });
+  kiFenster.addEventListener('click', function (event) {
+    if (event.target === kiFenster) ebeneVerlassen('ki');
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !kiFenster.hidden) ebeneVerlassen('ki');
+  });
 
   function fuegeTextEin(b) {
     merkeNutzung(b.id);
@@ -571,7 +754,6 @@
     updateSendState();
     autoGrow();
     input.focus();
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
     renderBausteine();
   }
 
@@ -593,12 +775,14 @@
   }
 
   allgemeinButton.addEventListener('click', function () {
-    allgemeinPanel.hidden = !allgemeinPanel.hidden;
-    if (!allgemeinPanel.hidden) renderAllgemein();
+    ebeneUmschalten('allgemein', function () {
+      allgemeinPanel.hidden = false;
+      renderAllgemein();
+    }, function () { allgemeinPanel.hidden = true; });
   });
 
   allgemeinAbbrechen.addEventListener('click', function () {
-    allgemeinPanel.hidden = true;
+    ebeneVerlassen('allgemein');
   });
 
   allgemeinEinfuegen.addEventListener('click', function () {
@@ -619,7 +803,7 @@
       speichereJson('bp_eintraege', eintraege);
       renderAlleEintraege();
     }
-    allgemeinPanel.hidden = true;
+    ebeneVerlassen('allgemein');
   });
 
   // ---------- Foto ----------
@@ -632,10 +816,9 @@
       aktuellesFoto = reader.result;
       fotoPreviewImg.src = aktuellesFoto;
       fotoPreview.hidden = false;
-      renderFotoKategorien();
-      fotoKategorien.hidden = false;
       updateSendState();
       fotoHinweis.hidden = true;
+      oeffneKiFenster(false);
     };
     reader.readAsDataURL(file);
   }
@@ -647,27 +830,8 @@
     aktuellesFoto = null;
     fotoInput.value = '';
     fotoPreview.hidden = true;
-    fotoKategorien.hidden = true;
     updateSendState();
   });
-
-  function renderFotoKategorien() {
-    fotoKategorienChips.innerHTML = '';
-    FOTO_KATEGORIEN.forEach(function (kat) {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'chip chip-kategorie';
-      chip.textContent = kat.label;
-      chip.addEventListener('click', function () {
-        const liste = kat.bausteine
-          .map(function (id) { return BAUSTEINE.find(function (b) { return b.id === id; }); })
-          .filter(Boolean)
-          .sort(function (a, b) { return score(b) - score(a); });
-        zeigeVorschlaege(liste);
-      });
-      fotoKategorienChips.appendChild(chip);
-    });
-  }
 
   // ---------- Textbaustein-Panel ----------
 
@@ -696,18 +860,20 @@
       li.addEventListener('click', function () {
         if (viewProtokoll.hidden) return; // aus der Liste heraus nur ansehen
         fuegeTextEin(b);
-        bausteinePanel.hidden = true;
+        ebeneVerlassen('bausteine');
       });
       bausteineListe.appendChild(li);
     });
   }
 
   bausteineButton.addEventListener('click', function () {
-    bausteinePanel.hidden = !bausteinePanel.hidden;
-    if (!bausteinePanel.hidden) renderBausteine();
+    ebeneUmschalten('bausteine', function () {
+      bausteinePanel.hidden = false;
+      renderBausteine();
+    }, function () { bausteinePanel.hidden = true; });
   });
   bausteineClose.addEventListener('click', function () {
-    bausteinePanel.hidden = true;
+    ebeneVerlassen('bausteine');
   });
 
   // ---------- Einträge ----------
@@ -737,6 +903,7 @@
     input.value = eintrag.text;
     bearbeitenHinweis.hidden = false;
     input.classList.add('bearbeitet');
+    ebeneOeffnen('bearbeiten', beendeBearbeitung);
     updateSendState();
     autoGrow();
     input.focus();
@@ -749,9 +916,12 @@
     input.value = '';
     updateSendState();
     autoGrow();
+    ebeneVerlassen('bearbeiten');
   }
 
-  bearbeitenAbbrechen.addEventListener('click', beendeBearbeitung);
+  bearbeitenAbbrechen.addEventListener('click', function () {
+    ebeneVerlassen('bearbeiten');
+  });
 
   function renderEintrag(e) {
     const li = document.createElement('li');
@@ -855,7 +1025,6 @@
   input.addEventListener('input', function () {
     updateSendState();
     autoGrow();
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
   });
 
   // ---------- Intelligente Satz-Markierung ----------
@@ -924,7 +1093,6 @@
         input.value = ersetzt + ' ';
         updateSendState();
         autoGrow();
-        zeigeVorschlaege(vorschlaegeFuer(input.value));
       }
     } else if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -986,8 +1154,7 @@
     fotoInput.value = '';
     galerieInput.value = '';
     fotoPreview.hidden = true;
-    fotoKategorien.hidden = true;
-    kiPanel.hidden = true;
+    ebeneVerlassen('ki');
     input.value = '';
     setzeTyp('hinweis');
     updateSendState();
@@ -1040,6 +1207,11 @@
     return null;
   }
 
+  // Bis hierher gilt man als "auf der Baustelle" – dann wird das Protokoll
+  // direkt geoeffnet. Weiter entfernte Baustellen werden nur vorgeschlagen.
+  const ANKUNFT_KM = 0.25;
+  const UMKREIS_KM = 5;
+
   function naechsteBaustelle(lat, lng) {
     let beste = null;
     alleBaustellen().forEach(function (bs) {
@@ -1049,7 +1221,13 @@
       const d = distanzKm(lat, lng, k.lat, k.lng);
       if (!beste || d < beste.distanz) beste = { baustelle: bs, distanz: d };
     });
-    return beste && beste.distanz <= 5 ? beste : null;
+    return beste && beste.distanz <= UMKREIS_KM ? beste : null;
+  }
+
+  function distanzText(km) {
+    return km < 1
+      ? Math.round(km * 1000) + ' m'
+      : km.toFixed(1).replace('.', ',') + ' km';
   }
 
   function zeigeStandort(treffer) {
@@ -1058,43 +1236,83 @@
       return;
     }
     erkannteBaustelle = treffer.baustelle;
-    const dist = treffer.distanz < 1
-      ? Math.round(treffer.distanz * 1000) + ' m'
-      : treffer.distanz.toFixed(1).replace('.', ',') + ' km';
-    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name + ' (' + dist + ')';
+    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name +
+      ' (' + distanzText(treffer.distanz) + ')';
+    standortAdresse.textContent = adressen[treffer.baustelle.id] || treffer.baustelle.ort || '';
     if (treffer.baustelle.ordnerUrl) standortOrdner.href = treffer.baustelle.ordnerUrl;
     else standortOrdner.removeAttribute('href');
     standortBanner.hidden = false;
   }
 
+  function ohneKoordinaten() {
+    return alleBaustellen().filter(function (bs) {
+      return bs.aktiv !== false && !koordinatenFuer(bs);
+    }).length;
+  }
+
+  // Wird sowohl beim Start, per Knopf als auch laufend von watchPosition
+  // aufgerufen. Nur bei einem echten Wechsel wird automatisch geoeffnet,
+  // damit die Ansicht nicht dauernd umspringt.
+  let zuletztGeoeffnet = null;
+
+  function verarbeiteStandort(lat, lng, leise) {
+    const treffer = naechsteBaustelle(lat, lng);
+
+    if (treffer && treffer.distanz <= ANKUNFT_KM && viewProtokoll.hidden &&
+        zuletztGeoeffnet !== treffer.baustelle.id) {
+      // Angekommen: Protokoll der Baustelle sofort oeffnen
+      zuletztGeoeffnet = treffer.baustelle.id;
+      oeffneBaustelle(treffer.baustelle);
+      zeigeStandort(treffer);
+      return;
+    }
+
+    if (treffer) {
+      zeigeStandort(treffer);
+      return;
+    }
+
+    erkannteBaustelle = null;
+    zuletztGeoeffnet = null;
+    if (!leise) {
+      const offen = ohneKoordinaten();
+      standortText.textContent = 'Keine Baustelle in der Nähe (max. ' + UMKREIS_KM + ' km) gefunden.';
+      standortAdresse.textContent = offen
+        ? offen + ' Baustelle(n) ohne Koordinaten – Adresse unter „Verteiler / Protokolle“ eintragen.'
+        : '';
+      standortOrdner.removeAttribute('href');
+      standortBanner.hidden = false;
+    }
+  }
+
   function ermittleStandort(leise) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(function (pos) {
-      const treffer = naechsteBaustelle(pos.coords.latitude, pos.coords.longitude);
-      if (treffer && viewProtokoll.hidden) {
-        // Aus der Liste heraus die erkannte Baustelle direkt öffnen
-        oeffneBaustelle(treffer.baustelle);
-        zeigeStandort(treffer);
-        return;
-      }
-      zeigeStandort(treffer);
-      if (!treffer && !leise) {
-        standortText.textContent = 'Keine Baustelle in der Nähe (max. 5 km) gefunden.';
-        standortOrdner.removeAttribute('href');
-        standortBanner.hidden = false;
-        erkannteBaustelle = null;
-      }
+      verarbeiteStandort(pos.coords.latitude, pos.coords.longitude, leise);
     }, function () {
       if (!leise) {
         standortText.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
+        standortAdresse.textContent = '';
         standortBanner.hidden = false;
         erkannteBaustelle = null;
       }
     }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   }
 
+  // Laufende Ortung: erkennt die Ankunft auch dann, wenn die App schon offen ist.
+  function starteUeberwachung() {
+    if (!navigator.geolocation || !navigator.geolocation.watchPosition) return;
+    navigator.geolocation.watchPosition(function (pos) {
+      verarbeiteStandort(pos.coords.latitude, pos.coords.longitude, true);
+    }, function () { /* stiller Fehler – der Knopf bleibt als Rueckfallebene */ },
+    { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 });
+  }
+
   standortUebernehmen.addEventListener('click', function () {
-    if (erkannteBaustelle) oeffneBaustelle(erkannteBaustelle);
+    if (erkannteBaustelle) {
+      zuletztGeoeffnet = erkannteBaustelle.id;
+      oeffneBaustelle(erkannteBaustelle);
+    }
     standortBanner.hidden = true;
   });
 
@@ -1110,4 +1328,5 @@
   zeigeTyp();
   renderGruppen();
   ermittleStandort(true);
+  starteUeberwachung();
 })();
