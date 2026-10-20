@@ -69,13 +69,16 @@ public class MainActivity extends Activity {
     private String playingUrl = "";
     private String directHtml = null; // set while a broadcaster film plays in our own <video> page
     private boolean lenient = false;  // second attempt with the normal instead of the strict ad blocker
+    private String lastInfo = "\"\""; // JSON string "state|url" from the player page
     // 15 s after start: if nothing plays, retry once with the lenient blocker, then tell the user
     private final Runnable watchdog = new Runnable() {
         @Override public void run() {
             if (!playerVisible()) return;
             player.evaluateJavascript("(function(){var v=document.querySelector('video');"
-                    + "return (v&&v.currentTime>0)||window.__ak_state==='playing'?'ok':String(window.__ak_state||'none')})()", r -> {
-                if (r != null && r.contains("ok")) { reportResult(true); return; }
+                    + "return ((v&&v.currentTime>0)||window.__ak_state==='playing'?'ok':String(window.__ak_state||'none'))"
+                    + "+'|'+String(window.__ak_url||'')})()", r -> {
+                lastInfo = r == null ? "\"\"" : r;
+                if (r != null && r.startsWith("\"ok")) { reportResult(true); return; }
                 if (directHtml == null && strict && !lenient) {
                     lenient = true;
                     Toast.makeText(MainActivity.this, "Zweiter Versuch ohne strengen Werbeblocker …", Toast.LENGTH_LONG).show();
@@ -219,7 +222,7 @@ public class MainActivity extends Activity {
                 + "<body style='margin:0;background:#000'><video id=v autoplay playsinline style='width:100vw;height:100vh'></video><script>"
                 + "var U=" + urls.toString() + ",i=0,v=document.getElementById('v');window.__ak_state='loading';"
                 + "function next(){if(i>=U.length){window.__ak_state='error';return;}var u=U[i++];"
-                + "if(/\\.m3u8/.test(u)&&!v.canPlayType('application/vnd.apple.mpegurl')&&window.Hls&&Hls.isSupported()){"
+                + "window.__ak_url=u;if(/\\.m3u8/.test(u)&&!v.canPlayType('application/vnd.apple.mpegurl')&&window.Hls&&Hls.isSupported()){"
                 + "var h=new Hls();h.loadSource(u);h.attachMedia(v);h.on(Hls.Events.ERROR,function(e,d){if(d.fatal){h.destroy();next();}});}"
                 + "else{v.src=u;}var p=v.play();if(p&&p.catch)p.catch(function(){});}"
                 + "v.addEventListener('error',next);v.addEventListener('playing',function(){window.__ak_state='playing';});next();"
@@ -235,7 +238,7 @@ public class MainActivity extends Activity {
 
     /** Tells the UI whether the current video really played, so broken ones get hidden. */
     private void reportResult(boolean ok) {
-        ui.evaluateJavascript("window.onPlayResult&&onPlayResult(" + JSONObject.quote(playingId) + "," + ok + ")", null);
+        ui.evaluateJavascript("window.onPlayResult&&onPlayResult(" + JSONObject.quote(playingId) + "," + ok + "," + lastInfo + ")", null);
     }
 
     /** Is the video really reachable from this device (geo blocks, expired films)? Asks for 2 bytes only. */
