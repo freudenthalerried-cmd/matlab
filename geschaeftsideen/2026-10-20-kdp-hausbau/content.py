@@ -2,7 +2,7 @@
 
 TITLE = "Unser Hausbau"
 SUBTITLE = "Das Bautagebuch für Bauherren in Österreich – Planen, Kosten im Griff, Baustelle dokumentieren, richtig abnehmen"
-AUTHOR = "Stefan Freudenthaler"
+AUTHOR = "Ing. Stefan Freudenthaler"
 STAND = "Oktober 2026"
 
 IMPRESSUM = [

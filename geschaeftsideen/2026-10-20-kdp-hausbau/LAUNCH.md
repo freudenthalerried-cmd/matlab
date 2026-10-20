@@ -31,7 +31,7 @@ Ein eigener Recherche-Durchgang hat 18 rechtliche Kernaussagen gegen Quellen gep
 - **Sprache:** Deutsch
 - **Titel:** Unser Hausbau
 - **Untertitel:** Das Bautagebuch für Bauherren in Österreich – Planen, Kosten im Griff, Baustelle dokumentieren, richtig abnehmen
-- **Autor:** Stefan Freudenthaler
+- **Autor:** Ing. Stefan Freudenthaler (Präfix „Ing.“)
 - **Beschreibung:** den Text der Rückseite verwenden (in `build_cover.py`)
 - **7 Schlüsselwörter:**
   1. bautagebuch bauherr
