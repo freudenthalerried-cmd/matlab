@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fakten-Checker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f5f8; --panel:#fff; --fg:#14202e; --muted:#5b6878; --line:#d9dfe7;
+  --accent:#1f5fbf; --ok:#1d7a4a; --warn:#b26a00; --bad:#b3261e; --unk:#6b7280;
+  --ok-bg:#e3f3ea; --warn-bg:#fbeed6; --bad-bg:#f9e1df; --unk-bg:#eceef1;
+  --f-ui:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e141b; --panel:#16202b; --fg:#e6edf5; --muted:#93a1b2; --line:#2a3644;
+  --accent:#6aa5ff; --ok:#5fd194; --warn:#f0b351; --bad:#ff8a80; --unk:#a3acb9;
+  --ok-bg:#13301f; --warn-bg:#352711; --bad-bg:#3a1916; --unk-bg:#232c37; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-ui)}
+.wrap{max-width:720px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:1.6rem;font-weight:800;margin:0} h1 span{color:var(--accent)}
+.mic{display:flex;align-items:center;gap:10px;border:0;border-radius:99px;padding:12px 20px;font:800 1rem var(--f-ui);cursor:pointer;background:var(--accent);color:var(--panel)}
+.mic[aria-pressed="true"]{background:var(--bad)}
+.dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.mic[aria-pressed="true"] .dot{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.live{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:3em;color:var(--muted);font-size:.9rem}
+.live b{color:var(--fg);font-weight:400}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.go{background:var(--accent);color:var(--panel);border:0;border-radius:8px;font:800 1rem var(--f-ui);padding:10px 16px;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.status{font-size:.85rem;color:var(--muted);min-height:1.2em}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--unk);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card[data-v="stimmt"]{border-left-color:var(--ok)} .card[data-v="teilweise"]{border-left-color:var(--warn)} .card[data-v="falsch"]{border-left-color:var(--bad)}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:700 .75rem var(--f-ui);text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:99px;background:var(--unk-bg);color:var(--unk)}
+.pill.stimmt{background:var(--ok-bg);color:var(--ok)} .pill.teilweise{background:var(--warn-bg);color:var(--warn)} .pill.falsch{background:var(--bad-bg);color:var(--bad)}
+.stage{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 8px}
+.claim{color:var(--muted);font-size:.9rem;margin:0}
+.num{font:700 2rem var(--f-num);font-variant-numeric:tabular-nums;margin:0;line-height:1.1}
+.fact{font-size:1.05rem;margin:0;font-weight:600}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.85rem}
+dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.src{font-size:.8rem;display:flex;flex-direction:column;gap:2px} .src a{color:var(--accent);overflow-wrap:anywhere}
+.ghost{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--fg);border-radius:8px;font:600 .85rem var(--f-ui);padding:8px 12px;cursor:pointer}
+.detail{white-space:pre-wrap;font-size:.92rem;border-top:1px solid var(--line);padding-top:10px;overflow-wrap:anywhere}
+.foot{font-size:.75rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.mic[aria-pressed="true"] .dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Fakten<span>-</span>Checker</h1>
+    <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Mithören starten</span></button>
+  </header>
+  <div class="live" id="live" aria-live="polite">Tippe auf „Mithören starten“. Erkannte Sprache erscheint hier, Behauptungen werden automatisch geprüft.</div>
+  <form id="form">
+    <input id="q" autocomplete="off" placeholder="Oder Behauptung eintippen …">
+    <button class="go">Prüfen</button>
+  </form>
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="cards" id="cards"></div>
+  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Audio wird nicht gespeichert; die Spracherkennung läuft über den Browser. Bitte Gesprächspartner informieren, dass mitgehört wird.</p>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const cards = $("#cards"), statusEl = $("#status"), live = $("#live");
+const LABEL = {stimmt:"Stimmt", teilweise:"Teilweise", falsch:"Falsch", unklar:"Unklar"};
+const seen = new Set();
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+
+async function api(path, body){
+  const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || "Fehler " + r.status);
+  return data;
+}
+
+function fill(c, r, stage){
+  const v = LABEL[r.verdict] ? r.verdict : "unklar";
+  c.dataset.v = v;
+  const top = el("div","top");
+  top.append(el("span","pill "+v, LABEL[v]), el("span","stage", stage));
+  const parts = [top, el("p","claim","„"+(r.claim||"")+"“")];
+  if(r.number) parts.push(el("p","num", r.number));
+  parts.push(el("p","fact", r.fact||""));
+  const dl = el("dl");
+  [["Kennzahl",r.definition],["Quelle",r.source],["Stand",r.asOf],["Sicherheit",r.confidence],["Hinweis",r.note]]
+    .forEach(([k,val])=>{ if(val) dl.append(el("dt",null,k), el("dd",null,String(val))); });
+  parts.push(dl);
+  if(r.sources?.length) parts.push(links(r.sources));
+  const more = el("button","ghost","Genauer ansehen"); more.type="button";
+  const det = el("div","detail"); det.hidden = true;
+  more.onclick = () => deep(r.claim, det, more);
+  parts.push(more, det);
+  c.replaceChildren(...parts);
+}
+function links(list){
+  const d = el("div","src");
+  list.forEach(s=>{ const a=el("a",null,s.title); a.href=s.url; a.target="_blank"; a.rel="noopener"; d.append(a); });
+  return d;
+}
+
+async function verify(c, claim){
+  try{ fill(c, await api("/api/verify", {claim}), "Live geprüft"); }
+  catch{ c.querySelector(".stage").textContent = "Schnellcheck (Live-Prüfung fehlgeschlagen)"; }
+}
+async function deep(claim, det, btn){
+  if(!det.hidden){ det.hidden = true; btn.textContent = "Genauer ansehen"; return; }
+  det.hidden = false; btn.textContent = "Zuklappen";
+  if(det.textContent) return;
+  det.textContent = "Recherchiere in offiziellen Quellen …";
+  try{ const r = await api("/api/detail", {claim}); det.textContent = r.text; if(r.sources?.length) det.append(links(r.sources)); }
+  catch(e){ det.textContent = e.message; }
+}
+
+let context = "";
+async function check(text){
+  const t0 = performance.now();
+  statusEl.textContent = "Prüfe …";
+  try{
+    const {claims} = await api("/api/check", {text, context});
+    context = (context + " " + text).slice(-1500);
+    const fresh = claims.filter(r => r.claim && !seen.has(r.claim.toLowerCase()));
+    fresh.forEach(r => {
+      seen.add(r.claim.toLowerCase());
+      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim);
+    });
+    statusEl.textContent = fresh.length ? `${fresh.length} Behauptung(en) in ${((performance.now()-t0)/1000).toFixed(1)} s` : "Nichts Prüfbares erkannt.";
+  }catch(e){ statusEl.textContent = e.message; }
+}
+
+$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; check(v); } });
+
+// Spracherkennung: gesammelte Sätze werden nach kurzer Pause gemeinsam geprüft
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false, pending = "", timer = null, finals = "";
+function setMic(on){
+  listening = on; $("#mic").setAttribute("aria-pressed", on);
+  $("#micLabel").textContent = on ? "Mithören stoppen" : "Mithören starten";
+}
+function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
+$("#mic").onclick = () => {
+  if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte Chrome oder Edge verwenden, oder Text eintippen."; return; }
+  if(listening){ setMic(false); rec?.stop(); flush(); return; }
+  rec = new SR(); rec.lang = "de-AT"; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = e => {
+    let interim = "";
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal){ pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
+      else interim += t;
+    }
+    live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
+  };
+  rec.onerror = e => { if(e.error === "not-allowed"){ setMic(false); statusEl.textContent = "Mikrofon wurde nicht erlaubt."; } };
+  rec.onend = () => { if(listening) try{ rec.start(); }catch{} };
+  rec.start(); setMic(true); live.textContent = "Höre zu …";
+};
+</script>
+</body>
+</html>
