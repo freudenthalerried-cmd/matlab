@@ -5426,6 +5426,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'neuen**, sondern aus einer Auskunft eine Behauptung gegenüber einem Leser, der sie '
       + 'nicht nachprüfen kann.',
   }),
+  Object.freeze({
+    id: 'die-rechnung-nennt-das-vorhaben-allein',
+    pruefer: 'pruefe-rechnungen',
+    was: 'Eine Beispielrechnung, deren Umfang mehr verspricht als ihre Positionen tragen',
+    datei: 'shop/src/beispielrechnung.js',
+    art: 'ersetzen',
+    suchen: '    umfang: umfangstext(korb),',
+    ersetzen: '    umfang: korb.umfang,',
+    erwartet: /umfang-nennt-die-positionen-nicht|gilt dann f\u00fcr weniger/,
+    warum: 'Der Griff, der einem zuerst einfällt: Der Korb trägt ein Feld `umfang` („Ein '
+      + 'Kaminzug"), und das liest sich besser als die Aufzählung der Positionen. Gemessen am '
+      + '22. Oktober mit `npm run pruefe-koerbe`: **Kein einziger Korb deckt die geführten '
+      + 'Positionen seiner Systemliste** — WDVS fünf von neun, Kamin zwei von neun. Eine Summe '
+      + 'unter dem Titel „Ein Kaminzug" wäre damit der Preis für einen halben Kamin, und das '
+      + 'ist der teuerste Fehler, den eine Preisauskunft machen kann. Die Mutation setzt das '
+      + 'Feld wieder ein und verlangt, dass es auffällt.',
+  }),
 ]);
 
 /**

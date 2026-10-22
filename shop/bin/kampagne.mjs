@@ -214,16 +214,20 @@ export const WARENKOERBE = {
     ],
     ohne: [
       { position: 'Rondellen',
+        kunde: 'Nur bei versenkter Dübelsetzung. Ob versenkt gesetzt wird, entscheidet die Dübelbemessung und nicht der Umfang dieser Rechnung.',
         warum: 'Nur bei versenkter Setzung — die Systemliste sagt es in derselben Zeile, und ob '
           + 'versenkt gesetzt wird, entscheidet die Dübelbemessung und nicht der Korb.' },
       { position: 'Armierungsmörtel',
+        kunde: 'Die Menge folgt aus Fläche mal Verbrauch, und der Verbrauchswert steht im Merkblatt des Herstellers. Wir schreiben technische Kennwerte nicht ab; mit Ihrem Wert rechnen wir die Menge auf Anfrage dazu.',
         warum: 'Menge nach Fläche × Verbrauch. Der Verbrauchswert steht im Merkblatt des '
           + 'Herstellers und nicht im Katalog — dieser Shop schreibt technische Kennwerte '
           + 'nicht ab, und eine geratene Menge ergäbe ein geratenes Gebot.' },
       { position: 'Gewebeanschlussleisten',
+        kunde: 'Die Menge sind die laufenden Meter aller Fenster- und Türanschlüsse. Ohne Bauwerk gibt es dafür keine Zahl — diese Rechnung kennt 100 m² Fläche und keine Öffnungen.',
         warum: 'Laufende Meter aller Fenster- und Türanschlüsse. Ohne Bauwerk keine Zahl; der '
           + 'Korb rechnet 100 m² Fläche und kennt keine Öffnungen.' },
       { position: 'Oberputz',
+        kunde: 'Die Menge folgt aus Fläche mal Verbrauch und hängt an der Körnung, die Sie wählen. Derselbe Grund wie beim Armierungsmörtel.',
         warum: 'Menge nach Fläche × Verbrauch, körnungsabhängig. Derselbe Grund wie beim '
           + 'Armierungsmörtel, und die Körnung entscheidet der Kunde.' },
     ],
@@ -252,14 +256,17 @@ export const WARENKOERBE = {
      */
     ohne: [
       { position: 'Perimeterkleber',
+        kunde: 'Die Menge folgt aus Fläche geteilt durch die Reichweite je Dose, und die Reichweite steht im Merkblatt des Herstellers.',
         warum: 'Menge nach Fläche ÷ Reichweite je Dose. Die Reichweite steht im Merkblatt des '
           + 'Herstellers und nicht im Katalog — sie zu raten hieße, das Gebot zu raten.' },
       { position: 'Grundmauerschutzbahn',
+        kunde: 'Die Menge wäre 110 m² — Fläche plus Überlappung. Sie steht nicht in dieser Rechnung, weil ihre Preisgrundlage gerade nachgesehen wird; der Preis steht auf ihrer Artikelseite.',
         warum: 'Menge wäre 110 m² („Fläche + Überlappung"), und sie war am 6. September kurz '
           + 'im Korb. Wieder heraus, weil ihr Einkaufspreis 103 Tage alt ist und die eigene '
           + 'Grenze bei 90 liegt: Auf eine Marge von vorgestern darf kein Gebot ruhen. Zurück '
           + 'in den Korb, sobald der Preis nachgezogen ist.' },
       { position: 'Dosierpistole',
+        kunde: 'Eine je Baustelle. Sie steht nicht in dieser Rechnung, weil ihre Preisgrundlage gerade nachgesehen wird; der Preis steht auf ihrer Artikelseite, samt dem Hinweis, wie alt die Grundlage ist.',
         warum: 'Menge wäre 1 („eine je Baustelle"). Wieder heraus aus demselben Grund wie die '
           + 'Bahn — der Einkaufspreis ist 137 Tage alt, der älteste im Katalog. Zurück in den '
           + 'Korb, sobald der Preis nachgezogen ist.' },
@@ -294,36 +301,43 @@ export const WARENKOERBE = {
      */
     ohne: [
       { position: 'Fertigfußpaket',
+        kunde: 'Eines je Zug. Es steht nicht in dieser Rechnung, weil seine Preisgrundlage gerade nachgesehen wird; der Preis steht auf seiner Artikelseite, samt dem Hinweis, wie alt die Grundlage ist.',
         warum: 'Nicht aus dem Bauwerk heraus, sondern aus dem Preisalter: Der Einkaufspreis ist '
           + 'vom 25. Juni und damit 112 Tage alt, die eigene Grenze liegt bei 90. Ein Gebot auf '
           + 'einem solchen Preis setzt Geld auf eine Marge, die seit vier Monaten niemand '
           + 'nachgerechnet hat. Die Position kehrt zurück, sobald eine aktuelle Preisliste des '
           + 'Lieferanten vorliegt — sie ist nicht falsch, sie ist alt.' },
       { position: 'Putztüranschluss',
+        kunde: 'Einer je Zug, und eine der Positionen, die am häufigsten fehlen. Er steht nicht in dieser Rechnung, weil seine Preisgrundlage gerade nachgesehen wird; der Preis steht auf seiner Artikelseite.',
         warum: 'Dieselbe Begegnung zweier Regeln wie beim Fertigfußpaket, und dieselbe '
           + 'Entscheidung: 112 Tage Preisalter gegen eine Grenze von 90. Herausgefallen ist die '
           + 'Position nicht durch eine Wahl, sondern durch fünf Wochen Pause — am 15. September '
           + 'lag sie mit 82 Tagen innerhalb der Grenze. Mit einer frischen Lieferantenliste '
           + 'gehört sie wieder in den Korb.' },
       { position: 'Thermo-Trennstein',
+        kunde: 'Einer je Zug, am Kopf. Er steht nicht in dieser Rechnung, weil seine Preisgrundlage gerade nachgesehen wird; der Preis steht auf seiner Artikelseite.',
         warum: 'Auch hier schlägt das Preisalter die Stückliste: Die Systemliste beziffert ihn '
           + 'mit „1 je Zug, am Kopf", der Einkaufspreis dazu ist 112 Tage alt. Ein zu kleiner '
           + 'Korb kostet Auktionen, ein Korb auf überalterten Preisen kostet Marge — und von '
           + 'zwei richtigen Regeln gewinnt die vorsichtige. Rückkehr mit der nächsten '
           + 'Preisliste.' },
       { position: 'Regenhaube mit Sicherung',
+        kunde: 'Eine je Zug. Sie steht nicht in dieser Rechnung, weil ihre Preisgrundlage gerade nachgesehen wird; der Preis steht auf ihrer Artikelseite, samt dem Hinweis, wie alt die Grundlage ist.',
         warum: 'Vierte Position desselben Befundes, mit 112 Tagen über der Grenze von 90. Sie '
           + 'steht hier auch dann, wenn der Prüfer sie nicht einfordert: Ein Korb, der eine '
           + 'Position ohne Vermerk verliert, sieht nach einem Versehen aus, und beim nächsten '
           + 'Lauf wäre nicht mehr erkennbar, dass das Preisalter sie herausgenommen hat und '
           + 'nicht die Stückliste.' },
       { position: 'Dünnbettmörtel',
+        kunde: 'Die Menge folgt aus der Anzahl der Lagen, und die hängt an der Gesamthöhe des Zugs. Diese Rechnung kennt einen Zug und keine Höhe.',
         warum: 'Menge nach Anzahl der Lagen. Die hängt an der Gesamthöhe des Zuges, und die '
           + 'lässt der Korb offen — er rechnet einen Zug, keine Höhe.' },
       { position: 'Fugenmasse',
+        kunde: 'Die Menge folgt aus der Anzahl der Rohrstöße, also wieder aus der Gesamthöhe. Derselbe Grund wie beim Dünnbettmörtel.',
         warum: 'Menge nach Anzahl der Rohrstöße, also wieder an der Gesamthöhe. Derselbe Grund '
           + 'wie beim Dünnbettmörtel.' },
       { position: 'Zuluftplatte mit Befestigung',
+        kunde: 'Nur bei raumluftunabhängiger Feuerstätte. Das ist eine Bedingung und keine Menge — welche von beiden gilt, steht in Ihrem Feuerstättennachweis.',
         warum: 'Nur bei raumluftunabhängiger Feuerstätte — die Systemliste sagt es in derselben '
           + 'Zeile. Das ist eine Bedingung und keine Menge.' },
     ],
@@ -338,6 +352,7 @@ export const WARENKOERBE = {
     ],
     ohne: [
       { position: 'Grundmauerschutzbahn',
+        kunde: 'Auf der Kanalliste ausdrücklich als eigenes Gewerk gekennzeichnet — sie gehört zur Kellerwand und nicht zur Grundleitung.',
         warum: 'Auf der Kanalliste ausdrücklich als eigenes Gewerk gekennzeichnet — sie gehört '
           + 'zur Kellerwand und wird dort auch berechnet.' },
     ],

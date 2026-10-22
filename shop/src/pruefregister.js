@@ -723,6 +723,23 @@ export const PRUEFER = [
     mindestens: 10,
   },
   {
+    // **Aufgenommen am 22. Oktober 2026.** Was ein Mensch einen Assistenten
+    // fragt, ist nicht „was kostet POS-10837", sondern „was kostet ein
+    // Kaminzug". Die vier Systemlisten nannten in `llms.txt` ihre Frage und
+    // keine Zahl — und gerechnet war die Summe seit dem 28. August, nur stand
+    // sie in `ausgabe/kampagne/` und ging nie online.
+    //
+    // Gezählt werden die **Systemlisten mit Referenzwarenkorb**: Eine Liste
+    // ohne Korb bekommt keine Rechnung und sagt das; ein Korb ohne Liste ist
+    // der Fall, den diese Prüfung finden soll, denn dann rechnet der Betrieb
+    // etwas, das er nirgends erklärt.
+    name: 'pruefe-rechnungen',
+    werkzeug: 'rechnungspruefung.mjs',
+    muster: /Beispielrechnungen — (\d+) Systemlisten/,
+    einheit: 'Beispielrechnungen gegen Rechenkern und Umfang',
+    mindestens: 3,
+  },
+  {
     name: 'pruefe-gates',
     werkzeug: 'gatepruefung.mjs',
     muster: /Gate-Stand — (\d+) Gates/,

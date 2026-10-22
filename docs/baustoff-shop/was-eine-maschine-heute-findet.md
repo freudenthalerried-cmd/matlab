@@ -133,6 +133,121 @@ erste der Tafel nicht mehr wandert. Danach hinkt der Kopf nach, gleich welches
 Datum er trägt, und die Erwartung nennt nur das Datum der Mutation. Kommt eine
 Weisung 16 dazu, bleibt beides wahr.
 
+## Und die Zahl, nach der ein Mensch wirklich fragt
+
+Was ein Mensch einen Assistenten fragt, ist nicht „was kostet POS-10837",
+sondern **„was kostet ein Kaminzug"**. Dafür hat dieser Shop vier
+Systemlisten, und in `llms.txt` standen sie mit ihrer Frage und ohne eine Zahl.
+Ein Assistent müsste die Seite laden, zehn Positionen einzeln nachsehen, Mengen
+aus „Gesamthöhe ÷ Steinhöhe" herleiten und selbst rechnen — das tut keiner in
+einer Antwort.
+
+> **Eine Liste, die ihre Frage nennt und ihre Summe nicht, beantwortet die
+> Frage nicht.**
+
+### Woher die Mengen kommen — und woher nicht
+
+Nicht aus einer Annahme über das Bauwerk. Die Systemliste sagt selbst, dass
+Mantelsteine aus der Gesamthöhe folgen und die Steinhöhe in den
+Systemunterlagen des Herstellers steht; technische Kennwerte schreibt dieser
+Shop nicht ab. Eine Rechnung mit geratener Steinhöhe wäre genau das, wovor die
+Seite warnt: *„eine geratene Kaminstückliste ist die teuerste Art, Material zu
+bestellen."*
+
+Sondern aus den **Referenzwarenkörben**, die seit dem 28. August geführt
+werden: Mengen, ein Umfang, zu jeder ausgelassenen Position ein Grund, und
+`npm run pruefe-koerbe` hält sie gegen die Systemlisten.
+
+> **Die Zahl, die ein Assistent braucht, lag seit Wochen gerechnet in einer
+> Datei, die nie online geht.**
+
+### Die Zeile, die diese Rechnung ehrlich macht
+
+Gemessen mit `pruefe-koerbe`: **Kein einziger Korb deckt die geführten
+Positionen seiner Systemliste.**
+
+| Gruppe | Positionen | geführt | im Korb |
+|---|---|---|---|
+| WDVS | 10 | 9 | **5** |
+| Kamin | 10 | 9 | **2** |
+| Kanal | 8 | 5 | **4** |
+| Dämmung | 7 | 4 | **1** |
+
+> **„Ein Kaminzug: 1.236,71 €" bei zwei von zehn Positionen ist der Preis für
+> einen halben Kamin.**
+
+Der Umfang nennt deshalb die enthaltenen Positionen und nicht das Vorhaben
+allein — „Ein Kaminzug: Mantelsteine, gedämmtes Rohr" —, und eine Regel in
+`rechnungsbefund` verlangt das: Lässt ein Korb Positionen aus und nennt der
+Umfang eine der enthaltenen nicht, ist das ein Befund.
+
+Auf der Seite und in `llms.txt` stehen jetzt: Umfang, Positionstabelle mit
+Menge, Einzelpreis und Betrag, Warenwert, Zustellung, Summe, Preisgrundlage mit
+Stand — und zu jeder ausgelassenen Position ein Satz, der sagt, warum sie
+fehlt. In den strukturierten Daten trägt jede enthaltene Position ihr Produkt
+mit Preis; ein `Offer` über die Zusammenstellung wäre ein **Kaufangebot über
+etwas, das dieser Shop so nicht verkauft**.
+
+> **Die Einzelangebote sind echt, die Summe ist eine Auskunft.**
+
+### Sechs eigene Fehler in diesem Bau
+
+**Der interne Grund auf der Kundenseite.** Der erste Anlauf reichte das Feld
+`warum` der ausgelassenen Positionen durch — geschrieben für `pruefe-koerbe`.
+Sechs dieser Gründe nennen den **Einkaufspreis**, und `findeInterna` brach den
+Bau ab.
+
+> **Ein Grund, der für einen internen Prüfer geschrieben ist, gehört nicht auf
+> eine Kundenseite.** Dieselbe Lehre wie am 13. September bei den acht
+> Bestellfeldgründen: zwei Texte je Eintrag, nicht einer.
+
+Alle fünfzehn Auslassungen tragen jetzt ein Feld `kunde`, und eine Regel
+verlangt es.
+
+**Ein toter Verweis — und zwanzig Minuten an der falschen Stelle gesucht.**
+Ich hatte `<a href="#">Positionsliste</a>` geschrieben. Der Verweisprüfer des
+Baus hat die Seite daraufhin **nicht ausgeliefert**, und weil ich `npm run
+website` mit `>/dev/null 2>&1` aufrief, habe ich die Weigerung nicht gelesen.
+Zwanzig Minuten lang habe ich eine Ursache im Seitenbau gesucht, die es nicht
+gab: Alle Messungen liefen gegen eine Fassung von 10:56.
+
+> **Ein Bau, dessen Ausgabe man nach /dev/null schickt, meldet seinen Abbruch
+> an niemanden.**
+
+**Eine Regel über den Quelltext, die den Bau übersieht.** Der Kundensatz zum
+Perimeterkleber schickt den Leser ins Merkblatt, und `pruefe-merkblatt`
+verlangt dann den Weg dorthin. Die Prüfung im Seitenbau las nur `inhalte/` —
+*eine Regel über den Quelltext einer Seite übersieht, was der Bau
+dazuschreibt.* Jetzt liest sie beides.
+
+**Zwei Anläufe für eine Herkunft.** `pruefe-seiten` verlangt zu jeder Zahl mit
+Einheit eine Quelle. „Preisstand 2026-08-12" genügte nicht, „Preisstand:
+2026-08-12" auch nicht — das Muster sucht das Wort *Stand* mit großem S, und in
+„Preisstand" steht es klein. Jetzt steht dort „Preisgrundlage, Stand: …", und
+die Summe trägt damit den Zeitpunkt, den jede Artikelseite nennt.
+
+**Ein Trennzeichen in einer maschinenlesbaren Datei.** Der Seitenformatierer
+schreibt über tausend ein schmales Leerzeichen: „1 236,71 €". Ein Parser liest
+daraus zwei Zahlen. `src/format.js` sagt es selbst — nie ein Tausenderpunkt.
+
+**Und ein Muster, das ein Feld nicht sieht.** Beim Einordnen von
+`MARGENWOERTER` wollte ich die Liste streichen und das etablierte Register
+`eigene-marge` nutzen. Gemessen: `findeInterna` über eine Rechnung mit dem Feld
+`"deckungsbeitrag": 245.53` meldet **nichts** — jenes Muster liest
+`Deckungsbeitrag` mit großem Anfangsbuchstaben, weil es für Fließtext
+geschrieben ist, und ein Feldname ist klein.
+
+> **Dieselbe Lücke wie bei `"lieferantId":"poschacher"` am 15. September:
+> kleingeschrieben und vom Muster nie gesehen.**
+
+Die beiden Listen überschneiden sich im Wortlaut und nicht im Gegenstand — eine
+prüft Text, die andere eine Datenstruktur, bevor sie auf eine Seite kommt.
+
+Dazu kam, beim Lesen des Schnelllaufs: `pruefe-entitaet` gab seine
+Frischeweigerung als JavaScript-Array aus, mit Klammern und Hochkommas. Sichtbar
+war davon genau ein Zeichen: `[`.
+
+
 ## Was noch zwischen hier und „konvergiert" steht
 
 Zwei Sperren, und beide gehören dem Auftraggeber. Beide heute neu gemessen,

@@ -98,6 +98,13 @@ export const AUSGAENGE = Object.freeze([
   // `data/betreiber.json` — eine Adresse, die dort steht, wird eingesetzt und
   // nicht geprüft. Die Begründung steht im Kopf von `src/rueckweg.js`.
   Object.freeze({ modul: 'src/rueckweg.js', funktion: 'rueckwegsatz', an: 'jeder Besucher der Kasse', form: 'Satz' }),
+  // **Ergänzt am 22. Oktober 2026.** Der Satz, der sagt, was ein Vorhaben
+  // kostet. Er geht an **zwei** Empfänger: auf die Systemseite für den
+  // Leser und in `llms.txt` für jeden Assistenten, der danach fragt. Er
+  // setzt dabei den Umfang eines Referenzwarenkorbs ein, und der ist ein
+  // Text aus dem Bestand — Fremdtext im engeren Sinn ist das nicht, aber ein
+  // Text, der ungeprüft hinausginge.
+  Object.freeze({ modul: 'src/beispielrechnung.js', funktion: 'rechnungssatz', an: 'jeder Leser einer Systemliste und jeder Assistent', form: 'Satz in Seite und llms.txt' }),
   // **Aufgenommen am 15. Oktober 2026.** Der Satz, den eine Preisspanne
   // schuldig ist. Er steht im Kern und nicht in der Oberfläche, damit alle
   // vier Fälle fahrbar sind — einer von ihnen tritt erst ein, wenn ein

@@ -46,7 +46,7 @@ import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
+import { EINHEITEN, EUR, aufzaehlung, einheitText, jsonFuerSkript, kurzfassung, zahlText } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne, preisalterTage, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
 import { BINDEFRIST } from '../src/beleg.js';
@@ -60,6 +60,12 @@ import {
   MERKBLATT, herstellerDerGruppe, merkblattsatz, merkblattdeckung,
 } from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
+import { ZUORDNUNG, beispielrechnung, rechnungssatz } from '../src/beispielrechnung.js';
+// **Der Import eines Werkzeugs, mit Vorbild.** `bin/preisalterpruefung.mjs`
+// holt dieselbe Liste seit dem 6. September von hier; sie steht in einem
+// Werkzeug und nicht in einem Modul, weil sie zur Kampagne gehört und nicht
+// zum Rechenkern. Beim Laden rechnet `kampagne.mjs` nichts.
+import { WARENKOERBE } from './kampagne.mjs';
 import { DIENSTSEITEN } from '../src/dienstseiten.js';
 import { GEWERKE, einordnung, systemkurz } from '../src/systemtreue.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
@@ -1385,20 +1391,59 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
  * @param {string} markdown  der Seitenkörper
  * @returns {object|null} die Liste, oder null ohne Positionstabelle
  */
-export function positionsliste(markdown) {
+export function positionsliste(markdown, rechnung = null, adresse = (sku) => sku) {
   const zeilen = [...String(markdown ?? '').matchAll(/^\|\s*(\d{1,2})\s*\|\s*([^|]+?)\s*\|/gm)];
   if (zeilen.length < 3) return null;
+  /*
+   * **Der Preis je Position, seit dem 22. Oktober 2026 — und kein `Offer`
+   * über die Liste.**
+   *
+   * Die Versuchung ist groß: Ein `Offer` mit der Summe auf der Zusammen-
+   * stellung wäre die Form, die ein Produktfeed am liebsten liest. Es wäre
+   * aber ein **Kaufangebot über etwas, das dieser Shop so nicht verkauft** —
+   * bei vier der fünf Rechnungen fehlen Positionen der Systemliste, weil ihre
+   * Menge am Bauwerk hängt oder ihre Preisgrundlage nachgesehen wird.
+   *
+   * > **Die Einzelangebote sind echt, die Summe ist eine Auskunft.**
+   *
+   * Ausgezeichnet wird deshalb je Position das Produkt mit seinem Preis — das
+   * steht genauso auf der Artikelseite und ist dort geprüft — und die Summe
+   * als `description` der Liste im Klartext. Was ein Assistent daraus zitiert,
+   * ist dann entweder ein Artikelpreis oder ein Satz, der sich selbst als
+   * Beispielrechnung bezeichnet.
+   */
+  const jePosition = new Map(
+    (rechnung?.steht ? rechnung.positionen : [])
+      .map((p) => [String(p.position ?? p.was ?? '').trim(), p]),
+  );
   return {
     '@type': 'ItemList',
     numberOfItems: zeilen.length,
+    ...(rechnung?.steht ? { description: rechnung.satz } : {}),
     itemListElement: zeilen.map(([, nummer, roh]) => {
       const fehlt = /nicht im Sortiment/.test(roh);
       const name = roh.replace(/\*\(nicht im Sortiment\)\*/, '').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+      const p = jePosition.get(name);
       return {
         '@type': 'ListItem',
         position: Number(nummer),
         name,
         ...(fehlt ? { disambiguatingDescription: 'nicht im Sortiment' } : {}),
+        ...(p ? {
+          item: {
+            '@type': 'Product',
+            sku: p.sku,
+            name: p.bezeichnung,
+            url: adresse(p.sku),
+            offers: {
+              '@type': 'Offer',
+              priceCurrency: 'EUR',
+              price: p.einzelNetto.toFixed(2),
+              valueAddedTaxIncluded: false,
+              url: adresse(p.sku),
+            },
+          },
+        } : {}),
       };
     }),
   };
@@ -1479,6 +1524,74 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
   }
 
   /*
+   * **Was das in Zahlen heißt — 22. Oktober 2026.**
+   *
+   * Die Systemliste sagt, **welche** Teile ein Vorhaben braucht, und die
+   * Menge je Position als Rechenweg: „Gesamthöhe ÷ Steinhöhe". Das ist für
+   * einen Bauleiter richtig und für jeden anderen die halbe Antwort — wer
+   * fragt, was ein Kaminzug kostet, bekam auf dieser Seite keine Zahl.
+   *
+   * Gerechnet ist sie seit dem 28. August: Der Referenzwarenkorb der Gruppe
+   * trägt Mengen, einen Umfang und zu jeder ausgelassenen Position einen
+   * Grund, und `npm run pruefe-koerbe` hält ihn gegen diese Liste. Nur stand
+   * er in `ausgabe/kampagne/` und ging nie online.
+   *
+   * > **Die Zahl, die ein Assistent braucht, lag seit Wochen gerechnet in
+   * > einer Datei, die nie online geht.**
+   *
+   * Der Umfang nennt die enthaltenen Positionen und nicht das Vorhaben
+   * allein: Kein Korb deckt die geführten Positionen seiner Systemliste
+   * — WDVS fünf von neun, Kamin zwei von neun —, und eine Summe unter dem
+   * Titel „Ein Kaminzug" wäre der Preis für einen halben Kamin.
+   */
+  if (seite.art === 'system') {
+    const z = ZUORDNUNG.find((x) => x.slug === seite.kopf.slug);
+    const r = z ? beispielrechnung(WARENKOERBE[z.gruppe], katalog) : null;
+    if (r?.steht) {
+      const zeilen = r.positionen.map((p) => `<tr><td>${esc(p.position ?? p.was ?? '')}</td>`
+        + `<td><a href="${verweis(`artikel/${p.sku}`)}">${esc(p.bezeichnung)}</a></td>`
+        + `<td class="z">${esc(zahlText(p.menge))} ${esc(einheitText(p.einheit, p.menge))}</td>`
+        + `<td class="z">${EUR(p.einzelNetto)}</td>`
+        + `<td class="z">${EUR(p.betragNetto)}</td></tr>`).join('');
+      const fehlt = r.ausgelassen.length
+        ? `<p class="antwort"><strong>Was in dieser Rechnung nicht steht.</strong> `
+          // **Kein `href="#"`.** Der erste Anlauf verlinkte die Positionsliste
+          // oben mit einer Raute, und der Verweisprüfer des Baus hat die Seite
+          // nicht ausgeliefert: *„Ausgegebene Adressen, die ins Leere gehen (8)".*
+          // Die Tabelle trägt keine Kennung, und eine zu erfinden, nur damit ein
+          // Verweis dasteht, wäre ein Anker für den Verweis und nicht für den
+          // Leser — die Liste steht zwei Absätze weiter oben auf derselben Seite.
+          + 'Diese Positionen stehen in der Positionsliste oben, '
+          // **Mit Doppelpunkt.** `pruefe-seiten` verlangt zu jeder Zahl mit
+          // Einheit eine Herkunft und erkennt sie unter anderem an dem Wort
+          // Stand samt Doppelpunkt. Ohne ihn stand hier eine Mengenangabe
+          // (110 Quadratmeter) ohne Quelle — der Absatz daneben kam nur durch,
+          // weil er einen Verweis auf die Lieferseite trägt.
+          // **„Preisgrundlage, Stand:" und nicht „Preisstand:".** Das Muster von
+          // `pruefe-seiten` sucht das Wort Stand mit großem S und trägt kein
+          // `i`-Kennzeichen; in „Preisstand" steht es klein, und der Absatz
+          // blieb mit Verdacht stehen. Der Doppelpunkt allein genügte nicht.
+          + `Preisgrundlage, Stand: ${esc(r.preisstand.text)}. `
+          + `${r.ausgelassen.map((o) => `<strong>${esc(o.position)}</strong> — `
+            + `${esc(o.kunde)}`).join(' ')}</p>`
+        : '';
+      teile.push(`<h2>Was das in Zahlen heißt</h2>
+<p class="antwort"><strong>${esc(r.umfang)}.</strong> Eine Beispielrechnung für genau diesen
+Umfang — keine Zusage: Verbindlich wird ein Preis erst mit dem Angebot, das
+${BINDEFRIST.tage} Tage bindet. Die Mengen folgen aus dem Umfang und nicht aus einem Bauwerk;
+stimmt Ihr Vorhaben nicht damit, ändern sie sich. Preisstand ${esc(r.preisstand.text)}; die
+Zustellung folgt den Sätzen auf <a href="${verweis('lieferung')}">Lieferung und Fracht</a>.</p>
+<div class="scroll"><table><thead><tr><th>Position</th><th>Artikel</th><th>Menge</th>
+<th>je Einheit</th><th>Betrag</th></tr></thead><tbody>${zeilen}
+<tr><th colspan="4">Warenwert netto</th><th class="z">${EUR(r.warenwertNetto)}</th></tr>
+<tr><th colspan="4">Zustellung im Liefergebiet</th><th class="z">${EUR(r.frachtNetto)}</th></tr>
+<tr><th colspan="4">Summe netto</th><th class="z">${EUR(r.summeNetto)}</th></tr>
+</tbody></table></div>
+${fehlt}`);
+    }
+  }
+
+  /*
    * **Wo das Merkblatt steht — 7. September 2026.**
    *
    * Die zweite Redaktionsregel schickt den Leser ins Merkblatt des
@@ -1498,7 +1611,19 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
    */
   {
     const hersteller = herstellerDerGruppe(katalog.artikel, seite.kopf.gruppe ?? null);
-    if (hersteller.length && MERKBLATT.test(seite.koerper ?? '')) {
+    /*
+     * **Auch der Rechnungsabschnitt zählt — 22. Oktober 2026.** Geprüft wurde
+     * hier nur `seite.koerper`, also der Text aus `inhalte/`. Seit heute
+     * schickt auch ein **gebauter** Abschnitt den Leser ins Merkblatt: Der
+     * Kundensatz zum ausgelassenen Perimeterkleber sagt, der Verbrauchswert
+     * stehe dort. `test/merkblattverweis.test.js` hat es gemeldet — die
+     * Kellerwandseite nannte ein Merkblatt und keinen Hersteller.
+     *
+     * > **Eine Regel über den Quelltext einer Seite übersieht, was der Bau
+     * > dazuschreibt.**
+     */
+    const bisher = teile.join('\n');
+    if (hersteller.length && (MERKBLATT.test(seite.koerper ?? '') || MERKBLATT.test(bisher))) {
       teile.push(`<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
 dieser Warengruppe führt der Hersteller: ${hersteller
         .map((h) => `<a href="${h.url}" target="_blank" rel="noopener noreferrer">${esc(h.name)}</a>`)
@@ -1616,7 +1741,24 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     teile.push(`<div class="verwandt">${verwandt.map((v) => `<a href="${verweis(v.id)}">${esc(v.kopf.titel)}</a>`).join('')}</div>`);
   }
 
-  const liste = positionsliste(seite.koerper);
+  /*
+   * **Die Rechnung einmal gebaut, zweimal gebraucht.** Sie steht im Abschnitt
+   * „Was das in Zahlen heißt" für den Leser und in der `ItemList` für die
+   * Maschine. Gerechnet wird sie hier **einmal** — zwei Aufrufe desselben
+   * Bauwerks wären zwei Wege zu derselben Zahl, und einer davon ist
+   * irgendwann alt.
+   */
+  const rechnungFuerLd = (() => {
+    if (seite.art !== 'system') return null;
+    const z = ZUORDNUNG.find((x) => x.slug === seite.kopf.slug);
+    const r = z ? beispielrechnung(WARENKOERBE[z.gruppe], katalog) : null;
+    return r?.steht ? { ...r, satz: rechnungssatz(r, EUR) } : null;
+  })();
+  const liste = positionsliste(
+    seite.koerper,
+    rechnungFuerLd,
+    (sku) => `${BASIS}/artikel/${sku}.html`,
+  );
   const jsonLd = {
     '@context': 'https://schema.org',
     /**
@@ -3260,7 +3402,34 @@ function main() {
         const luecke = gelesen.ohneSortiment > 0
           ? ` — davon liefern wir ${gelesen.ohneSortiment} von ${gelesen.positionen} Positionen nicht`
           : '';
-        return `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${alsText(String(s.kopf.frage ?? ''))}${luecke}`;
+        /*
+         * **Und die Summe — 22. Oktober 2026.** Hier stand die Frage der
+         * Seite und keine Zahl. Ein Assistent, der auf „was kostet ein
+         * Kaminzug" stößt, müsste die Seite laden, zehn Positionen einzeln
+         * nachsehen, Mengen aus „Gesamthöhe ÷ Steinhöhe" herleiten und selbst
+         * rechnen — das tut keiner in einer Antwort.
+         *
+         * > **Eine Liste, die ihre Frage nennt und ihre Summe nicht,
+         * > beantwortet die Frage nicht.**
+         *
+         * Gerechnet ist die Zahl seit dem 28. August, nur stand sie in
+         * `ausgabe/kampagne/` und ging nie online. Der Umfang nennt dabei die
+         * enthaltenen Positionen und nicht das Vorhaben allein: Kein Korb
+         * deckt die geführten Positionen seiner Systemliste, und „Ein
+         * Kaminzug: 1.236,71 €" bei zwei von zehn wäre der Preis für einen
+         * halben Kamin.
+         */
+        const z = ZUORDNUNG.find((x) => x.slug === s.kopf.slug || `system/${x.slug}` === s.id);
+        const r = z ? beispielrechnung(WARENKOERBE[z.gruppe], katalog) : null;
+        // **`EUR` und nicht `euro`.** Der Formatierer der Seiten setzt über
+        // tausend ein schmales Leerzeichen als Tausendertrenner, und ein Parser
+        // liest daraus zwei Zahlen. `src/format.js` sagt es selbst: nie ein
+        // Tausenderpunkt — und in einer maschinenlesbaren Datei auch kein
+        // anderes Trennzeichen.
+        const satz = r?.steht ? rechnungssatz(r, EUR) : null;
+        return `- [${s.kopf.titel}](${BASIS}/${s.id}.html): `
+          + `${alsText(String(s.kopf.frage ?? ''))}${luecke}`
+          + (satz ? `\n  - ${satz}` : '');
       }),
     '', '## Sortiment', '',
     ...[...seiten.values()].filter((s) => s.art === 'gruppen')

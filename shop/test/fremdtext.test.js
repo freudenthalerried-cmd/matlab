@@ -32,6 +32,7 @@ import {
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 import { erzeugeAbsage } from '../src/absage.js';
 import { kundenWarenkorb, preisspannensatz } from '../src/shopkern.js';
+import { rechnungssatz } from '../src/beispielrechnung.js';
 import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt, herkunftssatz } from '../src/maschinenlesbar.js';
@@ -673,6 +674,34 @@ test('Ausgang Archiv: ein Name, der aus dem Ziel hinausführt, kommt nicht ins P
  * ist Fremdtext im engeren Sinn, und der erste Anlauf hat ihn roh in den Satz
  * gesetzt.
  */
+/*
+ * **Der Ausgang Beispielrechnung — aufgenommen am 22. Oktober 2026.** Er
+ * setzt den Umfang eines Referenzwarenkorbs in einen Satz, der auf die
+ * Systemseite **und** in `llms.txt` geht. Der Umfang ist ein Text aus dem
+ * Bestand und kein Fremdtext im engeren Sinn — geprüft gehört er trotzdem:
+ * Ein Umbruch darin zerlegte eine Zeile der maschinenlesbaren Datei in zwei,
+ * und `llms.txt` ist zeilenorientiert.
+ */
+test('Ausgang Beispielrechnung: Gift im Umfang erzeugt keine zweite Zeile', () => {
+  const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+  const lage = (umfang) => ({
+    steht: true,
+    umfang,
+    positionen: [{ was: 'Mantelsteine' }],
+    ausgelassen: [],
+    warenwertNetto: 100,
+    frachtNetto: 10,
+    summeNetto: 110,
+  });
+  const harmlos = rechnungssatz(lage('Ein Kaminzug: Mantelsteine'), geld);
+  const giftig = rechnungssatz(lage(`Ein Kaminzug: Mantelsteine${GIFT}`), geld);
+  assert.equal(zeilen(giftig), zeilen(harmlos),
+    'ein Umbruch im Umfang macht aus einer Zeile von llms.txt keine zwei');
+  // Und der Schluss muss überleben: Ohne ihn liest ein Assistent eine Summe
+  // ohne den Satz, der sie als Beispielrechnung ausweist.
+  assert.match(giftig, /keine Zusage$/);
+});
+
 test('Ausgang Preisspanne: Gift in der Eingabe erzeugt keine zweite Zeile', () => {
   const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
   const lage = { preisAb: null, preisBis: null, ohnePreis: 0, geld };

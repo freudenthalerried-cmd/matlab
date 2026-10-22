@@ -38,7 +38,12 @@ if (!existsSync(SITE)) {
 {
   const stand = frischebefund(SHOP, 'ausgabe/site');
   if (!stand.frisch) {
-    console.error(abbruchtext(stand));
+    // `abbruchtext` gibt **Zeilen** zurück, nicht einen Satz. Bis zum
+    // 22. Oktober 2026 stand hier `console.error(abbruchtext(stand))`, und die
+    // Weigerung erschien als JavaScript-Array mit Hochkommas und Klammern —
+    // lesbar, aber nicht als Satz. Gefunden beim Lesen des Schnelllaufs, der
+    // die erste Zeile zeigte: ein einzelnes `[`.
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
     process.exit(2);
   }
 }

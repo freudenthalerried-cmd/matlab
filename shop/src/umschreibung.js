@@ -620,6 +620,25 @@ export const FORMMUSTER = Object.freeze([
    * keinen Text dieses Hauses etwas aus.
    */
   'bankverbindung.AT_IBAN',
+  /*
+   * **`beispielrechnung.MARGENWOERTER` kam am 22. Oktober 2026 dazu**, und der
+   * Grund ist ein Befund: Es ist **keine** Dublette zur Regel `eigene-marge`
+   * in `src/interna.js`, sondern die Ergänzung für einen Fall, den jene nicht
+   * sieht.
+   *
+   * Gemessen: `findeInterna` über eine Rechnung mit dem Feld
+   * `"deckungsbeitrag": 245.53` meldet **nichts**. Ihr Muster liest
+   * `Deckungsbeitrag` mit großem Anfangsbuchstaben, weil es für Fließtext
+   * geschrieben ist; ein Feldname ist klein.
+   *
+   * > **Dieselbe Lücke wie bei `"lieferantId":"poschacher"` am 15. September:
+   * > kleingeschrieben und vom Muster nie gesehen.**
+   *
+   * Eine Behauptung über den Shop ist diese Liste nicht — sie sagt über keinen
+   * Text dieses Hauses etwas aus, sondern verbietet Feldnamen in einer
+   * Datenstruktur, bevor sie auf eine Seite kommt.
+   */
+  'beispielrechnung.MARGENWOERTER',
   'abgrenzung.ABGRENZUNGSMUSTER', 'belegpruefung.SUMMENZEILE', 'geschaeftszeit.KALENDERRUF',
   'geschaeftszeit.ROHGRIFF', 'krume.KRUMENMUSTER', 'merkblattverweis.MERKBLATT',
   'sitemapstand.DATUM', 'sperrguteinstufung.EINSTUFUNGSBLOCK', 'sperrguteinstufung.FLAECHENMUSTER',
