@@ -14,7 +14,7 @@
  * zweiten Liste, die dieselbe Zahl noch einmal behauptet.
  */
 
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -22,6 +22,8 @@ import { abbruchtext, frischebefund, VERALTET_SATZ } from '../src/erzeugnisstand
 import { OHNE_WERKZEUG } from '../src/offenepunkte.js';
 import { GRENZE_TAGE } from '../src/preisalter.js';
 import { punktebefund } from '../src/punktezahlen.js';
+import { angebotsbefund } from '../src/angebotsgueltigkeit.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { beschreibungsbefund } from '../src/maschinenlesbar.js';
 import { massbefund } from '../src/bezeichnungsmass.js';
 import { OHNE_GEGENSTAND } from '../src/prueferurteil.js';
@@ -60,8 +62,26 @@ const katalog = lies(join(SHOP, 'data', 'katalog-baustoff.json'));
 const betreiber = lies(join(SHOP, 'data', 'betreiber.json'));
 const messliste = lies(messlistendatei);
 
+/*
+ * **Die Angebotsgültigkeit kommt aus den gebauten Seiten — 22. Oktober 2026.**
+ * Nicht aus dem Katalog: `priceValidUntil` entsteht beim Bau, und was ein
+ * Crawler findet, ist das Erzeugnis. Dieser Prüfer liest `ausgabe/` schon für
+ * die Messliste; eine Datei mehr aus demselben Verzeichnis ändert seine Art
+ * nicht.
+ */
+const artikelordner = join(SHOP, 'ausgabe', 'site', 'artikel');
+const angebote = angebotsbefund(
+  existsSync(artikelordner)
+    ? readdirSync(artikelordner).filter((d) => d.endsWith('.html'))
+      .map((d) => ({ name: d, inhalt: readFileSync(join(artikelordner, d), 'utf8') }))
+    : [],
+  geschaeftstag(),
+);
+
 const messwerte = {
   artikel: katalog.artikel.length,
+  abgelaufeneAngebote: angebote.abgelaufen,
+  ausgezeichneteAngebote: angebote.mitPreis,
   mitGewicht: katalog.artikel.filter((a) => a.gewichtKg != null).length,
   mindestbestellwert: betreiber.mindestbestellwertNetto,
   grenzeTage: GRENZE_TAGE,

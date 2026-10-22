@@ -90,7 +90,14 @@ export const FRAGEN = Object.freeze([
   Object.freeze({
     id: 'preisrhythmus',
     titel: 'Rhythmus der Preisänderungen',
-    schliesst: Object.freeze(['preisrhythmus']),
+    /*
+     * **`angebote-abgelaufen` seit dem 22. Oktober 2026 mit dabei.** Dieselbe
+     * Frage schließt zwei Punkte, und das ist kein Zufall: Das
+     * Gültigkeitsdatum der maschinenlesbaren Auszeichnung ist der Preisstand
+     * plus neunzig Tage. Es verlängert sich nicht durch einen Bau, sondern nur
+     * durch eine neue Liste — und wie oft eine kommt, ist genau diese Frage.
+     */
+    schliesst: Object.freeze(['preisrhythmus', 'angebote-abgelaufen']),
     // **Geschärft am 3. September.** Die Frage lautete nur „In welchem Rhythmus
     // ändern sich Ihre Preise?". Wer eine Frage stellt und dazusagt, was er
     // schon gesehen hat, bekommt eine genauere Antwort — und zeigt, dass er

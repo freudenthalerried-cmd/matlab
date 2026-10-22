@@ -704,6 +704,25 @@ export const PRUEFER = [
     mindestens: 5,
   },
   {
+    // **Aufgenommen am 22. Oktober 2026**, aus der Weisung „erstelle shop für
+    // ki optimiert, sodaß wenn jemand etwas sucht … den preis oder das angebot
+    // von meinem shop hat". Der Crawlerzugang stand, die Auszeichnung stand,
+    // der Preis stand — und 24 von 46 Angeboten trugen ein Gültigkeitsdatum
+    // in der Vergangenheit. Die Zahl war bekannt und stand als Kommentar in
+    // `src/maschinenlesbar.js`, mit ihrem Messtag und dem Satz „weil sie mit
+    // jedem Tag wächst": sieben am 6. September, elf am 10.
+    //
+    // Gemessen wird am **Erzeugnis** und der Widerspruch, nicht die Zahl: Sie
+    // wächst, wenn niemand etwas tut, und ein Prüfer, der an der Zeit rot
+    // wird, blockiert jeden Commit ohne Zutun. Sie geht in die offenen Punkte,
+    // wo sie einen Adressaten hat.
+    name: 'pruefe-angebote',
+    werkzeug: 'angebotspruefung.mjs',
+    muster: /Angebotsgültigkeit am \d{4}-\d{2}-\d{2} — (\d+) Artikelseiten/,
+    einheit: 'ausgezeichnete Angebote gegen ihren Klartext',
+    mindestens: 10,
+  },
+  {
     name: 'pruefe-gates',
     werkzeug: 'gatepruefung.mjs',
     muster: /Gate-Stand — (\d+) Gates/,

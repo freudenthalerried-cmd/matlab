@@ -1,6 +1,6 @@
 # Festgelegte Projektparameter
 
-Stand: **2026-10-15**. Diese Werte sind vom Auftraggeber entschieden und nicht
+Stand: **2026-10-22**. Diese Werte sind vom Auftraggeber entschieden und nicht
 mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 
 > **Was dieses Datum heißt — seit 14. September 2026.** Es nennt den Tag der
@@ -47,6 +47,7 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | 03.09. | **Der Shop tritt als „Bauversand" auf** — nicht unter dem Firmennamen | Steht als `marke` in `data/betreiber.json` und von dort in Logo, Seitentitel, `llms.txt`, im Absender jedes Belegs („Bauversand — Freudenthaler Bau GmbH") und als `name` jeder Organisation der strukturierten Daten, mit `legalName` daneben. **Die Freudenthaler Bau GmbH bleibt die Betreiberin**: Impressum, Belege, `seller` und `publisher`. Das Impressum verbindet beide in einer Zeile. `bestellt-bei-bauversand-rechnung-von-wem.md`, `wer-ist-bauversand.md` |
 | 03.09. | **„Baustoffe zum Baumeisterpreis" soll nicht bleiben** — die Überschrift der Startseite | Drei Fassungen liegen zur Wahl in [`die-ueberschrift-der-startseite.md`](./die-ueberschrift-der-startseite.md); umgesetzt wird keine, bis der Auftraggeber wählt. **Offen und seit dem 11.09. geführt** — bis dahin stand sie in keiner Zeile und in keiner Liste offener Punkte, und die `<h1>` trug acht Tage lang genau den Satz, der nicht bleiben soll |
 | 15.10. | „**mach weiter mit filter und sortierung**" | Beides war gebaut, angeboten war die Hälfte: `filtere` nahm `preisAb` und `preisBis` seit dem ersten Tag, `filterwerte` rechnete `preisMin` und `preisMax` **nur für diese zwei Felder** aus, und die Leiste bot kein Bedienelement dafür an. Gebaut wurde deshalb zuerst der Prüfer (`npm run pruefe-filter`, `src/filterangebot.js`), der jede Kernfähigkeit gegen die Leiste hält — dann die Preisspanne selbst, mit dem Satz, den sie schuldig ist. Im Wortlaut in [`der-filter-war-schon-da.md`](./der-filter-war-schon-da.md) |
+| 22.10. | „**erstelle shop für ki optimiert, sodaß wenn jemand etwas sucht oder sich informiert den preis oder das angebot von meinem shop hat**" | Gemessen vor dem Bauen: Der Crawlerzugang steht und ist richtig zugeschnitten — die **Such**-Roboter dürfen herein, die **Trainings**-Sammler nicht; `Product`/`Offer` tragen Preis, Nettokennzeichnung, Mindestbestellwert und alle fünf Lieferbezirke; `llms.txt` nennt jeden Artikel mit Preis. **Dazwischen stand eine Zahl: 24 von 46 Angeboten trugen ein Gültigkeitsdatum in der Vergangenheit**, und für eine Maschine ist das kein Angebot. Gebaut ist `npm run pruefe-angebote` (`src/angebotsgueltigkeit.js`), der am Erzeugnis den Widerspruch zwischen Auszeichnung und Klartext hält; die Zahl selbst geht in `npm run offenepunkte` und hängt an der Preisliste des Lieferanten. Im Wortlaut in [`was-eine-maschine-heute-findet.md`](./was-eine-maschine-heute-findet.md) |
 
 > **Seit dem 7. September wird diese Tabelle gemessen.** `npm run pruefe-weisungen`
 > liest die acht Weisungen von hier und hält jede gegen den Bestand: sieben

@@ -141,6 +141,24 @@ export function kennzahlen(m) {
       wie: 'ausgabe/messliste-baustoff.json (npm run messliste)',
       muster: /Suchvolumen der (\d+) Keywords/, soll: m.begriffe,
     },
+    /*
+     * **Seit 22. Oktober 2026.** Die Zahl, die zwischen diesem Shop und der
+     * Frage „was kostet das" steht, wenn ein Assistent sie stellt. Sie geht
+     * gegen die **gebauten** Seiten und nicht gegen den Katalog: Was ein
+     * Crawler liest, ist das Erzeugnis, und das Gültigkeitsdatum entsteht erst
+     * beim Bau. Sie wächst mit jedem Tag ohne neue Preisliste — sieben am
+     * 6. September, elf am 10., vierundzwanzig heute.
+     */
+    {
+      name: 'Angebote mit abgelaufener Gültigkeit', wo: 'angebote-abgelaufen',
+      wie: 'ausgabe/site/artikel (npm run pruefe-angebote)',
+      muster: /^(\d+) von \d+ Angeboten gelten/, soll: m.abgelaufeneAngebote,
+    },
+    {
+      name: 'Ausgezeichnete Angebote', wo: 'angebote-abgelaufen',
+      wie: 'ausgabe/site/artikel (npm run pruefe-angebote)',
+      muster: /^\d+ von (\d+) Angeboten gelten/, soll: m.ausgezeichneteAngebote,
+    },
   ];
 }
 

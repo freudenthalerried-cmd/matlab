@@ -4023,15 +4023,26 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Der Kopf von PARAMETER.md nennt einen aelteren Tag als die juengste Weisung',
     datei: 'docs/baustoff-shop/PARAMETER.md',
     art: 'ersetzen',
-    // **Nachgezogen am 15. Oktober 2026.** Der Suchtext trägt das Datum des
-    // Kopfes, und der Kopf ist genau das, was diese Gegenprobe prüft: Mit der
-    // Weisung „mach weiter mit filter und sortierung" kam eine Zeile in die
-    // Tafel, der Kopf musste mitwandern, und damit zeigte der Suchtext ins
-    // Leere. `test/gegenprobenregister.test.js` hat es im selben Lauf
-    // gemeldet — eine Gegenprobe über ein Datum altert mit dem Datum.
-    suchen: 'Stand: **2026-10-15**. Diese Werte sind vom Auftraggeber entschieden',
-    ersetzen: 'Stand: **2026-08-28**. Diese Werte sind vom Auftraggeber entschieden',
-    erwartet: /der Kopf nennt 28\.08\., die jüngste Weisung der Tafel ist vom 15\.10\./,
+    // **Von der anderen Seite gefasst — 22. Oktober 2026.**
+    //
+    // Hier stand der **Kopf** als Suchtext, mit seinem Datum darin. Am
+    // 15. Oktober musste er nachgezogen werden, am 22. wieder: Jede neue
+    // Weisung schiebt den Kopf, und der Suchtext zeigte danach ins Leere.
+    // Zweimal in acht Tagen dieselbe Stelle — und das Nachziehen war eine
+    // Verlängerung, keine Behebung.
+    //
+    // > **Eine Gegenprobe, die man regelmäßig nachzieht, prüft den Bestand
+    // > nicht mehr, sondern den eigenen Fleiß.**
+    //
+    // Gemessen wird dieselbe Zusicherung jetzt von der Gegenseite: Nicht der
+    // Kopf wird älter gemacht, sondern die Tafel jünger. Die Mutation setzt
+    // eine Zeile mit einem späten Datum **vor die älteste** — die Zeile vom
+    // 22. August, die als erste der Tafel nicht mehr wandert. Danach hinkt der
+    // Kopf nach, gleich welches Datum er trägt, und die Erwartung nennt nur
+    // das Datum der Mutation. Kommt eine Weisung 16 dazu, bleibt beides wahr.
+    suchen: '| 22.08. | „youtube:',
+    ersetzen: '| 31.12. | Mutation der Gegenprobe |\n| 22.08. | „youtube:',
+    erwartet: /die jüngste Weisung der Tafel ist vom 31\.12\./,
     warum: 'Die Datei sagt in ihrem eigenen Kopf, sie rangiere ueber dem Gate-Register und es '
       + 'sei teuer, wenn hier etwas Ueberholtes stehe. Ihr Datum war elf Tage alt und richtig — '
       + 'nur konnte das niemand sehen: Ein altes Datum sagt nicht, ob nichts geschehen ist oder '
@@ -5387,6 +5398,33 @@ export const GEGENPROBEN = Object.freeze([
       + 'unlesbaren Eingabe hält er eine Grenze für angelegt, die nie entstanden ist. Die '
       + 'Mutation schaltet den Satzbau ab und lässt das Filtern stehen: So verschwinden die '
       + 'Karten weiterhin, nur eben wieder stillschweigend.',
+  }),
+  Object.freeze({
+    id: 'gueltigkeit-ueberdehnt',
+    pruefer: 'pruefe-angebote',
+    was: 'Ein Gültigkeitsdatum, das länger gilt als die Grundlage, auf der es steht',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    // **Berichtigt beim ersten Lauf.** Zuerst stand hier die Zeile darüber —
+    // die **Bedingung** des Zweigs. Mutiert war damit nur die Frage, *ob* ein
+    // Gültigkeitsdatum gesetzt wird, und nicht welches; die Auszeichnung blieb
+    // unverändert und der Prüfer zu Recht grün. Der Läufer hat es gemeldet:
+    // „meldete trotz Mutation grün".
+    //
+    // > **Eine Mutation, die den Prüfwert nicht berührt, prüft den Prüfer
+    // > nicht.**
+    suchen: '      ? { priceValidUntil: lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand) }',
+    ersetzen: '      ? { priceValidUntil: lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand, 3650) }',
+    erwartet: /satz-ohne-abgelaufene-auszeichnung|der Mensch erfährt mehr als die Maschine/,
+    warum: 'Die Mutation setzt die Frist von neunzig Tagen auf zehn Jahre — der Griff, der '
+      + 'einem zuerst einfällt, wenn 24 von 46 Angeboten als abgelaufen gelten und ein '
+      + 'Produktfeed sie deshalb verwirft. Sie lässt den Klartextsatz der Artikelseite stehen, '
+      + 'und genau dort muss es auffallen: Die Seite sagt dem Leser weiterhin, die Grundlage '
+      + 'sei älter als die eigene Grenze, während die Auszeichnung der Maschine ein gültiges '
+      + 'Angebot meldet. **Ein längeres priceValidUntil macht aus einem alten Preis keinen '
+      + 'neuen**, sondern aus einer Auskunft eine Behauptung gegenüber einem Leser, der sie '
+      + 'nicht nachprüfen kann.',
   }),
 ]);
 

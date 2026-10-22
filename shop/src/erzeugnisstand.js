@@ -80,6 +80,11 @@ export const ERZEUGNISSE = Object.freeze({
 export const LESER = Object.freeze([
   Object.freeze({ werkzeug: 'bin/inhaltspruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/crawlerpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 22. Oktober 2026.** Was eine Maschine findet, findet sie am
+  // Erzeugnis: `priceValidUntil` steht im JSON-LD der gebauten Seite, und der
+  // Klartextsatz daneben auch. Ein Lauf über eine Woche alte Seiten misst die
+  // Gültigkeit von vorletztem Montag.
+  Object.freeze({ werkzeug: 'bin/angebotspruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/datenschutzpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/dublettenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   // **Ergänzt am 5. September.** Sie hält seither auch die gebauten Flächen

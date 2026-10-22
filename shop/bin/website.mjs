@@ -1010,9 +1010,11 @@ von dem die Grundlage dieses Preises stammt. Verbindlich wird der Preis nicht hi
 Angebot: Das bindet ${BINDEFRIST.tage} Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
 § 862 ABGB, Stand: ${esc(BINDEFRIST.stand)}). Bis dahin ist die Zahl eine Auskunft und keine Zusage.${
   alt ? `
-<br><strong>Diese Grundlage ist ${tage} Tage alt</strong> und damit älter als die selbst gesetzte
-Grenze von ${GRENZE_TAGE} Tagen. Der Preisrhythmus des Lieferanten ist uns nicht bekannt — die Frage
-steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird dieser Preis nachgesehen.`
+<br><span class="preis-ueberholt" data-alter="${tage}" data-grenze="${GRENZE_TAGE}">`
++ `<strong>Diese Grundlage ist ${tage} Tage alt</strong> und damit älter als die selbst gesetzte `
++ `Grenze von ${GRENZE_TAGE} Tagen.</span> Der Preisrhythmus des Lieferanten ist uns nicht `
++ `bekannt — die Frage steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird `
++ `dieser Preis nachgesehen.`
     : ''}</p>`);
   }
 

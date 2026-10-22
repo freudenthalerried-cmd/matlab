@@ -316,6 +316,25 @@ export const WEISUNGEN = Object.freeze([
       + 'zweite ist der wichtigere, denn die Lücke war nicht das fehlende Feld, sondern dass '
       + 'sie wochenlang unentdeckt bleiben konnte.',
   }),
+  Object.freeze({
+    nr: 15,
+    datum: '22.10.',
+    stichwort: '„erstelle shop für ki optimiert" — der Preis soll aus diesem Shop kommen',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/angebotsgueltigkeit.js', muster: /angebotsbefund/ }),
+      Object.freeze({ datei: 'shop/src/crawler.js', muster: /OAI-SearchBot/ }),
+    ]),
+    warum: 'Zur Hälfte erfüllt, und die Hälfte liegt nicht am Bau. Gemessen war am '
+      + '22. Oktober: Der Crawlerzugang steht und ist genau auf diese Weisung zugeschnitten — '
+      + 'die **Such**-Roboter dürfen herein, die **Trainings**-Sammler nicht —, die '
+      + 'Auszeichnung je Artikel trägt Preis, Nettokennzeichnung, Mindestbestellwert und alle '
+      + 'fünf Lieferbezirke, und `llms.txt` nennt jeden Artikel mit seinem Preis. Dazwischen '
+      + 'stand eine Zahl: **24 von 46 Angeboten trugen ein Gültigkeitsdatum in der '
+      + 'Vergangenheit**, und für eine Maschine ist das kein Angebot. Die zweite Spur zeigt '
+      + 'deshalb auf den Zugang, die erste auf den Prüfer, der die Lücke sichtbar hält. Was '
+      + 'offen bleibt, hängt nicht am Werkzeug: Das Gültigkeitsdatum verlängert nur eine neue '
+      + 'Preisliste, und bestellen kann bei diesem Shop noch niemand.',
+  }),
 ]);
 
 

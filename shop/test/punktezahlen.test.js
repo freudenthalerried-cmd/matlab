@@ -7,6 +7,11 @@ const MESSWERTE = {
   artikel: 46, mitGewicht: 7, mindestbestellwert: 250, grenzeTage: 90, begriffe: 29,
   ohneWareneigenschaft: 21, nurDatensatz: 13,
   eindeutigeNamen: 8, namensleserGewinn: 3,
+  // **Ergänzt am 22. Oktober 2026** mit der Angebotsgültigkeit. Die Attrappe
+  // trägt beide Zahlen, weil der Punkt beide nennt — „24 von 46". Ohne sie
+  // meldete der Prüfer „der Sollwert ist keine Zahl", und das war richtig: Ein
+  // Sollwert `undefined` deckt jede Zahl auf der Seite.
+  abgelaufeneAngebote: 24, ausgezeichneteAngebote: 46,
 };
 
 /**
@@ -32,6 +37,15 @@ const gut = () => ({
       text: 'Beschreibung: 21 von 46 sagen über die Ware selbst nichts, '
         + 'bei 13 davon der Preisstand allein. Namen mit eindeutigem Maß: 8 von 46. '
         + 'Er hat sie auf 21 gesenkt, und weiter erreichbar ist damit 3.',
+    },
+    // **Ergänzt am 22. Oktober 2026.** `kennzahlen` gibt die ganze Tafel
+    // zurück, und `punktebefund` hält sie in **beide** Richtungen: Eine
+    // Kennzahl, deren Punkt die Liste nicht kennt, ist ein Befund. Ohne diese
+    // Zeile meldete der Prüfer „den gibt es nicht mehr" — über einen Punkt,
+    // den es gibt, nur nicht in dieser Attrappe.
+    {
+      id: 'angebote-abgelaufen',
+      text: '24 von 46 Angeboten gelten für eine Maschine als abgelaufen',
     },
   ],
   messwerte: MESSWERTE,

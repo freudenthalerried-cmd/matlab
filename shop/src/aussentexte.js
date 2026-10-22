@@ -131,6 +131,11 @@ export const KEIN_AUSGANG = Object.freeze([
   // **Ergänzt am 14. September** mit der Zusammenlegung der Browsersuche.
   // Derselbe Fall wie die beiden darüber: eine Zeile für die eigene Konsole.
   Object.freeze({ funktion: 'browserzeile', warum: 'Baut die Zeile, mit der eine Browserprobe sagt, in welchem Browser sie gelaufen ist — aus einem Pfad des eigenen Dateisystems und einer Kennzeichnung aus dem eigenen Bestand. Sie geht an die Konsole des Betreibers und an keinen Empfänger außerhalb des Rechners; kein fremder Text erreicht sie.' }),
+  // **Ergänzt am 22. Oktober 2026** mit dem Prüfer der Angebotsgültigkeit.
+  // Derselbe Fall wie die drei darüber: ein Satz für die eigene Konsole und
+  // für die Liste der offenen Punkte, die der Auftraggeber liest — und nicht
+  // für einen Empfänger außerhalb des Rechners.
+  Object.freeze({ funktion: 'ablaufsatz', warum: 'Baut den Satz, der sagt, was die Zahl der abgelaufenen Angebotsauszeichnungen für die Auffindbarkeit bedeutet — aus zwei eigenen Zählwerten und einem eigenen Datum, für die Konsole des Betreibers und für npm run offenepunkte. Fremdtext erreicht ihn nicht: Er nimmt keine Zeichenkette entgegen, sondern einen Befund mit Zahlen, und er geht an keinen Kunden und keinen Lieferanten.' }),
   Object.freeze({ funktion: 'abbruchtext', warum: 'Baut die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen — drei Zeilen für die Konsole des Betreibers, aus Dateinamen des eigenen Bestands. Kein fremder Text erreicht sie, und sie erreicht keinen Empfänger außerhalb des Rechners.' }),
   // **Ergänzt am 5. September**, mit der Verlegung des Frachtsatzes in ein
   // eigenes Modul. Der Satz geht sehr wohl an den Kunden — aber er entsteht

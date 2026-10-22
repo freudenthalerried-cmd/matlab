@@ -25,6 +25,9 @@ const GRUPPE = [
   'preisalter', 'preisrhythmus', 'liefergebiet-lieferant', 'palettenzahl', 'artikelliste',
   // Neu am 6. September: Abholung war fünfmal zugesagt und nie gefragt.
   'abholung-durch-kunden',
+  // Neu am 22. Oktober: Die abgelaufenen Angebotsauszeichnungen hängen an
+  // derselben Frage wie der Preisrhythmus — wie oft eine neue Liste kommt.
+  'angebote-abgelaufen',
 ].map((id) => ({ id }));
 
 const betreiber = {
@@ -48,7 +51,15 @@ test('ein neuer offener Punkt ohne Frage wird gemeldet', () => {
 
 test('eine Frage, die nichts mehr schließt, wird gemeldet', () => {
   // Jede zusätzliche Frage senkt die Antwortwahrscheinlichkeit aller übrigen.
-  const nurNoch = GRUPPE.filter((p) => p.id !== 'preisrhythmus');
+  //
+  // **Nachgezogen am 22. Oktober 2026.** Hier stand ein Filter auf einen
+  // einzigen Punkt, und die Probe ging trotzdem auf, bis die Frage
+  // `preisrhythmus` einen **zweiten** Punkt bekam: Sie schloss dann noch
+  // etwas, und die Meldung blieb zu Recht aus. Die Zusicherung gilt der
+  // Frage, nicht der Zahl ihrer Punkte — gezogen werden deshalb alle, die
+  // sie schließt.
+  const ihre = new Set(FRAGEN.find((f) => f.id === 'preisrhythmus').schliesst);
+  const nurNoch = GRUPPE.filter((p) => !ihre.has(p.id));
   assert.deepEqual(fragenOhnePunkt(nurNoch), ['preisrhythmus']);
 });
 

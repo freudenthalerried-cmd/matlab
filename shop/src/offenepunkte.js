@@ -271,6 +271,39 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'ein Vielfaches der gerechneten Zeit. Liste: `npm run messliste`.',
   },
   {
+    /*
+     * **Aufgenommen am 22. Oktober 2026**, aus der Weisung „erstelle shop für
+     * ki optimiert, sodaß wenn jemand etwas sucht … den preis oder das angebot
+     * von meinem shop hat". Gemessen mit `npm run pruefe-angebote`: Der
+     * Crawlerzugang steht, die Auszeichnung steht, der Preis steht — **und 24
+     * von 46 Angeboten tragen ein Gültigkeitsdatum in der Vergangenheit.**
+     *
+     * > **Ein Angebot mit abgelaufener Gültigkeit ist für eine Maschine kein
+     * > Angebot.** Genau die Frage, um die es dem Auftraggeber geht, bleibt
+     * > damit unbeantwortet.
+     *
+     * Die Zahl ist nicht festgeschrieben: Sie kommt aus dem Prüfer und wächst
+     * mit jedem Tag, an dem keine Liste kommt. Sieben am 6. September, elf am
+     * 10., vierundzwanzig heute.
+     */
+    id: 'angebote-abgelaufen',
+    titel: '24 von 46 Angeboten gelten für eine Maschine als abgelaufen',
+    // **`anfrage` und nicht `entscheidung`.** Der erste Anlauf schrieb
+    // `auftraggeber` — eine Zuständigkeit, die dieses Register nicht kennt,
+    // und der Lauf brach ab. Richtig ist `anfrage`: Die Liste liegt beim
+    // Lieferanten, sie muss dort erfragt werden, und eine Anfrage an Dritte
+    // ist in diesem Haus freigabepflichtig. Der Auftraggeber entscheidet
+    // nichts, er holt etwas.
+    zustaendig: 'anfrage',
+    warumKeinWerkzeug: 'Das Gültigkeitsdatum ist der Preisstand plus die eigene '
+      + 'Neunzig-Tage-Grenze. Es verlängert sich nicht durch einen Bau, sondern nur durch eine '
+      + 'aktuelle Preisliste des Lieferanten — und die zu verlängern, damit mehr Angebote '
+      + 'gültig aussehen, wäre dieselbe Gestalt wie eine hochgesetzte Altersgrenze, nur '
+      + 'gegenüber einer Maschine statt gegenüber dem eigenen Prüfer.',
+    loest: 'Ohne gültige Auszeichnung verwirft ein Produktfeed den Preis, und ein Assistent '
+      + 'nennt den Shop ohne Preis oder nennt ihn nicht. Stand: `npm run pruefe-angebote`.',
+  },
+  {
     id: 'google-extended',
     titel: 'Nachlesen, was `Google-Extended` beim Anbieter tatsächlich steuert',
     zustaendig: 'entscheidung',
