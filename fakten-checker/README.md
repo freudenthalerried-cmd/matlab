@@ -9,6 +9,8 @@ Hört bei Gesprächen mit, erkennt prüfbare Behauptungen und zeigt in Sekunden,
 3. **Live-Prüfung** (`/api/verify`): Startet automatisch danach. Die Websuche ist auf offizielle Quellen beschränkt (Statistik Austria, Eurostat, OECD, WHO, gv.at …), die Karte wird mit Links aktualisiert.
 4. **Genauer ansehen** (`/api/detail`): Ausführliche Recherche mit Entwicklung, Vergleichen und Fallstricken bei Definitionen.
 
+**Aufzeichnung:** Jeder erkannte Satz landet mit Uhrzeit in der Mitschrift und bleibt im Browser gespeichert. „Als Textdatei speichern“ exportiert Gespräch und Prüfergebnisse samt Quellen. Optional wird zusätzlich das Audio aufgenommen und beim Stoppen als `.webm`-Datei gespeichert. Start ist erst möglich, wenn bestätigt wurde, dass alle Gesprächspartner Bescheid wissen.
+
 Gleiche Behauptungen werden 24 h zwischengespeichert. Das ist der Grundstock der späteren Wissensdatenbank.
 
 ## Starten
@@ -34,7 +36,7 @@ Die vertrauenswürdigen Domains stehen in `server.js` (`TRUSTED`).
 
 ## Vor einer Veröffentlichung
 
-- **Recht:** Fremde Gespräche aufzunehmen ist heikel (§ 120 StGB, DSGVO). Die App speichert kein Audio, trotzdem gehört eine Rechtsberatung, eine Datenschutzerklärung und ein klarer Hinweis an Gesprächspartner dazu.
+- **Recht:** Aufnahmen weiterzugeben oder zu veröffentlichen, ohne dass die Sprechenden zugestimmt haben, ist strafbar (§ 120 Abs. 2 StGB); dazu kommt die DSGVO. Mitschrift und Audio bleiben deshalb auf dem Gerät. Vor einer Veröffentlichung trotzdem Rechtsberatung und eine Datenschutzerklärung einholen.
 - **Kosten:** Jeder Gesprächsabschnitt löst einen Aufruf aus, jede Live-Prüfung eine Websuche. Vor dem öffentlichen Betrieb Login, Rate-Limit pro Nutzer und ein Abo-Modell einbauen.
 - **Qualität:** KI kann irren. Quelle und Sicherheit werden deshalb immer angezeigt.
 

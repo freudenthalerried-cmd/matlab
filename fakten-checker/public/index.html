@@ -51,6 +51,13 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .ghost{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--fg);border-radius:8px;font:600 .85rem var(--f-ui);padding:8px 12px;cursor:pointer}
 .detail{white-space:pre-wrap;font-size:.92rem;border-top:1px solid var(--line);padding-top:10px;overflow-wrap:anywhere}
 .foot{font-size:.75rem;color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.opts label{display:flex;gap:8px;align-items:center}
+.log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
+.log summary{cursor:pointer;font-weight:600}
+.log ol{margin:8px 0;padding-left:1.4em;max-height:40vh;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.log time{color:var(--muted);font-family:var(--f-num);font-size:.78rem;margin-right:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){.mic[aria-pressed="true"] .dot{animation:none}}
 </style>
 </head>
@@ -61,13 +68,25 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
     <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Mithören starten</span></button>
   </header>
   <div class="live" id="live" aria-live="polite">Tippe auf „Mithören starten“. Erkannte Sprache erscheint hier, Behauptungen werden automatisch geprüft.</div>
+  <div class="opts">
+    <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
+    <label><input type="checkbox" id="audio"> Audio zusätzlich aufnehmen (bleibt auf diesem Gerät)</label>
+  </div>
+  <details class="log">
+    <summary>Mitschrift (<span id="logCount">0</span> Sätze)</summary>
+    <ol id="logList"></ol>
+    <div class="row">
+      <button type="button" class="ghost" id="save">Als Textdatei speichern</button>
+      <button type="button" class="ghost" id="clear">Mitschrift löschen</button>
+    </div>
+  </details>
   <form id="form">
     <input id="q" autocomplete="off" placeholder="Oder Behauptung eintippen …">
     <button class="go">Prüfen</button>
   </form>
   <div class="status" id="status" aria-live="polite"></div>
   <div class="cards" id="cards"></div>
-  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Audio wird nicht gespeichert; die Spracherkennung läuft über den Browser. Bitte Gesprächspartner informieren, dass mitgehört wird.</p>
+  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über den Browser (bei Chrome über Google).</p>
 </div>
 <script>
 const $ = s => document.querySelector(s);
@@ -109,8 +128,8 @@ function links(list){
   return d;
 }
 
-async function verify(c, claim){
-  try{ fill(c, await api("/api/verify", {claim}), "Live geprüft"); }
+async function verify(c, claim, entry){
+  try{ const r = await api("/api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveLog(); fill(c, r, "Live geprüft"); }
   catch{ c.querySelector(".stage").textContent = "Schnellcheck (Live-Prüfung fehlgeschlagen)"; }
 }
 async function deep(claim, det, btn){
@@ -132,13 +151,66 @@ async function check(text){
     const fresh = claims.filter(r => r.claim && !seen.has(r.claim.toLowerCase()));
     fresh.forEach(r => {
       seen.add(r.claim.toLowerCase());
-      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim);
+      const entry = {...r, stage:"Schnellcheck", t:new Date().toISOString()}; log.checks.push(entry); saveLog();
+      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim, entry);
     });
     statusEl.textContent = fresh.length ? `${fresh.length} Behauptung(en) in ${((performance.now()-t0)/1000).toFixed(1)} s` : "Nichts Prüfbares erkannt.";
   }catch(e){ statusEl.textContent = e.message; }
 }
 
-$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; check(v); } });
+$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; addLine(v); check(v); } });
+
+// Mitschrift: Sätze und Prüfergebnisse, nur im Browser gespeichert
+const LOG_KEY = "fc-log";
+let log = { lines: [], checks: [] };
+try{ log = JSON.parse(localStorage.getItem(LOG_KEY)) || log; }catch{}
+function saveLog(){ try{ localStorage.setItem(LOG_KEY, JSON.stringify(log)); }catch{} }
+const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+function logLine(line){
+  const li = el("li"); li.append(el("time", null, hhmm(line.t)), document.createTextNode(line.text));
+  $("#logList").append(li); $("#logCount").textContent = log.lines.length;
+}
+function addLine(text){ const line = {t:new Date().toISOString(), text:text.trim()}; log.lines.push(line); saveLog(); logLine(line); }
+log.lines.forEach(logLine);
+function download(name, blob){
+  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const stamp = () => new Date().toISOString().slice(0,16).replace("T","_").replace(":","-");
+$("#save").onclick = () => {
+  const out = ["FAKTEN-CHECKER – Mitschrift vom " + new Date().toLocaleString("de-AT"), "", "GESPRÄCH"];
+  log.lines.forEach(l => out.push(`[${hhmm(l.t)}] ${l.text}`));
+  out.push("", "GEPRÜFTE BEHAUPTUNGEN");
+  log.checks.forEach(c => {
+    out.push(`[${hhmm(c.t)}] „${c.claim}“ → ${LABEL[c.verdict] || "Unklar"} (${c.stage})`, `   ${c.number ? c.number + " – " : ""}${c.fact || ""}`);
+    if(c.definition) out.push(`   Kennzahl: ${c.definition}`);
+    if(c.source) out.push(`   Quelle: ${c.source}${c.asOf ? ", Stand " + c.asOf : ""}`);
+    (c.sources || []).forEach(s => out.push(`   ${s.url}`));
+  });
+  download(`mitschrift_${stamp()}.txt`, new Blob([out.join("\n")], {type:"text/plain;charset=utf-8"}));
+};
+$("#clear").onclick = () => {
+  if($("#clear").dataset.sure !== "1"){ $("#clear").dataset.sure = "1"; $("#clear").textContent = "Wirklich löschen?"; return; }
+  log = { lines: [], checks: [] }; saveLog(); $("#logList").replaceChildren(); $("#logCount").textContent = 0;
+  $("#clear").dataset.sure = ""; $("#clear").textContent = "Mitschrift löschen";
+};
+
+// Optionaler Audio-Mitschnitt, wird beim Stoppen als Datei angeboten
+let recorder = null;
+async function startAudio(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      download(`gespraech_${stamp()}.webm`, new Blob(chunks, {type: recorder.mimeType || "audio/webm"}));
+    };
+    recorder.start(1000);
+  }catch{ statusEl.textContent = "Audio-Aufnahme nicht möglich, Mitschrift läuft trotzdem."; }
+}
+function stopAudio(){ if(recorder?.state === "recording") recorder.stop(); recorder = null; }
 
 // Spracherkennung: gesammelte Sätze werden nach kurzer Pause gemeinsam geprüft
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -150,13 +222,15 @@ function setMic(on){
 function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
 $("#mic").onclick = () => {
   if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte Chrome oder Edge verwenden, oder Text eintippen."; return; }
-  if(listening){ setMic(false); rec?.stop(); flush(); return; }
+  if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); return; }
+  if(!$("#consent").checked){ statusEl.textContent = "Bitte zuerst bestätigen, dass alle Gesprächspartner Bescheid wissen."; $("#consent").focus(); return; }
+  if($("#audio").checked) startAudio();
   rec = new SR(); rec.lang = "de-AT"; rec.continuous = true; rec.interimResults = true;
   rec.onresult = e => {
     let interim = "";
     for(let i = e.resultIndex; i < e.results.length; i++){
       const t = e.results[i][0].transcript;
-      if(e.results[i].isFinal){ pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
+      if(e.results[i].isFinal){ addLine(t); pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
       else interim += t;
     }
     live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
