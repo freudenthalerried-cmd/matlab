@@ -46,7 +46,10 @@ export const ZULIEFERUNGEN = Object.freeze([
     rechtsgrund: '§ 5 ECG — Angaben zur raschen Kontaktaufnahme',
     loest: 'Sie ist die erste von zwei Voraussetzungen des Bestellwegs: Ohne sie hat das '
       + 'Empfangsskript keinen Empfänger, und `npm run website` liefert es gar nicht erst mit. '
-      + 'Zugleich eine der vier fehlenden Impressumsangaben.',
+      + 'Zugleich eine der vier fehlenden Impressumsangaben. Das Beispiel daneben steht auf der '
+      + 'Domain, die am 31.08. entschieden wurde — zu wählen ist damit nur noch der Teil vor '
+      + 'dem @. Die Adresse allein genügt aber nicht: Das Postfach muss im Kundenbereich von '
+      + 'All-Inkl wirklich bestehen, sonst nennt das Impressum eine Adresse, die niemand liest.',
   }),
   Object.freeze({
     feld: 'telefon',
