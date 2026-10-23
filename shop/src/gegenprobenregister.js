@@ -5444,6 +5444,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Feld wieder ein und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'der-lieferantenname-reist-im-datensatz-mit',
+    pruefer: 'website',
+    was: 'Der Lieferantenname im ausgelieferten Datensatz, den jeder Besucher lädt',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '  return {\n    id: l.id,\n    // **Kein Lieferantenname.**',
+    ersetzen: '  return {\n    id: l.id,\n    name: l.name,\n    // **Kein Lieferantenname.**',
+    erwartet: /Interna im ausgelieferten Skript/,
+    warum: 'Bis zum 23. Oktober 2026 lief die Interna-Prüfung des Baus zweimal — über den '
+      + 'Seitenrumpf und über die fertige Seite — und nie über `ausgabe/site/shop.js`, also '
+      + 'über die einzige Datei, die **jeder** Besucher herunterlädt. Der Datensatz darin '
+      + 'steht in keiner HTML-Seite; was hier hineingerät, sieht deshalb keine der beiden '
+      + 'anderen Prüfungen. Die Mutation nimmt die Zeile zurück, mit der '
+      + '`oeffentlicherLieferant` den Namen weglässt — rot werden darf jetzt nur die Prüfung '
+      + 'am Bündel, denn in den Seiten steht der Name nicht.',
+  }),
+  Object.freeze({
     id: 'alternativen-ohne-schicht',
     pruefer: 'pruefe-vergleich',
     was: 'Artikel nebeneinander, die zusammen gekauft werden statt gegeneinander',

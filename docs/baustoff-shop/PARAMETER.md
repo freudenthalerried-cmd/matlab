@@ -101,6 +101,7 @@ Feststellung, dass fundiertes Fachwissen die Nischenwahl positiv gewichtet.
 |---|---|---|
 | Statusbericht Radonvorsorge | **Radon, abgelöst** | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
 | Shop-Funktionsmuster Radonvorsorge | **Radon, abgelöst** | https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8 |
+| Shop-Vorschau Bauversand (Einzeldatei, 46 Artikel) | **gültig** | https://claude.ai/artifact/CjP5C6P7a6NeXHUDWE2iFe |
 
 Quelldatei des Berichts: `bericht-radon.html` im Repo neben dieser Datei.
 

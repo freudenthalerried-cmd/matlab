@@ -14,7 +14,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { mengenschritt, POSITIONSLISTE_FEHLT } from '../src/gebinde.js';
+import { mengenschritt } from '../src/gebinde.js';
+import { POSITIONSLISTE_FEHLT } from '../src/baustoffkatalog.js';
 import { pruefeGebindeGegenBelege } from '../src/gebindebeleg.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));

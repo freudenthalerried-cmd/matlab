@@ -45,7 +45,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { POSITIONSLISTE_FEHLT } from '../src/gebinde.js';
+import { POSITIONSLISTE_FEHLT } from '../src/baustoffkatalog.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const QUELLE = join(SHOP, '..', 'preise', 'poschacher-positionen.csv');

@@ -34,16 +34,23 @@
  *   die Seite sagt das, statt zu schätzen.
  */
 
-/**
- * Warum die Gebindeprüfung seit dem 8. September nicht messen kann.
+/*
+ * **Der Satz über die fehlende Positionsliste stand hier — bis zum
+ * 23. Oktober 2026.** Er kam am 14. September aus `bin/gebindepruefung.mjs`
+ * und `bin/preiswechsel.mjs` hierher, weil beide dasselbe sagen, wenn die
+ * Liste fehlt. Richtig war das Zusammenlegen und falsch der Ort: Dieses Modul
+ * steht in `BROWSERMODULE`, und damit ging der Pfad `preise/…` samt dem
+ * Namen des Lieferanten in jedes ausgelieferte `shop.js` — 48-mal steht die
+ * Kennung dort ohnehin, aber der Pfad zu einer Datei mit Einkaufspreisen hat
+ * im Browser nichts zu suchen. Gefunden hat das keine Prüfung, sondern die
+ * Frage des Auftraggebers, ob die Seite schon geht.
  *
- * **Hierher gezogen am 14. September 2026, nachts.** Der Satz stand in
- * `bin/gebindepruefung.mjs` und `bin/preiswechsel.mjs` — beide brauchen die
- * Positionsliste des Lieferanten, und beide sagen dasselbe, wenn sie fehlt.
- * Sie liegt außerhalb des Verzeichnisses, weil sie Einkaufspreise trägt; ein
- * Neu-Ausspielen kann nur der Auftraggeber.
+ * > **Ein Satz, den nur ein Werkzeug sagt, gehört in kein Modul, das der
+ * > Browser lädt.**
+ *
+ * Er steht jetzt neben `preisdateiWeigerung()` in `src/baustoffkatalog.js` —
+ * dieselbe Lage, dieselbe Datei, und keine davon wird ausgeliefert.
  */
-export const POSITIONSLISTE_FEHLT = 'preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.';
 
 /** Was als Gebinde in Frage kommt, in Kilogramm. */
 export const KLEINSTES_GEBINDE_KG = 0.1;

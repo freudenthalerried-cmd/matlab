@@ -3299,6 +3299,49 @@ function main() {
   // gültigem Code Bruch. Ein Bau, der abbricht, ist harmlos — eine
   // ausgelieferte Seite ohne Skript ist es nicht.
   pruefeSkript(shopskriptQuelle, 'ausgabe/site/shop.js');
+
+  /*
+   * **Derselbe Maßstab wie für eine Seite — 23. Oktober 2026.**
+   *
+   * `pruefeSeiten` lief über jede HTML-Seite, zweimal sogar: einmal über den
+   * Quelltext und einmal über das Erzeugnis. Über diese Datei lief sie nie —
+   * und sie ist die einzige, die **jeder** Besucher herunterlädt.
+   *
+   * > **Die Datei, die jeder Besucher lädt, stand außerhalb der Prüfung, die
+   * > den Bau abbricht, wenn ein internes Wort eine Seite erreicht.**
+   *
+   * Gemessen am 23. Oktober, bevor diese Zeilen standen: drei Funde, und alle
+   * drei gehören hierher — deshalb eine Ausnahme mit `nur` und nicht ein
+   * weicheres Muster. Was dazukommt, bricht den Bau ab.
+   */
+  const imBuendel = pruefeSeiten([{
+    kennung: 'ausgabe/site/shop.js',
+    html: shopskriptQuelle,
+    ausnahme: 'Zwei Zahlwegkennungen (`eps`, `karte-stripe`) reisen im Datensatz mit ihrem '
+      + 'Kundennamen und ihrem Kundensatz — die Oberfläche braucht die Kennung, um den Weg zu '
+      + 'wählen, und zeigt den Namen. Und die Wortliste, mit der die Kasse ihren eigenen '
+      + 'Anfragetext gegen die Weisung „keine spanne ausgeben" hält, steht in '
+      + '`src/kundenanfrage.js` und läuft im Browser: Der Text entsteht dort. Ein Wächter, der '
+      + 'sein eigenes Suchwort nicht mitnehmen darf, kann nicht suchen.',
+    nur: ['programmkennung', 'eigene-marge'],
+  }]);
+  if (!imBuendel.sauber) {
+    console.error('Interna im ausgelieferten Skript — nichts ausgegeben:\n');
+    for (const m of imBuendel.meldungen) {
+      console.error(`  ${m.kennung}  [${m.id}] „${m.fund}"`);
+      console.error(`      … ${m.umfeld} …`);
+      console.error(`      → ${m.warum}`);
+    }
+    console.error('\nDas Bündel trägt den Quelltext der Module, die der Browser braucht. Ein');
+    console.error('internes Wort darin gehört aus dem Modul heraus — in ein Werkzeug, das nicht');
+    console.error('ausgeliefert wird. Die Ausnahmeliste zu erweitern ist der falsche Ausweg:');
+    console.error('Was nicht gebraucht wird, wird nicht ausgeliefert.');
+    process.exit(1);
+  }
+  for (const a of imBuendel.ausnahmen) {
+    console.log(`  shop.js (nur ${a.nur.join(', ')}) — begründete Ausnahme der Interna-Prüfung`);
+  }
+
   writeFileSync(join(site, 'shop.js'), shopskriptQuelle, 'utf8');
 
   /*

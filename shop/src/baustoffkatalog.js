@@ -114,6 +114,18 @@ export function ladeBaustoffkatalog(katalogDatei, preisDatei, lieferantenDatei, 
 }
 
 /**
+ * Warum die Gebindeprüfung und der Preiswechsel seit dem 8. September nicht
+ * messen können.
+ *
+ * **Hierher gezogen am 23. Oktober 2026** aus `src/gebinde.js`. Dort war der
+ * Satz richtig zusammengelegt und am falschen Ort: Das Modul lädt der
+ * Browser, und damit reiste der Pfad zu einer Datei mit Einkaufspreisen in
+ * jedes ausgelieferte `shop.js`. Hier liegt er neben der Weigerung, die aus
+ * demselben Anlass entsteht — und diese Datei wird nicht ausgeliefert.
+ */
+export const POSITIONSLISTE_FEHLT = 'preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.';
+
+/**
  * Die Weigerung, ohne Preisdatei zu rechnen — an **einer** Stelle.
  *
  * **Der Anlass, 23. Oktober 2026.** Zwei Prüfer brauchen dieselbe Weigerung:
