@@ -61,6 +61,7 @@ import {
 } from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
 import { ZUORDNUNG, beispielrechnung, rechnungssatz } from '../src/beispielrechnung.js';
+import { alternativen, vergleichstafel } from '../src/artikelvergleich.js';
 // **Der Import eines Werkzeugs, mit Vorbild.** `bin/preisalterpruefung.mjs`
 // holt dieselbe Liste seit dem 6. September von hier; sie steht in einem
 // Werkzeug und nicht in einem Modul, weil sie zur Kampagne gehört und nicht
@@ -514,6 +515,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -1071,6 +1077,42 @@ vom Baumeister-Einkaufsvorteil bei diesem Artikel ankommt. Wie der Preis entsteh
 <a href="${verweis('wissen/baumeisterpreis')}">Was „Baumeisterpreis" heißt</a>.</div>`);
   }
 
+  /*
+   * **Der Vergleich steht auf der Gruppenseite, nicht hier \u2014 23. Oktober 2026.**
+   *
+   * Der erste Anlauf baute die Tafel auf **diese** Seite: dieser Artikel und
+   * seine Alternativen nebeneinander. Gemessen hat das `pruefe-dubletten`
+   * sofort \u2014 vier Seitenpaare \u00fcber der Grenze von 0,98, wo vorher keines von
+   * 1035 Paaren sie erreichte.
+   *
+   * Die Ursache ist nicht die Prosa und nicht die Spaltenzahl (beides
+   * gemessen: K\u00fcrzen half einmal, Spalten wegnehmen machte es schlechter),
+   * sondern der Ort:
+   *
+   * > **Eine Tafel, die A auf B zeigt und B auf A, gibt beiden Seiten
+   * > denselben Wortschatz** \u2014 und f\u00fcr eine Suchmaschine sind zwei Seiten
+   * > mit demselben Wortschatz dieselbe Antwort.
+   *
+   * Jedes weitere Merkmal verschlimmerte es, auch das, das den Unterschied
+   * zeigt: Beide Kanalbogenseiten trugen danach \u201e30\u00b0" **und** \u201e45\u00b0".
+   *
+   * Auf der Gruppenseite steht jeder Name einmal, und die sieben Gruppenseiten
+   * sind einander nicht \u00e4hnlich. Hier bleibt ein Verweis \u2014 und er nennt
+   * keinen fremden Artikelnamen.
+   */
+  {
+    const nebenan = alternativen(a, katalog.artikel);
+    const gruppenseite = [...seiten.values()]
+      .find((x) => x.art === 'gruppen' && x.kopf.gruppe === a.gruppe);
+    if (nebenan.length && gruppenseite) {
+      teile.push(`<p class="antwort"><strong>Diesen Artikel vergleichen.</strong> Die Tafel
+\u00fcber alle ${esc(String(befund.jeGruppe[a.gruppe]?.gesamt ?? 0))} Artikel dieser Warengruppe steht
+auf <a href="${verweis(gruppenseite.id)}">${esc(gruppenseite.kopf.titel)}</a> \u2014 mit Preis, Abstand
+zur Liste, Abgabemenge, Gewicht, Systembindung und dem Stand der Preisgrundlage, und mit dem, was
+dabei nicht vergleichbar ist.</p>`);
+    }
+  }
+
   teile.push('<h2>Technische Kennwerte</h2>');
   if (h) {
     teile.push(`<p><strong>Die Kennwerte stehen hier bewusst nicht.</strong> Verbrauch, Schichtdicke,
@@ -1591,46 +1633,6 @@ ${fehlt}`);
     }
   }
 
-  /*
-   * **Wo das Merkblatt steht — 7. September 2026.**
-   *
-   * Die zweite Redaktionsregel schickt den Leser ins Merkblatt des
-   * Herstellers, statt Kennwerte abzuschreiben. Acht Inhaltsseiten tun das,
-   * **vier nannten keinen Hersteller** — darunter „Mengen für 100 m² Fassade"
-   * mit acht Erwähnungen und null Verweisen, also ausgerechnet die Seite,
-   * deren ganzer Zweck der Rechenweg mit den Werten aus *Ihrem* Merkblatt ist.
-   *
-   * > **Eine Seite, die den Leser ins Merkblatt schickt und den Weg dorthin
-   * > verschweigt, hat die Auskunft an die Stelle verlegt, an der sie nicht
-   * > steht.**
-   *
-   * Abgeleitet aus der Warengruppe der Seite und den Marken, die der Katalog
-   * dort führt (`src/merkblattverweis.js`). Wo keine Marke bekannt ist —
-   * Kanalrohre tragen keine —, steht nichts: Ein erfundener Weg wäre
-   * schlimmer als keiner.
-   */
-  {
-    const hersteller = herstellerDerGruppe(katalog.artikel, seite.kopf.gruppe ?? null);
-    /*
-     * **Auch der Rechnungsabschnitt zählt — 22. Oktober 2026.** Geprüft wurde
-     * hier nur `seite.koerper`, also der Text aus `inhalte/`. Seit heute
-     * schickt auch ein **gebauter** Abschnitt den Leser ins Merkblatt: Der
-     * Kundensatz zum ausgelassenen Perimeterkleber sagt, der Verbrauchswert
-     * stehe dort. `test/merkblattverweis.test.js` hat es gemeldet — die
-     * Kellerwandseite nannte ein Merkblatt und keinen Hersteller.
-     *
-     * > **Eine Regel über den Quelltext einer Seite übersieht, was der Bau
-     * > dazuschreibt.**
-     */
-    const bisher = teile.join('\n');
-    if (hersteller.length && (MERKBLATT.test(seite.koerper ?? '') || MERKBLATT.test(bisher))) {
-      teile.push(`<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
-dieser Warengruppe führt der Hersteller: ${hersteller
-        .map((h) => `<a href="${h.url}" target="_blank" rel="noopener noreferrer">${esc(h.name)}</a>`)
-        .join(' · ')}. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
-Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>`);
-    }
-  }
 
   // Der Schichtenschnitt: Er steht **vor** der Artikelliste, weil er die
   // Reihenfolge zeigt, in der die Artikel verbaut werden — und weil er die
@@ -1646,6 +1648,66 @@ Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht 
 Sortiment.${fremd.length ? ` Schraffiert und mit „nicht von uns" beschriftet sind die
 ${fremd.length === 1 ? 'Lage' : `${fremd.length} Lagen`}, die dieser Shop nicht führt —
 ${fremd.map((l) => esc(l.name)).join(', ')}.` : ''}</p>`);
+  }
+
+  /*
+   * **Die Merkmalstafel der Warengruppe — 23. Oktober 2026.**
+   *
+   * Zwei Tafeln standen hier schon, beide nach **einem** Kriterium: „Was ein
+   * Zentimeter Stärke kostet" und der Kilovergleich. Diese dritte zeigt
+   * **alle** Merkmale, die der Betrieb führt, über alle Artikel der Gruppe —
+   * und damit die Antwort auf die Frage, die ein Kunde am Regal stellt: Was
+   * unterscheidet die beiden?
+   *
+   * Hier und nicht auf der Artikelseite, und der Grund ist gemessen; er steht
+   * bei dem Verweis in `artikelSeite`. Jeder Artikelname steht auf dieser
+   * Seite einmal, und die sieben Gruppenseiten sind einander nicht ähnlich.
+   *
+   * Artikel als **Zeilen** und Merkmale als Spalten: Bei elf Artikeln ist das
+   * die lesbare Richtung, und sie ist dieselbe wie bei den beiden Tafeln
+   * darüber.
+   */
+  if (seite.art === 'gruppen' && gruppenArtikel.length > 1) {
+    const mitPreis = gruppenArtikel.filter((x) => x.vkNetto !== null);
+    if (mitPreis.length > 1) {
+      const u = { einheitText, zahlText, heute: geschaeftstag() };
+      const tafel = vergleichstafel(mitPreis, u);
+      /*
+       * Nur Merkmale, die in **dieser** Gruppe bei mindestens einem Artikel
+       * einen Wert haben. Eine Spalte aus Gedankenstrichen sagt nichts über
+       * die Ware und alles über unsere Auskunft — die Deckung je Merkmal
+       * steht in `npm run pruefe-vergleich`, nicht auf der Kundenseite.
+       */
+      const spalten = tafel.zeilen.filter((z) => z.luecken < z.werte.length);
+      const leer = tafel.zeilen.filter((z) => z.luecken === z.werte.length);
+      const zelle = (w) => {
+        if (!w) return '<td class="luecke">\u2014</td>';
+        if (w.art === 'geld') return `<td class="z">${EUR(w.zahl)}</td>`;
+        if (w.art === 'prozent') return `<td class="z">${w.zahl}\u202f%</td>`;
+        return `<td>${esc(w.text)}</td>`;
+      };
+      teile.push('<h2>Was die Artikel dieser Gruppe unterscheidet</h2>');
+      for (const w of tafel.warnungen) {
+        teile.push(`<p class="antwort"><strong>Vor dem Vergleich.</strong> ${esc(w.satz)}</p>`);
+      }
+      teile.push(`<div class="scroll"><table class="vergleich">
+<thead><tr><th scope="col">Artikel</th>${spalten.map((z) => `<th scope="col">${esc(z.titel)}${
+        z.nichtVergleichbar ? ' <span class="warn">nicht vergleichbar</span>' : ''}</th>`).join('')}</tr></thead>
+<tbody>${mitPreis.map((x, i) => `<tr><th scope="row"><a href="${verweis(`artikel/${x.sku}`)}">${
+        esc(x.bezeichnung)}</a></th>${spalten.map((z) => zelle(z.werte[i])).join('')}</tr>`).join('')}
+</tbody></table></div>`);
+      const abgeleitet = spalten.filter((z) => z.abgeleitet && z.hinweis);
+      teile.push(`<p>Ein Gedankenstrich hei\u00dft: Angabe liegt uns nicht vor.${leer.length
+        ? ` Ganz weggelassen ${leer.length === 1 ? 'ist' : 'sind'} ${leer.map((z) => esc(z.titel)).join(', ')}`
+          + ` \u2014 ${leer.length === 1 ? 'diese Angabe kennen' : 'diese Angaben kennen'} wir hier bei keinem Artikel.`
+        : ''} Technische Kennwerte vergleicht diese Tafel nicht: Verbrauch,
+W\u00e4rmeleitf\u00e4higkeit, Druckwiderstand und Brandklasse stehen im Merkblatt des Herstellers, und wir
+schreiben sie nicht ab.</p>`);
+      if (abgeleitet.length) {
+        teile.push(`<p class="antwort"><strong>Woher diese Werte kommen.</strong> `
+          + `${abgeleitet.map((z) => `<strong>${esc(z.titel)}:</strong> ${esc(z.hinweis)}`).join(' ')}</p>`);
+      }
+    }
   }
 
   // --- Stärkenvergleich, nur wo er etwas bedeutet ---------------------
@@ -1754,6 +1816,62 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     const r = z ? beispielrechnung(WARENKOERBE[z.gruppe], katalog) : null;
     return r?.steht ? { ...r, satz: rechnungssatz(r, EUR) } : null;
   })();
+  /*
+   * **Der Merkblatthinweis steht am Ende — verschoben am 23. Oktober 2026.**
+   *
+   * Er stand vor den Vergleichstafeln, und damit sah seine eigene Prüfung
+   * nicht, was danach noch auf die Seite kam: Die neue Merkmalstafel nennt
+   * das Merkblatt, und `test/merkblattverweis.test.js` meldete zwei
+   * Gruppenseiten, die ins Merkblatt schicken und den Weg dorthin nicht
+   * nennen.
+   *
+   * > **Eine Regel über den Quelltext einer Seite übersieht, was der Bau
+   * > dazuschreibt — und eine, die zu früh läuft, auch.**
+   *
+   * Inhaltlich gehört er hierher: Er ist eine Fußnote zu allem, was die
+   * Seite über Kennwerte sagt, und nicht ein Absatz zwischen zwei Tafeln.
+   */
+  /*
+   * **Wo das Merkblatt steht — 7. September 2026.**
+   *
+   * Die zweite Redaktionsregel schickt den Leser ins Merkblatt des
+   * Herstellers, statt Kennwerte abzuschreiben. Acht Inhaltsseiten tun das,
+   * **vier nannten keinen Hersteller** — darunter „Mengen für 100 m² Fassade"
+   * mit acht Erwähnungen und null Verweisen, also ausgerechnet die Seite,
+   * deren ganzer Zweck der Rechenweg mit den Werten aus *Ihrem* Merkblatt ist.
+   *
+   * > **Eine Seite, die den Leser ins Merkblatt schickt und den Weg dorthin
+   * > verschweigt, hat die Auskunft an die Stelle verlegt, an der sie nicht
+   * > steht.**
+   *
+   * Abgeleitet aus der Warengruppe der Seite und den Marken, die der Katalog
+   * dort führt (`src/merkblattverweis.js`). Wo keine Marke bekannt ist —
+   * Kanalrohre tragen keine —, steht nichts: Ein erfundener Weg wäre
+   * schlimmer als keiner.
+   */
+  {
+    const hersteller = herstellerDerGruppe(katalog.artikel, seite.kopf.gruppe ?? null);
+    /*
+     * **Auch der Rechnungsabschnitt zählt — 22. Oktober 2026.** Geprüft wurde
+     * hier nur `seite.koerper`, also der Text aus `inhalte/`. Seit heute
+     * schickt auch ein **gebauter** Abschnitt den Leser ins Merkblatt: Der
+     * Kundensatz zum ausgelassenen Perimeterkleber sagt, der Verbrauchswert
+     * stehe dort. `test/merkblattverweis.test.js` hat es gemeldet — die
+     * Kellerwandseite nannte ein Merkblatt und keinen Hersteller.
+     *
+     * > **Eine Regel über den Quelltext einer Seite übersieht, was der Bau
+     * > dazuschreibt.**
+     */
+    const bisher = teile.join('\n');
+    if (hersteller.length && (MERKBLATT.test(seite.koerper ?? '') || MERKBLATT.test(bisher))) {
+      teile.push(`<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: ${hersteller
+        .map((h) => `<a href="${h.url}" target="_blank" rel="noopener noreferrer">${esc(h.name)}</a>`)
+        .join(' · ')}. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>`);
+    }
+  }
+
   const liste = positionsliste(
     seite.koerper,
     rechnungFuerLd,

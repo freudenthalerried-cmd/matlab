@@ -86,6 +86,7 @@
     "pruefe-zahlen": "node bin/zahlenpruefung.mjs",
     "pruefe-korbtext": "node bin/korbtextpruefung.mjs",
     "pruefe-verweise": "node bin/verweispruefung.mjs",
+    "pruefe-vergleich": "node bin/vergleichspruefung.mjs",
     "paket": "node bin/paket.mjs",
     "pruefe-paket": "node bin/paketpruefung.mjs",
     "pruefe-zwillinge": "node bin/zwillingspruefung.mjs",

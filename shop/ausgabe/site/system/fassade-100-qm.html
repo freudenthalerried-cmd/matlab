@@ -124,6 +124,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -512,9 +517,6 @@ Zustellung folgt den Sätzen auf <a href="../lieferung.html">Lieferung und Frach
 <tr><th colspan="4">Summe netto</th><th class="z">978,55 €</th></tr>
 </tbody></table></div>
 <p class="antwort"><strong>Was in dieser Rechnung nicht steht.</strong> Diese Positionen stehen in der Positionsliste oben, Preisgrundlage, Stand: 2026-08-12 bis 2026-08-17. <strong>Rondellen</strong> — Nur bei versenkter Dübelsetzung. Ob versenkt gesetzt wird, entscheidet die Dübelbemessung und nicht der Umfang dieser Rechnung. <strong>Armierungsmörtel</strong> — Die Menge folgt aus Fläche mal Verbrauch, und der Verbrauchswert steht im Merkblatt des Herstellers. Wir schreiben technische Kennwerte nicht ab; mit Ihrem Wert rechnen wir die Menge auf Anfrage dazu. <strong>Gewebeanschlussleisten</strong> — Die Menge sind die laufenden Meter aller Fenster- und Türanschlüsse. Ohne Bauwerk gibt es dafür keine Zahl — diese Rechnung kennt 100 m² Fläche und keine Öffnungen. <strong>Oberputz</strong> — Die Menge folgt aus Fläche mal Verbrauch und hängt an der Körnung, die Sie wählen. Derselbe Grund wie beim Armierungsmörtel.</p>
-<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
-dieser Warengruppe führt der Hersteller: <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">Baumit Österreich</a> · <a href="https://www.synthesa.at/" target="_blank" rel="noopener noreferrer">Synthesa (Capatect)</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
-Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <h2>Der Aufbau im Schnitt</h2>
 <div class="schichtbild"><svg class="schichten" viewBox="0 0 300 186" role="img" aria-label="Schichtenschnitt von innen nach außen: Untergrund — nicht aus diesem Shop, Klebemörtel, Dämmplatte — nicht aus diesem Shop, Armierungsmörtel mit Glasgewebe, Putzgrund, Oberputz"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><defs><pattern id="fremdraster" width="6" height="6" patternUnits="userSpaceOnUse"
@@ -713,6 +715,9 @@ Untergrund, Dämmplatte.</p>
 </div></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/wdvs-systemaufbau.html">Was zu einem Wärmedämmverbundsystem gehört</a><a href="../wissen/mengen-fuer-100-qm-wdvs.html">Mengen für 100 m² Fassade ermitteln</a><a href="../wissen/untergrund-pruefen.html">Untergrund prüfen, bevor geklebt wird</a><a href="../wissen/xps-oder-eps.html">XPS oder EPS — welche Platte wohin</a><a href="../system/kellerwand-perimeter.html">Kellerwand außen dämmen — die Liste</a></div>
+<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">Baumit Österreich</a> · <a href="https://www.synthesa.at/" target="_blank" rel="noopener noreferrer">Synthesa (Capatect)</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert 250,00 € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
 Betrag. Alle geführten Artikel kommen von einem Lieferanten; ein Warenkorb ist deshalb eine Lieferung, und die Grenze gilt einmal. Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.

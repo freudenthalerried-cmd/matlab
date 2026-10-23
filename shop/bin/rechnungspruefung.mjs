@@ -14,7 +14,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { EUR } from '../src/format.js';
-import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
+import { ladeBaustoffkatalog, preisdateiWeigerung } from '../src/baustoffkatalog.js';
 import {
   ZUORDNUNG, beispielrechnung, rechnungssatz, rechnungsbefund,
 } from '../src/beispielrechnung.js';
@@ -26,10 +26,7 @@ const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
 const preisdatei = join(REPO, 'preise', 'baustoff-preise.json');
 if (!existsSync(preisdatei)) {
-  console.error('Weigerung: preise/baustoff-preise.json fehlt — sie liegt außerhalb des');
-  console.error('Verzeichnisses. Ohne Preise gibt es keine Rechnung, und eine Rechnung');
-  console.error('ohne Preise wäre eine Aufzählung mit Nullen.');
-  console.error('Zurückrechnen mit: npm run preise-wiederherstellen');
+  for (const zeile of preisdateiWeigerung('ohne Preise ist eine Rechnung eine Aufzählung mit Nullen.')) console.error(zeile);
   process.exit(2);
 }
 

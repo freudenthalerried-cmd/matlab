@@ -114,6 +114,32 @@ export function ladeBaustoffkatalog(katalogDatei, preisDatei, lieferantenDatei, 
 }
 
 /**
+ * Die Weigerung, ohne Preisdatei zu rechnen — an **einer** Stelle.
+ *
+ * **Der Anlass, 23. Oktober 2026.** Zwei Prüfer brauchen dieselbe Weigerung:
+ * `pruefe-rechnungen` (seit gestern) und `pruefe-vergleich` (seit heute).
+ * Beim zweiten habe ich den Text des ersten kopiert, und `pruefe-saetze` hat
+ * es gemeldet — ein Satz in zwei Dateien.
+ *
+ * > **Ein Absatz wird kopiert, weil er stimmt — und bleibt stehen, wenn er es
+ * > nicht mehr tut.**
+ *
+ * Dieselbe Bauart wie `abbruchtext` in `src/erzeugnisstand.js`: Zeilen für die
+ * eigene Konsole, gebaut aus einem Pfad des eigenen Bestands. Sie gehen an
+ * keinen Empfänger außerhalb des Rechners, und was sie sagen, soll jeder
+ * Prüfer gleich sagen.
+ *
+ * @param {string} was  Was ohne die Datei nicht geht — ein Halbsatz.
+ */
+export function preisdateiWeigerung(was) {
+  return [
+    'Weigerung: preise/baustoff-preise.json fehlt — sie liegt außerhalb des',
+    `Verzeichnisses, und ${was}`,
+    'Zurückrechnen mit: npm run preise-wiederherstellen',
+  ];
+}
+
+/**
  * Was der Katalog über sich selbst sagen kann, ohne dass jemand rechnen muss.
  *
  * Die drei Zahlen, die den Zuschnitt des Shops entscheiden — hergeleitet in

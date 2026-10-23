@@ -5443,6 +5443,28 @@ export const GEGENPROBEN = Object.freeze([
       + 'ist der teuerste Fehler, den eine Preisauskunft machen kann. Die Mutation setzt das '
       + 'Feld wieder ein und verlangt, dass es auffällt.',
   }),
+  Object.freeze({
+    id: 'alternativen-ohne-schicht',
+    pruefer: 'pruefe-vergleich',
+    was: 'Artikel nebeneinander, die zusammen gekauft werden statt gegeneinander',
+    datei: 'shop/src/artikelvergleich.js',
+    art: 'ersetzen',
+    suchen: "    && einordnung(a).schicht === meine);",
+    ersetzen: "    );",
+    // **Nachgezogen beim ersten Lauf.** Hier standen drei Muster aus anderen
+    // Regeln dieses Pruefers, geraten statt gemessen — der Laeufer meldete
+    // „rot, aber nicht wegen“. Die Regel, die wirklich greift, ist die, die
+    // es ohne diese Gegenprobe nicht gegeben haette: Der Pruefer hielt die
+    // Auswahlregel ueberhaupt nicht.
+    erwartet: /alternative-anderer-schicht|verschiedene Rollen desselben/,
+    warum: 'Der Zustand des ersten Anlaufs, gemessen: Gruppe und Einheit allein ergaben neben '
+      + 'dem **Mantelstein** den Mantelsteinkleber, die Regenhaube und die Zuluftplatte \u2014 alle '
+      + 'in der Gruppe Kamin, alle je St\u00fcck, alle in \u00e4hnlicher Preislage, und keiner davon eine '
+      + 'Alternative. Sie sind Schichten desselben Aufbaus und werden zusammen gekauft, nicht '
+      + 'gegeneinander. **Zwei Artikel, die zusammen gekauft werden, sind keine Alternativen** \u2014 '
+      + 'und eine Tafel, die sie nebeneinanderstellt, legt dem Kunden eine Wahl vor, die es '
+      + 'nicht gibt. Die Mutation nimmt den Schichtfilter wieder heraus.',
+  }),
 ]);
 
 /**

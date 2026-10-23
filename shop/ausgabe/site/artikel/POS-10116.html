@@ -124,6 +124,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -279,7 +284,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 von dem die Grundlage dieses Preises stammt. Verbindlich wird der Preis nicht hier, sondern mit dem
 Angebot: Das bindet 14 Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
 § 862 ABGB, Stand: 2026-09-06). Bis dahin ist die Zahl eine Auskunft und keine Zusage.
-<br><span class="preis-ueberholt" data-alter="135" data-grenze="90"><strong>Diese Grundlage ist 135 Tage alt</strong> und damit älter als die selbst gesetzte Grenze von 90 Tagen.</span> Der Preisrhythmus des Lieferanten ist uns nicht bekannt — die Frage steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird dieser Preis nachgesehen.</p>
+<br><span class="preis-ueberholt" data-alter="136" data-grenze="90"><strong>Diese Grundlage ist 136 Tage alt</strong> und damit älter als die selbst gesetzte Grenze von 90 Tagen.</span> Der Preisrhythmus des Lieferanten ist uns nicht bekannt — die Frage steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird dieser Preis nachgesehen.</p>
 <div class="legen">
   <label><span class="f-b">Menge in Stück</span>
     <input id="menge-POS-10116" type="number" min="1" max="999" value="1" inputmode="decimal"></label>
@@ -289,6 +294,11 @@ Angebot: Das bindet 14 Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
 Der Vergleich bezieht sich auf die Liste unseres Lieferanten, nicht auf einen Marktpreis — er zeigt, wie viel
 vom Baumeister-Einkaufsvorteil bei diesem Artikel ankommt. Wie der Preis entsteht:
 <a href="../wissen/baumeisterpreis.html">Was „Baumeisterpreis" heißt</a>.</div>
+<p class="antwort"><strong>Diesen Artikel vergleichen.</strong> Die Tafel
+über alle 6 Artikel dieser Warengruppe steht
+auf <a href="../gruppe/kanal.html">Kanal und Erdbau</a> — mit Preis, Abstand
+zur Liste, Abgabemenge, Gewicht, Systembindung und dem Stand der Preisgrundlage, und mit dem, was
+dabei nicht vergleichbar ist.</p>
 <h2>Technische Kennwerte</h2>
 <p>Für diesen Artikel liegt uns kein Herstellermerkblatt vor. Wir tragen es nach, sobald
 wir es beim Lieferanten angefordert haben. Bis dahin steht hier nichts — eine erfundene Kennwerttabelle

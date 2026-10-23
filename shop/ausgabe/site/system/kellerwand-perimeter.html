@@ -124,6 +124,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -482,9 +487,6 @@ Zustellung folgt den Sätzen auf <a href="../lieferung.html">Lieferung und Frach
 <tr><th colspan="4">Summe netto</th><th class="z">1478,00 €</th></tr>
 </tbody></table></div>
 <p class="antwort"><strong>Was in dieser Rechnung nicht steht.</strong> Diese Positionen stehen in der Positionsliste oben, Preisgrundlage, Stand: 2026-07-27. <strong>Perimeterkleber</strong> — Die Menge folgt aus Fläche geteilt durch die Reichweite je Dose, und die Reichweite steht im Merkblatt des Herstellers. <strong>Grundmauerschutzbahn</strong> — Die Menge wäre 110 m² — Fläche plus Überlappung. Sie steht nicht in dieser Rechnung, weil ihre Preisgrundlage gerade nachgesehen wird; der Preis steht auf ihrer Artikelseite. <strong>Dosierpistole</strong> — Eine je Baustelle. Sie steht nicht in dieser Rechnung, weil ihre Preisgrundlage gerade nachgesehen wird; der Preis steht auf ihrer Artikelseite, samt dem Hinweis, wie alt die Grundlage ist.</p>
-<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
-dieser Warengruppe führt der Hersteller: <a href="https://www.isover.at/" target="_blank" rel="noopener noreferrer">Isover Österreich</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
-Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <h2>Der Aufbau im Schnitt</h2>
 <div class="schichtbild"><svg class="schichten" viewBox="0 0 300 160" role="img" aria-label="Schichtenschnitt von innen nach außen: Wand — nicht aus diesem Shop, Abdichtung — nicht aus diesem Shop, Perimeterplatte XPS, Grundmauerschutzbahn, Verfüllung — nicht aus diesem Shop"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><defs><pattern id="fremdraster" width="6" height="6" patternUnits="userSpaceOnUse"
@@ -672,6 +674,9 @@ Wand, Abdichtung, Verfüllung.</p>
 </div></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/perimeterdaemmung-und-grundmauerschutz.html">Perimeterdämmung und Grundmauerschutz</a><a href="../wissen/xps-oder-eps.html">XPS oder EPS — welche Platte wohin</a><a href="../system/kanal-dn100.html">Grundleitung DN 100 — die Liste</a><a href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">Was fehlt, hält die Baustelle auf</a></div>
+<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: <a href="https://www.isover.at/" target="_blank" rel="noopener noreferrer">Isover Österreich</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert 250,00 € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
 Betrag. Alle geführten Artikel kommen von einem Lieferanten; ein Warenkorb ist deshalb eine Lieferung, und die Grenze gilt einmal. Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.

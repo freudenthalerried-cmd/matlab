@@ -124,6 +124,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -418,8 +423,21 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
 <p>Weil die Positionen, die eine Baustelle aufhalten, fast immer die kleinen sind. Ein fehlendes Klebeband kostet eine Fahrt; eine Fahrt kostet mehr als ein Karton Klebeband. Der Gedanke dahinter steht auf <a href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">Was fehlt, hält die Baustelle auf</a>.</p>
 <h2>Was das für Sie heißt</h2>
 <p>Legen Sie das Zubehör zur Hauptbestellung dazu, nicht separat. Als Einzelbestellung lohnt sich diese Gruppe für keine der beiden Seiten.</p><!--/quelltext-->
+<h2>Was die Artikel dieser Gruppe unterscheidet</h2>
+<p class="antwort"><strong>Vor dem Vergleich.</strong> Diese Artikel haben verschiedene Einheiten. Die Preiszeile steht deshalb nebeneinander und vergleicht nichts — vergleichbar ist nur die Zeile „je Kilogramm&quot;, und die gibt es nur, wo das Gebindegewicht in der Bezeichnung steht.</p>
+<div class="scroll"><table class="vergleich">
+<thead><tr><th scope="col">Artikel</th><th scope="col">Preis je Einheit, netto <span class="warn">nicht vergleichbar</span></th><th scope="col">Einheit</th><th scope="col">unter der Liste des Lieferanten</th><th scope="col">Stärke</th><th scope="col">palettiert</th><th scope="col">Systembindung</th><th scope="col">Preisgrundlage, Stand</th></tr></thead>
+<tbody><tr><th scope="row"><a href="../artikel/POS-29023.html">PAE-Folie T 100 2 50 m 100 m2</a></th><td class="z">17,12 €</td><td>Rolle</td><td class="z">73 %</td><td class="luecke">—</td><td>nein</td><td class="luecke">—</td><td>2026-08-17</td></tr><tr><th scope="row"><a href="../artikel/POS-12294.html">Prima Dosierpistole Metall Lite</a></th><td class="z">26,88 €</td><td>Stück</td><td class="luecke">—</td><td class="luecke">—</td><td>nein</td><td>Prima</td><td>2026-04-22 (184 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-53215.html">Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</a></th><td class="z">0,67 €</td><td>Stück</td><td class="luecke">—</td><td>182 mm</td><td>nein</td><td class="luecke">—</td><td>2026-05-26 (150 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-29691.html">Soudal Perimeterkleber B3 750 ml</a></th><td class="z">7,60 €</td><td>Dose</td><td class="z">20 %</td><td class="luecke">—</td><td>nein</td><td>Soudal</td><td>2026-05-26 (150 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-51987.html">Soudal Profi-Pistolenschaum B3 750 ml</a></th><td class="z">6,51 €</td><td>Dose</td><td class="z">13 %</td><td class="luecke">—</td><td>nein</td><td>Soudal</td><td>2026-08-12</td></tr><tr><th scope="row"><a href="../artikel/POS-31631.html">Soudal Soudabond Easy B1 Pist. 750 ml</a></th><td class="z">12,60 €</td><td>Stück</td><td class="luecke">—</td><td class="luecke">—</td><td>nein</td><td>Soudal</td><td>2026-05-26 (150 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-31265.html">SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</a></th><td class="z">8,33 €</td><td>Stück</td><td class="z">19 %</td><td>48 mm</td><td>nein</td><td>SunCore</td><td>2026-08-12</td></tr>
+</tbody></table></div>
+<p>Ein Gedankenstrich heißt: Angabe liegt uns nicht vor. Ganz weggelassen sind Abgabe ab, je Kilogramm, netto, Winkel, Gewicht je Einheit — diese Angaben kennen wir hier bei keinem Artikel. Technische Kennwerte vergleicht diese Tafel nicht: Verbrauch,
+Wärmeleitfähigkeit, Druckwiderstand und Brandklasse stehen im Merkblatt des Herstellers, und wir
+schreiben sie nicht ab.</p>
+<p class="antwort"><strong>Woher diese Werte kommen.</strong> <strong>unter der Liste des Lieferanten:</strong> Der Abstand bezieht sich auf die Liste unseres Lieferanten und nicht auf einen Marktpreis — er zeigt, wie viel vom Baumeister-Einkaufsvorteil bei diesem Artikel ankommt. <strong>Stärke:</strong> Die Stärke ist aus der Artikelbezeichnung gelesen und keine Angabe des Herstellers; welche Stärke ein Bauteil braucht, entscheidet der Wärmeschutznachweis. <strong>palettiert:</strong> Die Einstufung folgt aus der Warengruppe und ist nicht vom Lieferanten bestätigt. Sie entscheidet, ob die Kranentladung je Hub anfällt.</p>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/baumeisterpreis.html">Was „Baumeisterpreis&quot; heißt — und was nicht</a><a href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">Was fehlt, hält die Baustelle auf</a></div>
+<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: <a href="https://www.soudal.com/" target="_blank" rel="noopener noreferrer">Soudal</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert 250,00 € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
 Betrag. Alle geführten Artikel kommen von einem Lieferanten; ein Warenkorb ist deshalb eine Lieferung, und die Grenze gilt einmal. Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.

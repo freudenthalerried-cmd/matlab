@@ -740,6 +740,22 @@ export const PRUEFER = [
     mindestens: 3,
   },
   {
+    // **Aufgenommen am 23. Oktober 2026**, aus der Weisung „mach den
+    // artikelvergleich". Zwei Tafeln gab es schon, beide auf den
+    // Gruppenseiten und beide nach einem Kriterium; was fehlte, ist die
+    // Gegen\u00fcberstellung auf der Artikelseite.
+    //
+    // Gez\u00e4hlt werden die **Merkmale**, nicht die Artikel: Ein Merkmal, das
+    // bei keinem Artikel einen Wert hat, ist eine Spalte aus
+    // Gedankenstrichen \u2014 und eines mit L\u00fccken ohne Satz liest sich wie ein
+    // Mangel am Artikel statt wie einer an unserer Auskunft.
+    name: 'pruefe-vergleich',
+    werkzeug: 'vergleichspruefung.mjs',
+    muster: /Artikelvergleich \u2014 (\d+) Merkmale/,
+    einheit: 'Vergleichsmerkmale gegen den Katalog',
+    mindestens: 5,
+  },
+  {
     name: 'pruefe-gates',
     werkzeug: 'gatepruefung.mjs',
     muster: /Gate-Stand — (\d+) Gates/,

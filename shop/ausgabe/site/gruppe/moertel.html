@@ -124,6 +124,11 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
 .filterleiste input.f-preis{font:inherit;font-family:var(--zahl);font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);width:7.5rem}
 .filterleiste .f-grenze{flex-basis:100%;margin:.2rem 0 0;font-size:.85rem;line-height:1.45;color:var(--ocker)}
+table.vergleich th[scope=row]{text-align:left;font-family:var(--schmal);font-weight:600;white-space:nowrap}
+table.vergleich tr.gleich{background:var(--flaeche)}
+table.vergleich tr.gleich th[scope=row],table.vergleich tr.gleich td{color:var(--gedaempft)}
+table.vergleich td.luecke{color:var(--gedaempft);text-align:center}
+table.vergleich .warn{font-family:var(--schmal);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ocker);font-weight:400;white-space:nowrap}
 
 /* --- In den Warenkorb --- */
 .legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
@@ -338,9 +343,16 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
 <h2>Bestellhinweis</h2>
 <p>Wir rechnen Mörtel <strong>nicht</strong> als palettierte Ware ab: Auf die drei Positionen dieser Gruppe fällt kein Kranhub an, und bestellt wird sackweise, nicht palettenweise. Diese Einstufung folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten — sie ist geschätzt, in diese Richtung wie in die andere. Ob er die Säcke trotzdem auf einer Palette anliefert, steht nicht fest; die Frage ist an ihn gestellt.</p>
 <p>Was für die Menge gilt, gilt unabhängig davon: Eine angebrochene Palette ist kein Vorteil. Der Rest steht über den Winter und ist im Frühjahr oft nicht mehr brauchbar. Lieber knapper bestellen und nachbestellen — sofern die Anfahrt ohnehin ansteht.</p><!--/quelltext-->
-<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
-dieser Warengruppe führt der Hersteller: <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">Baumit Österreich</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
-Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
+<h2>Was die Artikel dieser Gruppe unterscheidet</h2>
+<p class="antwort"><strong>Vor dem Vergleich.</strong> Diese Artikel haben verschiedene Einheiten. Die Preiszeile steht deshalb nebeneinander und vergleicht nichts — vergleichbar ist nur die Zeile „je Kilogramm&quot;, und die gibt es nur, wo das Gebindegewicht in der Bezeichnung steht.</p>
+<div class="scroll"><table class="vergleich">
+<thead><tr><th scope="col">Artikel</th><th scope="col">Preis je Einheit, netto <span class="warn">nicht vergleichbar</span></th><th scope="col">Einheit</th><th scope="col">unter der Liste des Lieferanten</th><th scope="col">Abgabe ab</th><th scope="col">je Kilogramm, netto</th><th scope="col">Gewicht je Einheit</th><th scope="col">palettiert</th><th scope="col">Systembindung</th><th scope="col">Preisgrundlage, Stand</th></tr></thead>
+<tbody><tr><th scope="row"><a href="../artikel/POS-29108.html">Baumit KlebeSpachtel 25 kg</a></th><td class="z">14,32 €</td><td>Sack</td><td class="z">17 %</td><td class="luecke">—</td><td class="z">0,57 €</td><td class="luecke">—</td><td>nein</td><td>Baumit Österreich</td><td>2026-07-13 (102 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-13550.html">Baumit ThermoMörtel 50 40 l</a></th><td class="z">10,07 €</td><td>Sack</td><td class="z">9 %</td><td class="luecke">—</td><td class="luecke">—</td><td>24 kg</td><td>nein</td><td>Baumit Österreich</td><td>2026-07-13 (102 Tage, über der Grenze)</td></tr><tr><th scope="row"><a href="../artikel/POS-29754.html">Ravenit Vergussmörtel 25 kg</a></th><td class="z">1,45 €</td><td>kg</td><td class="z">7 %</td><td>25 kg</td><td class="z">1,45 €</td><td class="luecke">—</td><td>nein</td><td>Ravenit</td><td>2026-05-26 (150 Tage, über der Grenze)</td></tr>
+</tbody></table></div>
+<p>Ein Gedankenstrich heißt: Angabe liegt uns nicht vor. Ganz weggelassen sind Stärke, Winkel — diese Angaben kennen wir hier bei keinem Artikel. Technische Kennwerte vergleicht diese Tafel nicht: Verbrauch,
+Wärmeleitfähigkeit, Druckwiderstand und Brandklasse stehen im Merkblatt des Herstellers, und wir
+schreiben sie nicht ab.</p>
+<p class="antwort"><strong>Woher diese Werte kommen.</strong> <strong>unter der Liste des Lieferanten:</strong> Der Abstand bezieht sich auf die Liste unseres Lieferanten und nicht auf einen Marktpreis — er zeigt, wie viel vom Baumeister-Einkaufsvorteil bei diesem Artikel ankommt. <strong>je Kilogramm, netto:</strong> Das Gebindegewicht ist aus der Artikelbezeichnung gelesen, der Kilopreis daraus gerechnet — nicht aus einer Angabe des Lieferanten. <strong>palettiert:</strong> Die Einstufung folgt aus der Warengruppe und ist nicht vom Lieferanten bestätigt. Sie entscheidet, ob die Kranentladung je Hub anfällt.</p>
 <h2>Was ein Kilogramm kostet</h2>
 <div class="scroll"><table>
 <thead><tr><th>Artikel</th><th>Gebinde</th><th>je Gebinde, netto</th><th>je kg, netto</th></tr></thead>
@@ -363,6 +375,9 @@ Bei ihm ist keine Gebindegröße aus der Bezeichnung ablesbar, oder der
 Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.</p>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/lagerung-von-sackware.html">Lagerung von Sackware und Platten</a><a href="../wissen/verarbeitung-bei-kaelte-und-naesse.html">Verarbeitung bei Kälte und Nässe</a><a href="../wissen/wdvs-systemaufbau.html">Was zu einem Wärmedämmverbundsystem gehört</a></div>
+<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">Baumit Österreich</a>. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert 250,00 € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
 Betrag. Alle geführten Artikel kommen von einem Lieferanten; ein Warenkorb ist deshalb eine Lieferung, und die Grenze gilt einmal. Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.

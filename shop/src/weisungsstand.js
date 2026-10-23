@@ -335,6 +335,25 @@ export const WEISUNGEN = Object.freeze([
       + 'offen bleibt, hängt nicht am Werkzeug: Das Gültigkeitsdatum verlängert nur eine neue '
       + 'Preisliste, und bestellen kann bei diesem Shop noch niemand.',
   }),
+  Object.freeze({
+    nr: 16,
+    datum: '23.10.',
+    stichwort: '„mach den artikelvergleich"',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/artikelvergleich.js', muster: /vergleichsbefund/ }),
+      Object.freeze({ datei: 'shop/bin/website.mjs', muster: /vergleichstafel\(/ }),
+    ]),
+    warum: 'Erfüllt, und die Grenze stand vor der ersten Zeile Code: Der Katalog führt '
+      + 'keine technischen Kennwerte — kein Lambda, keinen Druckwiderstand, keine '
+      + 'Brandklasse —, und ein Vergleich, der sie erfindet, ist gefährlicher als keiner, '
+      + 'weil er wie eine Entscheidungsgrundlage aussieht. Verglichen wird deshalb, was der '
+      + 'Betrieb selbst weiß: elf Merkmale, vier davon abgeleitet und als abgeleitet '
+      + 'gekennzeichnet, zu jeder Lücke ein eigener Satz statt eines Gedankenstrichs, drei '
+      + 'Warnungen über der Tafel statt darunter. Die zweite Spur zeigt auf die '
+      + 'Gruppenseite und nicht auf die Artikelseite: Eine Tafel, die A auf B zeigt und B '
+      + 'auf A, gibt beiden Seiten denselben Wortschatz, und `pruefe-dubletten` hat das '
+      + 'gemessen, bevor es jemand behauptet hat.',
+  }),
 ]);
 
 
