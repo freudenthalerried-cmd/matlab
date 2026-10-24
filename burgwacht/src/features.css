@@ -1,0 +1,26 @@
+/* Held, Kaserne und Kampagne */
+.spell.hero{background:radial-gradient(circle at 35% 30%,#ffd86a,#b86a0c)}
+.spell.hero .sc{font-size:10px;white-space:nowrap}
+#camp{margin:6px auto 4px;max-width:560px}
+#camp .maps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+#camp .map{border:3px solid #120a22;border-radius:16px;padding:14px 8px 10px;cursor:pointer;color:#fff;font-family:var(--f-body);display:grid;gap:4px;justify-items:center;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 rgba(0,0,0,.45);text-shadow:0 2px 0 rgba(0,0,0,.4)}
+#camp .map b{font-family:var(--f-display);font-weight:400;font-size:19px}
+#camp .map small{font-weight:800;font-size:11.5px;opacity:.9}
+#camp .map.gruen{background:linear-gradient(#7fd35a,#3a8a2e)}
+#camp .map.herbst{background:linear-gradient(#f0a040,#a8401a)}
+#camp .map.wueste{background:linear-gradient(#f4cf80,#c4802a)}
+#camp .map.locked{filter:grayscale(.9) brightness(.7);cursor:default}
+#camp .map:not(.locked):hover{transform:translateY(-3px)}
+.stars{display:flex;gap:3px}
+.st{width:20px;height:20px;display:inline-block;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);background:rgba(0,0,0,.35)}
+.st.on{background:linear-gradient(#fff3a0,#ffb320)}
+.endstars{display:flex;justify-content:center;gap:8px;margin-top:12px}.endstars .st{width:46px;height:46px}
+#camp .perks{background:rgba(255,244,220,.1);border:2px solid rgba(255,244,220,.18);border-radius:14px;padding:10px 12px;display:grid;gap:6px;text-align:left}
+#camp .ph{font-family:var(--f-display);font-size:18px;color:var(--gold)}#camp .ph small{font-family:var(--f-body);font-weight:800;font-size:11px;color:var(--cream);opacity:.7;margin-left:6px}
+#camp .perk{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}
+#camp .perk b{display:block;font-size:13.5px}#camp .perk small{font-size:11.5px;opacity:.75;font-weight:700}
+#camp .dots{display:flex;gap:4px}#camp .dots i{width:12px;height:12px;border-radius:50%;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.3)}#camp .dots i.on{background:var(--gold)}
+#camp .perk button{width:34px;height:34px;border-radius:10px;border:3px solid #1a3a08;background:linear-gradient(#9cf36a,#3aa83a);color:#fff;font-family:var(--f-display);font-size:20px;cursor:pointer}
+#camp .perk button:disabled{filter:grayscale(1) brightness(.7);cursor:default}
+@media (max-width:520px){#camp .maps{grid-template-columns:1fr}}

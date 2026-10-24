@@ -10,6 +10,12 @@ VARIANTS = {
                             pre="window.R3D={theme:'summer',ortho:false,toon:false};", renderer='r3d.js'),
     'v3-winter-insel.html': dict(title='Burgwacht Winter-Insel', libs=THREE, theme=(SRC / 'winter.css').read_text(),
                                  pre="window.R3D={theme:'winter',ortho:true,toon:true};", renderer='r3d.js'),
+    'v4-3d-held.html': dict(title='Burgwacht Held', libs=THREE, theme=(SRC / 'features.css').read_text(),
+                            pre="window.R3D={theme:'summer'};window.FEAT={hero:1};", renderer='r3d.js'),
+    'v5-3d-kaserne.html': dict(title='Burgwacht Kaserne', libs=THREE, theme=(SRC / 'features.css').read_text(),
+                               pre="window.R3D={theme:'summer'};window.FEAT={barracks:1};", renderer='r3d.js'),
+    'v6-3d-kampagne.html': dict(title='Burgwacht Kampagne', libs=THREE, theme=(SRC / 'features.css').read_text(),
+                                pre="window.R3D={theme:'summer'};window.FEAT={campaign:1};", renderer='r3d.js'),
 }
 shell = (SRC / 'shell.html').read_text()
 core = (SRC / 'core.js').read_text()
