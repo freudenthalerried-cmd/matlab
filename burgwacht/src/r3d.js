@@ -247,7 +247,7 @@ function fx(n,d){switch(n){
 }}
 
 // ---------- Szene ----------
-let decorG,bldG,enG,projG,staticG,ghostG,gridIM=null,castleP=null,castleKey=0,selRing,rangeG,hoverTile,meteorRing,snow=null,clouds=[];
+let TILETEX=null,beam=null,decorG,bldG,enG,projG,staticG,ghostG,gridIM=null,castleP=null,castleKey=0,selRing,rangeG,hoverTile,meteorRing,snow=null,clouds=[];
 const BM=new Map(),EM=new Map(),PM=new Map();
 function initScene(){
   renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -271,7 +271,9 @@ function initScene(){
   selRing=new THREE.Mesh(new THREE.RingGeometry(.5,.6,32),ringM);selRing.rotation.x=-Math.PI/2;selRing.visible=false;scene.add(selRing);
   rangeG=new THREE.Group();const rr=new THREE.Mesh(new THREE.RingGeometry(.97,1,64),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,depthWrite:false}));
   const rd=new THREE.Mesh(new THREE.CircleGeometry(1,64),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.1,depthWrite:false}));rangeG.add(rr,rd);rangeG.rotation.x=-Math.PI/2;rangeG.position.y=.04;rangeG.visible=false;scene.add(rangeG);
-  hoverTile=new THREE.Mesh(new THREE.PlaneGeometry(.92,.92),new THREE.MeshBasicMaterial({color:0x6ee04a,transparent:true,opacity:.35,depthWrite:false}));hoverTile.rotation.x=-Math.PI/2;hoverTile.position.y=.035;hoverTile.visible=false;scene.add(hoverTile);
+  TILETEX=canvasTex(64,64,(g)=>{g.fillStyle='rgba(255,255,255,.35)';g.strokeStyle='#fff';g.lineWidth=6;g.beginPath();g.roundRect(5,5,54,54,10);g.fill();g.stroke()});
+  hoverTile=new THREE.Mesh(new THREE.PlaneGeometry(.96,.96),new THREE.MeshBasicMaterial({map:TILETEX,color:0x6ee04a,transparent:true,opacity:1,depthWrite:false}));
+  beam=new THREE.Mesh(new THREE.CylinderGeometry(.42,.46,3,16,1,true),new THREE.MeshBasicMaterial({color:0x6ee04a,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));beam.visible=false;scene.add(beam);hoverTile.rotation.x=-Math.PI/2;hoverTile.position.y=.035;hoverTile.visible=false;scene.add(hoverTile);
   meteorRing=new THREE.Mesh(new THREE.RingGeometry(1.6,1.7,48),new THREE.MeshBasicMaterial({color:0xff8a2a,transparent:true,opacity:.9,depthWrite:false}));meteorRing.rotation.x=-Math.PI/2;meteorRing.position.y=.05;meteorRing.visible=false;scene.add(meteorRing);
   ov=document.createElement('canvas');ov.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1';cv.after(ov);og=ov.getContext('2d');
 }
@@ -353,13 +355,14 @@ function syncGhost(){
   const bs=S.buildSel,key=bs+'|'+S.buildings.length+'|'+decor.length;
   if(key!==gridKey){gridKey=key;if(gridIM){scene.remove(gridIM);gridIM=null}
     if(bs){const tiles=[];for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(canPlace(bs,x,y))tiles.push([x,y]);
-      gridIM=new THREE.InstancedMesh(G3('tile',()=>new THREE.PlaneGeometry(.86,.86)),new THREE.MeshBasicMaterial({color:DEF[bs].on?0x7ae8ff:0xffffff,transparent:true,opacity:DEF[bs].on?.35:.14,depthWrite:false}),Math.max(1,tiles.length));
+      gridIM=new THREE.InstancedMesh(G3('tile',()=>new THREE.PlaneGeometry(.9,.9)),new THREE.MeshBasicMaterial({map:TILETEX,color:DEF[bs].on?0x7ae8ff:0xffffff,transparent:true,opacity:DEF[bs].on?.9:.5,depthWrite:false}),Math.max(1,tiles.length));
       tiles.forEach(([x,y],i)=>{_m4.makeRotationX(-Math.PI/2).setPosition(x+.5,.03,y+.5);gridIM.setMatrixAt(i,_m4)});gridIM.count=tiles.length;scene.add(gridIM)}
     ghostG.clear();ghostG.userData.t=null}
-  const h=S.hover;hoverTile.visible=false;ghostG.visible=false;rangeG.visible=false;
+  const h=S.hover;hoverTile.visible=false;ghostG.visible=false;rangeG.visible=false;beam.visible=false;
   if(bs&&h&&inG(h.x,h.y)){const ok=canPlace(bs,h.x,h.y)&&afford(DEF[bs].cost[0]);
-    if(ghostG.userData.t!==bs+ok){ghostG.clear();const P=makeB(bs,1),gm=new THREE.MeshBasicMaterial({color:ok?0x8cff6a:0xff5a5a,transparent:true,opacity:.5,depthWrite:false});P.g.traverse(o=>{if(o.isMesh){o.material=gm;o.castShadow=false}if(o.isSprite)o.visible=false});ghostG.add(P.g);ghostG.userData.t=bs+ok}
-    ghostG.visible=true;ghostG.position.set(h.x+.5,0,h.y+.5);hoverTile.visible=true;hoverTile.position.set(h.x+.5,.035,h.y+.5);hoverTile.material.color.set(ok?0x6ee04a:0xff4a4a);
+    if(ghostG.userData.t!==bs+ok){ghostG.clear();const P=makeB(bs,1),gm=new THREE.MeshBasicMaterial({color:ok?0x8cff6a:0xff5a5a,transparent:true,opacity:.72,depthWrite:false});P.g.traverse(o=>{if(o.isMesh){o.material=gm;o.castShadow=false}if(o.isSprite)o.visible=false});ghostG.add(P.g);ghostG.userData.t=bs+ok}
+    ghostG.visible=true;ghostG.position.set(h.x+.5,0,h.y+.5);hoverTile.visible=true;hoverTile.position.set(h.x+.5,.035,h.y+.5);hoverTile.material.color.set(ok?0x6ee04a:0xff4a4a);const pu=1+Math.sin(TIME*6)*.06;hoverTile.scale.set(pu,pu,1);
+    beam.visible=true;beam.position.set(h.x+.5,1.5,h.y+.5);beam.material.color.set(ok?0x6ee04a:0xff4a4a);beam.material.opacity=.18+Math.sin(TIME*6)*.06;ghostG.position.y=.05+Math.sin(TIME*4)*.04;
     if(DEF[bs].k==='t')showRange(h.x+.5,h.y+.5,DEF[bs].lv[0].rng,ok)}
   const sb=S.sel&&S.sel.b;selRing.visible=!!(sb||(S.sel&&S.sel.castle));
   if(sb){selRing.position.set(sb.x+.5,.04,sb.y+.5);selRing.scale.setScalar(1);if(DEF[sb.t].k==='t')showRange(sb.x+.5,sb.y+.5,DEF[sb.t].lv[sb.l-1].rng,true)}
