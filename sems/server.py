@@ -85,7 +85,7 @@ class LiveSource:
                                        eday=num(cnt.get("proPvStatsToday")), etotal=num(cnt.get("proPvStatsTotal")))
                         devices.append(dev)
             return {
-                "updated": datetime.now().isoformat(timespec="seconds"),
+                "updated": datetime.now().astimezone().isoformat(timespec="seconds"),
                 "flow": {"pv": num(flow.get("pSystem") if flow.get("pSystem") is not None else flow.get("pAc")),
                          "load": num(flow.get("pConsum")), "grid": num(flow.get("pGrid")),
                          "battery": num(flow.get("pBat")), "soc": num(flow.get("soc"))},
@@ -120,7 +120,7 @@ class DemoSource:
         load = round(random.uniform(0.4, 2.5), 2)
         bat = round(max(-3.0, min(3.0, pv - load)) * 0.6, 2)
         grid = round(pv - load - bat, 2)
-        return {"updated": now.isoformat(timespec="seconds"),
+        return {"updated": now.astimezone().isoformat(timespec="seconds"),
                 "flow": {"pv": pv, "load": load, "grid": grid, "battery": bat, "soc": 64.0},
                 "devices": [{"sn": "DEMO10K-ET-0001", "type": "INVERTER", "status": "ONLINE", "pac": pv,
                              "temp": 38.5, "vac": 231.2, "eday": round(pv * 4.1, 1), "etotal": 18234.7},

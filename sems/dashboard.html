@@ -107,7 +107,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px
     <div class="err" id="error"></div>
   </section>
 </main>
-<footer>Daten über die SEMS+-API (inoffiziell). Aktualisierung alle 5 min. Ohne lokalen Server läuft der Demo-Modus.</footer>
+<footer>Daten über die SEMS+-API (inoffiziell). Aktualisierung alle 5 min. Quelle: lokaler Server, sonst GitHub-Snapshot (alle 15 min), sonst Demo.</footer>
 <div class="tip" id="tip"></div>
 <script>
 const SERIES = [
@@ -119,9 +119,10 @@ const SERIES = [
 const $ = id => document.getElementById(id);
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const fmt = (v, unit, d = 2) => v == null ? "–" : `${Number(v).toLocaleString("de-AT", {maximumFractionDigits: d})} ${unit}`;
-let live = true, serverDemo = false;
+const SNAPSHOT_URL = "https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/sems-data/live.json";
+let source = "server", serverDemo = false, snapshot = null;
 
-// ---- Demo-Daten, wenn kein lokaler Server antwortet (z. B. htmlpreview) ----
+// ---- Demo-Daten, wenn weder Server noch Snapshot erreichbar sind ----
 function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
 const demo = {
   stations: () => [{id: "demo-1", name: "Demo-Anlage", capacity: 10}],
@@ -146,8 +147,9 @@ const demo = {
   },
 };
 
+// Datenquelle: lokaler server.py → Snapshot der GitHub Action (Branch sems-data) → Demo
 async function api(path) {
-  if (live) {
+  if (source === "server") {
     try {
       const r = await fetch("api/" + path);
       serverDemo = r.headers.get("X-Source") === "demo";
@@ -156,13 +158,36 @@ async function api(path) {
       return body;
     } catch (e) {
       if (path !== "stations") throw e;
-      live = false;
+      source = "snapshot";
     }
   }
   const p = new URLSearchParams(path.split("?")[1] || "");
+  if (source === "snapshot") {
+    try {
+      if (path.startsWith("stations") || path.startsWith("live")) {
+        const r = await fetch(SNAPSHOT_URL + "?t=" + Date.now(), {cache: "no-store"});
+        if (!r.ok) throw new Error(r.status);
+        snapshot = await r.json();
+      }
+      if (path.startsWith("stations")) return snapshot.stations;
+      if (path.startsWith("live")) return snapshot.live[p.get("id")];
+      return snapshot.stats[p.get("id")][p.get("days")];
+    } catch (e) {
+      if (path !== "stations") throw e;
+      source = "demo";
+    }
+  }
   if (path.startsWith("stations")) return demo.stations();
   if (path.startsWith("live")) return demo.live();
   return demo.stats(+p.get("days"));
+}
+
+function showMode() {
+  const real = source === "snapshot" || (source === "server" && !serverDemo);
+  const age = snapshot ? (Date.now() - new Date(snapshot.generated)) / 60000 : 0;
+  const stale = source === "snapshot" && age > 60;
+  $("mode").textContent = !real ? "Demo" : stale ? `Veraltet (${Math.round(age / 60)} h)` : "Live";
+  $("mode").classList.toggle("live", real && !stale);
 }
 
 function setLine(id, power, reverse) {
@@ -242,7 +267,7 @@ async function load() {
   $("error").textContent = "";
   try {
     const [l, s] = await Promise.all([api(`live?id=${encodeURIComponent(sid)}`), api(`stats?id=${encodeURIComponent(sid)}&days=${$("days").value}`)]);
-    renderLive(l); renderStats(s);
+    renderLive(l); renderStats(s); showMode();
   } catch (e) {
     $("error").textContent = "Fehler beim Laden: " + e.message;
   }
@@ -256,8 +281,6 @@ async function init() {
     $("error").textContent = "Anlagen konnten nicht geladen werden: " + e.message;
     return;
   }
-  $("mode").textContent = live && !serverDemo ? "Live" : "Demo";
-  $("mode").classList.toggle("live", live && !serverDemo);
   await load();
   setInterval(load, 300000);
 }
