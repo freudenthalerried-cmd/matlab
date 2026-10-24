@@ -80,3 +80,21 @@ python3 sems/sems_client.py legacy <station_id>   # alte API
 ```
 
 Nur Python-Standardbibliothek. Polling nicht öfter als alle 5 min (Rate-Limit).
+
+## Dashboard (eigenes SEMS-Portal)
+
+```bash
+export SEMS_USER='mail@example.com' SEMS_PASSWORD='...'
+python3 sems/server.py          # → http://127.0.0.1:8080
+python3 sems/server.py --demo   # ohne Account, mit Beispieldaten
+```
+
+- `server.py` meldet sich bei SEMS+ an, normalisiert die Antworten und cached sie 5 min
+  (Rate-Limit). Er läuft nur auf `127.0.0.1`, Zugangsdaten bleiben lokal.
+- `dashboard.html`: Kennzahlen, animierter Energiefluss (PV, Haus, Netz, Akku),
+  Tagesbilanz als Balkendiagramm (7/30/365 Tage) und Geräteliste. Ohne Server
+  (z. B. direkt geöffnet) läuft automatisch der Demo-Modus.
+- Lokaler Server statt direkter Browser-Abfrage: Die SEMS-API erlaubt keine Aufrufe
+  von fremden Webseiten (CORS), und die Zugangsdaten sollen nicht im Browser liegen.
+- Vorzeichen (unverifiziert): `pGrid > 0` = Einspeisung, `pBat > 0` = Laden. Falls die
+  Pfeile verkehrt laufen, in `renderLive()` in `dashboard.html` umdrehen.
