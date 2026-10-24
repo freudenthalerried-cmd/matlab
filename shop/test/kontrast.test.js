@@ -45,12 +45,12 @@ const PAARE = [
   ['gedaempft', 'grund', 4.5, 'Gedämpfter Text auf Grund'],
   ['gedaempft', 'flaeche', 4.5, 'Gedämpfter Text auf Fläche'],
   ['gedaempft', 'flaeche-2', 4.5, 'Gedämpfter Text auf Fläche-2'],
-  ['ocker', 'grund', 4.5, 'Verweise auf Grund'],
-  ['ocker', 'flaeche', 4.5, 'Verweise auf Fläche'],
-  ['ocker', 'ocker-weich', 4.5, 'Markierung'],
+  ['akzent', 'grund', 4.5, 'Verweise auf Grund'],
+  ['akzent', 'flaeche', 4.5, 'Verweise auf Fläche'],
+  ['akzent', 'akzent-weich', 4.5, 'Markierung'],
   ['gruen', 'gruen-weich', 4.5, 'Zusage'],
   ['ziegel', 'ziegel-weich', 4.5, 'Absage'],
-  ['grund', 'ocker', 4.5, 'Schrift auf dem Hauptknopf'],
+  ['grund', 'akzent', 4.5, 'Schrift auf dem Hauptknopf'],
   // 3:1 nach WCAG 1.4.11 — die Umrandung eines Bedienelements muss
   // erkennbar sein. Für `--linie` gilt das nicht: Sie zeichnet Trennlinien
   // und Kartenränder, keine Bedienelemente.

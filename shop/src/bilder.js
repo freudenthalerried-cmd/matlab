@@ -30,7 +30,7 @@ import { einheitText } from './format.js';
 
 const RAHMEN = 'stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"';
 const KANTE = 'stroke="var(--linie-stark)" fill="none" stroke-width="1.5"';
-const AKZENT = 'stroke="var(--ocker)" fill="none" stroke-width="1.5"';
+const AKZENT = 'stroke="var(--akzent)" fill="none" stroke-width="1.5"';
 const SCHRIFT = 'fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9"';
 
 /**
@@ -235,7 +235,7 @@ const formen = {
     const y = 58 - d;
     return `<path d="M18 ${y} L84 ${y - 16} L104 ${y - 8} L38 ${y + 8} Z" ${RAHMEN}/>
 <path d="M18 ${y} L18 ${y + d} L38 ${y + 8 + d} L38 ${y + 8} Z" ${RAHMEN}/>
-<path d="M38 ${y + 8} L38 ${y + 8 + d} L104 ${y - 8 + d} L104 ${y - 8} Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
+<path d="M38 ${y + 8} L38 ${y + 8 + d} L104 ${y - 8 + d} L104 ${y - 8} Z" fill="var(--akzent-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 ${y - 8} L110 ${y - 8 + d}" ${AKZENT}/>
 <path d="M107 ${y - 8} L113 ${y - 8} M107 ${y - 8 + d} L113 ${y - 8 + d}" ${AKZENT}/>
 ${beschriftung(mm === null ? 'Platte' : `${mm} mm`)}`;
@@ -245,7 +245,7 @@ ${beschriftung(mm === null ? 'Platte' : `${mm} mm`)}`;
   sack(a) {
     return `<path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" ${RAHMEN}/>
 <path d="M40 24 Q60 30 80 24" ${KANTE}/>
-<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--akzent-weich)" stroke="var(--akzent)" stroke-width="1.2"/>
 ${beschriftung(mass(a.bezeichnung, /\d{1,3}(?:[.,]\d{1,2})?\s*(?:kg|l)(?![\p{L}])/iu) ?? 'Sack')}`;
   },
 
@@ -303,7 +303,7 @@ ${beschriftung(mass(a.bezeichnung, /\d{1,3}[.,]?\d?\s*cm(?![\p{L}])/u) ?? 'Stein
     return `<rect x="30" y="26" width="60" height="40" ${RAHMEN}/>
 <ellipse cx="30" cy="46" rx="9" ry="20" ${RAHMEN}/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
-<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--akzent-weich)" stroke="var(--akzent)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" ${AKZENT}/>
 ${beschriftung(rollenmass(a.bezeichnung) ?? 'Rollenware')}`;
   },
@@ -312,7 +312,7 @@ ${beschriftung(rollenmass(a.bezeichnung) ?? 'Rollenware')}`;
   leiste(a) {
     return `<path d="M30 24 L38 24 L38 62 L96 62 L96 70 L30 70 Z" ${RAHMEN}/>
 <path d="M38 62 L96 62" ${AKZENT} stroke-dasharray="4 3"/>
-<path d="M96 66 L110 66" stroke="var(--ocker)" stroke-width="1.2" stroke-dasharray="2 2"/>
+<path d="M96 66 L110 66" stroke="var(--akzent)" stroke-width="1.2" stroke-dasharray="2 2"/>
 <path d="M22 24 L22 70 M19 24 L25 24 M19 70 L25 70" ${AKZENT}/>
 ${beschriftung(mass(a.bezeichnung, /\d{1,2}(?:[.,]\d{1,2})?\s*m(?![\p{L}2])/u) ?? 'Profil')}`;
   },
@@ -321,7 +321,7 @@ ${beschriftung(mass(a.bezeichnung, /\d{1,2}(?:[.,]\d{1,2})?\s*m(?![\p{L}2])/u) ?
   duebel(a) {
     return `<rect x="20" y="40" width="14" height="14" rx="2" ${RAHMEN}/>
 <rect x="34" y="43" width="56" height="8" ${RAHMEN}/>
-<path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M90 47 L104 43 L104 51 Z" fill="var(--akzent-weich)" stroke="var(--akzent)" stroke-width="1.2"/>
 <path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
 ${beschriftung(mass(a.bezeichnung, /\d{1,3}\s*mm|\d{3}\s*\d{2,3}/) ?? 'Dübel')}`;
   },
@@ -331,7 +331,7 @@ ${beschriftung(mass(a.bezeichnung, /\d{1,3}\s*mm|\d{3}\s*\d{2,3}/) ?? 'Dübel')}
     return `<rect x="42" y="30" width="36" height="46" rx="3" ${RAHMEN}/>
 <rect x="52" y="18" width="16" height="12" ${RAHMEN}/>
 <path d="M56 18 L56 8 L64 8 L64 18" ${KANTE}/>
-<rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<rect x="46" y="46" width="28" height="12" rx="1" fill="var(--akzent-weich)" stroke="var(--akzent)" stroke-width="1.2"/>
 ${beschriftung(mass(a.bezeichnung, /\d{3}\s*ml/i) ?? 'Dose')}`;
   },
 
@@ -341,7 +341,7 @@ ${beschriftung(mass(a.bezeichnung, /\d{3}\s*ml/i) ?? 'Dose')}`;
 <rect x="36" y="40" width="48" height="8" ${RAHMEN}/>
 <path d="M44 48 L44 74 M76 48 L76 74" ${KANTE}/>
 <path d="M44 74 L76 74" ${KANTE}/>
-<circle cx="60" cy="30" r="3" fill="var(--ocker)"/>
+<circle cx="60" cy="30" r="3" fill="var(--akzent)"/>
 ${beschriftung(hauberndurchmesser(a.bezeichnung) ?? 'Haube')}`;
   },
 

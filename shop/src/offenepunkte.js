@@ -50,6 +50,35 @@ export const ZUSTAENDIGKEITEN = Object.freeze({
  */
 export const OHNE_WERKZEUG = Object.freeze([
   {
+    /*
+     * **Neu am 24. Oktober 2026.** Weisung des Auftraggebers: „mache echte
+     * bilder". Die 46 Artikel tragen heute gezeichnete Sinnbilder — inline
+     * SVG, aus der Bezeichnung gebaut, kein einziges Lichtbild im
+     * Ausgabeordner. Gemessen am selben Tag: Der Netzausgang dieser Umgebung
+     * antwortet für sieben einzeln geprüfte Adressen nicht — die fünf Hersteller
+     * der geführten Ware, den Lieferanten und Wikimedia Commons. Von hier aus
+     * ist kein Lichtbild zu holen.
+     *
+     * **Erfinden ist der falsche Ausweg.** Ein maschinell erzeugtes Bild
+     * zeigt eine Ware, die es nicht gibt, und ein Kunde bestellt nach dem
+     * Bild. Das ist derselbe Fehler wie eine erfundene Kennwerttabelle, nur
+     * sichtbarer.
+     */
+    id: 'echte-produktbilder',
+    titel: 'Echte Produktbilder für die 46 Artikel',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'Von hier aus nicht zu beschaffen, und zwar gemessen je Adresse am '
+      + '24. Oktober 2026: www.baumit.at, www.isover.at, www.schiedel.at, www.soudal.com, '
+      + 'www.synthesa.at, www.poschacher.at und commons.wikimedia.org — sieben Adressen, '
+      + 'sieben Mal keine Verbindung. Ein erzeugtes Bild wäre keine Ware, sondern eine '
+      + 'Behauptung über Ware. Drei Wege stehen offen, und alle drei beginnen beim '
+      + 'Auftraggeber: eigene Lichtbilder, ein Zugang zum Händlerbereich eines Herstellers, '
+      + 'oder die Freigabe genau dieser Adressen in den Netzeinstellungen.',
+    loest: 'Ein Sinnbild sagt, was die Ware ist; ein Lichtbild sagt, wie sie aussieht. Für die '
+      + 'Entscheidung im Warenkorb und für jede Bildsuche ist das der Unterschied zwischen '
+      + 'gefunden werden und nicht gefunden werden.',
+  },
+  {
     id: 'preisrhythmus',
     titel: 'Preisrhythmus des Lieferanten',
     zustaendig: 'anfrage',

@@ -354,6 +354,36 @@ export const WEISUNGEN = Object.freeze([
       + 'auf A, gibt beiden Seiten denselben Wortschatz, und `pruefe-dubletten` hat das '
       + 'gemessen, bevor es jemand behauptet hat.',
   }),
+  Object.freeze({
+    nr: 17,
+    datum: '24.10.',
+    stichwort: '„seite nicht braun"',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/bin/website.mjs', muster: /--akzent:#0B5394/ }),
+      Object.freeze({ datei: 'shop/test/kontrast.test.js', muster: /'akzent', 'grund'/ }),
+    ]),
+    warum: 'Erfüllt, und die Weisung war kürzer als ihre Folgen. Der alte Anstrich war ein '
+      + 'warmes Creme mit Ocker als Akzent — neben Baustoffen gefällig und in zwei Hinsichten '
+      + 'schlecht: Es ist der häufigste Anstrich maschinell gebauter Seiten, und Ocker liegt '
+      + 'dem Ziegelrot der Absage so nah, dass ein Signal mit dem Akzent verschwimmt. Die '
+      + 'zweite Spur zeigt auf den Grund, warum dieser Wechsel kein Geschmacksurteil ist: Alle '
+      + '16 Kontrastpaare sind in beiden Anstrichen nachgerechnet worden, bevor ein Wert in '
+      + 'die Datei kam. Und das Token heißt nicht mehr nach seiner Farbe — ein Name, der eine '
+      + 'Farbe nennt, wird zur Lüge, sobald die Farbe wechselt.',
+  }),
+  Object.freeze({
+    nr: 18,
+    datum: '24.10.',
+    stichwort: '„mache echte bilder"',
+    offen: Object.freeze({ datei: 'shop/src/offenepunkte.js', muster: /Echte Produktbilder/ }),
+    warum: 'Offen, und die Lücke liegt nicht am Werkzeug. Die 46 Artikel tragen gezeichnete '
+      + 'Sinnbilder, und im Ausgabeordner liegt kein einziges Lichtbild. Gemessen am '
+      + '24. Oktober: Der Netzausgang dieser Umgebung weist jeden Herstellerauftritt ab, dazu '
+      + 'den Lieferanten und selbst Wikimedia Commons — von hier aus ist keines zu holen. Ein '
+      + 'erzeugtes Bild wäre der falsche Ausweg und nicht die halbe Lösung: Ein Kunde bestellt '
+      + 'nach dem Bild, und ein erfundenes zeigt eine Ware, die es nicht gibt. Dieselbe Sorte '
+      + 'Fehler wie eine erfundene Kennwerttabelle, nur sichtbarer.',
+  }),
 ]);
 
 
