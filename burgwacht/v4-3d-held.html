@@ -674,10 +674,11 @@ function showPanel(){
       h+=`<span>Ertrag / 6 s</span><span>${Object.entries(pp).map(([k,v])=>`<i class="ic ${k}"></i> ${v}`).join(' ')}${nx}</span>`;
       if(d.adj)h+=`<span>Nachbarbonus</span><span>${countAdj(b.x,b.y,d.adj)} ${d.adj===TREE?'Bäume':'Felsen'}</span>`}
     h+='</div><div class="row">';
+    if(!c)h+=`<button class="up" disabled>Max. Stufe<div class="pcost">voll ausgebaut</div></button>`;
     if(c){const lock=b.l>=maxLvl();h+=`<button class="up" data-a="up" ${lock||!afford(c)?'disabled':''}>${lock?'Burg ausbauen':'Ausbauen'}<div class="pcost">${lock?`Stufe ${b.l+1} braucht Burg ${b.l}`:costHTML(c)}</div></button>`}
     const r={};for(const k in b.spent)r[k]=Math.floor(b.spent[k]*.5);
     if(d.k==='b')h+=`<button class="up" data-a="rally" style="flex:.8">Sammelpunkt<div class="pcost">auf Weg tippen</div></button>`;
-    h+=`<button class="sell" data-a="sell">Abreißen<div class="pcost">${costHTML(r).replace(/class="no"/g,'')}</div></button></div>`}
+    h+=`<button class="sell" data-a="sell">${sellArm===b?'Wirklich?':'Abreißen'}<div class="pcost">${costHTML(r).replace(/class="no"/g,'')}</div></button></div>`}
   else if(s.castle){const n=S.castleLvl+1,c=CASTLE_UP[n];
     h+=`<h3>Burg</h3>${stars(S.castleLvl)}<p>${n===2?'Stufe 2: +10 Leben, Blitzturm und Stufe-3-Ausbau für alle Gebäude.':n===3?'Stufe 3: +10 Leben und eine Balliste auf dem Bergfried.':'Voll ausgebaut. Die Balliste wacht über das Tor.'}</p>`;
     h+=`<div class="stats"><span>Leben</span><span>${S.lives} / ${S.maxLives}</span><span>Max. Gebäudestufe</span><span>${maxLvl()}</span></div>`;
@@ -686,11 +687,13 @@ function showPanel(){
     if(t===TREE)h+=`<h3>Wald</h3><p>Bäume geben Sägewerken Bonus. Fällen bringt sofort Holz und macht Platz.</p><div class="row"><button class="up" data-a="clear">Fällen<div class="pcost"><span><i class="ic w"></i>+10</span></div></button></div>`;
     else if(t===ROCK)h+=`<h3>Fels</h3><p>Felsen geben Goldminen Bonus. Abbauen bringt Gold und macht Platz.</p><div class="row"><button class="up" data-a="clear" ${S.res.w<10?'disabled':''}>Abbauen<div class="pcost"><span class="${S.res.w<10?'no':''}"><i class="ic w"></i>-10</span><span><i class="ic g"></i>+25</span></div></button></div>`;
     else if(t===CRY)h+=`<h3>Kristallader</h3><p>Hier kann eine Kristallmine gebaut werden. Kristalle brauchst du für Blitztürme und Zauber.</p><div class="row"><button class="up" data-a="bcm">Kristallmine bauen<div class="pcost">${costHTML(DEF.cmine.cost[0])}</div></button></div>`}
-  p.innerHTML=h;p.hidden=false;
+  p.innerHTML=h;p.hidden=false;panelT=performance.now();
 }
+let sellArm=null,sellT=0,panelT=0;
 function hidePanel(){$('#panel').hidden=true}
-$('#panel').addEventListener('click',ev=>{const a=ev.target.closest('[data-a]');if(!a||a.disabled)return;ac();const s=S.sel;
-  switch(a.dataset.a){case'close':S.sel=null;hidePanel();break;case'up':upgrade(s.b);break;case'sell':sell(s.b);break;case'castle':upCastle();break;
+$('#panel').addEventListener('click',ev=>{const a=ev.target.closest('[data-a]');if(!a||a.disabled)return;
+  if(a.dataset.a!=='close'&&performance.now()-panelT<350)return;ac();const s=S.sel;
+  switch(a.dataset.a){case'close':S.sel=null;hidePanel();break;case'up':upgrade(s.b);break;case'sell':if(sellArm===s.b&&performance.now()-sellT<4000){sellArm=null;sell(s.b)}else{sellArm=s.b;sellT=performance.now();showPanel();toast('Zum Abreißen nochmal tippen');setTimeout(()=>{if(sellArm===s.b&&S.sel&&S.sel.b===s.b){sellArm=null;showPanel()}},4000)}break;case'castle':upCastle();break;
     case'clear':clearTile(s.tile.x,s.tile.y);break;
     case'hmove':S.heroSel=true;hidePanel();toast('Tippe auf die Karte, um den Helden zu bewegen');break;case'whirl':heroWhirl();showPanel();break;
     case'rally':S.rallyFor=s.b;hidePanel();toast('Tippe auf den Weg für den neuen Sammelpunkt');break;case'bcm':if(place('cmine',s.tile.x,s.tile.y)){S.sel={b:occ[s.tile.y][s.tile.x]};showPanel()}break}});
