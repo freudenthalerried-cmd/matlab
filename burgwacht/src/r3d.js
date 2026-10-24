@@ -425,7 +425,7 @@ function drawOverlay(){
     const tx=x+(t.k?sz*.45:0);g.strokeText(t.txt,tx,y);g.fillStyle=t.k==='g'?'#ffd23f':t.k==='w'?'#ffb070':t.k==='c'?'#7ae8ff':'#ff5a6a';g.fillText(t.txt,tx,y);
     const ic=ICON3[t.k];if(ic&&ic.complete&&ic.naturalWidth)g.drawImage(ic,tx-g.measureText(t.txt).width/2-sz*.95,y-sz*.45,sz*.9,sz*.9)}
   g.globalAlpha=1;
-  if(S.buildSel&&S.hover&&inG(S.hover.x,S.hover.y)){const d=DEF[S.buildSel];if(d.adj&&canPlace(S.buildSel,S.hover.x,S.hover.y)){const n=countAdj(S.hover.x,S.hover.y,d.adj),[x,y]=proj2(S.hover.x+.5,1.8,S.hover.y+.5);
+  if(S.buildSel&&S.hover&&!confirmAt&&inG(S.hover.x,S.hover.y)){const d=DEF[S.buildSel];if(d.adj&&canPlace(S.buildSel,S.hover.x,S.hover.y)){const n=countAdj(S.hover.x,S.hover.y,d.adj),[x,y]=proj2(S.hover.x+.5,1.8,S.hover.y+.5);
     g.font=`16px ${FONT3}`;g.lineWidth=4;g.strokeStyle='#1c1230';const s=n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus';g.strokeText(s,x,y);g.fillStyle=n?'#b9f58d':'#ffd0d0';g.fillText(s,x,y)}}
   if(S.castleHit>0){g.fillStyle=`rgba(255,40,60,${S.castleHit*.35})`;g.fillRect(0,0,W,H)}
   if(S.frostFlash>0){g.fillStyle=`rgba(180,240,255,${S.frostFlash*.4})`;g.fillRect(0,0,W,H)}

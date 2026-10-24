@@ -475,7 +475,9 @@ function tap(ev){
 let confirmAt=null;
 $('#cfok').onclick=()=>{const t=confirmAt;confirmAt=null;lastTap=null;if(t&&S.buildSel&&place(S.buildSel,t.x,t.y)){S.buildSel=null;S.hover=null}};
 $('#cfno').onclick=()=>{confirmAt=null;lastTap=null;S.hover=null};
-function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const p=R.toScreen(confirmAt.x+.5,confirmAt.y+.5,1.9);el.hidden=false;const w=el.offsetWidth||170,h=el.offsetHeight||50,cx=clamp(p.x,w/2+8,innerWidth-w/2-8),cy=clamp(p.y,h+70,innerHeight-140);el.style.transform=`translate(${cx-w/2}px,${cy-h}px)`}
+function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const d=DEF[S.buildSel],inf=$('#cfinfo');if(d.adj){const n=countAdj(confirmAt.x,confirmAt.y,d.adj);inf.textContent=n?`+${n*(d.adjB==='g'?2:1)} Bonus (${n} ${d.adj===TREE?'Bäume':'Felsen'})`:'kein Nachbarbonus';inf.className=n?'':'no'}else inf.textContent='';
+  el.hidden=false;const w=el.offsetWidth||170,h=el.offsetHeight||50,lo=R.toScreen(confirmAt.x+.5,confirmAt.y+1.05,0),hi=R.toScreen(confirmAt.x+.5,confirmAt.y+.5,2.1);
+  let y=lo.y+10;if(y+h>innerHeight-140)y=hi.y-h;const cx=clamp(lo.x,w/2+8,innerWidth-w/2-8);el.style.transform=`translate(${cx-w/2}px,${clamp(y,70,innerHeight-140-h)}px)`}
 function cancel(){confirmAt=null;S.buildSel=null;S.spellSel=null;S.sel=null;S.hover=null;S.heroSel=false;S.rallyFor=null;hidePanel()}
 function castSpell(k){ac();const c=k==='meteor'?20:12;if(S.cd[k]>0){toast('Zauber lädt noch');sfx('err');return}if(S.res.c<c){toast(`Braucht ${c} Kristalle – baue eine Kristallmine`);sfx('err');return}
   if(!S.waveActive){toast('Zauber wirken nur während einer Welle');sfx('err');return}

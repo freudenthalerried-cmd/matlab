@@ -139,7 +139,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
 .end .st div{background:rgba(255,244,220,.12);border-radius:14px;padding:10px 14px;font-weight:800;font-size:13px}
 .end .st b{display:block;font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--gold)}
 
-#confirm{position:fixed;left:0;top:0;z-index:6;display:flex;gap:6px;pointer-events:auto}
+#confirm{position:fixed;left:0;top:0;z-index:6;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;pointer-events:auto;max-width:210px}
+#cfinfo{flex-basis:100%;text-align:center;background:rgba(28,18,48,.88);border-radius:10px;padding:3px 8px;font-family:var(--f-display);font-size:15px;color:#b9f58d;text-shadow:0 2px 0 #1c1230,0 0 4px #1c1230}#cfinfo:empty{display:none}#cfinfo.no{color:#ffd0d0}
 #confirm button{height:44px;border-radius:12px;border:3px solid #1a3a08;font-family:var(--f-display);font-size:18px;color:#fff;cursor:pointer;padding:0 14px;text-shadow:0 2px 0 rgba(0,0,0,.35)}
 #cfok{background:linear-gradient(#9cf36a,#3aa83a);box-shadow:0 4px 0 #1b5e22}
 #cfno{background:linear-gradient(#ff7a7a,#c9303f);border-color:#4a0a12!important;box-shadow:0 4px 0 #7a1420}
@@ -201,7 +202,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
   <button id="wavebtn">Welle 1<small>Los geht's!</small></button>
 </div>
 
-<div id="confirm" hidden><button id="cfok" aria-label="Hier bauen">Bauen ✓</button><button id="cfno" aria-label="Abbrechen">✕</button></div>
+<div id="confirm" hidden><span id="cfinfo"></span><button id="cfok" aria-label="Hier bauen">Bauen ✓</button><button id="cfno" aria-label="Abbrechen">✕</button></div>
 <div id="panel" hidden></div>
 <div id="banner"></div>
 <div id="toast"></div>
@@ -707,7 +708,9 @@ function tap(ev){
 let confirmAt=null;
 $('#cfok').onclick=()=>{const t=confirmAt;confirmAt=null;lastTap=null;if(t&&S.buildSel&&place(S.buildSel,t.x,t.y)){S.buildSel=null;S.hover=null}};
 $('#cfno').onclick=()=>{confirmAt=null;lastTap=null;S.hover=null};
-function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const p=R.toScreen(confirmAt.x+.5,confirmAt.y+.5,1.9);el.hidden=false;const w=el.offsetWidth||170,h=el.offsetHeight||50,cx=clamp(p.x,w/2+8,innerWidth-w/2-8),cy=clamp(p.y,h+70,innerHeight-140);el.style.transform=`translate(${cx-w/2}px,${cy-h}px)`}
+function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const d=DEF[S.buildSel],inf=$('#cfinfo');if(d.adj){const n=countAdj(confirmAt.x,confirmAt.y,d.adj);inf.textContent=n?`+${n*(d.adjB==='g'?2:1)} Bonus (${n} ${d.adj===TREE?'Bäume':'Felsen'})`:'kein Nachbarbonus';inf.className=n?'':'no'}else inf.textContent='';
+  el.hidden=false;const w=el.offsetWidth||170,h=el.offsetHeight||50,lo=R.toScreen(confirmAt.x+.5,confirmAt.y+1.05,0),hi=R.toScreen(confirmAt.x+.5,confirmAt.y+.5,2.1);
+  let y=lo.y+10;if(y+h>innerHeight-140)y=hi.y-h;const cx=clamp(lo.x,w/2+8,innerWidth-w/2-8);el.style.transform=`translate(${cx-w/2}px,${clamp(y,70,innerHeight-140-h)}px)`}
 function cancel(){confirmAt=null;S.buildSel=null;S.spellSel=null;S.sel=null;S.hover=null;S.heroSel=false;S.rallyFor=null;hidePanel()}
 function castSpell(k){ac();const c=k==='meteor'?20:12;if(S.cd[k]>0){toast('Zauber lädt noch');sfx('err');return}if(S.res.c<c){toast(`Braucht ${c} Kristalle – baue eine Kristallmine`);sfx('err');return}
   if(!S.waveActive){toast('Zauber wirken nur während einer Welle');sfx('err');return}
@@ -1106,7 +1109,7 @@ function render(){
     if(d.k==='t')rangeCircle(x+.5,y+.5,d.lv[0].rng,ok);
     ctx.globalAlpha=.7;const s=bSpr(S.buildSel,1);ctx.drawImage(s.c,x-.2,y-1,s.w,s.h);ctx.globalAlpha=1;
     RR(ctx,x+.04,y+.04,.92,.92,.14,ok?'rgba(110,230,80,.25)':'rgba(255,70,70,.3)',ok?'#6ee04a':'#ff4a4a',.05);
-    if(d.adj&&ok){const n=countAdj(x,y,d.adj);ftextStatic(x+.5,y-1.15,n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus',n?'#b9f58d':'#ffd0d0')}}}
+    if(d.adj&&ok&&!confirmAt){const n=countAdj(x,y,d.adj);ftextStatic(x+.5,y-1.15,n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus',n?'#b9f58d':'#ffd0d0')}}}
   if(selB&&DEF[selB.t].k==='t')rangeCircle(selB.x+.5,selB.y+.5,DEF[selB.t].lv[selB.l-1].rng,true);
   if(S.sel&&S.sel.castle&&S.castleLvl>=3)rangeCircle(20.5,6.5,4.6,true);
   // Flieger

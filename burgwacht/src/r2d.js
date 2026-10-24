@@ -349,7 +349,7 @@ function render(){
     if(d.k==='t')rangeCircle(x+.5,y+.5,d.lv[0].rng,ok);
     ctx.globalAlpha=.7;const s=bSpr(S.buildSel,1);ctx.drawImage(s.c,x-.2,y-1,s.w,s.h);ctx.globalAlpha=1;
     RR(ctx,x+.04,y+.04,.92,.92,.14,ok?'rgba(110,230,80,.25)':'rgba(255,70,70,.3)',ok?'#6ee04a':'#ff4a4a',.05);
-    if(d.adj&&ok){const n=countAdj(x,y,d.adj);ftextStatic(x+.5,y-1.15,n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus',n?'#b9f58d':'#ffd0d0')}}}
+    if(d.adj&&ok&&!confirmAt){const n=countAdj(x,y,d.adj);ftextStatic(x+.5,y-1.15,n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus',n?'#b9f58d':'#ffd0d0')}}}
   if(selB&&DEF[selB.t].k==='t')rangeCircle(selB.x+.5,selB.y+.5,DEF[selB.t].lv[selB.l-1].rng,true);
   if(S.sel&&S.sel.castle&&S.castleLvl>=3)rangeCircle(20.5,6.5,4.6,true);
   // Flieger
