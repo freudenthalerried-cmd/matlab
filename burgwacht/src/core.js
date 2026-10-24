@@ -15,9 +15,13 @@ const MAPS=[
   {n:'Grüntal',wp:[[-4,2],[3,2],[3,8],[8,8],[8,3],[13,3],[13,10],[20,10],[20,8]],cry:[[6,5],[11,6],[16,12]],pond:[10.5,11.95,1.9,1.3],
     rocks:[[10,0],[11,1],[5,11],[16,7],[1,6]],forest:(x,y)=>(x>=15&&y<=2)||(x>=17&&y<=3)||(x<=2&&y>=9)||(x>=5&&x<=7&&y===0)||(y>=11&&x>=13&&x<=15),theme:'gruen',waves:8,bossT:'troll',boost:1},
   {n:'Herbstwald',wp:[[-4,10],[3,10],[3,3],[9,3],[9,9],[14,9],[14,2],[17,2],[17,10],[20,10],[20,8]],cry:[[6,6],[12,5],[19,12]],pond:[6.5,11.95,1.9,1.2],
-    rocks:[[6,0],[11,0],[16,6],[12,12],[1,6]],forest:(x,y)=>(x<=2&&y<=8)||(x>=18&&y<=3)||(y>=11&&x>=10&&x<=15),theme:'herbst',waves:10,bossT:'dragon',boost:1.12},
+    rocks:[[6,0],[11,0],[16,6],[12,12],[1,6]],forest:(x,y)=>(x<=2&&y<=8)||(x>=18&&y<=3)||(y>=11&&x>=10&&x<=15),theme:'herbst',waves:10,bossT:'dragon',boost:1.08},
   {n:'Wüstenpass',wp:[[-4,6],[2,6],[2,1],[7,1],[7,11],[12,11],[12,4],[16,4],[16,10],[20,10],[20,8]],cry:[[4,4],[14,7],[18,2]],pond:[9.8,6.4,1.5,1.1],
-    rocks:[[5,8],[10,1],[14,0],[19,12],[3,11],[9,10],[4,1],[14,12]],forest:(x,y)=>(y>=12&&x<=6)||(x>=18&&y<=1),theme:'wueste',waves:12,bossT:'dragon',boost:1.25},
+    rocks:[[5,8],[10,1],[14,0],[19,12],[3,11],[9,10],[4,1],[14,12]],forest:(x,y)=>(y>=12&&x<=6)||(x>=18&&y<=1),theme:'wueste',waves:12,bossT:'dragon',boost:1.15},
+  {n:'Flusstal',wp:[[-4,4],[5,4],[5,11],[11,11],[11,1],[16,1],[16,8],[18,8],[18,10],[20,10],[20,8]],cry:[[3,8],[13,6],[19,2]],pond:[8.2,7.5,1.6,1.1],
+    rocks:[[2,1],[9,2],[14,11],[20,12],[7,12]],forest:(x,y)=>(x<=3&&y>=9)||(x>=17&&y<=3)||(y<=2&&x>=5&&x<=9),theme:'gruen',waves:12,bossT:'troll',boost:1.22},
+  {n:'Ascheberg',wp:[[-4,8],[2,8],[2,2],[6,2],[6,9],[10,9],[10,2],[14,2],[14,11],[17,11],[17,10],[20,10],[20,8]],cry:[[4,5],[12,6],[19,12]],pond:[8.5,5.5,1.2,1.6],
+    rocks:[[0,0],[4,10],[8,11],[12,0],[16,6],[19,2],[1,5]],forest:(x,y)=>(y>=11&&x<=5)||(x>=17&&y<=2)||(x>=15&&y>=12),theme:'vulkan',waves:15,bossT:'dragon',boost:1.3},
 ];
 let MAP=MAPS[0],PATH,MAPI=0;
 function setMap(i){MAPI=i;MAP=MAPS[i];const w=MAP.wp;PATH=mkPath(w.map(([x,y],k)=>[x+.5,k===w.length-1?8.15:y+.5]));CRYS=MAP.cry}
@@ -51,8 +55,8 @@ const EN={
   orc:{n:'Ork',hp:120,spd:1,arm:.25,g:11,dmg:2,sz:1.15,atk:9},
   bat:{n:'Fledermaus',hp:34,spd:1.9,arm:0,g:5,dmg:1,fly:1,sz:1,atk:0},
   knight:{n:'Dunkler Ritter',hp:240,spd:.85,arm:.45,g:18,dmg:2,sz:1.12,atk:14},
-  troll:{n:'Troll',hp:950,spd:.55,arm:.2,g:110,dmg:6,sz:1.9,boss:1,atk:45},
-  dragon:{n:'Drache',hp:1500,spd:.75,arm:.15,g:180,dmg:10,fly:1,air:1,sz:2,boss:1,atk:0},
+  troll:{n:'Troll',hp:950,spd:.55,arm:.2,g:110,dmg:5,sz:1.9,boss:1,atk:45},
+  dragon:{n:'Drache',hp:1100,spd:.75,arm:.15,g:180,dmg:6,fly:1,air:1,sz:2,boss:1,atk:0},
 };
 const WAVES=[
   [['goblin',8,1.1]],
@@ -67,7 +71,11 @@ const WAVES=[
   [['wolf',12,.45],['knight',4,1.6],['dragon',1,0]],
 ];
 function getWave(n){
-  if(FEAT.campaign&&S&&n===S.maxWave&&n<=10){const g=WAVES[n-1].filter(w=>!EN[w[0]].boss);g.push([MAP.bossT,n>=10?2:1,5]);return g}
+  if(S&&S.endless&&n%5===0){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([n%10?'troll':'dragon',Math.ceil(n/10),4]);return g}
+  if(FEAT.campaign&&S&&!S.endless&&n===S.maxWave){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([MAP.bossT,n>=15?2:1,5]);return g}
+  return baseWave(n);
+}
+function baseWave(n){
   if(n<=10)return WAVES[n-1];
   const k=n-10,g=[['goblin',10+k*2,.45],['orc',5+k,.9],['wolf',8+k,.4]];
   if(k%2)g.push(['bat',8+k*2,.5]);
@@ -138,12 +146,12 @@ const SFX={
   err:()=>tone(160,.15,'square',.04),
   prod:()=>tone(990,.06,'sine',.02),
 };
-function sfx(k){if(!AC||muted)return;const n=performance.now();if(lastS[k]&&n-lastS[k]<45)return;lastS[k]=n;SFX[k]()}
+function sfx(k){if(!AC||muted||ADMUTE)return;const n=performance.now();if(lastS[k]&&n-lastS[k]<45)return;lastS[k]=n;SFX[k]()}
 
 // ---------- Spielzustand ----------
-function newGame(mi=MAPI){
-  setMap(mi);genMap();const pk=perks();
-  S={res:{g:200+pk.gold*40,w:90,c:0},lives:20+pk.wall*4,maxLives:20+pk.wall*4,maxWave:FEAT.campaign?MAP.waves:20,hpBoost:FEAT.campaign?MAP.boost:1,
+function newGame(mi=MAPI,opt={}){
+  setMap(mi);genMap();const pk=perks();if(typeof revived!=='undefined')revived=false;
+  S={res:{g:200+pk.gold*40,w:90,c:0},lives:20+pk.wall*4,maxLives:20+pk.wall*4,maxWave:opt.endless?9999:FEAT.campaign?MAP.waves:20,hpBoost:opt.endless?1:FEAT.campaign?MAP.boost:1,endless:!!opt.endless,adGold:0,pk,
     dmgMul:1+pk.dmg*.08,cdMul:1-pk.spell*.12,units:[],heroSel:false,rallyFor:null,wave:0,waveActive:false,countdown:-1,waveTime:0,spawnQ:[],
     time:0,dayT:.08,buildings:[],enemies:[],proj:[],meteors:[],
     castleLvl:1,castleCd:0,castleHit:0,castleAng:Math.PI/2,sel:null,buildSel:null,spellSel:null,hover:null,cd:{meteor:0,frost:0},
@@ -172,7 +180,7 @@ function place(t,x,y){
   if(!afford(c)){toast('Nicht genug Rohstoffe');sfx('err');return false}
   pay(c);
   const b={t,x,y,l:1,cd:.3,ang:Math.PI/2,anim:0,pt:Math.random()*2,spent:{...c},recoil:0,tgt:null,id:Math.random()};
-  S.buildings.push(b);occ[y][x]=b;R.fx('build',{x,y});sfx('build');
+  S.buildings.push(b);occ[y][x]=b;R.fx('build',{x,y});sfx('build');metaEv('build');
   if(d.k==='b'){b.rally=nearPath(x+.5,y+.5,d.rng);for(let i=0;i<3;i++)S.units.push(newSoldier(b,i))}
   return true;
 }
@@ -180,7 +188,7 @@ function upgrade(b){
   if(b.l>=3)return;if(b.l>=maxLvl()){toast('Baue zuerst die Burg aus');sfx('err');return}
   const c=DEF[b.t].cost[b.l];if(!afford(c)){toast('Nicht genug Rohstoffe');sfx('err');return}
   pay(c);for(const k in c)b.spent[k]=(b.spent[k]||0)+c[k];b.l++;b.anim=0;
-  if(DEF[b.t].k==='b')for(const u of S.units)if(u.b===b){const L=DEF.barracks.lv[b.l-1];u.max=L.hp;u.hp=u.dead?u.hp:L.hp;u.atk=L.atk}R.fx('upgrade',{x:b.x,y:b.y});sfx('build');sfx('coin');showPanel();
+  if(DEF[b.t].k==='b')for(const u of S.units)if(u.b===b){const L=DEF.barracks.lv[b.l-1];u.max=Math.round(L.hp*(1+.2*(S.pk.barr||0)));u.hp=u.dead?u.hp:u.max;u.atk=L.atk}R.fx('upgrade',{x:b.x,y:b.y});sfx('build');sfx('coin');showPanel();
 }
 function sell(b){
   const r={};for(const k in b.spent)r[k]=Math.floor(b.spent[k]*.5);give(r,b.x+.5,b.y+.5,.8);
@@ -189,7 +197,7 @@ function sell(b){
 }
 function upCastle(){
   const n=S.castleLvl+1,c=CASTLE_UP[n];if(!c)return;if(!afford(c)){toast('Nicht genug Rohstoffe');sfx('err');return}
-  pay(c);S.castleLvl=n;S.maxLives+=10;S.lives=S.maxLives;
+  pay(c);S.castleLvl=n;metaEv('castle',n);S.maxLives+=10;S.lives=S.maxLives;
   R.fx('castleUp',{});S.shake=6;sfx('win');
   banner(`Burg Stufe ${n}`,n===2?'Blitzturm und Stufe-3-Ausbau frei':'Burg-Balliste schießt mit');makeCards();showPanel();
 }
@@ -212,7 +220,7 @@ function startWave(){
   S.running=true;
 }
 function waveCleared(){
-  S.waveActive=false;const r=25+S.wave*6;give({g:r});
+  S.waveActive=false;const r=25+S.wave*6;give({g:r});metaEv('wave',S.wave);
   if(S.wave>=S.maxWave){endGame(true);return}
   banner('Welle geschafft',`+${r} Gold`);S.countdown=FEAT.campaign?14:22;sfx('win');
 }
@@ -230,7 +238,7 @@ function hurt(e,dmg,magic){if(e.hp<=0)return;const d=magic?dmg:dmg*(1-e.arm);e.h
 function kill(e){
   S.kills++;give({g:e.g});const h=tgtH(e);R.fx('text',{x:e.x,y:e.y,h:h+.35*e.sz,txt:'+'+e.g,k:'g'});
   const hero=S.units.find(u=>u.k==='hero'&&!u.dead);if(hero&&Math.hypot(hero.x-e.x,hero.y-e.y)<3.2)heroXP(hero,e.g);
-  R.fx('kill',{e});flyCoins(e.x,e.y,h,Math.min(5,1+Math.floor(e.g/8)));
+  metaEv('kill',e);R.fx('kill',{e});flyCoins(e.x,e.y,h,Math.min(5,1+Math.floor(e.g/8)));
   if(e.boss){S.shake=14;banner(`${EN[e.type].n} besiegt!`,`+${e.g} Gold`);sfx('boom')}
   sfx('coin');
 }
@@ -319,15 +327,15 @@ function night(){return clamp((.42-dayLight())/.32,0,1)}
 
 // ---------- Einheiten: Held und Soldaten ----------
 const HERO_XP=[0,50,140,280,480],SLOT=[[0,0],[-.3,.26],[.3,.26]];
-function heroStats(u){const l=u.lvl;u.max=240+70*(l-1);u.atk=16+8*(l-1)}
+function heroStats(u){const l=u.lvl,m=1+.15*((S&&S.pk&&S.pk.hero)||0);u.max=Math.round((240+70*(l-1))*m);u.atk=Math.round((16+8*(l-1))*m)}
 function newHero(){const u={k:'hero',x:20.5,y:9.2,hx:20.5,hy:9.2,hp:1,max:1,atk:1,rate:.75,cd:0,spd:2.3,tgt:null,dead:false,rt:0,ang:-Math.PI/2,swing:0,lvl:1,xp:0,id:Math.random(),hurt:0,wcd:0};heroStats(u);u.hp=u.max;return u}
-function newSoldier(b,i){const L=DEF.barracks.lv[b.l-1];return{k:'sol',b,slot:i,x:b.x+.5,y:b.y+.5,hp:L.hp,max:L.hp,atk:L.atk,rate:1,cd:0,spd:1.6,tgt:null,dead:true,rt:.4+i*.7,ang:0,swing:0,id:Math.random(),hurt:0}}
+function newSoldier(b,i){const L=DEF.barracks.lv[b.l-1],hp=Math.round(L.hp*(1+.2*(S.pk.barr||0)));return{k:'sol',b,slot:i,x:b.x+.5,y:b.y+.5,hp,max:hp,atk:L.atk,rate:1,cd:0,spd:1.6,tgt:null,dead:true,rt:.4+i*.7,ang:0,swing:0,id:Math.random(),hurt:0}}
 const heroU=()=>S.units.find(u=>u.k==='hero');
 function nearPath(x,y,r){let best=null,bd=r;for(const s of PATH.segs)for(let d=0;d<=s.len;d+=.1){const px=s.x0+s.ux*d,py=s.y0+s.uy*d;if(px<0||px>COLS||py<0||py>ROWS)continue;const dd=Math.hypot(px-x,py-y);if(dd<bd){bd=dd;best={x:px,y:py}}}return best}
 function releaseU(u){for(const e of S.enemies)if(e.blk===u)e.blk=null;u.tgt=null}
 function unitDie(u){u.dead=true;u.hp=0;releaseU(u);u.rt=u.k==='hero'?15:10;R.fx('unitDie',{u});if(u.k==='hero'){toast('Der Held ist gefallen und kehrt in 15 s zurück');S.heroSel=false}}
 function respawn(u){u.dead=false;u.hp=u.max;if(u.k==='hero'){u.x=u.hx=20.5;u.y=u.hy=9.2}else{u.x=u.b.x+.5;u.y=u.b.y+.5}}
-function heroXP(u,n){if(u.lvl>=5)return;u.xp+=n;while(u.lvl<5&&u.xp>=HERO_XP[u.lvl]){u.lvl++;heroStats(u);u.hp=u.max;R.fx('sparkle',{x:u.x,y:u.y,h:.6,c:'#ffd23f',n:30});banner('Held Stufe '+u.lvl,'Mehr Leben und Schaden');sfx('win')}}
+function heroXP(u,n){if(u.lvl>=5)return;u.xp+=n;while(u.lvl<5&&u.xp>=HERO_XP[u.lvl]){u.lvl++;heroStats(u);u.hp=u.max;R.fx('sparkle',{x:u.x,y:u.y,h:.6,c:'#ffd23f',n:30});banner('Held Stufe '+u.lvl,'Mehr Leben und Schaden');sfx('win');metaEv('hero',u.lvl)}}
 function homeOf(u){if(u.k==='hero')return[u.hx,u.hy];const r=u.b.rally||{x:u.b.x+.5,y:u.b.y+.5},o=SLOT[u.slot];return[r.x+o[0],r.y+o[1]]}
 function moveTo(u,tx,ty,dt){const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy);if(d<.03)return true;const s=Math.min(d,u.spd*dt);u.x+=dx/d*s;u.y+=dy/d*s;u.ang=Math.atan2(dy,dx);u.walk=(u.walk||0)+s*6;return false}
 function updUnits(dt){
@@ -350,36 +358,21 @@ function heroWhirl(){const h=heroU();if(!h)return;if(h.dead){toast('Der Held ist
 function selectHero(){ac();const h=heroU();if(!h)return;if(h.dead){toast(`Der Held kehrt in ${Math.ceil(h.rt)} s zurück`);sfx('err');return}
   S.buildSel=null;S.spellSel=null;S.heroSel=!S.heroSel;S.sel=S.heroSel?{hero:h}:null;if(S.heroSel){showPanel();toast('Tippe auf die Karte, um den Helden zu bewegen')}else hidePanel();sfx('click')}
 
-// ---------- Kampagne ----------
-const CK='bw_camp',PERKS=[['dmg','Scharfe Spitzen','+8 % Schaden'],['gold','Schatzkammer','+40 Startgold'],['wall','Dicke Mauern','+4 Burgleben'],['spell','Kristallkunde','−12 % Abklingzeit']];
-function camp(){try{const o=JSON.parse(localStorage.getItem(CK)||'null');if(o&&o.stars&&o.up)return o}catch(e){}return{stars:[0,0,0],up:{dmg:0,gold:0,wall:0,spell:0}}}
-function saveCamp(o){try{localStorage.setItem(CK,JSON.stringify(o))}catch(e){}}
-function perks(){return FEAT.campaign?camp().up:{dmg:0,gold:0,wall:0,spell:0}}
-function glory(o){return o.stars.reduce((a,b)=>a+b,0)-Object.values(o.up).reduce((a,b)=>a+b,0)}
-const starStr=n=>[1,2,3].map(i=>`<i class="st${i<=n?' on':''}"></i>`).join('');
-function renderCamp(){
-  const o=camp(),el=$('#camp');if(!el)return;
-  el.innerHTML=`<div class="maps">${MAPS.map((m,i)=>{const lock=i>0&&!o.stars[i-1];return`<button class="map ${m.theme}${lock?' locked':''}" data-m="${i}" ${lock?'disabled':''}><b>${m.n}</b><span class="stars">${starStr(o.stars[i])}</span><small>${lock?'Erst Karte '+i+' gewinnen':m.waves+' Wellen'}</small></button>`}).join('')}</div>
-  <div class="perks"><div class="ph">Ruhm: <b>${glory(o)}</b> <small>1 Stern = 1 Punkt</small></div>${PERKS.map(([k,n,d])=>`<div class="perk"><span><b>${n}</b><small>${d}</small></span><span class="dots">${[1,2,3].map(i=>`<i class="${i<=o.up[k]?'on':''}"></i>`).join('')}</span><button data-p="${k}" ${glory(o)<1||o.up[k]>=3?'disabled':''}>+</button></div>`).join('')}</div>`;
-}
-document.addEventListener('click',ev=>{const m=ev.target.closest('#camp .map');if(m&&!m.disabled){ac();sfx('click');newGame(+m.dataset.m);$('#start').hidden=true;S.running=true;toast(`${MAP.n}: ${MAP.waves} Wellen`);return}
-  const pb=ev.target.closest('#camp [data-p]');if(pb&&!pb.disabled){const o=camp();if(glory(o)>0&&o.up[pb.dataset.p]<3){o.up[pb.dataset.p]++;saveCamp(o);sfx('coin');renderCamp()}}});
-
 // ---------- UI ----------
 const RES={g:$('#rg'),w:$('#rw'),c:$('#rc')};
 function bump(k){const el=RES[k];el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}
 function flyCoins(x,y,h,n){
-  const p=R.toScreen(x,y,h);if(!p)return;const tr=RES.g.querySelector('.ic').getBoundingClientRect(),wrap=$('#flyers');
+  const p=R.toScreen(x,y,h);if(!p)return;const tg=RES.g.querySelector('.ic').getBoundingClientRect(),wrap=$('#flyers');
   for(let i=0;i<n;i++){const el=document.createElement('i');el.className='ic g fly';wrap.appendChild(el);
-    const mx=lerp(p.x,tr.left,.4)+rand(-60,60),my=Math.min(p.y,tr.top)-rand(30,90);
-    const an=el.animate([{transform:`translate(${p.x-11}px,${p.y-11}px) scale(.6)`,opacity:1},{transform:`translate(${mx}px,${my}px) scale(1.1)`,opacity:1,offset:.45},{transform:`translate(${tr.left}px,${tr.top}px) scale(.8)`,opacity:.9}],
+    const mx=lerp(p.x,tg.left,.4)+rand(-60,60),my=Math.min(p.y,tg.top)-rand(30,90);
+    const an=el.animate([{transform:`translate(${p.x-11}px,${p.y-11}px) scale(.6)`,opacity:1},{transform:`translate(${mx}px,${my}px) scale(1.1)`,opacity:1,offset:.45},{transform:`translate(${tg.left}px,${tg.top}px) scale(.8)`,opacity:.9}],
       {duration:650+i*90+rand(0,80),easing:'cubic-bezier(.4,0,.7,1)'});an.onfinish=()=>{el.remove();bump('g')}}
 }
 function makeCards(){
   const wrap=$('#cards');wrap.innerHTML='';
   ORDER.forEach((t,i)=>{const d=DEF[t],el=document.createElement('button');el.className='card';el.dataset.t=t;el.title=d.d;
     el.innerHTML=`<span class="key">${i+1}</span><canvas width="144" height="116"></canvas><div class="nm">${d.n}</div><div class="cs">${costHTML(d.cost[0])}</div>${d.req&&S.castleLvl<d.req?`<div class="lk">Burg ${d.req}</div>`:''}`;
-    el.onclick=()=>selectBuild(t);wrap.appendChild(el);R.thumb(t,el.querySelector('canvas'))});
+    el.onclick=()=>selectBuild(t);trDOM(el);wrap.appendChild(el);R.thumb(t,el.querySelector('canvas'))});
 }
 function selectBuild(t){ac();sfx('click');S.spellSel=null;S.sel=null;hidePanel();S.buildSel=S.buildSel===t?null:t;
   if(S.buildSel){const d=DEF[t];if(d.req&&S.castleLvl<d.req){toast(`${d.n}: erst ab Burg Stufe ${d.req}`);S.buildSel=null}else toast(`${d.n}: ${d.d}`)}}
@@ -388,24 +381,27 @@ function updUI(){
   for(const k of['g','w','c'])RES[k].querySelector('b').textContent=fmt(S.res[k]);
   const pr={g:0,w:0,c:0};for(const b of S.buildings)if(DEF[b.t].k==='e'){const p=prodOf(b);for(const k in p)pr[k]+=p[k]}
   for(const k of['g','w','c'])RES[k].querySelector('.rate').textContent=pr[k]?`+${(pr[k]/6).toFixed(1)}/s`:'';
-  $('#lives').textContent=S.lives;$('#wave').textContent=`${S.wave}/${S.maxWave}`;
+  $('#lives').textContent=S.lives;$('#wave').textContent=S.endless?`${S.wave}`:`${S.wave}/${S.maxWave}`;
   for(const el of document.querySelectorAll('.card')){const d=DEF[el.dataset.t];el.classList.toggle('sel',S.buildSel===el.dataset.t);el.classList.toggle('poor',!afford(d.cost[0]));el.classList.toggle('lock',!!(d.req&&S.castleLvl<d.req));
     el.querySelectorAll('.cs span').forEach((sp,i)=>{const k=['g','w','c'].filter(k=>d.cost[0][k])[i];sp.className=S.res[k]<d.cost[0][k]?'no':''})}
   const wb=$('#wavebtn');let key;
   if(S.over)key='over';else if(S.waveActive)key='act'+S.wave+'_'+S.spawnQ.length+'_'+S.enemies.length;else key='wait'+S.wave+'_'+Math.ceil(S.countdown);
   if(key!==lastUI){lastUI=key;
     if(S.waveActive){wb.disabled=true;wb.classList.remove('pulse');wb.innerHTML=`Welle ${S.wave}<small>${S.enemies.length+S.spawnQ.length} Gegner übrig</small>`}
-    else{wb.disabled=!!S.over;wb.classList.toggle('pulse',S.wave===0);wb.innerHTML=S.countdown>0?`Welle ${S.wave+1}<small>in ${Math.ceil(S.countdown)} s · jetzt +${Math.ceil(S.countdown*2)} Gold</small>`:`Welle ${S.wave+1}<small>${S.wave===0?'Zuerst bauen, dann los!':'Starten'}</small>`}}
+    else{wb.disabled=!!S.over;wb.classList.toggle('pulse',S.wave===0);wb.innerHTML=S.countdown>0?`Welle ${S.wave+1}<small>in ${Math.ceil(S.countdown)} s · jetzt +${Math.ceil(S.countdown*2)} Gold</small>`:`Welle ${S.wave+1}<small>${S.wave===0?'Zuerst bauen, dann los!':'Starten'}</small>`}trDOM(wb)}
   for(const[k,c,cd]of[['meteor',20,30],['frost',12,25]]){const el=$('#sp-'+k);el.querySelector('.cd').style.setProperty('--p',(S.cd[k]/(cd*S.cdMul)*100)+'%');el.classList.toggle('off',S.res.c<c||S.cd[k]>0);el.classList.toggle('sel',S.spellSel===k)}
-  if(FEAT.hero){const h=heroU(),el=$('#sp-hero');if(h&&el){el.querySelector('.cd').style.setProperty('--p',h.dead?(h.rt/15*100)+'%':'0%');el.classList.toggle('sel',S.heroSel);$('#hlv').textContent=h.dead?Math.ceil(h.rt)+' s':'Stufe '+h.lvl}}
+  if(FEAT.hero){const h=heroU(),el=$('#sp-hero');if(h&&el){el.querySelector('.cd').style.setProperty('--p',h.dead?(h.rt/15*100)+'%':'0%');el.classList.toggle('sel',S.heroSel);$('#hlv').textContent=h.dead?Math.ceil(h.rt)+' s':trx('Stufe '+h.lvl)}}
+  if(FEAT.campaign)metaUI();
+  document.body.classList.toggle('menu',!$('#start').hidden||!$('#end').hidden);
   $('#bspeed').textContent=S.speed+'×';$('#bpause').textContent=S.paused?'▶':'II';$('#bmute').textContent=muted?'×':'♪';$('#bnight').textContent=NIGHT?'☾':'☀';
 }
+function dockVar(){const r=$('#cards').getBoundingClientRect();if(r.height)document.documentElement.style.setProperty('--dockTop',Math.round(innerHeight-r.top+2)+'px')}
 function stars(l){return`<div class="lv">${[1,2,3].map(i=>`<i class="${i<=l?'on':''}"></i>`).join('')}</div>`}
 function showPanel(){
   const p=$('#panel'),s=S.sel;if(!s){hidePanel();return}let h='<button class="x" data-a="close" aria-label="Schließen">×</button>';
   if(s.hero){const u=s.hero;h+=`<h3>Held Eckbert</h3>${stars(Math.min(3,Math.ceil(u.lvl*3/5)))}<p>Kämpft im Nahkampf und hält Gegner auf. Sammelt Erfahrung durch Siege in seiner Nähe.</p>
       <div class="stats"><span>Stufe</span><span>${u.lvl} / 5</span><span>Leben</span><span>${Math.ceil(u.hp)} / ${u.max}</span><span>Schaden</span><span>${u.atk}</span><span>Erfahrung</span><span>${u.lvl<5?u.xp+' / '+HERO_XP[u.lvl]:'max.'}</span></div>
-      <div class="row"><button class="up" data-a="hmove">Bewegen<div class="pcost">dann auf Karte tippen</div></button><button class="up" data-a="whirl" ${u.wcd>0||u.dead?'disabled':''}>Wirbelschlag<div class="pcost">${u.wcd>0?Math.ceil(u.wcd)+' s':(60+30*(u.lvl-1))+' Flächenschaden'}</div></button></div>`;p.innerHTML=h;p.hidden=false;return}
+      <div class="row"><button class="up" data-a="hmove">Bewegen<div class="pcost">dann auf Karte tippen</div></button><button class="up" data-a="whirl" ${u.wcd>0||u.dead?'disabled':''}>Wirbelschlag<div class="pcost">${u.wcd>0?Math.ceil(u.wcd)+' s':(60+30*(u.lvl-1))+' Flächenschaden'}</div></button></div>`;p.innerHTML=h;trDOM(p);p.hidden=false;return}
   if(s.b){const b=s.b,d=DEF[b.t],L=d.lv[b.l-1],N=b.l<3?d.lv[b.l]:null,c=b.l<3?d.cost[b.l]:null;
     h+=`<h3>${d.n}</h3>${stars(b.l)}<p>${d.d}</p><div class="stats">`;
     if(d.k==='b'){const st=(lab,a,bb)=>`<span>${lab}</span><span>${a}${bb!=null&&bb!==a?` <b>→ ${bb}</b>`:''}</span>`;h+=st('Soldaten',3)+st('Leben je Soldat',L.hp,N&&N.hp)+st('Schaden',L.atk,N&&N.atk)}
@@ -429,7 +425,7 @@ function showPanel(){
     if(t===TREE)h+=`<h3>Wald</h3><p>Bäume geben Sägewerken Bonus. Fällen bringt sofort Holz und macht Platz.</p><div class="row"><button class="up" data-a="clear">Fällen<div class="pcost"><span><i class="ic w"></i>+10</span></div></button></div>`;
     else if(t===ROCK)h+=`<h3>Fels</h3><p>Felsen geben Goldminen Bonus. Abbauen bringt Gold und macht Platz.</p><div class="row"><button class="up" data-a="clear" ${S.res.w<10?'disabled':''}>Abbauen<div class="pcost"><span class="${S.res.w<10?'no':''}"><i class="ic w"></i>-10</span><span><i class="ic g"></i>+25</span></div></button></div>`;
     else if(t===CRY)h+=`<h3>Kristallader</h3><p>Hier kann eine Kristallmine gebaut werden. Kristalle brauchst du für Blitztürme und Zauber.</p><div class="row"><button class="up" data-a="bcm">Kristallmine bauen<div class="pcost">${costHTML(DEF.cmine.cost[0])}</div></button></div>`}
-  p.innerHTML=h;p.hidden=false;panelT=performance.now();
+  p.innerHTML=h;trDOM(p);p.hidden=false;panelT=performance.now();
 }
 let sellArm=null,sellT=0,panelT=0;
 function hidePanel(){$('#panel').hidden=true}
@@ -439,8 +435,8 @@ $('#panel').addEventListener('click',ev=>{const a=ev.target.closest('[data-a]');
     case'clear':clearTile(s.tile.x,s.tile.y);break;
     case'hmove':S.heroSel=true;hidePanel();toast('Tippe auf die Karte, um den Helden zu bewegen');break;case'whirl':heroWhirl();showPanel();break;
     case'rally':S.rallyFor=s.b;hidePanel();toast('Tippe auf den Weg für den neuen Sammelpunkt');break;case'bcm':if(place('cmine',s.tile.x,s.tile.y)){S.sel={b:occ[s.tile.y][s.tile.x]};showPanel()}break}});
-let toastT=0;function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800)}
-function banner(a,b){const el=$('#banner');el.innerHTML=`${a}${b?`<small>${b}</small>`:''}`;el.classList.remove('show');void el.offsetWidth;el.classList.add('show')}
+let toastT=0;function toast(t){const el=$('#toast');el.textContent=trx(t);el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800)}
+function banner(a,b){const el=$('#banner');el.innerHTML=`${trx(a)}${b?`<small>${trx(b)}</small>`:''}`;el.classList.remove('show');void el.offsetWidth;el.classList.add('show')}
 
 // ---------- Eingabe ----------
 const cv=$('#game');let lastTap=null,drag=null;
@@ -475,7 +471,7 @@ function tap(ev){
 let confirmAt=null;
 $('#cfok').onclick=()=>{const t=confirmAt;confirmAt=null;lastTap=null;if(t&&S.buildSel&&place(S.buildSel,t.x,t.y)){S.buildSel=null;S.hover=null}};
 $('#cfno').onclick=()=>{confirmAt=null;lastTap=null;S.hover=null};
-function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const d=DEF[S.buildSel],inf=$('#cfinfo');if(d.adj){const n=countAdj(confirmAt.x,confirmAt.y,d.adj);inf.textContent=n?`+${n*(d.adjB==='g'?2:1)} Bonus (${n} ${d.adj===TREE?'Bäume':'Felsen'})`:'kein Nachbarbonus';inf.className=n?'':'no'}else inf.textContent='';
+function updConfirm(){const el=$('#confirm');if(!confirmAt||!S.buildSel){el.hidden=true;confirmAt=S.buildSel?confirmAt:null;return}const d=DEF[S.buildSel],inf=$('#cfinfo');if(d.adj){const n=countAdj(confirmAt.x,confirmAt.y,d.adj);inf.textContent=trx(n?`+${n*(d.adjB==='g'?2:1)} Bonus (${n} ${d.adj===TREE?'Bäume':'Felsen'})`:'kein Nachbarbonus');inf.className=n?'':'no'}else inf.textContent='';
   el.hidden=false;const w=el.offsetWidth||170,h=el.offsetHeight||50,lo=R.toScreen(confirmAt.x+.5,confirmAt.y+1.05,0),hi=R.toScreen(confirmAt.x+.5,confirmAt.y+.5,2.1);
   let y=lo.y+10;if(y+h>innerHeight-140)y=hi.y-h;const cx=clamp(lo.x,w/2+8,innerWidth-w/2-8);el.style.transform=`translate(${cx-w/2}px,${clamp(y,70,innerHeight-140-h)}px)`}
 function cancel(){confirmAt=null;S.buildSel=null;S.spellSel=null;S.sel=null;S.hover=null;S.heroSel=false;S.rallyFor=null;hidePanel()}
@@ -499,16 +495,16 @@ addEventListener('keydown',ev=>{if(ev.repeat)return;const k=ev.key.toLowerCase()
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.running)S.paused=true});
 
 function endGame(win){
-  S.over=true;S.waveActive=false;S.running=false;let st=0;
-  if(FEAT.campaign&&win){st=S.lives>=S.maxLives*.9?3:S.lives>=S.maxLives*.5?2:1;const o=camp();o.stars[MAPI]=Math.max(o.stars[MAPI],st);saveCamp(o)}
+  S.over=true;S.waveActive=false;S.running=false;
+  if(FEAT.campaign){metaEnd(win);sfx(win?'win':'boss');return}
   try{const best=+localStorage.getItem('bw_best')||0;if(S.wave>best)localStorage.setItem('bw_best',S.wave)}catch(e){}
-  setTimeout(()=>{$('#endt').textContent=win?'Sieg!':'Die Burg ist gefallen';$('#ends').innerHTML=(win?`Alle ${S.maxWave} Wellen abgewehrt. Das Reich ist sicher.`:`Du hast bis Welle ${S.wave} durchgehalten.`)+(FEAT.campaign&&win?`<div class="endstars">${starStr(st)}</div>`:'');
+  setTimeout(()=>{$('#endt').textContent=win?'Sieg!':'Die Burg ist gefallen';$('#ends').innerHTML=(win?`Alle ${S.maxWave} Wellen abgewehrt. Das Reich ist sicher.`:`Du hast bis Welle ${S.wave} durchgehalten.`);
     $('#endst').innerHTML=`<div><b>${S.wave}</b>Wellen</div><div><b>${fmt(S.kills)}</b>Besiegte</div><div><b>${S.buildings.length}</b>Gebäude</div><div><b>${fmt(S.earned)}</b>Gold verdient</div>`;
-    $('#end').hidden=false},win?600:1200);
+    trDOM($('#end'));$('#end').hidden=false},win?600:1200);
   sfx(win?'win':'boss');
 }
 $('#play').onclick=()=>{ac();sfx('click');$('#start').hidden=true;S.running=true;toast(R.canPan()?R.panHint:'Baue Türme am Weg und ein Sägewerk neben dem Wald')};
-$('#again').onclick=()=>{ac();$('#end').hidden=true;if(FEAT.campaign){newGame();renderCamp();$('#start').hidden=false;return}newGame();S.running=true;$('#start').hidden=true};
+$('#again').onclick=()=>{ac();if(FEAT.campaign){metaBack();return}$('#end').hidden=true;newGame();S.running=true;$('#start').hidden=true};
 
 // ---------- Schleife ----------
 let last=performance.now();
@@ -517,10 +513,11 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;TIME+=dt;
   if(run)for(let i=0;i<S.speed;i++){update(dt);decay(dt);R.tick(dt)}else if(!S.paused){decay(dt);R.tick(dt)}
   R.render(dt);updUI();updConfirm();requestAnimationFrame(frame)}
 function boot(){
-  try{muted=localStorage.getItem('bw_mute')==='1';NIGHT=localStorage.getItem('bw_night')==='1';const b=+localStorage.getItem('bw_best');if(b)$('#best').textContent=`Bestleistung: Welle ${b}`}catch(e){}
-  if(FEAT.campaign){$('.tag').textContent='Erobere drei Karten. Sammle Sterne für dauerhafte Upgrades.';const c=document.createElement('div');c.id='camp';$('.how').replaceWith(c);$('#play').hidden=true;$('#again').textContent='Zur Kartenwahl';renderCamp()}
+  if(LANG==='en'){for(const k in DEF){DEF[k].n=tr(DEF[k].n);DEF[k].d=tr(DEF[k].d)}for(const k in EN)EN[k].n=tr(EN[k].n);document.documentElement.lang='en';trDOM(document.body)}
+  try{muted=localStorage.getItem('bw_mute')==='1';NIGHT=localStorage.getItem('bw_night')==='1';const b=+localStorage.getItem('bw_best');if(b)$('#best').textContent=trx(`Bestleistung: Welle ${b}`)}catch(e){}
+  if(FEAT.campaign)metaBoot();
   if(FEAT.hero){const b=document.createElement('button');b.className='spell hero';b.id='sp-hero';b.title='Held (H), Wirbelschlag (R)';
     b.innerHTML='<svg viewBox="0 0 40 40"><path d="M20 4l12 5v9c0 8-5 14-12 18C13 32 8 26 8 18V9z" fill="#3d6ae8" stroke="#120a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 10v20M13 17h14" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round"/></svg><span class="sc" id="hlv">1</span><span class="cd"></span>';
     b.onclick=selectHero;$('.spells').prepend(b)}
-  R.init();setMap(0);genMap();newGame(0);addEventListener('resize',()=>{R.resize();makeCards()});requestAnimationFrame(frame);
+  R.init();setMap(0);genMap();newGame(0);addEventListener('resize',()=>{R.resize();makeCards();dockVar()});dockVar();setTimeout(dockVar,500);requestAnimationFrame(frame);
 }

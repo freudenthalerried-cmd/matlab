@@ -19,6 +19,7 @@
   color-scheme:dark;
 }
 [hidden]{display:none!important}
+body.menu #dock,body.menu #hud,body.menu #panel,body.menu #confirm{visibility:hidden}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cream);font-family:var(--f-body);user-select:none;-webkit-user-select:none;touch-action:none}
 #game{position:fixed;inset:0;display:block}
@@ -90,7 +91,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
 #wavebtn:disabled{background:linear-gradient(#7b6aa3,#4c3d73);box-shadow:inset 0 3px 0 rgba(255,255,255,.2),0 5px 0 #261a40;text-shadow:0 2px 0 #1a1030;cursor:default;animation:none}
 
 /* Info-Panel */
-#panel{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100% - 32px));
+#panel{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(var(--dockTop,140px) + 12px);width:min(340px,calc(100% - 32px));
   background:linear-gradient(#fbecc8,#ecd09c);color:#3a220e;border:3px solid #2a1a0e;border-radius:18px;padding:12px 14px 14px;box-shadow:inset 0 2px 0 #fff8e6,0 5px 0 #6b4520,0 12px 30px rgba(0,0,0,.45);animation:pop .18s ease-out}
 @keyframes pop{from{transform:translateX(-50%) scale(.85);opacity:0}}
 #panel h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:22px;letter-spacing:.01em;text-wrap:balance}
@@ -149,18 +150,19 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
   .pill{height:32px;font-size:15px;padding:0 9px}.pill .ic{width:19px;height:19px}.pill small{display:none}
   .btn{height:32px;min-width:34px;font-size:15px;padding:0 6px}
   #hud{gap:5px;flex-wrap:wrap}
-  .card{width:70px}.card canvas{width:58px;height:46px}.card .nm{font-size:11.5px}
-  .spells{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(134px + env(safe-area-inset-bottom,0px))}
+  .card{width:70px}.card canvas{width:58px;height:46px}.card .nm{font-size:11px;white-space:normal;line-height:1.05;min-height:2.1em;display:flex;align-items:center;justify-content:center}
+  .spells{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(var(--dockTop,134px) + 8px)}
   .spell{width:50px;height:50px}.spell svg{width:30px;height:30px}
-  #wavebtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(134px + env(safe-area-inset-bottom,0px));height:56px;min-width:108px;font-size:17px}
-  #panel{bottom:calc(200px + env(safe-area-inset-bottom,0px))}
+  #wavebtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--dockTop,134px) + 8px);height:auto;min-height:52px;min-width:104px;max-width:150px;padding:6px 10px;font-size:17px}
+  #wavebtn small{font-size:11px;white-space:normal}
+  #panel{bottom:calc(var(--dockTop,134px) + 76px)}
   .how{grid-template-columns:1fr}
 }
 @media (max-height:500px) and (min-width:721px){
-  .card{width:66px}.card canvas{width:54px;height:40px}.card .nm{font-size:11px}
+  .card{width:60px;padding:2px 2px 4px}.card canvas{width:50px;height:30px}.card .nm{font-size:10px}.card .cs{font-size:10px}.card .cs .ic{width:11px;height:11px}.card .lk{bottom:26px;font-size:9px}
   .spell{width:48px;height:48px}.spell svg{width:28px;height:28px}
   #wavebtn{height:54px;min-width:104px;font-size:16px}#dock{padding-top:4px}
-  #panel{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+  #panel{bottom:calc(var(--dockTop,104px) + 10px)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 {{THEME_CSS}}
