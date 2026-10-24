@@ -248,6 +248,7 @@ function renderStats(d) {
       data-tip="${esc(d.dates[i])} · ${label}: ${fmt(v, "kWh", 1)}"/>`;
   }));
   svg.innerHTML = out;
+  if (!series.length) { $("legend").textContent = "Kein Verlauf: nur Live-Werte vom Wechselrichter (für Verlauf zusätzlich SEMS-Login setzen)."; return; }
   $("legend").innerHTML = series.map(([k, label, c]) => {
     const total = d.series[k].reduce((a, v) => a + (v || 0), 0);
     return `<span><i style="background:${css(c)}"></i>${label}: ${fmt(total, "kWh", 0)}</span>`;

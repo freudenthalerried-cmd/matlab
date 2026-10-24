@@ -98,3 +98,27 @@ python3 sems/server.py --demo   # ohne Account, mit Beispieldaten
   von fremden Webseiten (CORS), und die Zugangsdaten sollen nicht im Browser liegen.
 - Vorzeichen (unverifiziert): `pGrid > 0` = Einspeisung, `pBat > 0` = Laden. Falls die
   Pfeile verkehrt laufen, in `renderLive()` in `dashboard.html` umdrehen.
+
+## Direkt zum Wechselrichter (WLAN, ohne Cloud)
+
+GoodWe-Wechselrichter mit WiFi-Stick antworten im Heimnetz auf UDP-Port 8899
+(Bibliothek [`goodwe`](https://pypi.org/project/goodwe/)). Vorteile: Werte alle 10 s,
+keine Zugangsdaten, nichts verlässt das Heimnetz.
+
+```bash
+pip install goodwe
+python3 sems/server.py --search              # findet IP: "192.168.1.50,MAC,Solar-WiFi"
+python3 sems/server.py --local 192.168.1.50  # Dashboard: http://127.0.0.1:8080
+# mit SEMS_USER/SEMS_PASSWORD zusätzlich: Verlauf (Tagesbalken) aus der Cloud
+```
+
+Voraussetzungen:
+- PC/Raspberry Pi im **selben WLAN** wie der Wechselrichter.
+- Der WiFi-Stick ist im Heim-WLAN angemeldet. Falls nicht: mit dem WLAN
+  `Solar-WiFi…` verbinden (Passwort meist `12345678`), im Browser `10.10.100.253`
+  öffnen (Login `admin`/`admin`) oder die App „SolarGo“ verwenden und dort das
+  Heim-WLAN eintragen.
+- Tipp: im Router eine feste IP für den Wechselrichter vergeben.
+
+Vorzeichen laut `goodwe`-Bibliothek: `active_power` > 0 = Einspeisung,
+`pbattery1` > 0 = Entladen (im Dashboard umgerechnet auf > 0 = Laden).

@@ -2,8 +2,12 @@
 """Lokaler Server für das PV-Dashboard: liefert dashboard.html und normalisierte SEMS-Daten.
 
 Start:  SEMS_USER=... SEMS_PASSWORD=... python3 sems/server.py   -> http://127.0.0.1:8080
+Lokal:  python3 sems/server.py --local 192.168.1.50   (direkt per WLAN, braucht: pip install goodwe)
+Suchen: python3 sems/server.py --search                (Wechselrichter im Netz finden)
 Demo:   python3 sems/server.py --demo
 """
+
+import asyncio
 
 import json
 import math
@@ -49,10 +53,10 @@ class LiveSource:
         self.lock = threading.Lock()
         self.cache = {}
 
-    def cached(self, key, fn):
+    def cached(self, key, fn, ttl=CACHE_SECONDS):
         with self.lock:
             hit = self.cache.get(key)
-            if hit and time.time() - hit[0] < CACHE_SECONDS:
+            if hit and time.time() - hit[0] < ttl:
                 return hit[1]
             value = fn()
             self.cache[key] = (time.time(), value)
@@ -105,6 +109,62 @@ class LiveSource:
                 series[item] = [num(p.get("val")) for p in points]
             return {"dates": dates, "series": series}
         return self.cached(f"stats:{sid}:{days}", load)
+
+
+class LocalSource(LiveSource):
+    """Live-Werte direkt vom Wechselrichter (UDP 8899 über den WLAN-Stick), Verlauf optional aus SEMS."""
+
+    def __init__(self, host, sems=None):
+        super().__init__(sems)
+        self.host = host
+        self.inverter = None
+
+    async def _read(self):
+        import goodwe
+        if self.inverter is None:
+            self.inverter = await goodwe.connect(self.host)
+        return await self.inverter.read_runtime_data()
+
+    def stations(self):
+        if self.sems:
+            return super().stations()
+        return [{"id": "local", "name": f"Wechselrichter {self.host}", "capacity": None}]
+
+    def live(self, sid):
+        def load():
+            d = asyncio.run(self._read())
+            kw = lambda key: None if num(d.get(key)) is None else round(num(d.get(key)) / 1000, 3)
+            grid = kw("active_power") if d.get("active_power") is not None else kw("meter_active_power")
+            bat = kw("pbattery1")
+            inv = self.inverter
+            return {
+                "updated": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "flow": {"pv": kw("ppv"), "load": kw("house_consumption"), "grid": grid,  # >0 Einspeisung
+                         "battery": None if bat is None else -bat,                       # >0 Laden
+                         "soc": num(d.get("battery_soc"))},
+                "devices": [{"sn": inv.serial_number, "type": f"INVERTER ({inv.model_name})", "status": "LOKAL",
+                             "pac": kw("ppv"), "temp": num(d.get("temperature")), "vac": num(d.get("vgrid")),
+                             "eday": num(d.get("e_day")), "etotal": num(d.get("e_total"))}],
+            }
+        try:
+            return self.cached("local", load, ttl=10)
+        except Exception:
+            self.inverter = None  # beim nächsten Versuch neu verbinden
+            raise
+
+    def stats(self, sid, days):
+        if self.sems and sid != "local":
+            return super().stats(sid, days)
+        return {"dates": [], "series": {}}
+
+
+def search():
+    import goodwe
+    try:
+        raw = asyncio.run(goodwe.search_inverters())
+    except Exception as exc:
+        sys.exit(f"Kein Wechselrichter gefunden ({exc}). PC im selben WLAN wie der Wechselrichter?")
+    print(raw.decode(errors="replace"))  # Format: IP,MAC,Name
 
 
 class DemoSource:
@@ -174,16 +234,21 @@ def make_handler(source):
 
 def main():
     demo = "--demo" in sys.argv
+    if "--search" in sys.argv:
+        return search()
+    account, password = os.environ.get("SEMS_USER"), os.environ.get("SEMS_PASSWORD")
     if demo:
         source = DemoSource()
+    elif "--local" in sys.argv:
+        host = sys.argv[sys.argv.index("--local") + 1]
+        source = LocalSource(host, Sems(account, password) if account and password else None)
     else:
-        account, password = os.environ.get("SEMS_USER"), os.environ.get("SEMS_PASSWORD")
         if not account or not password:
-            sys.exit("SEMS_USER und SEMS_PASSWORD setzen oder --demo verwenden.")
+            sys.exit("SEMS_USER und SEMS_PASSWORD setzen, oder --local <IP> bzw. --demo verwenden.")
         source = LiveSource(Sems(account, password))
     port = int(os.environ.get("PORT", 8080))
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(source))
-    print(f"PV-Dashboard: http://127.0.0.1:{port}  ({'Demo' if demo else 'SEMS live'})")
+    print(f"PV-Dashboard: http://127.0.0.1:{port}  ({type(source).__name__})")
     server.serve_forever()
 
 
