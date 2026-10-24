@@ -1,0 +1,92 @@
+{
+  "_zweck": "Wann jede Browsergegenprobe zuletzt angeschlagen hat. Sie laufen nicht im Regellauf mit — aus gutem Grund, siehe bin/gegenprobenlauf.mjs: Eine Probe, die unter Last etwas anderes meldet als allein, misst die Last. Was bis zum 10. September fehlte, war die andere Haelfte: Eine Zurueckstellung, die nie verfaellt, ist eine Probe, die nie laeuft.",
+  "_anlass": "Am 10. September liefen die vier zurueckgestellten Proben zum ersten Mal seit ihrer Aufnahme. Drei schlugen an. Die vierte — korbflaeche-ohne-grenze, seit dem 5. September im Register — zeigte auf das falsche Szenario: Sie erwartete das allgemeine (Keine Flaeche mit Legen-Knopf ohne die Grenze), rot wird aber das fuer die Suchergebnisseite gebaute. Fuenf Tage lang stand eine Probe da, die nichts bewiesen haette.",
+  "_grenze": "Dieser Vermerk sagt, wann eine Probe zuletzt angeschlagen hat, nicht ob sie es heute wieder taete. Er wird vom Laeufer geschrieben, wenn eine Browserprobe geschlagen hat — von Hand gepflegt waere er ein Handgriff ohne Werkzeug, und genau davon handelt dieser Eintrag.",
+  "grenzeTage": 14,
+  "proben": {
+    "korbflaeche-ohne-grenze": {
+      "am": "2026-10-15",
+      "sekunden": 52
+    },
+    "auskunft-nur-im-leeren-fall": {
+      "am": "2026-10-15",
+      "sekunden": 74
+    },
+    "formular-erhebt-zu-wenig": {
+      "am": "2026-10-15",
+      "sekunden": 6
+    },
+    "ablage-im-webverzeichnis": {
+      "am": "2026-10-15",
+      "sekunden": 6
+    },
+    "absage-ohne-naechsten-schritt": {
+      "am": "2026-10-15",
+      "sekunden": 54
+    },
+    "stiller-wegfall-im-korb": {
+      "am": "2026-10-15",
+      "sekunden": 43
+    },
+    "einzahl-im-korbkopf": {
+      "am": "2026-10-15",
+      "sekunden": 44
+    },
+    "knopf-nennt-die-eingabe": {
+      "am": "2026-10-15",
+      "sekunden": 71
+    },
+    "grenze-ohne-wort": {
+      "am": "2026-10-15",
+      "sekunden": 42
+    },
+    "anfragetext-ohne-namen": {
+      "am": "2026-10-15",
+      "sekunden": 76
+    },
+    "meldung-die-niemand-hoert": {
+      "am": "2026-10-15",
+      "sekunden": 69
+    },
+    "referenzwert-schon-bei-gleichstand": {
+      "am": "2026-10-15",
+      "sekunden": 21
+    },
+    "suchfeld-sprengt-den-rahmen": {
+      "am": "2026-10-15",
+      "sekunden": 28
+    },
+    "warenkorb-ohne-kleinmengensatz": {
+      "am": "2026-10-15",
+      "sekunden": 15
+    },
+    "weg-zahlweg-nicht-vorbelegt": {
+      "am": "2026-10-15",
+      "sekunden": 15
+    },
+    "kasse-ohne-mindestbestellwert": {
+      "am": "2026-10-15",
+      "sekunden": 15
+    },
+    "zwei-staende-desselben-betriebs": {
+      "am": "2026-10-15",
+      "sekunden": 8
+    },
+    "die-probeakte-bleibt-ungeprueft": {
+      "am": "2026-10-15",
+      "sekunden": 8
+    },
+    "die-probe-ueberspringt-den-vertrag": {
+      "am": "2026-10-15",
+      "sekunden": 8
+    },
+    "die-absage-schluckt-den-grund": {
+      "am": "2026-10-15",
+      "sekunden": 8
+    },
+    "preisgrenze-ohne-wort": {
+      "am": "2026-10-15",
+      "sekunden": 40
+    }
+  }
+}

@@ -1,0 +1,324 @@
+# Anschreiben-Entwürfe
+
+> **ÜBERHOLT SEIT DEM 22. AUGUST — wer hier liest, arbeitet am falschen
+> Modell.** Alle Entwürfe unten richten sich an dreizehn **Radon**-Hersteller
+> und sollen Gate 3 eines Geschäftsmodells belegen, das der Kurswechsel vom
+> 22. August abgelöst hat. Der Shop kalkuliert seither mit eigenen
+> Baumeisterpreisen und bezieht bei **einem** Lieferanten, aus dessen
+> Rechnungen der ganze Katalog stammt.
+>
+> **Der gültige Entwurf steht woanders:** vier Fragen an Poschacher
+> Baustoffhandel, erzeugt aus `src/lieferantenanfrage.js`, ausgegeben von
+> `npm run pruefe-anfrage`, hergeleitet in
+> [`eine-anfrage-fuer-acht-punkte.md`](./eine-anfrage-fuer-acht-punkte.md).
+>
+> Dieses Dokument bleibt als Fehlergeschichte stehen. Es hat vierundzwanzig
+> Tage ohne Kopfnotiz dagestanden, und `data/lieferanten.json` hat bis zum
+> 2. September mit `_hinweis` hierher gezeigt und es „die Quelle der echten
+> Werte" genannt. Dieselbe Sorte Fehler wie die überholte Modelltabelle in
+> `STATUS.md` und die 32-%-Untergrenze in `PARAMETER.md` — beide von diesem
+> Vorhaben schon einmal teuer bezahlt.
+
+Stand: 2026-08-09. Zugesagt, aber bislang nicht geliefert — hiermit nachgeholt.
+
+> **Nichts davon wurde versendet.** Der Versand an Dritte ist
+> freigabepflichtig. Diese Entwürfe liegen bereit und warten auf ausdrückliche
+> Zustimmung des Auftraggebers.
+
+Zwei Anschreiben, weil zwei Modelle offen sind. Anschreiben A klärt die
+Herstellerkonditionen für den Shop, Anschreiben B gewinnt Partnerbetriebe für
+die Leadvermittlung. Sie schließen einander nicht aus.
+
+## Warum Anschreiben A das wichtigste Dokument im Projekt ist
+
+Die Gate-3-Entscheidung in [`phase3-unit-economics.md`](./phase3-unit-economics.md)
+steht unter der Auflage, dass **zwei Hersteller ihre Konditionen schriftlich
+bestätigen**, bevor Geld ausgegeben wird. Die Rohmarge ist die schwächste
+Annahme des gesamten Modells. Dieses Anschreiben ist der einzige Weg, sie zu
+belegen — jede weitere Recherche im Netz kann sie nur schätzen.
+
+### Empfängerkreis
+
+Überarbeitet nach Gate 8 in
+[`phase2-lieferantenlandkarte.md`](./phase2-lieferantenlandkarte.md): zwölf
+statt sechs Adressaten, in drei Prioritäten, Rohr- und Bahnenseite getrennt.
+
+| Priorität | Hersteller | Sortimentsbezug |
+|---|---|---|
+| 1 | **Bauernfeind** (Waizenkirchen, OÖ) | PP-MEGA-Drän; eigene Baustellenlieferung österreichweit |
+| 1 | Bueho | Bauwerksabdichtung gegen drückendes Wasser und Radon |
+| 1 | Liapor | Radon-Ringdrainage |
+| 1 | Poloplast (Leonding, OÖ) | Kunststoffrohrsysteme |
+| 2 | Riwega | Coll Radon, selbstklebende Bitumenbahn |
+| 2 | Botament | Radonabdichtung, Reaktivabdichtung |
+| 2 | CCM Europe (Carlisle) | EPDM-Radonabdichtung |
+| 2 | Köster | Abdichtungssysteme gegen Radon |
+| 2 | Ampack | Sisalex Radonsperre |
+| 2 | Remmers | Radonschutzsysteme |
+| 3 | BMI Österreich | Vedagard AL-E, radondicht mit abP |
+| 3 | Sika | SikaProof-Systeme, eigene Radon-Broschüre |
+| 3 | Rothoblaas | Radon Floor, zertifiziert |
+| — | **Lagerhaus** („Unser Lagerhaus" WHG, dreizehnter Adressat, Entwurf C) | herstellerunabhängiger Bezugsweg; führt BMI-Bitumenbahnen inkl. Vedatect — festgelegt in `adressaten-und-zugaenge.md`, Quester insolvent, BayWa AT im Umbruch |
+
+**Gestrichen: Hauff-Technik.** Mehrspartenhauseinführungen sind seit 2017
+ohnehin gas- und druckwasserdicht vorgeschrieben und werden bereits radondicht
+geliefert — nach Gate 5 kein Sortimentsbestandteil.
+
+Warum zwölf: Gate 0 verlangt zwei bezifferte Antworten. Bei angenommenen 30 %
+verwertbarem Rücklauf ist das Gate mit sechs Adressaten nur in 58 % der Fälle
+überhaupt entscheidbar, mit zwölf in 92 %. Sechs zusätzliche E-Mails kosten
+nichts, ein zweiter Anlauf kostet vier Wochen.
+
+**Priorität 2 ist inhaltlich die wichtigste.** Nach der Mischmargenrechnung in
+`phase2-lieferantenlandkarte.md` muss die Abdichtungsbahn rund 38 % Rohmarge
+tragen, damit der Warenkorb 32 % erreicht. Eine gute Rohrkondition rettet
+Gate 3 nicht.
+
+### Entwurf A — Herstelleranfrage
+
+> **Betreff:** Anfrage Händlerkonditionen Radonschutz-Sortiment Österreich
+>
+> Sehr geehrte Damen und Herren,
+>
+> ich baue derzeit einen auf Radonvorsorge spezialisierten Fachhandel für den
+> österreichischen Markt auf und prüfe dafür die Zusammenarbeit mit
+> Herstellern. Zielgruppe sind ausführende Betriebe und Baumeister, die
+> Vorsorgemaßnahmen nach ÖNORM S 5280-2 umsetzen.
+>
+> Das Vorhaben befindet sich in der Planungsphase. Ich frage Konditionen an,
+> um die Wirtschaftlichkeit zu prüfen, bevor ich weitere Schritte setze — eine
+> Bestellung ist damit noch nicht verbunden.
+>
+> Für die Bewertung wären mir folgende Angaben wichtig:
+>
+> 1. Beliefern Sie Fachhändler, und welche Voraussetzungen bestehen dafür?
+> 2. Für die Wirtschaftlichkeit rechne ich mit einem Händlerrabatt in der
+>    Größenordnung von 40 % auf die **Netto-Preisliste**, gestaffelt nach
+>    Abnahmemenge. Welche Konditionen können Sie darstellen — und dürfte ich
+>    dazu um Ihre aktuelle Netto-Preisliste bitten?
+> 3. Ist **Streckengeschäft** möglich, also Direktversand an meinen Endkunden?
+>    Falls ja: neutral verpackt und unter meinem Absender?
+> 4. Wie hoch ist der Mindestbestellwert, und ab welchem Wert liefern Sie
+>    frachtfrei — jeweils bezogen auf den **Nettobestellwert nach Rabatt**?
+> 5. Welche Lieferzeit ist für Lagerware üblich?
+> 6. Stellen Sie Produktdaten strukturiert bereit — als CSV, über eine
+>    Schnittstelle oder ausschließlich als Katalog?
+> 7. Wie werden Transportschäden im Speditionsversand abgewickelt, und wen
+>    trifft die Meldepflicht?
+> 8. Vertreiben Sie selbst an Endkunden — und falls ja: Gibt es für Händler
+>    eine Preisuntergrenze oder einen Gebietsschutz?
+> 9. Aus welcher Gesellschaft fakturieren Sie an österreichische Händler —
+>    eine österreichische Niederlassung oder das Stammhaus?
+>
+> Über eine Rückmeldung freue ich mich. Gerne stelle ich das Vorhaben auch in
+> einem kurzen Gespräch vor.
+>
+> Mit freundlichen Grüßen
+
+**Was der Entwurf bewusst nicht tut:** Er behauptet keinen bestehenden Shop,
+keine Umsätze und keine Referenzen. Ein Hersteller, der Konditionen auf
+Grundlage einer erfundenen Größenordnung nennt, korrigiert sie spätestens beim
+ersten Auftrag — und dann ist die Kalkulation Makulatur.
+
+**Warum die Fragen 2, 4, 8 und 9 so formuliert sind** (ergänzt am 16. August):
+Frage 2 nennt eine eigene Zahl statt nach einer zu fragen — wer keine nennt,
+bekommt die des Gegenübers (`verhandlungsziel-konditionen.md`) — und bittet um
+die Netto-Preisliste, weil eine Rabattantwort ohne Bezugsbasis nicht auswertbar
+ist (`alternativen-ohne-freigabe.md`: die Platzhalter-UVP war eine Bruttozahl).
+Frage 4 legt die Bezugsgröße der Schwellen fest, an deren Verwechslung die
+eigene Frachtrechnung schon einmal gescheitert ist
+(`frachtschwelle-und-bestellwert.md`). Frage 8 ist die Händlerplatz-Frage aus
+`vertriebswege-der-hersteller.md` — ein Hersteller mit Endkundenvertrieb ohne
+Händlerschutz ist für die Leitposition ungeeignet, egal wie gut der Rabatt ist.
+Frage 9 entscheidet über das Reihengeschäft und damit über 19–20 % auf jeden
+Einkauf (`beleg-und-reihengeschaeft.md`). Alle vier Antworten hat der
+Auswertungsbogen bereits als Felder vorgesehen; jetzt werden sie auch gefragt.
+
+### Wann eine Antwort verwertbar ist
+
+Eine Antwort trägt die Gate-3-Auflage nur, wenn sie **Punkt 2 und Punkt 3
+beziffert**. „Wir arbeiten mit dem Fachhandel zusammen, melden Sie sich gerne"
+ist keine Kondition. Fehlt die Zahl, ist nachzufassen; bleibt sie aus, zählt
+der Hersteller als nicht verfügbar.
+
+Zwei weitere Punkte sind inzwischen zu Gate-Fragen aufgewertet worden und beim
+Auswerten gleichrangig zu behandeln:
+
+- **Punkt 4, Frachtregelung** — „Fracht nach Aufwand" macht die Kalkulation
+  unmöglich und zählt wie eine Absage. Begründung in
+  [`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md).
+- **Punkt 6, Produktdaten** — liefert kein Kernlieferant strukturierte Daten,
+  fällt das Shopmodell an der Automatisierungsvorgabe (Gate 6). Begründung in
+  [`phase6-automatisierung.md`](./phase6-automatisierung.md).
+
+Erreichen zwei Hersteller gemeinsam keine 32 % Mischmarge, fällt die Nische —
+so in Gate 3 festgelegt.
+
+## Entwurf C — Großhändleranfrage (dreizehnter Adressat)
+
+Ergänzt am 16. August nach
+[`vertriebswege-der-hersteller.md`](./vertriebswege-der-hersteller.md): Die
+zertifizierte Bahn mit dem breitesten Händlernetz (Vedagard AL-E) läuft im
+klassischen Dreistufenvertrieb — der Weg zu ihr führt nicht über den
+Hersteller, sondern über die **Wiederverkäuferkondition eines
+Baustoffgroßhändlers**. Damit prüft ein einziges zusätzliches Anschreiben den
+herstellerunabhängigen Bezugsweg, der die zwölf Herstellerantworten von der
+Existenzfrage zur Margenfrage herabstuft.
+
+Der Großhandel beantwortet nebenbei eine Frage, an der die Hersteller
+scheitern können: **strukturierte Artikeldaten sind dort Branchenstandard**
+(DATANORM-Dateien, zunehmend IDS Connect als Live-Schnittstelle) — genau die
+Gate-6-Anforderung, die Entwurf A in Punkt 6 abfragt. Ein Großhändler mit
+IDS-Zugang löst das Datenproblem für sein gesamtes Sortiment auf einmal.
+
+> **Betreff:** Anfrage Wiederverkäuferkonditionen Abdichtung/Tiefbau
+>
+> Sehr geehrte Damen und Herren,
+>
+> ich baue derzeit einen auf Radonvorsorge spezialisierten Fachhandel für den
+> österreichischen Markt auf (Streckengeschäft, Zielgruppe ausführende
+> Betriebe nach ÖNORM S 5280-2) und prüfe den Bezug über den
+> Baustoffgroßhandel.
+>
+> Das Vorhaben befindet sich in der Planungsphase. Ich frage Konditionen an,
+> um die Wirtschaftlichkeit zu prüfen, bevor ich weitere Schritte setze — eine
+> Bestellung ist damit noch nicht verbunden.
+>
+> Für die Bewertung wären mir folgende Angaben wichtig:
+>
+> 1. Beliefern Sie Wiederverkäufer, und welche Voraussetzungen bestehen dafür
+>    (Gewerbeberechtigung, Mindestumsatz, Kundenkonto)?
+> 2. Führen Sie radondichte Abdichtungsbahnen mit Nachweis — etwa
+>    BMI/Vedag Vedagard AL-E — sowie Drainagerohr DN 100/150, und zu welchen
+>    Konditionen gegenüber Wiederverkäufern?
+> 3. Ist **Streckengeschäft** möglich, also Zustellung direkt an die Baustelle
+>    meines Kunden — österreichweit, und unter welcher Frachtregelung?
+> 4. Stellen Sie Artikeldaten strukturiert bereit — DATANORM, IDS Connect
+>    oder CSV — und für Wiederverkäufer auch mit Einkaufspreisen?
+> 5. Wie werden Transportschäden bei Baustellenzustellung abgewickelt, und
+>    wen trifft die Meldepflicht?
+>
+> Über eine Rückmeldung freue ich mich. Gerne stelle ich das Vorhaben auch in
+> einem kurzen Gespräch vor.
+>
+> Mit freundlichen Grüßen
+
+**Was der Entwurf bewusst nicht tut:** Er fragt nicht nach einem Rabatt „auf
+die UVP" — der Großhandel rechnet in eigenen Netto-Einkaufspreisen je Kunde,
+nicht in Herstellerlisten. Verwertbar ist die Antwort, wenn Punkt 2 einen
+konkreten Einkaufspreis oder eine Konditionslogik nennt und Punkt 3 das
+Streckengeschäft nicht ausschließt; die Marge wird dann gegen den bekannten
+Straßenpreis (~10–11 €/m² brutto) gerechnet, nicht gegen eine Liste.
+
+**Kandidatenauswahl vor dem Versand** (dieselbe Erhebung wie die
+Ansprechpartner der zwölf Hersteller): ein österreichweit lieferfähiger
+Baustoff- oder Dachbaustoffgroßhändler mit Abdichtungssortiment und
+Streckengeschäft. **Diese Prüfung ist seit dem 17. August erledigt**
+(`adressaten-und-zugaenge.md`): Quester ist im Konkurs, BayWa AT verkauft
+ihre Lagerhaus-Mehrheit — Adressat ist das **Lagerhaus**, dessen
+Baustoffkatalog die BMI-Bitumenbahnen samt Vedatect nachweislich führt.
+
+## Entwurf B — Partnerbetriebe für die Leadvermittlung
+
+Adressaten sind Abdichtungsbetriebe, Baumeister und Sanierungsspezialisten.
+Gebietseinheit ist nach Gate 13 in
+[`partnerangebot-leadvermittlung.md`](./partnerangebot-leadvermittlung.md) der
+**politische Bezirk**, nicht die Radonschutzgemeinde — Messwerte entstehen im
+Vorsorgegebiet, also nahezu österreichweit, und die Feuchte- und
+Abdichtungsthemen haben gar keinen Gebietsbezug. Die 104 Schutzgemeinden
+bestimmen nur die Ausbaufolge: Oberösterreich zuerst, dann Niederösterreich,
+Steiermark, Kärnten, Tirol.
+
+Für Stufe A genügen **drei bis fünf Betriebe**. Mehr zu gewinnen, bevor Anfragen
+fließen, erzeugt Enttäuschung in der Fläche statt Erfahrung im Kleinen.
+
+> **Betreff:** Anfragen zu Radonsanierung — Kooperation für Ihren Betrieb
+>
+> Sehr geehrte Damen und Herren,
+>
+> ich baue ein Fachportal zum Thema Radonvorsorge und Radonsanierung in
+> Österreich auf. Es richtet sich an Eigentümer und Bauherren, die von der
+> ÖNORM S 5280-2 betroffen sind, und begleitet sie von der Messung bis zur
+> Maßnahme.
+>
+> Aus dieser Beratung entstehen konkrete Anfragen von Personen mit einem
+> gemessenen Radonwert — also mit belegtem Handlungsbedarf, nicht mit bloßem
+> Interesse. Für diese Anfragen suche ich ausführende Betriebe in Ihrer Region.
+>
+> Bevor ich ein Angebot mache, würde ich gerne von Ihnen wissen:
+>
+> 1. Führen Sie Radonsanierungen aus — Abdichtung, Bodenluftabsaugung,
+>    Lüftungstechnik?
+> 2. Übernehmen Sie auch Feuchte- und Abdichtungsarbeiten ohne Radonbezug —
+>    Kellersanierung, aufsteigende Feuchte, Bauwerksabdichtung?
+> 3. Welche Bezirke decken Sie ab?
+> 4. Wie viele zusätzliche Anfragen im Monat könnten Sie aufnehmen?
+> 5. Ab welchem Auftragswert lohnt sich eine Anfrage für Sie?
+> 6. Wie schnell melden Sie sich üblicherweise bei einem Interessenten zurück?
+> 7. Wären Sie damit einverstanden, im Einwilligungstext des Anfrageformulars
+>    namentlich genannt zu werden? Ohne diese Nennung dürfen wir Ihnen keine
+>    Kontaktdaten übermitteln.
+>
+> Das Portal befindet sich im Aufbau. Ich spreche Betriebe bewusst vorab an,
+> damit die regionale Abdeckung steht, bevor die ersten Anfragen eingehen.
+>
+> Mit freundlichen Grüßen
+
+Frage 4 und 6 sind die eigentlichen Auswahlkriterien. Ein Betrieb, der auf eine
+Anfrage erst nach drei Tagen reagiert, verbrennt sie — und mit ihr den
+Wert des Portals.
+
+**Frage 7 ist eine Ausschlussfrage.** Eine Einwilligung zur Datenweitergabe ist
+nur wirksam, wenn der Empfänger namentlich ausgewiesen ist; eine pauschale
+Einwilligung „für einen unserer Partnerbetriebe" trägt nicht. Wer der Nennung
+nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
+übrigen Antworten ausfallen.
+
+## Was vor dem Versand zu klären ist
+
+1. **Absender.** Alle Anschreiben brauchen einen realen Absender mit Namen,
+   Anschrift und Kontaktdaten. Die Rechtsformfrage aus
+   [`phase8-rechtsform-steuer.md`](./phase8-rechtsform-steuer.md) muss dafür
+   nicht entschieden sein — eine natürliche Person als Absender genügt in der
+   Anfragephase.
+2. **Datenschutz bei Entwurf B.** Sobald tatsächlich Anfragedaten an Betriebe
+   weitergegeben werden, sind Einwilligung und Auftragsverarbeitung zu regeln.
+   Für die Vorabansprache spielt das noch keine Rolle.
+3. **Wer fakturiert?** Nachgetragen am 15. August, siehe
+   [`beleg-und-reihengeschaeft.md`](./beleg-und-reihengeschaeft.md). Die Mehrzahl
+   der Empfänger sitzt im Ausland, mehrere davon mit österreichischer
+   Niederlassung — BMI führt DE/AT, Sika CH/AT, Liapor AT/DE. Das erübrigt die
+   Frage nicht, es stellt sie erst: Fakturiert die österreichische Gesellschaft,
+   ist es ein Inlandsgeschäft mit 20 % und Vorsteuerabzug. Fakturiert die
+   deutsche, ist es ein Reihengeschäft — Rechnung ohne Umsatzsteuer an unsere
+   UID, während die Ware direkt an wechselnde österreichische Baustellen geht.
+   Der Unterschied entscheidet über 19–20 % auf jeden Einkauf, und er steht auf
+   keiner Preisliste. **Erledigt am 16. August: Frage 9 in Entwurf A stellt
+   ihn.**
+4. **Die Schweizer Hersteller sind kein EU-Fall.** Sika und Ampack liefern aus
+   der Schweiz: Einfuhr, Zoll und Einfuhrumsatzsteuer statt innergemeinschaftlichem
+   Erwerb, und ein Direktversand an die Baustelle wirft die Frage auf, wer als
+   Anmelder auftritt. Das ist vor einer Aufnahme ins Sortiment zu klären, nicht
+   danach.
+5. **Eine Zahl nennen, nicht nach einer fragen.** Nachgetragen am 15. August,
+   siehe [`verhandlungsziel-konditionen.md`](./verhandlungsziel-konditionen.md):
+   Wer nach einer Zahl fragt, ohne eine zu nennen, bekommt die des Gegenübers.
+   Die Herleitung: Bei einem im Onlinehandel üblichen Nachlass von rund zehn
+   Prozent auf die UVP verlangt die Untergrenze von 32 % bereits **38,8 %
+   Händlerrabatt**, die Abdichtungsbahn mit ihren 38 % sogar **44,2 %**. Die
+   35 % aus Gate 2 sind die Schwelle, unter der nichts geht — nicht das
+   Verhandlungsziel. **Erledigt am 16. August: Frage 2 in Entwurf A nennt
+   „Größenordnung 40 % auf die Netto-Preisliste" und bittet um die Liste.**
+6. **Reihenfolge.** Entwurf A zuerst, **Entwurf C im selben Versand** — er
+   kostet eine einzige weitere E-Mail und prüft den Bezugsweg, der bleibt,
+   wenn die Herstellerantworten enttäuschen. Beide zusammen entscheiden über
+   Gate 3. Entwurf B kann parallel laufen, bindet aber Aufmerksamkeit.
+
+## Freigabe
+
+Zum Versenden fehlt nur die Zustimmung. Sie umfasst seit dem 16. August
+**dreizehn Anfragen** (zwölf Hersteller nach Entwurf A, ein Großhändler nach
+Entwurf C) — weiterhin 0 € Kosten. Sobald sie vorliegt, sind Empfänger,
+Absenderdaten und der Zeitpunkt festzulegen; die Antworten werden in
+`lieferanten.md` bzw. `partnerbetriebe.md` erfasst und fließen in die
+Gate-3-Prüfung ein.
