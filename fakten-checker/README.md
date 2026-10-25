@@ -13,7 +13,16 @@ Hört bei Gesprächen mit, erkennt prüfbare Behauptungen und zeigt in Sekunden,
 
 Gleiche Behauptungen werden 24 h zwischengespeichert. Das ist der Grundstock der späteren Wissensdatenbank.
 
-## Starten
+## Direkt im Browser (ohne Server)
+
+Die Seite läuft auch als reine Webseite, z. B. über GitHub Pages:
+**https://freudenthalerried-cmd.github.io/matlab/fakten-checker/**
+
+Beim ersten Öffnen unter „Einstellungen“ den eigenen Claude-API-Schlüssel eintragen. Er wird nur im Browser dieses Geräts gespeichert und direkt an die Claude-API geschickt. Diese Variante ist für die eigene Nutzung gedacht; für eine öffentliche App gehört der Schlüssel auf einen Server (siehe unten).
+
+Nach einem SDK-Update das Browser-Bundle neu bauen: `npm run build:sdk`.
+
+## Mit eigenem Server
 
 ```bash
 cd fakten-checker
