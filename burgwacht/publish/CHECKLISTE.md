@@ -35,9 +35,15 @@ Werbung, Einwilligung (Cookies/DSGVO) und Auszahlung übernimmt CrazyGames. Du b
 
 **Wichtig:** Die Datei `Koenigspaket-Code.txt` nicht öffentlich teilen. Sie liegt nicht im Git-Repository, nur bei dir.
 
-## 3. Nach dem Start
+## 3. Bestenliste (optional, 10 Minuten)
 
-- [ ] Ein 20–30-Sekunden-Video vom Spiel aufnehmen (Handy-Bildschirmaufnahme reicht) und auf TikTok/YouTube Shorts mit Link posten.
+- [ ] Supabase einrichten wie in `publish/datenbank-supabase.md` beschrieben und mir URL und *anon*-Key schicken.
+
+## 4. Nach dem Start
+
+Der genaue Plan mit Texten steht in `publish/marketing-plan.md`.
+
+- [ ] Die fertigen Videos aus `dist/marketing/` auf TikTok, Instagram und YouTube Shorts mit Link posten.
 - [ ] Freunde bitten, auf CrazyGames zu spielen und zu bewerten. Die ersten Bewertungen entscheiden über die Sichtbarkeit.
 - [ ] Nach 2–4 Wochen die Statistik in den Portalen ansehen und mir schicken. Dann verbessere ich gezielt, wo Spieler aussteigen.
 

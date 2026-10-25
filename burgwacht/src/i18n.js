@@ -55,6 +55,8 @@ const I18N={
   'Video':'Video','Zweite Chance':'Second chance','+10 Leben':'+10 lives','Code ungültig':'Invalid code','Zur Kartenwahl':'Back to maps',
   'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'All maps unlocked, double gems, +300 gems.','Kaufbedingungen':'Terms of sale','Info':'Info','Impressum':'Legal notice','Datenschutz':'Privacy',
   'Dein Fortschritt wird nur in diesem Browser gespeichert.':'Your progress is only stored in this browser.',
+  'Bestenliste':'Leaderboard','Endlos-Modus, beste Welle':'Endless mode, best wave','Lädt …':'Loading …','Noch keine Einträge. Sei der Erste!':'No entries yet. Be the first!',
+  'Bestenliste gerade nicht erreichbar.':'Leaderboard not reachable right now.','Unter welchem Namen eintragen?':'Which name should we use?','Eintragen':'Submit','Name: mindestens 2 Zeichen':'Name: at least 2 characters','In die Bestenliste eingetragen':'Added to the leaderboard',
   'Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.':'Conquer five maps. Collect stars and gems for permanent upgrades.',
 };
 const PAT=[

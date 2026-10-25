@@ -290,6 +290,8 @@ const I18N={
   'Video':'Video','Zweite Chance':'Second chance','+10 Leben':'+10 lives','Code ungültig':'Invalid code','Zur Kartenwahl':'Back to maps',
   'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'All maps unlocked, double gems, +300 gems.','Kaufbedingungen':'Terms of sale','Info':'Info','Impressum':'Legal notice','Datenschutz':'Privacy',
   'Dein Fortschritt wird nur in diesem Browser gespeichert.':'Your progress is only stored in this browser.',
+  'Bestenliste':'Leaderboard','Endlos-Modus, beste Welle':'Endless mode, best wave','Lädt …':'Loading …','Noch keine Einträge. Sei der Erste!':'No entries yet. Be the first!',
+  'Bestenliste gerade nicht erreichbar.':'Leaderboard not reachable right now.','Unter welchem Namen eintragen?':'Which name should we use?','Eintragen':'Submit','Name: mindestens 2 Zeichen':'Name: at least 2 characters','In die Bestenliste eingetragen':'Added to the leaderboard',
   'Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.':'Conquer five maps. Collect stars and gems for permanent upgrades.',
 };
 const PAT=[
@@ -832,13 +834,28 @@ function boot(){
 }
 
 // Meta-Fortschritt: Speicherstand, Edelsteine, Kampagne, Upgrades, Boosts, Tagesbonus, Erfolge, Shop, Werbung.
-const CONFIG=Object.assign({ads:'demo',premiumUrl:'',premiumCode:'',premiumPrice:'2,99 €',legal:false},window.BW_CONFIG||{});
+const CONFIG=Object.assign({ads:'demo',premiumUrl:'',premiumCode:'',premiumPrice:'2,99 €',legal:false,board:null},window.BW_CONFIG||{});
+
+// ---------- Bestenliste (Supabase, optional) ----------
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BOARD={on:()=>!!(CONFIG.board&&CONFIG.board.url&&CONFIG.board.key),
+  h(){return{apikey:CONFIG.board.key,Authorization:'Bearer '+CONFIG.board.key,'Content-Type':'application/json'}},
+  async top(){const r=await fetch(`${CONFIG.board.url}/rest/v1/scores?select=name,wave&order=wave.desc,created_at.asc&limit=20`,{headers:this.h()});if(!r.ok)throw 0;return r.json()},
+  async send(name,wave,map){const r=await fetch(`${CONFIG.board.url}/rest/v1/scores`,{method:'POST',headers:{...this.h(),Prefer:'return=minimal'},body:JSON.stringify({name,wave,map})});return r.ok}};
+const cleanName=s=>String(s||'').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,14);
+async function openBoard(){modal(`<h2>${tr('Bestenliste')}</h2><p class="sub">${tr('Endlos-Modus, beste Welle')}</p><div class="achs" id="blist"><p class="sub">${tr('Lädt …')}</p></div>`);
+  try{const rows=await BOARD.top();const me=SV.name;$('#blist').innerHTML=rows.length?rows.map((r,i)=>`<div class="ach${r.name===me?' done me':''}"><span><b>${i+1}. ${esc(r.name)}</b></span><span class="rw">${tr('Welle')} ${+r.wave}</span></div>`).join(''):`<p class="sub">${tr('Noch keine Einträge. Sei der Erste!')}</p>`}
+  catch(e){$('#blist').innerHTML=`<p class="sub">${tr('Bestenliste gerade nicht erreichbar.')}</p>`}}
+function askName(wave){modal(`<h2>${tr('Bestenliste')}</h2><p class="sub">${tr('Du hast Welle {n} erreicht.',{n:wave})} ${tr('Unter welchem Namen eintragen?')}</p>
+  <div class="mrow"><span class="code"><input id="bname" maxlength="14" autocomplete="nickname" aria-label="Name" value="${esc(SV.name||'')}"><button class="okb" data-bsend="${wave}">${tr('Eintragen')}</button></span></div>`)}
+async function submitScore(wave){const n=cleanName($('#bname')?$('#bname').value:SV.name);if(n.length<2){toast(tr('Name: mindestens 2 Zeichen'));return}
+  SV.name=n;persist();closeModal();const ok=await BOARD.send(n,wave,MAPI).catch(()=>false);toast(ok?tr('In die Bestenliste eingetragen'):tr('Bestenliste gerade nicht erreichbar.'))}
 
 // ---------- Speicher ----------
 const SAVE_KEY='bw_save1';
 const ST={get(k){try{if(ADS.sdk&&ADS.sdk.data)return ADS.sdk.data.getItem(k);return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{if(ADS.sdk&&ADS.sdk.data)ADS.sdk.data.setItem(k,v);else localStorage.setItem(k,v)}catch(e){}}};
-function freshSave(){return{gems:0,stars:[0,0,0,0,0],up:{dmg:0,gold:0,wall:0,spell:0,hero:0,barr:0},daily:{last:'',streak:0},ach:{},stats:{kills:0,wins:0},endless:0,premium:false,boost:{},adGems:{day:'',n:0},seenDaily:''}}
+function freshSave(){return{name:'',gems:0,stars:[0,0,0,0,0],up:{dmg:0,gold:0,wall:0,spell:0,hero:0,barr:0},daily:{last:'',streak:0},ach:{},stats:{kills:0,wins:0},endless:0,premium:false,boost:{},adGems:{day:'',n:0},seenDaily:''}}
 function loadSave(){let o=null;try{o=JSON.parse(ST.get(SAVE_KEY)||'null')}catch(e){}const d=freshSave();if(!o)o={};
   const s=Object.assign(d,o);s.up=Object.assign(freshSave().up,o.up||{});s.stats=Object.assign(freshSave().stats,o.stats||{});s.daily=Object.assign(freshSave().daily,o.daily||{});
   while(s.stars.length<5)s.stars.push(0);return s}
@@ -905,7 +922,7 @@ const endlessOpen=()=>SV.premium||SV.stars[2]>0;
 function renderCamp(){
   const el=$('#camp');if(!el)return;const dailyOn=SV.daily.last!==dayKey();
   el.innerHTML=`<div class="mtop"><span class="gems">${gemIc}<b class="gemn">${fmt(SV.gems)}</b></span>
-      <button class="mb${dailyOn?' hot':''}" data-m="daily">${tr('Tagesbonus')}</button><button class="mb" data-m="perks">${tr('Upgrades')}</button><button class="mb" data-m="ach">${tr('Erfolge')}</button><button class="mb" data-m="shop">${tr('Shop')}</button>${CONFIG.legal?`<button class="mb" data-m="info">${tr('Info')}</button>`:''}</div>
+      <button class="mb${dailyOn?' hot':''}" data-m="daily">${tr('Tagesbonus')}</button><button class="mb" data-m="perks">${tr('Upgrades')}</button><button class="mb" data-m="ach">${tr('Erfolge')}</button><button class="mb" data-m="shop">${tr('Shop')}</button>${BOARD.on()?`<button class="mb" data-m="board">${tr('Bestenliste')}</button>`:''}${CONFIG.legal?`<button class="mb" data-m="info">${tr('Info')}</button>`:''}</div>
     <div class="maps">${MAPS.map((m,i)=>{const lock=!unlocked(i);return`<button class="map ${m.theme}${lock?' locked':''}" data-map="${i}" ${lock?'disabled':''}><b>${tr(m.n)}</b><span class="stars">${starStr(SV.stars[i])}</span><small>${lock?tr('Erst Karte {n} gewinnen',{n:i}):tr('{n} Wellen',{n:m.waves})}</small></button>`}).join('')}
       <button class="map endless${endlessOpen()?'':' locked'}" data-map="endless" ${endlessOpen()?'':'disabled'}><b>${tr('Endlos')}</b><span class="rec">${tr('Rekord')}: ${SV.endless}</span><small>${endlessOpen()?tr('So lange du kannst'):tr('Erst Karte {n} gewinnen',{n:3})}</small></button></div>`;
 }
@@ -972,7 +989,7 @@ function metaEnd(win){
       +(win&&!S.endless?`<div class="endstars">${starStr(st)}</div>`:'')+`<div class="endg">${gemIc}+<b id="endg">${g}</b></div>`;
     $('#endst').innerHTML=`<div><b>${S.wave}</b>${tr('Wellen')}</div><div><b>${fmt(S.kills)}</b>${tr('Besiegte')}</div><div><b>${fmt(S.earned)}</b>${tr('Gold verdient')}</div>`;
     $('#endads').innerHTML=(!win&&!revived&&!S.endless?adBtn(tr('Weiterkämpfen: +10 Leben'),'revive','wide'):'')+(g>0&&!SV.premium?adBtn(tr('Edelsteine verdoppeln'),'double','wide'):'');
-    trDOM($('#end'));$('#retry').hidden=false;$('#end').hidden=false;updGems()},win?700:1200);
+    trDOM($('#end'));$('#retry').hidden=false;$('#end').hidden=false;updGems();if(S.endless&&S.wave>=3&&BOARD.on())setTimeout(()=>askName(S.wave),600)},win?700:1200);
 }
 function metaBack(){ADS.midgame().then(()=>{$('#end').hidden=true;newGame(MAPI);renderCamp();$('#start').hidden=false})}
 
@@ -982,10 +999,11 @@ document.addEventListener('click',async ev=>{
   if(t.closest('.mx')){closeModal();return}
   const mp=t.closest('#camp [data-map]');if(mp&&!mp.disabled){ac();sfx('click');openPrep(mp.dataset.map==='endless'?'endless':+mp.dataset.map);return}
   const mb=t.closest('[data-m]');if(mb){ac();sfx('click');const k=mb.dataset.m;
-    if(k==='daily')openDaily();else if(k==='info')openInfo();else if(k==='perks')openPerks();else if(k==='ach')openAch();else if(k==='shop')openShop();
+    if(k==='daily')openDaily();else if(k==='board')openBoard();else if(k==='info')openInfo();else if(k==='perks')openPerks();else if(k==='ach')openAch();else if(k==='shop')openShop();
     else if(k==='code'){const ok=await tryCode($('#pcode').value);if(ok)closeModal();else{toast(tr('Code ungültig'));sfx('err')}}return}
   const pk=t.closest('[data-perk]');if(pk&&!pk.disabled){const k=pk.dataset.perk,c=PERK_COST[SV.up[k]];if(spendGems(c)){SV.up[k]++;persist();sfx('coin');openPerks()}return}
   const go=t.closest('[data-go]');if(go){goMap(go.dataset.go==='endless'?'endless':+go.dataset.go);return}
+  const bs=t.closest('[data-bsend]');if(bs){submitScore(+bs.dataset.bsend);return}
   const dl=t.closest('[data-daily]');if(dl){claimDaily(1);return}
   const ad=t.closest('[data-ad]');if(ad&&!ad.disabled){ac();const k=ad.dataset.ad;ad.disabled=true;const ok=await ADS.rewarded();if(!ok){toast(tr('Werbung gerade nicht verfügbar'));ad.disabled=false;return}
     if(k==='daily2')claimDaily(2);

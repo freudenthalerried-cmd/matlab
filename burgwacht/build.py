@@ -40,8 +40,7 @@ LOCAL_FONTS = ('<style>' + ''.join(
                       ('Nunito', 800, 'nunito-latin-800-normal.woff2'), ('Nunito', 900, 'nunito-latin-900-normal.woff2')]) + '</style>')
 VENDOR = OUT / 'vendor'
 DIST = {
-    'crazygames': dict(sdk='<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>\n',
-                       cfg="window.BW_CONFIG={ads:'crazygames'};"),
+    'crazygames': dict(sdk='<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>\n', cfg='CG'),
     'web': dict(sdk='', cfg=None),
 }
 # Angaben für Rechtstexte und Königspaket
@@ -64,8 +63,10 @@ CODE_HASH = hashlib.sha256(CODE.upper().encode()).hexdigest() if CODE else ANG['
 if ANG.get('CODE_HASH') != CODE_HASH:
     ANG['CODE_HASH'] = CODE_HASH
     (PUB / 'angaben.json').write_text(json.dumps(ANG, ensure_ascii=False, indent=2) + '\n')
-WEB_CFG = ("window.BW_CONFIG={ads:'none',legal:true,premiumUrl:" + json.dumps(ANG.get('KAUF_URL', '')) +
+BOARD = json.dumps({'url': ANG['SUPABASE_URL'], 'key': ANG['SUPABASE_ANON_KEY']}) if ANG.get('SUPABASE_URL') and ANG.get('SUPABASE_ANON_KEY') else 'null'
+WEB_CFG = ("window.BW_CONFIG={ads:'none',legal:true,board:" + BOARD + ",premiumUrl:" + json.dumps(ANG.get('KAUF_URL', '')) +
            ",premiumPrice:" + json.dumps(ANG.get('PREIS', '2,99 €')) + ",premiumCode:'" + CODE_HASH + "'};\n")
+DIST['crazygames']['cfg'] = "window.BW_CONFIG={ads:'crazygames',board:" + BOARD + "};"
 missing = [k for k in ('NAME', 'ADRESSE', 'EMAIL') if ANG[k].startswith('[')]
 if missing:
     print('HINWEIS: in publish/angaben.json fehlen noch:', ', '.join(missing))
@@ -84,7 +85,11 @@ for name, d in DIST.items():
         (target / 'config.js').write_text(WEB_CFG)
         page = (SRC / 'legal' / '_page.html').read_text()
         rep = dict(ANG, DATUM=datetime.date.today().strftime('%d.%m.%Y'),
-                   UID=f"<h2>UID-Nummer</h2><p>{ANG['UID']}</p>" if ANG.get('UID') else '')
+                   UID=f"<h2>UID-Nummer</h2><p>{ANG['UID']}</p>" if ANG.get('UID') else '',
+                   BOARD_TEXT=('<h2>Bestenliste</h2><p>Wenn du dich nach einer Runde im Endlos-Modus in die Bestenliste einträgst, speichern wir den von dir gewählten '
+                               'Spielernamen, die erreichte Welle, die Karte und den Zeitpunkt in einer Datenbank bei Supabase Inc. (Rechenzentrum in der EU). '
+                               'Rechtsgrundlage ist deine Einwilligung durch das Eintragen (Art. 6 Abs. 1 lit. a DSGVO). Die Einträge sind für alle Spieler sichtbar. '
+                               'Möchtest du einen Eintrag löschen lassen, schreib an ' + ANG['EMAIL'] + '.</p>') if BOARD != 'null' else '')
         for f, title in [('impressum', 'Impressum'), ('datenschutz', 'Datenschutz'), ('kaufbedingungen', 'Kaufbedingungen')]:
             body = (SRC / 'legal' / f'{f}.html').read_text()
             out = page.replace('{{TITLE}}', title).replace('{{BODY}}', body)
@@ -102,3 +107,23 @@ for name, d in DIST.items():
             if f.is_file():
                 z.write(f, f.relative_to(target))
     print('dist', name, zpath.stat().st_size)
+
+# ---------- Pressemappe ----------
+PK = OUT / 'dist' / 'presskit'
+if PK.exists():
+    shutil.rmtree(PK)
+PK.mkdir(parents=True)
+imgs = sorted((OUT / 'dist' / 'assets').glob('*.png'))
+for f in imgs:
+    shutil.copy(f, PK)
+trailer = OUT / 'dist' / 'marketing' / 'trailer-en-1280x720.mp4'
+if trailer.exists():
+    shutil.copy(trailer, PK)
+pk = (SRC / 'presskit.html').read_text()
+play = ANG.get('PLAY_URL', '')
+for k, v in {'NAME': ANG['NAME'], 'EMAIL': ANG['EMAIL'], 'RELEASE': ANG.get('RELEASE', '2026'),
+             'PLAY': play or '#', 'PLAY_LABEL': play.replace('https://', '') if play else 'coming soon',
+             'IMAGES': ''.join(f'<a href="{f.name}"><img src="{f.name}" alt="Burgwacht screenshot" loading="lazy"></a>' for f in imgs)}.items():
+    pk = pk.replace('{{' + k + '}}', v)
+(PK / 'index.html').write_text(pk)
+print('presskit', len(imgs), 'Bilder')
