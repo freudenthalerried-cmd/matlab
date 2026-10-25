@@ -1,0 +1,136 @@
+// Prüflogik, gemeinsam genutzt vom Node-Server und von der Browser-Version
+export const TRUSTED = [
+  "statistik.at", "gv.at", "europa.eu", "oecd.org", "who.int", "worldbank.org", "imf.org", "un.org",
+  "unhcr.org", "ourworldindata.org", "destatis.de", "bfs.admin.ch", "wifo.ac.at", "ihs.ac.at",
+  "oenb.at", "ams.at", "wko.at", "apa.at", "orf.at", "reuters.com", "nature.com", "science.org",
+  "nih.gov", "wikipedia.org",
+];
+
+export const RULES = `Du bist ein strenger, neutraler Faktenchecker für Gespräche im Alltag. Standardregion ist Österreich, außer die Aussage nennt etwas anderes.
+Nutze nur Zahlen aus zuverlässigen Quellen (Statistik Austria, Eurostat, OECD, WHO, Weltbank, Ministerien, peer-reviewte Studien). Nenne Quelle und Datenjahr.
+Hängt das Ergebnis von der Definition ab (z. B. Staatsbürgerschaft vs. Migrationshintergrund), erkläre das in "definition" und bewerte "teilweise".
+Erfinde keine Zahlen. Bei Unsicherheit: verdict "unklar", confidence "niedrig".
+Felder je Aussage: claim (Aussage kurz), verdict ("stimmt"|"teilweise"|"falsch"|"unklar"), number (eine Kernzahl, max. 12 Zeichen, z. B. "≈ 20 %"), fact (ein Satz Deutsch mit der richtigen Zahl), definition (welche Kennzahl genau, max. 1 Satz), source, asOf (Datenstand), confidence ("hoch"|"mittel"|"niedrig"), note (optional, max. 1 Satz),
+counter (Gegenargument: 1–2 kurze, sachliche Sätze in einfacher Alltagssprache, die man im Gespräch sofort laut sagen kann, mit konkreter Zahl und Quelle; stimmt die Aussage, stattdessen eine Einordnung, die wichtigen Kontext ergänzt).`;
+
+const clean = (s, max) => String(s ?? "").trim().slice(0, max);
+const norm = s => s.toLowerCase().replace(/\s+/g, " ");
+
+function textOf(res) {
+  return res.content.filter(b => b.type === "text").map(b => b.text).join("");
+}
+
+// Cited URLs first, then search hits, max. 5
+function sourcesOf(res) {
+  const seen = new Map();
+  for (const b of res.content) {
+    if (b.type === "text") for (const c of b.citations ?? []) if (c.url) seen.set(c.url, c.title || c.url);
+  }
+  for (const b of res.content) {
+    if (b.type === "web_search_tool_result" && Array.isArray(b.content)) {
+      for (const r of b.content) if (r.url && seen.size < 5) seen.set(r.url, r.title || r.url);
+    }
+  }
+  return [...seen].slice(0, 5).map(([url, title]) => ({ url, title }));
+}
+
+function parseJson(text) {
+  try { return JSON.parse(text); } catch {}
+  const start = text.search(/[[{]/);
+  const end = Math.max(text.lastIndexOf("}"), text.lastIndexOf("]"));
+  if (start >= 0 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)); } catch {}
+  }
+  throw Object.assign(new Error("Antwort war kein gültiges JSON"), { status: 502 });
+}
+
+export function createEngine(client, model) {
+  // Server-side refusal fallback exists only for these model families
+  const fallback = /^claude-(opus|sonnet|fable)/.test(model);
+
+  async function ask(prompt, { effort, webUses = 0, maxTokens }) {
+    const messages = [{ role: "user", content: prompt }];
+    const tools = webUses
+      ? [{ type: "web_search_20260209", name: "web_search", max_uses: webUses, allowed_domains: TRUSTED,
+           user_location: { type: "approximate", country: "AT" } }]
+      : undefined;
+    for (let round = 0; round < 4; round++) {
+      const res = await client.beta.messages.create({
+        model,
+        max_tokens: maxTokens,
+        output_config: { effort },
+        messages,
+        ...(tools && { tools }),
+        ...(fallback && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" }),
+      });
+      if (res.stop_reason === "pause_turn") {
+        messages.push({ role: "assistant", content: res.content });
+        continue;
+      }
+      if (res.stop_reason === "refusal") throw Object.assign(new Error("refused"), { status: 422 });
+      return res;
+    }
+    throw new Error("Websuche hat zu lange gedauert");
+  }
+
+  // Simple 24h cache: same claim, same answer, no extra cost
+  const cache = new Map();
+  const DAY = 24 * 60 * 60 * 1000;
+  async function cached(key, fn) {
+    const hit = cache.get(key);
+    if (hit && Date.now() - hit.t < DAY) return hit.v;
+    const v = await fn();
+    cache.set(key, { v, t: Date.now() });
+    if (cache.size > 5000) cache.delete(cache.keys().next().value);
+    return v;
+  }
+
+  // Schnellcheck: findet Behauptungen im Gesprächsausschnitt und bewertet sie aus dem Modellwissen
+  async function check(rawText, rawContext) {
+    const text = clean(rawText, 4000), context = clean(rawContext, 1500);
+    if (!text) throw Object.assign(new Error("Kein Text übergeben."), { status: 400 });
+    return cached("c:" + norm(text), async () => {
+      const r = await ask(`${RULES}
+
+Unten steht der neueste Ausschnitt eines laufenden Gesprächs (Spracherkennung, kann Fehler enthalten). Finde jede prüfbare Tatsachenbehauptung darin (Zahlen, Statistiken, Fakten). Ignoriere Meinungen, Fragen und Small Talk. Widersprechen sich Personen, prüfe jede Aussage einzeln. Antworte nur mit einem JSON-Array solcher Objekte, [] wenn nichts prüfbar ist.
+${context ? `\nVorheriger Kontext (nicht prüfen, nur zum Verständnis):\n${context}\n` : ""}
+Neuer Ausschnitt:
+${text}`, { effort: "low", maxTokens: 2000 });
+      const list = parseJson(textOf(r));
+      return Array.isArray(list) ? list.slice(0, 5) : [];
+    });
+  }
+
+  // Live-Prüfung einer Behauptung mit Websuche in vertrauenswürdigen Quellen
+  async function verify(rawClaim) {
+    const claim = clean(rawClaim, 500);
+    if (!claim) throw Object.assign(new Error("Keine Behauptung übergeben."), { status: 400 });
+    return cached("v:" + norm(claim), async () => {
+      const r = await ask(`${RULES}
+
+Prüfe diese Aussage mit der Websuche anhand der aktuellsten offiziellen Daten. Antworte zum Schluss nur mit EINEM JSON-Objekt mit den Feldern oben.
+
+Aussage: ${claim}`, { effort: "low", webUses: 3, maxTokens: 4000 });
+      return { ...parseJson(textOf(r)), sources: sourcesOf(r) };
+    });
+  }
+
+  // Ausführliche Recherche auf Wunsch
+  async function detail(rawClaim) {
+    const claim = clean(rawClaim, 500);
+    if (!claim) throw Object.assign(new Error("Keine Behauptung übergeben."), { status: 400 });
+    return cached("d:" + norm(claim), async () => {
+      const r = await ask(`Du bist ein neutraler Faktenchecker. Recherchiere mit der Websuche und erkläre auf Deutsch, knapp und sachlich, die Faktenlage zu dieser Aussage (Region Österreich, wenn nicht anders genannt):
+„${claim}“
+Gliedere so, ohne Markdown-Tabellen und ohne #-Überschriften:
+Bewertung: ein Satz.
+Zahlen: 3–6 Punkte mit "- " (Kennzahl, Wert, Jahr, Quelle), auch Entwicklung über die Zeit und Vergleich mit EU oder Nachbarländern, wenn sinnvoll.
+Gegenargumente: 2–3 Punkte, die man im Gespräch sagen kann.
+Definitionen und Fallstricke: 1–3 Punkte.
+Erfinde nichts und markiere Unsicheres deutlich.`, { effort: "high", webUses: 6, maxTokens: 12000 });
+      return { text: textOf(r), sources: sourcesOf(r) };
+    });
+  }
+
+  return { check, verify, detail };
+}
