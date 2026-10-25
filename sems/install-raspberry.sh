@@ -7,7 +7,7 @@ DIR="$HOME/pv-monitor"
 mkdir -p "$DIR"
 for f in server.py sems_client.py dashboard.html; do curl -fsSL "$SRC/$f" -o "$DIR/$f"; done
 python3 -m venv "$DIR/.venv"
-"$DIR/.venv/bin/pip" install --quiet --upgrade goodwe
+"$DIR/.venv/bin/pip" install --quiet --upgrade goodwe qrcode
 sudo tee /etc/systemd/system/pv-monitor.service >/dev/null <<UNIT
 [Unit]
 Description=PV-Monitor (GoodWe per WLAN)
