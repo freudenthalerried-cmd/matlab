@@ -53,6 +53,8 @@ const I18N={
   'Endlos-Modus vorbei':'Endless run over','Du hast Welle {n} erreicht.':'You reached wave {n}.','Neuer Rekord!':'New record!','Alle {n} Wellen abgewehrt. Das Reich ist sicher.':'All {n} waves repelled. The realm is safe.',
   'Du hast bis Welle {n} durchgehalten.':'You held out until wave {n}.','Weiterkämpfen: +10 Leben':'Keep fighting: +10 lives','Edelsteine verdoppeln':'Double gems','Werbung gerade nicht verfügbar':'Ad not available right now',
   'Video':'Video','Zweite Chance':'Second chance','+10 Leben':'+10 lives','Code ungültig':'Invalid code','Zur Kartenwahl':'Back to maps',
+  'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'All maps unlocked, double gems, +300 gems.','Kaufbedingungen':'Terms of sale','Info':'Info','Impressum':'Legal notice','Datenschutz':'Privacy',
+  'Dein Fortschritt wird nur in diesem Browser gespeichert.':'Your progress is only stored in this browser.',
   'Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.':'Conquer five maps. Collect stars and gems for permanent upgrades.',
 };
 const PAT=[

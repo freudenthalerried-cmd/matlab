@@ -1,5 +1,5 @@
 // Meta-Fortschritt: Speicherstand, Edelsteine, Kampagne, Upgrades, Boosts, Tagesbonus, Erfolge, Shop, Werbung.
-const CONFIG=Object.assign({ads:'demo',premiumUrl:'',premiumCode:'',premiumPrice:'2,99 €'},window.BW_CONFIG||{});
+const CONFIG=Object.assign({ads:'demo',premiumUrl:'',premiumCode:'',premiumPrice:'2,99 €',legal:false},window.BW_CONFIG||{});
 
 // ---------- Speicher ----------
 const SAVE_KEY='bw_save1';
@@ -72,7 +72,7 @@ const endlessOpen=()=>SV.premium||SV.stars[2]>0;
 function renderCamp(){
   const el=$('#camp');if(!el)return;const dailyOn=SV.daily.last!==dayKey();
   el.innerHTML=`<div class="mtop"><span class="gems">${gemIc}<b class="gemn">${fmt(SV.gems)}</b></span>
-      <button class="mb${dailyOn?' hot':''}" data-m="daily">${tr('Tagesbonus')}</button><button class="mb" data-m="perks">${tr('Upgrades')}</button><button class="mb" data-m="ach">${tr('Erfolge')}</button><button class="mb" data-m="shop">${tr('Shop')}</button></div>
+      <button class="mb${dailyOn?' hot':''}" data-m="daily">${tr('Tagesbonus')}</button><button class="mb" data-m="perks">${tr('Upgrades')}</button><button class="mb" data-m="ach">${tr('Erfolge')}</button><button class="mb" data-m="shop">${tr('Shop')}</button>${CONFIG.legal?`<button class="mb" data-m="info">${tr('Info')}</button>`:''}</div>
     <div class="maps">${MAPS.map((m,i)=>{const lock=!unlocked(i);return`<button class="map ${m.theme}${lock?' locked':''}" data-map="${i}" ${lock?'disabled':''}><b>${tr(m.n)}</b><span class="stars">${starStr(SV.stars[i])}</span><small>${lock?tr('Erst Karte {n} gewinnen',{n:i}):tr('{n} Wellen',{n:m.waves})}</small></button>`}).join('')}
       <button class="map endless${endlessOpen()?'':' locked'}" data-map="endless" ${endlessOpen()?'':'disabled'}><b>${tr('Endlos')}</b><span class="rec">${tr('Rekord')}: ${SV.endless}</span><small>${endlessOpen()?tr('So lange du kannst'):tr('Erst Karte {n} gewinnen',{n:3})}</small></button></div>`;
 }
@@ -99,8 +99,14 @@ function openShop(){
   modal(`<h2>${tr('Shop')}</h2><p class="sub">${gemIc}<b class="gemn">${fmt(SV.gems)}</b></p>
     ${ADS.mode!=='none'?`<div class="shopi"><span><b>${tr('Gratis-Edelsteine')}</b><small>${tr('Kurzes Video ansehen')} (${ad}/5 ${tr('heute')})</small></span>${ad<5?adBtn('+15','gems'):`<span class="rw">${tr('Morgen wieder')}</span>`}</div>`:''}
     ${SV.premium?`<div class="shopi prem"><span><b>${tr('Königspaket aktiv')}</b><small>${tr('Keine Werbepausen, alle Karten frei, doppelte Edelsteine.')}</small></span><span class="rw">✓</span></div>`:
-      CONFIG.premiumUrl?`<div class="shopi prem"><span><b>${tr('Königspaket')}</b><small>${tr('Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.')}</small></span><a class="okb" href="${CONFIG.premiumUrl}" target="_blank" rel="noopener">${CONFIG.premiumPrice}</a></div>
-      <div class="shopi"><span><b>${tr('Code eingeben')}</b><small>${tr('Den Code bekommst du nach dem Kauf.')}</small></span><span class="code"><input id="pcode" maxlength="24" autocomplete="off"><button class="okb" data-m="code">OK</button></span></div>`:''}`)}
+      (CONFIG.premiumUrl?`<div class="shopi prem"><span><b>${tr('Königspaket')}</b><small>${tr(ADS.mode==='none'?'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.')}</small></span><a class="okb" href="${CONFIG.premiumUrl}" target="_blank" rel="noopener">${CONFIG.premiumPrice}</a></div>`:'')
+      +(CONFIG.premiumCode?`<div class="shopi"><span><b>${tr('Code eingeben')}</b><small>${tr('Den Code bekommst du nach dem Kauf.')}</small></span><span class="code"><input id="pcode" maxlength="24" autocomplete="off" aria-label="Code"><button class="okb" data-m="code">OK</button></span></div>`:'')
+      +(CONFIG.legal&&CONFIG.premiumUrl?`<p class="sub"><a href="kaufbedingungen.html" target="_blank" rel="noopener">${tr('Kaufbedingungen')}</a></p>`:'')}`)}
+function openInfo(){modal(`<h2>${tr('Info')}</h2><div class="achs">
+  <a class="shopi" href="impressum.html" target="_blank" rel="noopener"><span><b>${tr('Impressum')}</b></span></a>
+  <a class="shopi" href="datenschutz.html" target="_blank" rel="noopener"><span><b>${tr('Datenschutz')}</b></span></a>
+  ${CONFIG.premiumUrl?`<a class="shopi" href="kaufbedingungen.html" target="_blank" rel="noopener"><span><b>${tr('Kaufbedingungen')}</b></span></a>`:''}</div>
+  <p class="sub">${tr('Dein Fortschritt wird nur in diesem Browser gespeichert.')}</p><p class="sub">Three.js (MIT) · Lilita One, Nunito (SIL OFL)</p>`)}
 async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s.trim().toUpperCase()));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function tryCode(c){if(!CONFIG.premiumCode||!c)return false;if(await hashStr(c)===CONFIG.premiumCode){SV.premium=true;SV.gems+=300;persist();updGems();banner(tr('Königspaket'),tr('Danke für deine Unterstützung!'));renderCamp();return true}return false}
 function openPrep(i){
@@ -143,7 +149,7 @@ document.addEventListener('click',async ev=>{
   if(t.closest('.mx')){closeModal();return}
   const mp=t.closest('#camp [data-map]');if(mp&&!mp.disabled){ac();sfx('click');openPrep(mp.dataset.map==='endless'?'endless':+mp.dataset.map);return}
   const mb=t.closest('[data-m]');if(mb){ac();sfx('click');const k=mb.dataset.m;
-    if(k==='daily')openDaily();else if(k==='perks')openPerks();else if(k==='ach')openAch();else if(k==='shop')openShop();
+    if(k==='daily')openDaily();else if(k==='info')openInfo();else if(k==='perks')openPerks();else if(k==='ach')openAch();else if(k==='shop')openShop();
     else if(k==='code'){const ok=await tryCode($('#pcode').value);if(ok)closeModal();else{toast(tr('Code ungültig'));sfx('err')}}return}
   const pk=t.closest('[data-perk]');if(pk&&!pk.disabled){const k=pk.dataset.perk,c=PERK_COST[SV.up[k]];if(spendGems(c)){SV.up[k]++;persist();sfx('coin');openPerks()}return}
   const go=t.closest('[data-go]');if(go){goMap(go.dataset.go==='endless'?'endless':+go.dataset.go);return}

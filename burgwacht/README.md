@@ -34,24 +34,20 @@ Die Menüs und Felder im Entwicklerportal können sich ändern. Wenn etwas ander
 
 Zusätzlich kommt höchstens alle 3 Minuten eine kurze Werbepause beim Wechsel ins Menü, nie mitten im Kampf.
 
-## Eigene Website / itch.io mit Königspaket (optional)
+## itch.io mit Königspaket (optional)
 
-Das Königspaket (keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine) wird mit einem Code freigeschaltet.
+Die Web-Version (`dist/burgwacht-web.zip`) hat keine Werbung. Stattdessen gibt es das **Königspaket** (alle Karten frei, doppelte Edelsteine, +300 Edelsteine). Verkauft wird es über itch.io, die Zahlung läuft über PayPal oder Karte, die Freischaltung per Code.
 
-1. Bei Stripe oder PayPal einen **Bezahllink** anlegen (z. B. 2,99 €). Als Weiterleitung nach dem Kauf eine Seite mit dem Code einstellen oder direkt `https://deine-seite/burgwacht/?k=DEINCODE`.
-2. Code-Hash erzeugen (Code wird ohne Leerzeichen in Großbuchstaben verglichen):
-   ```
-   python3 -c "import hashlib;print(hashlib.sha256(b'DEINCODE').hexdigest())"
-   ```
-3. Datei `web-config.js` neben `build.py` anlegen:
-   ```js
-   window.BW_CONFIG={ads:'none',premiumUrl:'https://buy.stripe.com/...',premiumCode:'<hash aus Schritt 2>',premiumPrice:'2,99 €'};
-   ```
-4. `python3 build.py` ausführen und `dist/burgwacht-web.zip` hochladen.
+- Der Code wird beim ersten `python3 build.py` zufällig erzeugt und in `publish/.premium-code` gespeichert. Im Spiel liegt nur sein Hash, nie der Code selbst.
+- `publish/Koenigspaket-Code.txt` ist die Datei, die Käufer auf itch.io herunterladen. Beide Dateien sind über `.gitignore` aus dem Repository ausgeschlossen.
+- Deine Angaben (Name, Anschrift, E-Mail, Kauf-Link, Preis) stehen in `publish/angaben.json`. Daraus entstehen beim Bauen `impressum.html`, `datenschutz.html` und `kaufbedingungen.html` in `dist/web/`. Im Spiel verlinkt sie der Knopf „Info“.
+- In der fertigen Web-Version lassen sich Kauf-Link und Preis auch direkt in `config.js` ändern, ohne neu zu bauen.
 
-Ehrlicher Hinweis: Ohne Server kann ein findiger Spieler den Code weitergeben. Für den Anfang reicht das. Bei größeren Verkaufszahlen lohnt sich eine Prüfung über einen Server.
+Ehrlicher Hinweis: Ohne Server kann ein Käufer den Code weitergeben. Für den Anfang reicht das.
 
-**Nicht beides mischen:** In der CrazyGames-Version sind keine externen Bezahllinks erlaubt. Deshalb gibt es zwei getrennte Pakete.
+**Nicht mischen:** In der CrazyGames-Version sind keine externen Bezahllinks erlaubt. Deshalb gibt es zwei getrennte Pakete.
+
+Die Schritte zum Veröffentlichen stehen in **`publish/CHECKLISTE.md`**, die fertigen Texte in **`publish/store-texte.md`**.
 
 ## Rechtliches (Österreich)
 

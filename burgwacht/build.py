@@ -42,8 +42,27 @@ VENDOR = OUT / 'vendor'
 DIST = {
     'crazygames': dict(sdk='<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>\n',
                        cfg="window.BW_CONFIG={ads:'crazygames'};"),
-    'web': dict(sdk='', cfg=(OUT / 'web-config.js').read_text() if (OUT / 'web-config.js').exists() else "window.BW_CONFIG={ads:'none'};"),
+    'web': dict(sdk='', cfg=None),
 }
+# Angaben für Rechtstexte und Königspaket
+import json, hashlib, secrets, datetime
+PUB = OUT / 'publish'
+ANG = json.loads((PUB / 'angaben.json').read_text())
+code_file = PUB / '.premium-code'
+if not code_file.exists():
+    alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    code_file.write_text('-'.join(''.join(secrets.choice(alpha) for _ in range(4)) for _ in range(3)))
+CODE = code_file.read_text().strip()
+(PUB / 'Koenigspaket-Code.txt').write_text(
+    'Danke für deinen Kauf! / Thank you for your purchase!\n\n'
+    f'Dein Code / Your code:  {CODE}\n\n'
+    'Im Spiel: Shop > Code eingeben.  In game: Shop > Enter code.\n')
+CODE_HASH = hashlib.sha256(CODE.upper().encode()).hexdigest()
+WEB_CFG = ("window.BW_CONFIG={ads:'none',legal:true,premiumUrl:" + json.dumps(ANG.get('KAUF_URL', '')) +
+           ",premiumPrice:" + json.dumps(ANG.get('PREIS', '2,99 €')) + ",premiumCode:'" + CODE_HASH + "'};\n")
+missing = [k for k in ('NAME', 'ADRESSE', 'EMAIL') if ANG[k].startswith('[')]
+if missing:
+    print('HINWEIS: in publish/angaben.json fehlen noch:', ', '.join(missing))
 final = (OUT / 'burgwacht.html').read_text()
 assert FONT_LINKS in final and THREE in final
 for name, d in DIST.items():
@@ -52,7 +71,20 @@ for name, d in DIST.items():
         shutil.rmtree(target)
     (target / 'fonts').mkdir(parents=True)
     html = final.replace(FONT_LINKS, LOCAL_FONTS).replace(THREE, d['sdk'] + '<script src="three.min.js"></script>')
-    html = html.replace('<script>\nwindow.R3D=', '<script>\n' + d['cfg'] + '\nwindow.R3D=', 1)
+    if d['cfg']:
+        html = html.replace('<script>\nwindow.R3D=', '<script>\n' + d['cfg'] + '\nwindow.R3D=', 1)
+    else:
+        html = html.replace('<script>\nwindow.R3D=', '<script src="config.js"></script>\n<script>\nwindow.R3D=', 1)
+        (target / 'config.js').write_text(WEB_CFG)
+        page = (SRC / 'legal' / '_page.html').read_text()
+        rep = dict(ANG, DATUM=datetime.date.today().strftime('%d.%m.%Y'),
+                   UID=f"<h2>UID-Nummer</h2><p>{ANG['UID']}</p>" if ANG.get('UID') else '')
+        for f, title in [('impressum', 'Impressum'), ('datenschutz', 'Datenschutz'), ('kaufbedingungen', 'Kaufbedingungen')]:
+            body = (SRC / 'legal' / f'{f}.html').read_text()
+            out = page.replace('{{TITLE}}', title).replace('{{BODY}}', body)
+            for k, v in rep.items():
+                out = out.replace('{{' + k + '}}', str(v))
+            (target / f'{f}.html').write_text(out)
     (target / 'index.html').write_text(html)
     shutil.copy(VENDOR / 'three.min.js', target)
     shutil.copy(VENDOR / 'three-LICENSE.txt', target)
