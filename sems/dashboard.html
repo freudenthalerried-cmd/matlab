@@ -14,6 +14,7 @@
 }}
 :root[data-theme="dark"]{--bg:#0f141a;--card:#18202a;--text:#e6ebf0;--muted:#8d99a6;--line:#2a3542}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card)}
 h1{font-size:18px;margin:0}
@@ -52,6 +53,14 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
 .scroll{overflow-x:auto}
 .err{color:var(--warn);font-size:13px}
 .tip{position:fixed;pointer-events:none;background:var(--text);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:6px;display:none;white-space:nowrap}
+.form{display:grid;gap:12px;max-width:520px}
+.form label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.form input{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.row{display:flex;gap:8px;align-items:center}
+.row input{flex:1}
+.hint{color:var(--muted);font-size:13px;margin:0 0 8px}
+button.primary{background:var(--bat);border-color:var(--bat);color:#fff;font-weight:600}
+.err.ok{color:var(--bat)}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px}
 </style>
 </head>
@@ -65,9 +74,29 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px
       <option value="7">7 Tage</option><option value="30">30 Tage</option><option value="365">12 Monate</option>
     </select>
     <button id="refresh" title="Aktualisieren">⟳</button>
+    <button id="settings" title="Einrichtung" hidden>⚙</button>
   </div>
 </header>
 <main>
+  <section class="card" id="setup" hidden>
+    <h2>Einrichtung</h2>
+    <p class="hint">Einmalig ausfüllen, danach startet alles automatisch. Am besten ist die
+      direkte Verbindung zum Wechselrichter im WLAN (Live-Werte alle 15 s). Der SEMS-Login
+      ist optional und bringt zusätzlich den Verlauf aus der Vergangenheit.</p>
+    <form id="setup-form" class="form">
+      <label>Wechselrichter-IP im WLAN
+        <span class="row"><input id="s-inverter" placeholder="z. B. 192.168.1.50" autocomplete="off">
+        <button type="button" id="s-search">Suchen</button></span>
+      </label>
+      <label>SEMS-Konto (E-Mail, optional)<input id="s-account" type="email" autocomplete="username"></label>
+      <label>SEMS-Passwort<input id="s-password" type="password" autocomplete="current-password" placeholder="nur bei neuem Konto nötig"></label>
+      <div class="row"><button type="submit" class="primary" id="s-save">Speichern &amp; starten</button>
+        <button type="button" id="s-cancel">Abbrechen</button></div>
+      <p class="hint">Das Passwort wird nur auf diesem Gerät gespeichert, und zwar nicht im
+        Klartext, sondern als Hash, so wie SEMS es beim Login verlangt.</p>
+      <p class="err" id="s-msg" role="status"></p>
+    </form>
+  </section>
   <section class="kpis">
     <div class="card kpi"><div class="l">PV-Leistung</div><div class="v" id="k-pv">–</div></div>
     <div class="card kpi"><div class="l">Verbrauch</div><div class="v" id="k-load">–</div></div>
@@ -278,7 +307,65 @@ async function load() {
   }
 }
 
+async function getSetup() {
+  try {
+    const r = await fetch("api/setup", {cache: "no-store"});
+    return r.ok ? await r.json() : null;
+  } catch (e) { return null; }  // kein lokaler Server (z. B. htmlpreview)
+}
+
+async function post(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.status);
+  return data;
+}
+
+function setupMsg(text, ok) { $("s-msg").textContent = text; $("s-msg").classList.toggle("ok", !!ok); }
+
+async function searchInverter() {
+  setupMsg("Suche Wechselrichter im WLAN …", true);
+  try {
+    const {inverter} = await post("api/setup/search", {});
+    if (inverter) { $("s-inverter").value = inverter; setupMsg(`Gefunden: ${inverter}`, true); }
+    else setupMsg("Kein Wechselrichter gefunden. Ist der WiFi-Stick im selben WLAN? IP sonst aus dem Router eintragen oder SEMS-Login verwenden.");
+  } catch (e) { setupMsg("Suche fehlgeschlagen: " + e.message); }
+}
+
+function openSetup(st, first) {
+  $("setup").hidden = false;
+  document.querySelectorAll("main > section:not(#setup)").forEach(el => el.hidden = first);
+  $("s-cancel").hidden = first;
+  if (first) {
+    ["station", "days", "refresh"].forEach(id => $(id).hidden = true);
+    $("mode").textContent = "Einrichtung";
+  }
+  $("s-inverter").value = st.inverter || "";
+  $("s-account").value = st.account || "";
+  if (st.fixed) { setupMsg("Datenquelle ist per Kommandozeile festgelegt (--local/--demo); Einrichtung hier gesperrt."); $("s-save").disabled = true; }
+  else if (!st.inverter) searchInverter();
+}
+
+$("setup-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("s-save").disabled = true;
+  setupMsg("Prüfe Verbindung …", true);
+  try {
+    await post("api/setup", {inverter: $("s-inverter").value, account: $("s-account").value, password: $("s-password").value});
+    setupMsg("Verbunden. Lade Dashboard …", true);
+    location.reload();
+  } catch (err) { setupMsg(err.message); $("s-save").disabled = false; }
+});
+$("s-search").addEventListener("click", searchInverter);
+$("s-cancel").addEventListener("click", () => { $("setup").hidden = true; });
+
 async function init() {
+  const st = await getSetup();
+  if (st) {
+    $("settings").hidden = false;
+    $("settings").onclick = () => openSetup(st, false);
+    if (!st.configured) return openSetup(st, true);
+  }
   try {
     const stations = await api("stations");
     $("station").innerHTML = stations.map(s => `<option value="${esc(s.id)}">${esc(s.name)}${s.capacity ? ` (${s.capacity} kWp)` : ""}</option>`).join("");

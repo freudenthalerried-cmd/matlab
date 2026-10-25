@@ -105,19 +105,41 @@ GoodWe-Wechselrichter mit WiFi-Stick antworten im Heimnetz auf UDP-Port 8899
 (Bibliothek [`goodwe`](https://pypi.org/project/goodwe/)). Vorteile: Live-Werte alle
 15 s, keine Zugangsdaten, nichts verlässt das Heimnetz.
 
-### Schnellstart
+### Installation (einmalig, danach alles automatisch)
 
-| Gerät | Start |
-|---|---|
-| Windows-PC | `sems/start-windows.bat` doppelklicken (Python von python.org nötig) |
-| Raspberry Pi / Linux | `bash sems/install-raspberry.sh` – richtet Autostart ein |
-| manuell | `pip install goodwe` und `python3 sems/server.py --local --lan` |
+**Windows:** Windows-Taste + X → „Terminal“ → einfügen → Enter:
+```powershell
+irm https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/main/sems/install-windows.ps1 | iex
+```
+Installiert bei Bedarf Python, lädt das Programm nach `%LOCALAPPDATA%\PV-Monitor`,
+legt Autostart und das Desktop-Symbol „PV-Monitor“ an und öffnet das Dashboard. Die
+Firewall-Abfrage mit „Zulassen“ bestätigen (für den Zugriff vom Handy).
 
-- `--local` ohne IP sucht den Wechselrichter automatisch (Broadcast UDP 48899).
-  Schneller und zuverlässiger mit fester IP: `--local 192.168.1.50`.
-- `--lan` macht das Dashboard im ganzen WLAN erreichbar, z. B. am Handy unter
-  `http://<IP des PCs/Pi>:8080`. Die Adresse steht beim Start in der Konsole.
-- `python3 sems/server.py --search` zeigt nur die gefundenen Wechselrichter an.
+**Raspberry Pi / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/main/sems/install-raspberry.sh | bash
+```
+
+### Was beim ersten Start passiert
+
+1. Der Server sucht den Wechselrichter im WLAN (Broadcast UDP 48899) und speichert ihn.
+2. Findet er nichts, zeigt das Dashboard die **Einrichtung**: IP eintragen oder suchen,
+   optional SEMS-Login. Die Angaben werden geprüft und erst bei Erfolg gespeichert.
+3. Ab dann startet alles automatisch und meldet sich selbst an. Über ⚙ im Dashboard
+   lässt sich die Einrichtung jederzeit ändern.
+
+Gespeichert in `%APPDATA%\PV-Monitor` bzw. `~/.config/PV-Monitor`: `config.json`
+(Wechselrichter-IP, SEMS-E-Mail und **nur der Passwort-Hash**, den SEMS beim Login
+verlangt; nicht das Klartext-Passwort), `verlauf.db` und `server.log`. Achtung: Mit dem
+Hash kann man sich trotzdem bei SEMS anmelden, die Datei also nicht weitergeben.
+
+### Manuell / Optionen
+
+`python3 sems/server.py [--lan] [--local IP[:Port]] [--demo] [--search]`
+- `--lan`: Dashboard im ganzen WLAN erreichbar, z. B. am Handy unter
+  `http://<IP des PCs/Pi>:8080` (steht beim Start in der Konsole bzw. im Log).
+- `--local` legt die Quelle fest (ohne IP: automatische Suche); die Einrichtung im
+  Dashboard ist dann gesperrt.
 
 ### Eigener Verlauf
 

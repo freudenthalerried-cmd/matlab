@@ -28,6 +28,11 @@ def signature(token):
     return base64.b64encode(f"{digest}@{ms}".encode()).decode()
 
 
+def password_hash(password):
+    """SEMS+ erwartet base64(md5_hex(passwort)) - nur dieser Wert wird gespeichert, nie das Klartext-Passwort."""
+    return base64.b64encode(hashlib.md5(password.encode()).hexdigest().encode()).decode()
+
+
 def http(method, url, headers, body=None):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
@@ -36,15 +41,14 @@ def http(method, url, headers, body=None):
 
 
 class Sems:
-    def __init__(self, account, password):
+    def __init__(self, account, password=None, pwd_hash=None):
         self.account = account
-        self.password = password
+        self.pwd_hash = pwd_hash or password_hash(password)
         self.token = None
         self.api = GATEWAY_FALLBACK
 
     def login(self):
-        # pwd = base64(md5_hex(password))
-        pwd = base64.b64encode(hashlib.md5(self.password.encode()).hexdigest().encode()).decode()
+        pwd = self.pwd_hash
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json, text/plain, */*",

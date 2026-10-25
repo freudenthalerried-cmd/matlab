@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Richtet den PV-Monitor als Dienst ein, der nach jedem Neustart automatisch läuft.
-# Usage: bash sems/install-raspberry.sh [WECHSELRICHTER-IP]   (ohne IP: automatische Suche)
+# PV-Monitor auf Raspberry Pi / Linux installieren, inkl. Autostart als Dienst.
+#   curl -fsSL https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/main/sems/install-raspberry.sh | bash
 set -euo pipefail
-DIR="$(cd "$(dirname "$0")" && pwd)"
-VENV="$DIR/.venv"
-python3 -m venv "$VENV"
-"$VENV/bin/pip" install --quiet --upgrade goodwe
+SRC="https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/main/sems"
+DIR="$HOME/pv-monitor"
+mkdir -p "$DIR"
+for f in server.py sems_client.py dashboard.html; do curl -fsSL "$SRC/$f" -o "$DIR/$f"; done
+python3 -m venv "$DIR/.venv"
+"$DIR/.venv/bin/pip" install --quiet --upgrade goodwe
 sudo tee /etc/systemd/system/pv-monitor.service >/dev/null <<UNIT
 [Unit]
 Description=PV-Monitor (GoodWe per WLAN)
@@ -15,7 +17,7 @@ Wants=network-online.target
 [Service]
 User=$USER
 WorkingDirectory=$DIR
-ExecStart=$VENV/bin/python $DIR/server.py --local ${1:-} --lan
+ExecStart=$DIR/.venv/bin/python $DIR/server.py --lan
 Restart=always
 RestartSec=30
 
@@ -23,7 +25,8 @@ RestartSec=30
 WantedBy=multi-user.target
 UNIT
 sudo systemctl daemon-reload
-sudo systemctl enable --now pv-monitor
-sleep 5
+sudo systemctl enable pv-monitor
+sudo systemctl restart pv-monitor
+sleep 8
 systemctl --no-pager --lines=5 status pv-monitor || true
-echo "Dashboard im WLAN: http://$(hostname -I | awk '{print $1}'):8080"
+echo "Fertig. Dashboard im WLAN: http://$(hostname -I | awk '{print $1}'):8080"

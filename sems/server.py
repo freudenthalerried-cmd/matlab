@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Lokaler Server für das PV-Dashboard: liefert dashboard.html und normalisierte SEMS-Daten.
+"""PV-Monitor: lokaler Server für das Dashboard (GoodWe-Wechselrichter per WLAN oder SEMS-Cloud).
 
-Start:  SEMS_USER=... SEMS_PASSWORD=... python3 sems/server.py   -> http://127.0.0.1:8080
-Lokal:  python3 sems/server.py --local [IP] [--lan]  (direkt per WLAN, braucht: pip install goodwe;
-        ohne IP wird gesucht, --lan macht das Dashboard fürs Handy im WLAN erreichbar)
-Suchen: python3 sems/server.py --search                (Wechselrichter im Netz finden)
-Demo:   python3 sems/server.py --demo
+Normalbetrieb: python3 sems/server.py --lan
+  Beim ersten Start wird der Wechselrichter im WLAN gesucht und gespeichert; klappt das nicht,
+  zeigt das Dashboard eine Einrichtungsseite (SEMS-Login). Danach läuft alles automatisch.
+Optionen: --local IP[:Port]  --demo  --search  --lan (Dashboard im ganzen WLAN erreichbar)
+Konfiguration und Verlauf: %APPDATA%\\PV-Monitor bzw. ~/.config/PV-Monitor
 """
 
 import asyncio
@@ -23,9 +23,11 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from sems_client import Sems  # noqa: E402
+from sems_client import Sems, password_hash  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+CONFIG_DIR = Path(os.environ.get("APPDATA") or Path.home() / ".config") / "PV-Monitor"
+CONFIG_FILE = CONFIG_DIR / "config.json"
 CACHE_SECONDS = 300  # SEMS rate limit: höchstens alle 5 min abfragen
 STAT_ITEMS = ["proSystemTotalStats", "proConsumStats", "proGridStats", "proPurchaseStats",
               "proSelfConsumStats", "proCharStats", "proDischarStats"]
@@ -124,11 +126,13 @@ class LocalSource(LiveSource):
     STAT_KEYS = {"proSystemTotalStats": "pv", "proConsumStats": "load", "proGridStats": "export",
                  "proPurchaseStats": "import", "proCharStats": "charge", "proDischarStats": "discharge"}
 
-    def __init__(self, host, sems=None, db_path=HERE / "verlauf.db"):
+    def __init__(self, host, sems=None, db_path=None):
         super().__init__(sems)
         self.host = host
         self.inverter = None
-        self.db_path = db_path
+        self.running = True
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        self.db_path = db_path or CONFIG_DIR / "verlauf.db"
         with self.db() as db:
             db.execute("CREATE TABLE IF NOT EXISTS daily (date TEXT PRIMARY KEY, "
                        + ", ".join(f"{c} REAL DEFAULT 0" for c in self.COLUMNS) + ")")
@@ -190,7 +194,7 @@ class LocalSource(LiveSource):
                        [add[c] * hours for c in self.COLUMNS] + [now.date().isoformat()])
 
     def poll(self):
-        while True:
+        while self.running:
             try:
                 self.record(datetime.now(), self.live("local")["flow"])
             except Exception as exc:
@@ -210,14 +214,92 @@ class LocalSource(LiveSource):
 
 
 def search():
-    """Broadcast an UDP 48899, Antwort "IP,MAC,Name". Gibt die erste IP zurück."""
-    import goodwe
+    """Broadcast an UDP 48899, Antwort "IP,MAC,Name". Gibt die erste IP zurück oder None."""
     try:
+        import goodwe
         raw = asyncio.run(goodwe.search_inverters()).decode(errors="replace").strip()
     except Exception as exc:
-        sys.exit(f"Kein Wechselrichter gefunden ({exc}). PC im selben WLAN wie der Wechselrichter?")
-    print(f"Gefunden: {raw}")
-    return raw.split(",")[0]
+        print(f"Kein Wechselrichter gefunden: {exc}", file=sys.stderr)
+        return None
+    print(f"Wechselrichter gefunden: {raw}")
+    return raw.split(",")[0] or None
+
+
+def load_config():
+    try:
+        return json.loads(CONFIG_FILE.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def save_config(cfg):
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(json.dumps(cfg, indent=2))
+    try:
+        CONFIG_FILE.chmod(0o600)  # nur der eigene Benutzer darf lesen
+    except OSError:
+        pass
+
+
+def build_source(cfg):
+    sems = Sems(cfg["account"], pwd_hash=cfg["pwd_hash"]) if cfg.get("account") and cfg.get("pwd_hash") else None
+    if cfg.get("inverter"):
+        return LocalSource(cfg["inverter"], sems)
+    return LiveSource(sems) if sems else None
+
+
+def stop(source):
+    if isinstance(source, LocalSource):
+        source.running = False
+
+
+class App:
+    """Hält die aktive Datenquelle; die Einrichtung kann sie im laufenden Betrieb austauschen."""
+
+    def __init__(self, source, cfg, fixed=False):
+        self.source, self.cfg, self.fixed = source, cfg, fixed
+        self.lock = threading.Lock()
+
+    def kind(self):
+        src = self.source
+        return ("demo" if isinstance(src, DemoSource) else "local" if isinstance(src, LocalSource)
+                else "sems" if src else "setup")
+
+    def setup(self, body):
+        """Prüft die Angaben (Verbindung bzw. Login) und speichert sie erst bei Erfolg."""
+        cfg = dict(self.cfg)
+        inverter = (body.get("inverter") or "").strip()
+        account = (body.get("account") or "").strip()
+        password = body.get("password") or ""
+        cfg["inverter"] = inverter or None
+        if account and password:
+            cfg["account"], cfg["pwd_hash"] = account, password_hash(password)
+        elif not account:
+            cfg.pop("account", None), cfg.pop("pwd_hash", None)
+        elif account != self.cfg.get("account"):
+            raise ValueError("Bitte Passwort für das neue SEMS-Konto eingeben.")
+        if not cfg.get("inverter") and not cfg.get("pwd_hash"):
+            raise ValueError("Wechselrichter-IP oder SEMS-Login angeben.")
+        if cfg.get("pwd_hash"):
+            try:
+                Sems(cfg["account"], pwd_hash=cfg["pwd_hash"]).login()
+            except Exception as exc:
+                raise ValueError(f"SEMS-Login fehlgeschlagen: {exc}") from exc
+        source = build_source(cfg)
+        if isinstance(source, LocalSource):
+            try:
+                source.live("local")
+            except Exception as exc:
+                stop(source)
+                raise ValueError(f"Wechselrichter {inverter} antwortet nicht: {exc}") from exc
+        with self.lock:
+            stop(self.source)
+            self.source, self.cfg = source, cfg
+        save_config(cfg)
+
+    def status(self):
+        return {"configured": self.source is not None, "source": self.kind(), "fixed": self.fixed,
+                "inverter": self.cfg.get("inverter"), "account": self.cfg.get("account")}
 
 
 class DemoSource:
@@ -251,24 +333,28 @@ class DemoSource:
             "proPurchaseStats": [round(c - s, 1) for c, s in zip(cons, selfc)]}}
 
 
-def make_handler(source):
+def make_handler(app):
     class Handler(BaseHTTPRequestHandler):
         def send(self, code, body, ctype="application/json; charset=utf-8"):
             data = body if isinstance(body, bytes) else json.dumps(body, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header("Content-Type", ctype)
             self.send_header("Cache-Control", "no-store")
-            self.send_header("X-Source", "demo" if isinstance(source, DemoSource)
-                             else "local" if isinstance(source, LocalSource) else "sems")
+            self.send_header("X-Source", app.kind())
             self.end_headers()
             self.wfile.write(data)
 
         def do_GET(self):
             url = urlparse(self.path)
             q = {k: v[0] for k, v in parse_qs(url.query).items()}
+            source = app.source
             try:
                 if url.path in ("/", "/dashboard.html"):
                     return self.send(200, (HERE / "dashboard.html").read_bytes(), "text/html; charset=utf-8")
+                if url.path == "/api/setup":
+                    return self.send(200, app.status())
+                if source is None and url.path.startswith("/api/"):
+                    return self.send(503, {"error": "Noch nicht eingerichtet"})
                 if url.path == "/api/stations":
                     return self.send(200, source.stations())
                 if url.path == "/api/live" and q.get("id"):
@@ -280,6 +366,23 @@ def make_handler(source):
             except Exception as exc:  # Fehler an das Dashboard durchreichen
                 self.send(502, {"error": str(exc)})
 
+        def do_POST(self):
+            try:
+                length = min(int(self.headers.get("Content-Length") or 0), 10_000)
+                body = json.loads(self.rfile.read(length) or b"{}")
+                if self.path == "/api/setup/search":
+                    return self.send(200, {"inverter": search()})
+                if self.path == "/api/setup":
+                    if app.fixed:
+                        return self.send(409, {"error": "Quelle per Kommandozeile festgelegt"})
+                    app.setup(body)
+                    return self.send(200, app.status())
+                self.send(404, {"error": "not found"})
+            except ValueError as exc:
+                self.send(400, {"error": str(exc)})
+            except Exception as exc:
+                self.send(502, {"error": str(exc)})
+
         def log_message(self, fmt, *args):
             pass
 
@@ -287,25 +390,40 @@ def make_handler(source):
 
 
 def main():
-    demo = "--demo" in sys.argv
+    if sys.stdout is None:  # pythonw (Windows-Autostart) hat keine Konsole -> Log-Datei
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        sys.stdout = sys.stderr = open(CONFIG_DIR / "server.log", "a", buffering=1, encoding="utf-8")
     if "--search" in sys.argv:
         search()
         return
+    cfg, fixed = load_config(), True
     account, password = os.environ.get("SEMS_USER"), os.environ.get("SEMS_PASSWORD")
-    if demo:
+    sems = Sems(account, password) if account and password else None
+    if "--demo" in sys.argv:
         source = DemoSource()
     elif "--local" in sys.argv:
         i = sys.argv.index("--local") + 1
         host = sys.argv[i] if i < len(sys.argv) and not sys.argv[i].startswith("--") else search()
-        source = LocalSource(host, Sems(account, password) if account and password else None)
+        if not host:
+            sys.exit("Kein Wechselrichter gefunden. PC im selben WLAN? Sonst IP angeben: --local 192.168.1.50")
+        source = LocalSource(host, sems)
+    elif sems:
+        source = LiveSource(sems)
     else:
-        if not account or not password:
-            sys.exit("SEMS_USER und SEMS_PASSWORD setzen, oder --local <IP> bzw. --demo verwenden.")
-        source = LiveSource(Sems(account, password))
+        fixed = False
+        if not cfg:  # erster Start: Wechselrichter automatisch suchen und merken
+            host = search()
+            if host:
+                cfg = {"inverter": host}
+                save_config(cfg)
+        source = build_source(cfg)
+        if source is None:
+            print("Noch nicht eingerichtet: Einrichtung im Dashboard öffnen.")
+    app = App(source, cfg, fixed)
     port = int(os.environ.get("PORT", 8080))
     bind = "0.0.0.0" if "--lan" in sys.argv else "127.0.0.1"
-    server = ThreadingHTTPServer((bind, port), make_handler(source))
-    print(f"PV-Dashboard: http://127.0.0.1:{port}  ({type(source).__name__})")
+    server = ThreadingHTTPServer((bind, port), make_handler(app))
+    print(f"PV-Dashboard: http://127.0.0.1:{port}  ({app.kind()})")
     if bind == "0.0.0.0":
         import socket
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
