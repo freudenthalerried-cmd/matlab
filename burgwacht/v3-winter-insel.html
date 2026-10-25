@@ -256,7 +256,7 @@ const I18N={
   'Goblin':'Goblin','Wolf':'Wolf','Ork':'Orc','Fledermaus':'Bat','Dunkler Ritter':'Dark Knight','Troll':'Troll','Drache':'Dragon',
   'Grüntal':'Green Vale','Herbstwald':'Autumn Woods','Wüstenpass':'Desert Pass','Flusstal':'River Valley','Ascheberg':'Ash Mountain',
   // HUD & Panels
-  'Welle':'Wave','Los geht\'s!':'Let\'s go!','Starten':'Start','Zuerst bauen, dann los!':'Build first, then go!','Bauen ✓':'Build ✓','Spielen':'Play','Pause':'Paused','Weiter':'Continue','Sieg!':'Victory!','Nochmal':'Play again',
+  'Welle':'Wave','Los geht\'s!':'Let\'s go!','Starten':'Start','Zuerst bauen, dann los!':'Build first, then go!','Bauen ✓':'Build ✓','Spielen':'Play','Kaufen':'Buy','Datenschutz-Einstellungen':'Privacy settings','Käufe wiederherstellen':'Restore purchases','Käufe werden geprüft …':'Checking purchases …','Kauf gerade nicht möglich':'Purchase not possible right now','Pause':'Paused','Weiter':'Continue','Sieg!':'Victory!','Nochmal':'Play again',
   'Bau dein Reich. Halte die Burg. Überlebe 20 Wellen.':'Build your realm. Hold the castle. Survive 20 waves.','Wirtschaft':'Economy','Verteidigung':'Defense','Burg ausbauen':'Upgrade castle',
   'Sägewerke neben Wäldern, Goldminen neben Felsen bringen Bonus.':'Sawmills next to forests and gold mines next to rocks earn a bonus.',
   'Türme stoppen Goblins, Ritter, Fledermäuse und Bosse.':'Towers stop goblins, knights, bats and bosses.','Schaltet Blitztürme, Stufe-3-Türme und die Burg-Balliste frei.':'Unlocks tesla towers, level 3 towers and the castle ballista.',
@@ -884,11 +884,13 @@ let ADMUTE=false;
 const ADS={mode:'none',sdk:null,busy:false,lastMid:Date.now(),
   async init(){const m=CONFIG.ads;
     if(m==='crazygames'&&window.CrazyGames&&window.CrazyGames.SDK){try{await window.CrazyGames.SDK.init();this.sdk=window.CrazyGames.SDK;this.mode=this.sdk.environment==='disabled'?'none':'cg';SV=loadSave()}catch(e){this.mode='none'}}
+    else if(m==='native'&&window.BWNative)this.mode='native';
     else if(m==='demo')this.mode='demo'},
   can(){return this.mode!=='none'&&!this.busy},
   _run(type){if(!this.can())return Promise.resolve(false);this.busy=true;const wasP=S.paused;S.paused=true;ADMUTE=true;try{AC&&AC.suspend()}catch(e){}
     return new Promise(res=>{const done=ok=>{this.busy=false;S.paused=wasP;ADMUTE=false;try{AC&&AC.resume()}catch(e){}res(ok)};
       if(this.mode==='demo')return demoAd(type,()=>done(true));
+      if(this.mode==='native'){let fin=false;const end=ok=>{if(!fin){fin=true;done(ok)}};window.bwAdDone=ok=>end(!!ok);setTimeout(()=>end(false),90000);try{BWNative.showAd(type==='rewarded'?'rewarded':'interstitial')}catch(e){end(false)}return}
       try{this.sdk.ad.requestAd(type,{adStarted(){},adFinished(){done(true)},adError(){done(false)}})}catch(e){done(false)}})},
   rewarded(){return this._run('rewarded')},
   midgame(){if(this.mode==='none'||SV.premium||Date.now()-this.lastMid<180000)return Promise.resolve(false);this.lastMid=Date.now();return this._run('midgame')},
@@ -965,13 +967,16 @@ function openShop(){
   modal(`<h2>${tr('Shop')}</h2><p class="sub">${gemIc}<b class="gemn">${fmt(SV.gems)}</b></p>
     ${ADS.mode!=='none'?`<div class="shopi"><span><b>${tr('Gratis-Edelsteine')}</b><small>${tr('Kurzes Video ansehen')} (${ad}/5 ${tr('heute')})</small></span>${ad<5?adBtn('+15','gems'):`<span class="rw">${tr('Morgen wieder')}</span>`}</div>`:''}
     ${SV.premium?`<div class="shopi prem"><span><b>${tr('Königspaket aktiv')}</b><small>${tr('Keine Werbepausen, alle Karten frei, doppelte Edelsteine.')}</small></span><span class="rw">✓</span></div>`:
-      (CONFIG.premiumUrl?`<div class="shopi prem"><span><b>${tr('Königspaket')}</b><small>${tr(ADS.mode==='none'?'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.')}</small></span><a class="okb" href="${CONFIG.premiumUrl}" target="_blank" rel="noopener">${CONFIG.premiumPrice}</a></div>`:'')
+      (nativeBuy()?`<div class="shopi prem"><span><b>${tr('Königspaket')}</b><small>${tr('Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.')}</small></span><button class="okb" data-m="nbuy">${esc(BWNative.price()||tr('Kaufen'))}</button></div>
+        <p class="sub"><button class="mb" data-m="nrestore">${tr('Käufe wiederherstellen')}</button></p>`:'')
+      +(CONFIG.premiumUrl?`<div class="shopi prem"><span><b>${tr('Königspaket')}</b><small>${tr(ADS.mode==='none'?'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.')}</small></span><a class="okb" href="${CONFIG.premiumUrl}" target="_blank" rel="noopener">${CONFIG.premiumPrice}</a></div>`:'')
       +(CONFIG.premiumCode?`<div class="shopi"><span><b>${tr('Code eingeben')}</b><small>${tr('Den Code bekommst du nach dem Kauf.')}</small></span><span class="code"><input id="pcode" maxlength="24" autocomplete="off" aria-label="Code"><button class="okb" data-m="code">OK</button></span></div>`:'')
       +(CONFIG.legal&&CONFIG.premiumUrl?`<p class="sub"><a href="kaufbedingungen.html" target="_blank" rel="noopener">${tr('Kaufbedingungen')}</a></p>`:'')}`)}
 function openInfo(){modal(`<h2>${tr('Info')}</h2><div class="achs">
   <a class="shopi" href="impressum.html" target="_blank" rel="noopener"><span><b>${tr('Impressum')}</b></span></a>
   <a class="shopi" href="datenschutz.html" target="_blank" rel="noopener"><span><b>${tr('Datenschutz')}</b></span></a>
   ${CONFIG.premiumUrl?`<a class="shopi" href="kaufbedingungen.html" target="_blank" rel="noopener"><span><b>${tr('Kaufbedingungen')}</b></span></a>`:''}</div>
+  ${(()=>{try{return window.BWNative&&BWNative.hasPrivacyOptions()}catch(e){return false}})()?`<button class="shopi" data-m="nprivacy"><span><b>${tr('Datenschutz-Einstellungen')}</b></span></button>`:''}
   <p class="sub">${tr('Dein Fortschritt wird nur in diesem Browser gespeichert.')}</p><p class="sub">Three.js (MIT) · Lilita One, Nunito (SIL OFL)</p>`)}
 async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s.trim().toUpperCase()));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function tryCode(c){if(!CONFIG.premiumCode||!c)return false;if(await hashStr(c)===CONFIG.premiumCode){SV.premium=true;SV.gems+=300;persist();updGems();banner(tr('Königspaket'),tr('Danke für deine Unterstützung!'));renderCamp();return true}return false}
@@ -1016,6 +1021,9 @@ document.addEventListener('click',async ev=>{
   const mp=t.closest('#camp [data-map]');if(mp&&!mp.disabled){ac();sfx('click');openPrep(mp.dataset.map==='endless'?'endless':+mp.dataset.map);return}
   const mb=t.closest('[data-m]');if(mb){ac();sfx('click');const k=mb.dataset.m;
     if(k==='daily')openDaily();else if(k==='board')openBoard();else if(k==='info')openInfo();else if(k==='perks')openPerks();else if(k==='ach')openAch();else if(k==='shop')openShop();
+    else if(k==='nprivacy'){try{BWNative.privacyOptions()}catch(e){}}
+    else if(k==='nbuy'){try{BWNative.buy()}catch(e){toast(tr('Kauf gerade nicht möglich'))}}
+    else if(k==='nrestore'){try{BWNative.restore();toast(tr('Käufe werden geprüft …'))}catch(e){}}
     else if(k==='code'){const ok=await tryCode($('#pcode').value);if(ok)closeModal();else{toast(tr('Code ungültig'));sfx('err')}}return}
   const pk=t.closest('[data-perk]');if(pk&&!pk.disabled){const k=pk.dataset.perk,c=PERK_COST[SV.up[k]];if(spendGems(c)){SV.up[k]++;persist();sfx('coin');openPerks()}return}
   const go=t.closest('[data-go]');if(go){goMap(go.dataset.go==='endless'?'endless':+go.dataset.go);return}
@@ -1030,6 +1038,12 @@ document.addEventListener('click',async ev=>{
     return}
 });
 
+// Brücke zur Android-App (Google Play)
+const nativeBuy=()=>{try{return!!(window.BWNative&&BWNative.canBuy())}catch(e){return false}};
+window.bwPremium=function(){if(SV.premium)return;SV.premium=true;SV.gems+=300;persist();updGems();banner(tr('Königspaket'),tr('Danke für deine Unterstützung!'));renderCamp();if(!$('#modal').hidden)closeModal()};
+window.bwBack=function(){if(!$('#modal').hidden){closeModal();return true}if(!$('#panel').hidden){S.sel=null;hidePanel();return true}
+  if(S.buildSel||S.spellSel||S.heroSel){cancel();return true}if(!$('#end').hidden){metaBack();return true}
+  if($('#start').hidden&&S.running&&!S.over){if(!S.paused)setPause(true);else{$('#start').hidden=false;S.running=false;ADS.stop();renderCamp()}return true}return false};
 function metaBoot(){
   const tag=$('.tag');tag.textContent=tr('Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.');
   const c=document.createElement('div');c.id='camp';$('.how').replaceWith(c);$('#play').hidden=true;$('#again').textContent=tr('Zur Kartenwahl');
