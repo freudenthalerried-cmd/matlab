@@ -2,7 +2,8 @@
 """Lokaler Server für das PV-Dashboard: liefert dashboard.html und normalisierte SEMS-Daten.
 
 Start:  SEMS_USER=... SEMS_PASSWORD=... python3 sems/server.py   -> http://127.0.0.1:8080
-Lokal:  python3 sems/server.py --local 192.168.1.50   (direkt per WLAN, braucht: pip install goodwe)
+Lokal:  python3 sems/server.py --local [IP] [--lan]  (direkt per WLAN, braucht: pip install goodwe;
+        ohne IP wird gesucht, --lan macht das Dashboard fürs Handy im WLAN erreichbar)
 Suchen: python3 sems/server.py --search                (Wechselrichter im Netz finden)
 Demo:   python3 sems/server.py --demo
 """
@@ -112,17 +113,37 @@ class LiveSource:
 
 
 class LocalSource(LiveSource):
-    """Live-Werte direkt vom Wechselrichter (UDP 8899 über den WLAN-Stick), Verlauf optional aus SEMS."""
+    """Live-Werte direkt vom Wechselrichter (UDP 8899 über den WLAN-Stick).
 
-    def __init__(self, host, sems=None):
+    Ein Hintergrund-Thread liest alle POLL_SECONDS und summiert die Energien pro Tag in
+    verlauf.db (SQLite) - so gibt es Tagesbalken auch ganz ohne Cloud.
+    """
+
+    POLL_SECONDS = 30
+    COLUMNS = ("pv", "load", "export", "import", "charge", "discharge")
+    STAT_KEYS = {"proSystemTotalStats": "pv", "proConsumStats": "load", "proGridStats": "export",
+                 "proPurchaseStats": "import", "proCharStats": "charge", "proDischarStats": "discharge"}
+
+    def __init__(self, host, sems=None, db_path=HERE / "verlauf.db"):
         super().__init__(sems)
         self.host = host
         self.inverter = None
+        self.db_path = db_path
+        with self.db() as db:
+            db.execute("CREATE TABLE IF NOT EXISTS daily (date TEXT PRIMARY KEY, "
+                       + ", ".join(f"{c} REAL DEFAULT 0" for c in self.COLUMNS) + ")")
+        self.last = None  # (zeitpunkt, flow) der letzten Messung
+        threading.Thread(target=self.poll, daemon=True).start()
+
+    def db(self):
+        import sqlite3
+        return sqlite3.connect(self.db_path)
 
     async def _read(self):
         import goodwe
         if self.inverter is None:
-            self.inverter = await goodwe.connect(self.host)
+            host, _, port = self.host.partition(":")  # "IP:502" für Modbus-TCP-Sticks
+            self.inverter = await (goodwe.connect(host, int(port)) if port else goodwe.connect(host))
         return await self.inverter.read_runtime_data()
 
     def stations(self):
@@ -152,19 +173,51 @@ class LocalSource(LiveSource):
             self.inverter = None  # beim nächsten Versuch neu verbinden
             raise
 
+    def record(self, now, flow):
+        """Leistung (kW) x Zeit seit letzter Messung = Energie (kWh), aufgeteilt nach Richtung."""
+        prev, self.last = self.last, (now, flow)
+        if prev is None or prev[0].date() != now.date():
+            return
+        hours = (now - prev[0]).total_seconds() / 3600
+        if not 0 < hours <= 0.25:  # Lücke (Wechselrichter nachts aus o. Ä.) nicht hochrechnen
+            return
+        g, b = flow.get("grid") or 0, flow.get("battery") or 0
+        add = {"pv": flow.get("pv") or 0, "load": flow.get("load") or 0,
+               "export": max(g, 0), "import": max(-g, 0), "charge": max(b, 0), "discharge": max(-b, 0)}
+        with self.db() as db:
+            db.execute("INSERT OR IGNORE INTO daily (date) VALUES (?)", (now.date().isoformat(),))
+            db.execute("UPDATE daily SET " + ", ".join(f"{c} = {c} + ?" for c in self.COLUMNS) + " WHERE date = ?",
+                       [add[c] * hours for c in self.COLUMNS] + [now.date().isoformat()])
+
+    def poll(self):
+        while True:
+            try:
+                self.record(datetime.now(), self.live("local")["flow"])
+            except Exception as exc:
+                print(f"Wechselrichter nicht erreichbar: {exc}", file=sys.stderr)
+            time.sleep(self.POLL_SECONDS)
+
     def stats(self, sid, days):
         if self.sems and sid != "local":
             return super().stats(sid, days)
-        return {"dates": [], "series": {}}
+        dates = [(date.today() - timedelta(days=days - 1 - i)).isoformat() for i in range(days)]
+        with self.db() as db:
+            rows = {r[0]: r[1:] for r in db.execute(
+                "SELECT date, " + ", ".join(self.COLUMNS) + " FROM daily WHERE date >= ?", (dates[0],))}
+        return {"dates": dates, "series": {
+            key: [round(rows[d][self.COLUMNS.index(col)], 2) if d in rows else None for d in dates]
+            for key, col in self.STAT_KEYS.items()}}
 
 
 def search():
+    """Broadcast an UDP 48899, Antwort "IP,MAC,Name". Gibt die erste IP zurück."""
     import goodwe
     try:
-        raw = asyncio.run(goodwe.search_inverters())
+        raw = asyncio.run(goodwe.search_inverters()).decode(errors="replace").strip()
     except Exception as exc:
         sys.exit(f"Kein Wechselrichter gefunden ({exc}). PC im selben WLAN wie der Wechselrichter?")
-    print(raw.decode(errors="replace"))  # Format: IP,MAC,Name
+    print(f"Gefunden: {raw}")
+    return raw.split(",")[0]
 
 
 class DemoSource:
@@ -205,7 +258,8 @@ def make_handler(source):
             self.send_response(code)
             self.send_header("Content-Type", ctype)
             self.send_header("Cache-Control", "no-store")
-            self.send_header("X-Source", "demo" if isinstance(source, DemoSource) else "sems")
+            self.send_header("X-Source", "demo" if isinstance(source, DemoSource)
+                             else "local" if isinstance(source, LocalSource) else "sems")
             self.end_headers()
             self.wfile.write(data)
 
@@ -235,20 +289,28 @@ def make_handler(source):
 def main():
     demo = "--demo" in sys.argv
     if "--search" in sys.argv:
-        return search()
+        search()
+        return
     account, password = os.environ.get("SEMS_USER"), os.environ.get("SEMS_PASSWORD")
     if demo:
         source = DemoSource()
     elif "--local" in sys.argv:
-        host = sys.argv[sys.argv.index("--local") + 1]
+        i = sys.argv.index("--local") + 1
+        host = sys.argv[i] if i < len(sys.argv) and not sys.argv[i].startswith("--") else search()
         source = LocalSource(host, Sems(account, password) if account and password else None)
     else:
         if not account or not password:
             sys.exit("SEMS_USER und SEMS_PASSWORD setzen, oder --local <IP> bzw. --demo verwenden.")
         source = LiveSource(Sems(account, password))
     port = int(os.environ.get("PORT", 8080))
-    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(source))
+    bind = "0.0.0.0" if "--lan" in sys.argv else "127.0.0.1"
+    server = ThreadingHTTPServer((bind, port), make_handler(source))
     print(f"PV-Dashboard: http://127.0.0.1:{port}  ({type(source).__name__})")
+    if bind == "0.0.0.0":
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("10.255.255.255", 1))  # sendet nichts, ermittelt nur die eigene LAN-IP
+            print(f"Im WLAN (Handy):  http://{sock.getsockname()[0]}:{port}")
     server.serve_forever()
 
 

@@ -107,7 +107,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px
     <div class="err" id="error"></div>
   </section>
 </main>
-<footer>Daten über die SEMS+-API (inoffiziell). Aktualisierung alle 5 min. Quelle: lokaler Server, sonst GitHub-Snapshot (alle 15 min), sonst Demo.</footer>
+<footer>Quelle: Wechselrichter per WLAN (alle 15 s) oder SEMS-Cloud (alle 5 min) über den lokalen Server, sonst Demo.</footer>
 <div class="tip" id="tip"></div>
 <script>
 const SERIES = [
@@ -120,7 +120,7 @@ const $ = id => document.getElementById(id);
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const fmt = (v, unit, d = 2) => v == null ? "–" : `${Number(v).toLocaleString("de-AT", {maximumFractionDigits: d})} ${unit}`;
 const SNAPSHOT_URL = "https://raw.githubusercontent.com/freudenthalerried-cmd/matlab/sems-data/live.json";
-let source = "server", serverDemo = false, snapshot = null;
+let source = "server", serverDemo = false, serverLocal = false, snapshot = null;
 
 // ---- Demo-Daten, wenn weder Server noch Snapshot erreichbar sind ----
 function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
@@ -153,6 +153,7 @@ async function api(path) {
     try {
       const r = await fetch("api/" + path);
       serverDemo = r.headers.get("X-Source") === "demo";
+      serverLocal = r.headers.get("X-Source") === "local";
       const body = await r.json();
       if (!r.ok) throw new Error(body.error || r.status);
       return body;
@@ -248,7 +249,10 @@ function renderStats(d) {
       data-tip="${esc(d.dates[i])} · ${label}: ${fmt(v, "kWh", 1)}"/>`;
   }));
   svg.innerHTML = out;
-  if (!series.length) { $("legend").textContent = "Kein Verlauf: nur Live-Werte vom Wechselrichter (für Verlauf zusätzlich SEMS-Login setzen)."; return; }
+  if (!series.some(([k]) => d.series[k].some(v => v != null))) {
+    $("legend").textContent = serverLocal ? "Verlauf wird aufgebaut: Der Server speichert ab jetzt laufend, die ersten Balken erscheinen heute." : "Keine Verlaufsdaten.";
+    return;
+  }
   $("legend").innerHTML = series.map(([k, label, c]) => {
     const total = d.series[k].reduce((a, v) => a + (v || 0), 0);
     return `<span><i style="background:${css(c)}"></i>${label}: ${fmt(total, "kWh", 0)}</span>`;
@@ -283,7 +287,7 @@ async function init() {
     return;
   }
   await load();
-  setInterval(load, 300000);
+  setInterval(load, serverLocal ? 15000 : 300000);  // lokal: alle 15 s, Cloud: Rate-Limit
 }
 
 ["station", "days"].forEach(id => $(id).addEventListener("change", load));

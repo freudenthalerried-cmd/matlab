@@ -99,26 +99,46 @@ python3 sems/server.py --demo   # ohne Account, mit Beispieldaten
 - Vorzeichen (unverifiziert): `pGrid > 0` = Einspeisung, `pBat > 0` = Laden. Falls die
   Pfeile verkehrt laufen, in `renderLive()` in `dashboard.html` umdrehen.
 
-## Direkt zum Wechselrichter (WLAN, ohne Cloud)
+## Direkt zum Wechselrichter (WLAN, ohne Cloud) – empfohlen
 
 GoodWe-Wechselrichter mit WiFi-Stick antworten im Heimnetz auf UDP-Port 8899
-(Bibliothek [`goodwe`](https://pypi.org/project/goodwe/)). Vorteile: Werte alle 10 s,
-keine Zugangsdaten, nichts verlässt das Heimnetz.
+(Bibliothek [`goodwe`](https://pypi.org/project/goodwe/)). Vorteile: Live-Werte alle
+15 s, keine Zugangsdaten, nichts verlässt das Heimnetz.
 
-```bash
-pip install goodwe
-python3 sems/server.py --search              # findet IP: "192.168.1.50,MAC,Solar-WiFi"
-python3 sems/server.py --local 192.168.1.50  # Dashboard: http://127.0.0.1:8080
-# mit SEMS_USER/SEMS_PASSWORD zusätzlich: Verlauf (Tagesbalken) aus der Cloud
-```
+### Schnellstart
 
-Voraussetzungen:
-- PC/Raspberry Pi im **selben WLAN** wie der Wechselrichter.
-- Der WiFi-Stick ist im Heim-WLAN angemeldet. Falls nicht: mit dem WLAN
-  `Solar-WiFi…` verbinden (Passwort meist `12345678`), im Browser `10.10.100.253`
-  öffnen (Login `admin`/`admin`) oder die App „SolarGo“ verwenden und dort das
-  Heim-WLAN eintragen.
-- Tipp: im Router eine feste IP für den Wechselrichter vergeben.
+| Gerät | Start |
+|---|---|
+| Windows-PC | `sems/start-windows.bat` doppelklicken (Python von python.org nötig) |
+| Raspberry Pi / Linux | `bash sems/install-raspberry.sh` – richtet Autostart ein |
+| manuell | `pip install goodwe` und `python3 sems/server.py --local --lan` |
 
-Vorzeichen laut `goodwe`-Bibliothek: `active_power` > 0 = Einspeisung,
-`pbattery1` > 0 = Entladen (im Dashboard umgerechnet auf > 0 = Laden).
+- `--local` ohne IP sucht den Wechselrichter automatisch (Broadcast UDP 48899).
+  Schneller und zuverlässiger mit fester IP: `--local 192.168.1.50`.
+- `--lan` macht das Dashboard im ganzen WLAN erreichbar, z. B. am Handy unter
+  `http://<IP des PCs/Pi>:8080`. Die Adresse steht beim Start in der Konsole.
+- `python3 sems/server.py --search` zeigt nur die gefundenen Wechselrichter an.
+
+### Eigener Verlauf
+
+Der Server liest alle 30 s und summiert PV, Verbrauch, Einspeisung, Netzbezug und
+Akku pro Tag in `sems/verlauf.db` (SQLite). Daraus entstehen die Tagesbalken, ganz
+ohne Cloud. Der Verlauf beginnt mit dem ersten Start; Lücken über 15 min (PC aus)
+werden nicht hochgerechnet. Mit `SEMS_USER`/`SEMS_PASSWORD` kommt der Verlauf
+stattdessen aus der SEMS-Cloud (inkl. Vergangenheit).
+
+### Wechselrichter ins WLAN bringen
+
+Falls `--search` nichts findet, ist der WiFi-Stick nicht im Heim-WLAN:
+1. Mit dem WLAN `Solar-WiFi…` verbinden (Passwort meist `12345678`).
+2. Im Browser `10.10.100.253` öffnen (Login `admin`/`admin`) oder die App „SolarGo“
+   verwenden und dort das Heim-WLAN eintragen (nur 2,4 GHz).
+3. Im Router eine feste IP für den Wechselrichter vergeben.
+
+Hinweis: Manche neuere Sticks (z. B. WiFi/LAN Kit-20) sprechen nur Modbus-TCP auf
+Port 502. Dann den Port mit angeben: `--local 192.168.1.50:502`.
+
+### Vorzeichen
+
+Laut `goodwe`-Bibliothek ist `active_power` > 0 = Einspeisung und `pbattery1` > 0 =
+Entladen; das Dashboard rechnet um auf Akku > 0 = Laden.
