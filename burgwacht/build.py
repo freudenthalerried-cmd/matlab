@@ -72,6 +72,30 @@ if missing:
     print('HINWEIS: in publish/angaben.json fehlen noch:', ', '.join(missing))
 final = (OUT / 'burgwacht.html').read_text()
 assert FONT_LINKS in final and THREE in final
+DIST['android'] = dict(sdk='', cfg="window.BW_CONFIG={ads:'native',legal:true,board:" + BOARD + "};")
+APP_TEXT = ('<h2>Werbung in der App (Google AdMob)</h2><p>Die Android-App zeigt Werbung über Google AdMob (Google Ireland Limited, Gordon House, '
+            'Barrow Street, Dublin 4, Irland). Beim ersten Start fragt dich die App, ob personalisierte Werbung erlaubt ist; du kannst die Auswahl in den '
+            'Einstellungen jederzeit ändern. Dabei können Geräte-Kennungen, ungefährer Standort und Nutzungsdaten verarbeitet werden. Rechtsgrundlage ist '
+            'deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) bzw. bei nicht personalisierter Werbung unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO). '
+            'Details: policies.google.com/privacy</p><h2>Käufe in der App (Google Play)</h2><p>Das Königspaket wird über Google Play Billing verkauft. '
+            'Die Zahlung wickelt Google ab; wir erhalten keine Zahlungsdaten, nur die Bestätigung des Kaufs.</p>')
+def render_legal(target, app):
+    page = (SRC / 'legal' / '_page.html').read_text()
+    rep = dict(ANG, DATUM=datetime.date.today().strftime('%d.%m.%Y'),
+               UID=f"<h2>UID-Nummer</h2><p>{ANG['UID']}</p>" if ANG.get('UID') else '',
+               HOSTER='Google Play (Google Ireland Limited)' if app else ANG['HOSTER'],
+               SHOP='Google Play' if app else ANG['SHOP'],
+               TRACKING_TEXT='' if app else '<p>Das Spiel verwendet keine Cookies, kein Tracking, keine Analyse-Werkzeuge und keine Werbung.</p>',
+               APP_TEXT=APP_TEXT if app else '',
+               BOARD_TEXT=('<h2>Bestenliste</h2><p>Wenn du dich nach einer Runde im Endlos-Modus in die Bestenliste einträgst, speichern wir den von dir gewählten '
+                           'Spielernamen, die erreichte Welle, die Karte und den Zeitpunkt in einer Datenbank bei Supabase Inc. (Rechenzentrum in der EU). '
+                           'Rechtsgrundlage ist deine Einwilligung durch das Eintragen (Art. 6 Abs. 1 lit. a DSGVO). Die Einträge sind für alle Spieler sichtbar. '
+                           'Möchtest du einen Eintrag löschen lassen, schreib an ' + ANG['EMAIL'] + '.</p>') if BOARD != 'null' else '')
+    for f, title in [('impressum', 'Impressum'), ('datenschutz', 'Datenschutz'), ('kaufbedingungen', 'Kaufbedingungen')]:
+        out = page.replace('{{TITLE}}', title).replace('{{BODY}}', (SRC / 'legal' / f'{f}.html').read_text())
+        for k, v in rep.items():
+            out = out.replace('{{' + k + '}}', str(v))
+        (target / f'{f}.html').write_text(out)
 for name, d in DIST.items():
     target = OUT / 'dist' / name
     if target.exists():
@@ -83,24 +107,16 @@ for name, d in DIST.items():
     else:
         html = html.replace('<script>\nwindow.R3D=', '<script src="config.js"></script>\n<script>\nwindow.R3D=', 1)
         (target / 'config.js').write_text(WEB_CFG)
-        page = (SRC / 'legal' / '_page.html').read_text()
-        rep = dict(ANG, DATUM=datetime.date.today().strftime('%d.%m.%Y'),
-                   UID=f"<h2>UID-Nummer</h2><p>{ANG['UID']}</p>" if ANG.get('UID') else '',
-                   BOARD_TEXT=('<h2>Bestenliste</h2><p>Wenn du dich nach einer Runde im Endlos-Modus in die Bestenliste einträgst, speichern wir den von dir gewählten '
-                               'Spielernamen, die erreichte Welle, die Karte und den Zeitpunkt in einer Datenbank bei Supabase Inc. (Rechenzentrum in der EU). '
-                               'Rechtsgrundlage ist deine Einwilligung durch das Eintragen (Art. 6 Abs. 1 lit. a DSGVO). Die Einträge sind für alle Spieler sichtbar. '
-                               'Möchtest du einen Eintrag löschen lassen, schreib an ' + ANG['EMAIL'] + '.</p>') if BOARD != 'null' else '')
-        for f, title in [('impressum', 'Impressum'), ('datenschutz', 'Datenschutz'), ('kaufbedingungen', 'Kaufbedingungen')]:
-            body = (SRC / 'legal' / f'{f}.html').read_text()
-            out = page.replace('{{TITLE}}', title).replace('{{BODY}}', body)
-            for k, v in rep.items():
-                out = out.replace('{{' + k + '}}', str(v))
-            (target / f'{f}.html').write_text(out)
+    if name != 'crazygames':
+        render_legal(target, name == 'android')
     (target / 'index.html').write_text(html)
     shutil.copy(VENDOR / 'three.min.js', target)
     shutil.copy(VENDOR / 'three-LICENSE.txt', target)
     for f in (VENDOR / 'fonts').iterdir():
         shutil.copy(f, target / 'fonts')
+    if name == 'android':
+        print('dist android (Assets für die App)')
+        continue
     zpath = OUT / 'dist' / f'burgwacht-{name}.zip'
     with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
         for f in sorted(target.rglob('*')):

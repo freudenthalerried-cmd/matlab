@@ -1,2 +1,6 @@
 burgwacht/publish/.premium-code
 burgwacht/publish/Koenigspaket-Code.txt
+burgwacht-android/app/src/main/assets/game/
+burgwacht-android/**/build/
+burgwacht-android/.gradle/
+burgwacht-android/upload-keystore.jks
