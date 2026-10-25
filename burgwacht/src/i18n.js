@@ -9,7 +9,7 @@ const I18N={
   'Goblin':'Goblin','Wolf':'Wolf','Ork':'Orc','Fledermaus':'Bat','Dunkler Ritter':'Dark Knight','Troll':'Troll','Drache':'Dragon',
   'Grüntal':'Green Vale','Herbstwald':'Autumn Woods','Wüstenpass':'Desert Pass','Flusstal':'River Valley','Ascheberg':'Ash Mountain',
   // HUD & Panels
-  'Welle':'Wave','Los geht\'s!':'Let\'s go!','Starten':'Start','Zuerst bauen, dann los!':'Build first, then go!','Bauen ✓':'Build ✓','Spielen':'Play','Sieg!':'Victory!','Nochmal':'Play again',
+  'Welle':'Wave','Los geht\'s!':'Let\'s go!','Starten':'Start','Zuerst bauen, dann los!':'Build first, then go!','Bauen ✓':'Build ✓','Spielen':'Play','Pause':'Paused','Weiter':'Continue','Sieg!':'Victory!','Nochmal':'Play again',
   'Bau dein Reich. Halte die Burg. Überlebe 20 Wellen.':'Build your realm. Hold the castle. Survive 20 waves.','Wirtschaft':'Economy','Verteidigung':'Defense','Burg ausbauen':'Upgrade castle',
   'Sägewerke neben Wäldern, Goldminen neben Felsen bringen Bonus.':'Sawmills next to forests and gold mines next to rocks earn a bonus.',
   'Türme stoppen Goblins, Ritter, Fledermäuse und Bosse.':'Towers stop goblins, knights, bats and bosses.','Schaltet Blitztürme, Stufe-3-Türme und die Burg-Balliste frei.':'Unlocks tesla towers, level 3 towers and the castle ballista.',

@@ -145,6 +145,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
 #confirm button{height:44px;border-radius:12px;border:3px solid #1a3a08;font-family:var(--f-display);font-size:18px;color:#fff;cursor:pointer;padding:0 14px;text-shadow:0 2px 0 rgba(0,0,0,.35)}
 #cfok{background:linear-gradient(#9cf36a,#3aa83a);box-shadow:0 4px 0 #1b5e22}
 #cfno{background:linear-gradient(#ff7a7a,#c9303f);border-color:#4a0a12!important;box-shadow:0 4px 0 #7a1420}
+#pauseov{z-index:9;background:rgba(12,6,26,.6)}
+.ptitle{font-family:var(--f-display);font-weight:400;font-size:64px;margin:0 0 18px;color:#fff;-webkit-text-stroke:2px #1c1230;text-shadow:0 5px 0 #1c1230}
 @media (max-width:720px){
   .res{height:32px;font-size:16px;min-width:0;padding:0 10px 0 5px}.res .ic{width:20px;height:20px}.res .rate{display:none}
   .pill{height:32px;font-size:15px;padding:0 9px}.pill .ic{width:19px;height:19px}.pill small{display:none}
@@ -205,6 +207,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
 </div>
 
 <div id="confirm" hidden><span id="cfinfo"></span><button id="cfok" aria-label="Hier bauen">Bauen ✓</button><button id="cfno" aria-label="Abbrechen">✕</button></div>
+<div id="pauseov" class="screen" hidden><div class="box"><h2 class="ptitle">Pause</h2><button class="big" id="resume">Weiter</button></div></div>
 <div id="panel" hidden></div>
 <div id="banner"></div>
 <div id="toast"></div>

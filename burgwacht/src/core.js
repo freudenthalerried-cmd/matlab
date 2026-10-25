@@ -393,6 +393,7 @@ function updUI(){
   if(FEAT.hero){const h=heroU(),el=$('#sp-hero');if(h&&el){el.querySelector('.cd').style.setProperty('--p',h.dead?(h.rt/15*100)+'%':'0%');el.classList.toggle('sel',S.heroSel);$('#hlv').textContent=h.dead?Math.ceil(h.rt)+' s':trx('Stufe '+h.lvl)}}
   if(FEAT.campaign)metaUI();
   document.body.classList.toggle('menu',!$('#start').hidden||!$('#end').hidden);
+  $('#pauseov').hidden=!(S.paused&&S.running&&!S.over&&!ADS.busy&&$('#start').hidden&&$('#end').hidden);
   $('#bspeed').textContent=S.speed+'×';$('#bpause').textContent=S.paused?'▶':'II';$('#bmute').textContent=muted?'×':'♪';$('#bnight').textContent=NIGHT?'☾':'☀';
 }
 function dockVar(){const r=$('#cards').getBoundingClientRect();if(r.height)document.documentElement.style.setProperty('--dockTop',Math.round(innerHeight-r.top+2)+'px')}
@@ -485,14 +486,17 @@ function castSpell(k){ac();const c=k==='meteor'?20:12;if(S.cd[k]>0){toast('Zaube
 $('#sp-meteor').onclick=()=>castSpell('meteor');$('#sp-frost').onclick=()=>castSpell('frost');
 $('#wavebtn').onclick=()=>{ac();if(!S.waveActive)startWave()};
 $('#bspeed').onclick=()=>{S.speed=S.speed===1?2:S.speed===2?3:1;sfx('click')};
-$('#bpause').onclick=()=>{S.paused=!S.paused;sfx('click')};
+function setPause(on){S.paused=on;if(on)ADS.stop();else{ac();ADS.play()}sfx('click')}
+$('#bpause').onclick=()=>setPause(!S.paused);
+$('#resume').onclick=()=>setPause(false);
 $('#bnight').onclick=()=>{NIGHT=!NIGHT;try{localStorage.setItem('bw_night',NIGHT?'1':'0')}catch(e){}toast(NIGHT?'Tag-Nacht-Wechsel an':'Immer Tag');sfx('click')};
 $('#bmute').onclick=()=>{muted=!muted;try{localStorage.setItem('bw_mute',muted?'1':'0')}catch(e){}};
 addEventListener('keydown',ev=>{if(ev.repeat)return;const k=ev.key.toLowerCase();
   if(k>='1'&&k<='9'&&ORDER[+k-1])selectBuild(ORDER[+k-1]);else if(k==='h'&&FEAT.hero)selectHero();else if(k==='r'&&FEAT.hero)heroWhirl();else if(k==='escape')cancel();else if(k===' '){ev.preventDefault();if(!S.waveActive&&$('#start').hidden)startWave()}
-  else if(k==='q')castSpell('meteor');else if(k==='e')castSpell('frost');else if(k==='p')S.paused=!S.paused;else if(k==='f')$('#bspeed').click();else if(k==='m')$('#bmute').click();
+  else if(k==='q')castSpell('meteor');else if(k==='e')castSpell('frost');else if(k==='p'||(k==='escape'&&S.paused))setPause(!S.paused);else if(k==='f')$('#bspeed').click();else if(k==='m')$('#bmute').click();
   else if(k==='u'&&S.sel&&S.sel.b)upgrade(S.sel.b)});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.running)S.paused=true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.running&&!S.over){S.paused=true;ADS.stop()}});
+addEventListener('pagehide',()=>{if(S.running&&!S.over)S.paused=true});
 
 function endGame(win){
   S.over=true;S.waveActive=false;S.running=false;
