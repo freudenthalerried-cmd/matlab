@@ -4,7 +4,7 @@ Hört bei Gesprächen mit, erkennt prüfbare Behauptungen und zeigt in Sekunden,
 
 ## Ablauf
 
-1. **Spracherkennung** im Browser (Web Speech API, Deutsch/Österreich). Chrome, Edge und Android-Chrome werden unterstützt.
+1. **Spracherkennung:** Mit Deepgram-Schlüssel (Einstellungen) läuft eine genaue, durchgehende Live-Mitschrift mit Sprechererkennung (Deepgram Streaming, Deutsch). Ohne Schlüssel nutzt die App die Spracherkennung des Browsers (Web Speech API, Chrome/Edge, ungenauer).
 2. **Schnellcheck** (`/api/check`): Claude findet Behauptungen im Gesprächsausschnitt und bewertet sie aus dem Modellwissen. Das dauert etwa 2–4 s.
 3. **Live-Prüfung** (`/api/verify`): Startet automatisch danach. Die Websuche ist auf offizielle Quellen beschränkt (Statistik Austria, Eurostat, OECD, WHO, gv.at …), die Karte wird mit Links aktualisiert.
 4. **Genauer ansehen** (`/api/detail`): Ausführliche Recherche mit Entwicklung, Vergleichen und Fallstricken bei Definitionen.
