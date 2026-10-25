@@ -49,15 +49,21 @@ import json, hashlib, secrets, datetime
 PUB = OUT / 'publish'
 ANG = json.loads((PUB / 'angaben.json').read_text())
 code_file = PUB / '.premium-code'
-if not code_file.exists():
+if not code_file.exists() and ANG.get('CODE_HASH'):
+    code_file = None  # Code liegt nur beim Betreiber; der gespeicherte Hash bleibt gültig
+if code_file and not code_file.exists():
     alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
     code_file.write_text('-'.join(''.join(secrets.choice(alpha) for _ in range(4)) for _ in range(3)))
-CODE = code_file.read_text().strip()
-(PUB / 'Koenigspaket-Code.txt').write_text(
+CODE = code_file.read_text().strip() if code_file else None
+if CODE:
+  (PUB / 'Koenigspaket-Code.txt').write_text(
     'Danke für deinen Kauf! / Thank you for your purchase!\n\n'
     f'Dein Code / Your code:  {CODE}\n\n'
     'Im Spiel: Shop > Code eingeben.  In game: Shop > Enter code.\n')
-CODE_HASH = hashlib.sha256(CODE.upper().encode()).hexdigest()
+CODE_HASH = hashlib.sha256(CODE.upper().encode()).hexdigest() if CODE else ANG['CODE_HASH']
+if ANG.get('CODE_HASH') != CODE_HASH:
+    ANG['CODE_HASH'] = CODE_HASH
+    (PUB / 'angaben.json').write_text(json.dumps(ANG, ensure_ascii=False, indent=2) + '\n')
 WEB_CFG = ("window.BW_CONFIG={ads:'none',legal:true,premiumUrl:" + json.dumps(ANG.get('KAUF_URL', '')) +
            ",premiumPrice:" + json.dumps(ANG.get('PREIS', '2,99 €')) + ",premiumCode:'" + CODE_HASH + "'};\n")
 missing = [k for k in ('NAME', 'ADRESSE', 'EMAIL') if ANG[k].startswith('[')]
