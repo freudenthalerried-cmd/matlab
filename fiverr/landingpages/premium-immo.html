@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Villa Lumen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Hanken+Grotesk:wght@300;400;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: cinematic scroll story. A fixed canvas plays a Blender-rendered camera flight (48 frames, golden hour to
+   blue hour); six story beats scroll over it and scrub the sequence. Single dark world by choice. */
+:root{
+  --night:#0a0d12; --stone:#ece6dc; --muted:rgba(236,230,220,.68); --line:rgba(236,230,220,.18);
+  --brass:#c9a86a; --veil:rgba(10,13,18,.62);
+  --display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --body:"Hanken Grotesk","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--night)}
+body{margin:0;background:var(--night);color:var(--stone);font:300 18px/1.65 var(--body);overflow-x:clip}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:4px}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;
+  background:#1b2230 url("villa/f_000.webp") center/cover no-repeat}
+.shade{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(10,13,18,.72) 0%,rgba(10,13,18,.25) 45%,rgba(10,13,18,0) 70%),
+             linear-gradient(0deg,rgba(10,13,18,.55) 0%,rgba(10,13,18,0) 30%)}
+.pad{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+header{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5}
+nav{display:flex;align-items:center;justify-content:space-between;gap:20px;height:84px;max-width:1400px;margin:0 auto}
+.brand{font:500 15px/1 var(--body);letter-spacing:.42em;text-transform:uppercase;text-decoration:none}
+.brand b{font-weight:600;color:var(--brass)}
+nav ul{display:flex;gap:34px;list-style:none;margin:0;padding:0;font-size:14px;letter-spacing:.08em}
+nav ul a{text-decoration:none;color:var(--muted)}
+nav ul a:hover{color:var(--stone)}
+.cta{display:inline-flex;align-items:center;gap:12px;padding:14px 26px;border:1px solid var(--brass);color:var(--stone);text-decoration:none;
+  font:400 13px/1 var(--body);letter-spacing:.22em;text-transform:uppercase;background:rgba(201,168,106,.08);transition:background .3s}
+.cta:hover{background:rgba(201,168,106,.22)}
+.cta.solid{background:var(--brass);color:#16120b;border-color:var(--brass)}
+
+main{position:relative;z-index:2}
+.beat{min-height:100vh;display:grid;align-items:center;max-width:1400px;margin:0 auto;padding-block:120px 80px}
+.panel{max-width:520px;display:grid;gap:22px}
+.beat.right .panel{justify-self:end;background:var(--veil);backdrop-filter:blur(14px);padding:36px;border:1px solid var(--line)}
+.eyebrow{font:400 12px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+h1,h2{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(56px,9vw,132px);line-height:.92}
+h1 i,h2 i{font-style:italic;color:var(--brass)}
+h2{font-size:clamp(40px,5.4vw,76px);line-height:.98}
+.panel p{margin:0;color:var(--muted);max-width:30em}
+.facts{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);margin-top:10px}
+.facts div{padding:16px 28px 0 0;margin-right:28px;display:grid;gap:4px}
+.facts b{font:400 30px/1 var(--display)}
+.facts span{font:400 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.scroll-hint{font:400 11px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:14px}
+.scroll-hint::before{content:"";width:46px;height:1px;background:var(--brass)}
+
+.specs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);background:var(--veil);backdrop-filter:blur(14px);max-width:860px}
+.specs div{padding:22px 24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;min-width:0}
+.specs div:nth-child(3n){border-right:0}
+.specs div:nth-last-child(-n+3){border-bottom:0}
+.specs dt{font:400 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.specs dd{margin:0;font:400 26px/1.15 var(--display);font-variant-numeric:lining-nums tabular-nums}
+.specs dd small{font:300 14px/1.4 var(--body);color:var(--muted);display:block;margin-top:2px}
+dl.specs{margin:0}
+
+.visit{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;background:var(--veil);backdrop-filter:blur(16px);border:1px solid var(--line);padding:48px;max-width:1040px}
+.agent{display:grid;gap:14px;align-content:start}
+.agent .who{display:flex;align-items:center;gap:16px;padding-top:18px;border-top:1px solid var(--line)}
+.agent .mono{font:400 12px/1.5 var(--mono);letter-spacing:.12em;color:var(--muted)}
+.initials{width:54px;height:54px;border-radius:50%;border:1px solid var(--brass);display:grid;place-items:center;font:400 20px/1 var(--display);color:var(--brass)}
+form{display:grid;gap:16px;min-width:0}
+label{display:grid;gap:8px;font:400 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+input,select{font:300 17px/1.3 var(--body);color:var(--stone);background:transparent;border:0;border-bottom:1px solid var(--line);padding:10px 0;width:100%;border-radius:0}
+input:focus,select:focus{outline:0;border-bottom-color:var(--brass)}
+select option{background:var(--night)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-msg{font-size:15px;color:var(--stone);border-left:2px solid var(--brass);padding:6px 0 6px 14px}
+footer{position:relative;z-index:2;text-align:center;padding-block:40px 56px;font:400 11px/1.6 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+.progress{position:fixed;right:max(24px,env(safe-area-inset-right,0px));top:50%;translate:0 -50%;z-index:5;display:grid;gap:14px;list-style:none;margin:0;padding:0}
+.progress a{display:block;width:8px;height:8px;border:1px solid var(--muted);border-radius:50%}
+.progress a.on{background:var(--brass);border-color:var(--brass)}
+.progress a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:860px){
+  nav ul{display:none}
+  .shade{background:linear-gradient(0deg,rgba(10,13,18,.85) 0%,rgba(10,13,18,.35) 55%,rgba(10,13,18,.15) 100%)}
+  .beat{align-items:end;padding-block:110px 56px}
+  .beat.right .panel{justify-self:start}
+  .specs{grid-template-columns:1fr 1fr}
+  .specs div:nth-child(3n){border-right:1px solid var(--line)}
+  .specs div:nth-child(2n){border-right:0}
+  .specs div:nth-last-child(-n+3){border-bottom:1px solid var(--line)}
+  .specs div:nth-last-child(-n+2){border-bottom:0}
+  .visit{grid-template-columns:1fr;padding:28px 22px}
+  .progress{display:none}
+  .facts div{margin-right:0;padding-right:22px}
+}
+@media (max-width:480px){.two{grid-template-columns:1fr}nav .cta{padding:11px 16px;letter-spacing:.14em}}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<header class="pad"><nav>
+  <a class="brand" href="#start">Hallberg <b>Estates</b></a>
+  <ul><li><a href="#architektur">Architektur</a></li><li><a href="#garten">Garten &amp; Pool</a></li><li><a href="#ausstattung">Ausstattung</a></li></ul>
+  <a class="cta" href="#besichtigung">Besichtigung</a>
+</nav></header>
+
+<ol class="progress" aria-label="Kapitel">
+  <li><a href="#start"><span>Start</span></a></li><li><a href="#architektur"><span>Architektur</span></a></li><li><a href="#garten"><span>Garten</span></a></li>
+  <li><a href="#abend"><span>Abend</span></a></li><li><a href="#ausstattung"><span>Ausstattung</span></a></li><li><a href="#besichtigung"><span>Besichtigung</span></a></li>
+</ol>
+
+<main>
+  <section class="beat pad" id="start"><div class="panel">
+    <span class="eyebrow">Traunsee · Oberösterreich · Exklusiv</span>
+    <h1>Villa <i>Lumen</i></h1>
+    <p>Ein Haus aus Glas, Eiche und Stein, 40 Meter über dem Wasser. Fertiggestellt 2025, bezugsbereit, mit privatem Seezugang.</p>
+    <div class="facts">
+      <div><b>412 m²</b><span>Wohnfläche</span></div>
+      <div><b>2.180 m²</b><span>Grundstück</span></div>
+      <div><b>5</b><span>Schlafzimmer</span></div>
+    </div>
+    <span class="scroll-hint">Scrollen für die Besichtigung</span>
+  </div></section>
+
+  <section class="beat pad right" id="architektur"><div class="panel">
+    <span class="eyebrow">01 · Architektur</span>
+    <h2>Das Obergeschoss <i>schwebt.</i></h2>
+    <p>Acht Meter auskragende Holzkonstruktion, rahmenlose Verglasung auf 19 Metern Länge. Jedes Schlafzimmer blickt direkt auf den See und den Traunstein.</p>
+  </div></section>
+
+  <section class="beat pad" id="garten"><div class="panel">
+    <span class="eyebrow">02 · Garten &amp; Pool</span>
+    <h2>14 Meter <i>Infinity-Pool.</i></h2>
+    <p>Beheizt, mit Salzwasser-Elektrolyse und einer Kante, die optisch in den See übergeht. Die Terrasse aus Muschelkalk ist von drei Seiten windgeschützt.</p>
+  </div></section>
+
+  <section class="beat pad right" id="abend"><div class="panel">
+    <span class="eyebrow">03 · Am Abend</span>
+    <h2>Wenn das Licht <i>nach innen</i> wandert.</h2>
+    <p>Die Lichtplanung steuert Haus, Garten und Pool in Szenen. Ein Tastendruck, und die Villa wird zur Laterne am Ufer.</p>
+  </div></section>
+
+  <section class="beat pad" id="ausstattung"><div class="panel" style="max-width:860px">
+    <span class="eyebrow">04 · Ausstattung</span>
+    <h2>Die <i>Fakten.</i></h2>
+    <dl class="specs">
+      <div><dt>Wohnfläche</dt><dd>412 m²<small>auf zwei Ebenen</small></dd></div>
+      <div><dt>Grundstück</dt><dd>2.180 m²<small>davon 22 m Uferlinie</small></dd></div>
+      <div><dt>Zimmer</dt><dd>7<small>5 Schlafzimmer, 4 Bäder</small></dd></div>
+      <div><dt>Energie</dt><dd>HWB 24<small>kWh/m²a · fGEE 0,62 · Klasse A+</small></dd></div>
+      <div><dt>Heizung</dt><dd>Erdwärme<small>Wärmepumpe, Fußbodenheizung</small></dd></div>
+      <div><dt>Photovoltaik</dt><dd>18 kWp<small>mit 20 kWh Speicher</small></dd></div>
+    </dl>
+  </div></section>
+
+  <section class="beat pad right" id="besichtigung"><div class="visit">
+    <div class="agent">
+      <span class="eyebrow">05 · Private Besichtigung</span>
+      <h2>Preis auf <i>Anfrage.</i></h2>
+      <p style="color:var(--muted);margin:0">Besichtigungen nur nach Bonitätsnachweis und persönlicher Terminvereinbarung. Diskretion ist selbstverständlich.</p>
+      <div class="who"><span class="initials">LH</span><div><div>Mag. Lena Hallberg</div><div class="mono">Geschäftsführung · Hallberg Estates</div></div></div>
+    </div>
+    <form id="visit" novalidate>
+      <div class="two">
+        <label for="v-name">Name<input id="v-name" name="name" autocomplete="name"></label>
+        <label for="v-tel">Telefon<input id="v-tel" name="tel" type="tel" autocomplete="tel"></label>
+      </div>
+      <label for="v-mail">E-Mail<input id="v-mail" name="email" type="email" autocomplete="email"></label>
+      <div class="two">
+        <label for="v-date">Wunschtermin<input id="v-date" name="date" type="date"></label>
+        <label for="v-art">Art<select id="v-art" name="art"><option>Vor Ort</option><option>Video-Rundgang</option></select></label>
+      </div>
+      <button class="cta solid" type="submit" style="justify-content:center;cursor:pointer">Termin anfragen</button>
+      <p class="form-msg" id="visit-msg" hidden></p>
+    </form>
+  </div></section>
+</main>
+
+<footer class="pad">Demo-Landingpage · fiktives Objekt und Unternehmen · Design &amp; 3D: Pixelwerkstatt</footer>
+
+<script>
+(() => {
+'use strict';
+// Scroll-scrubbed image sequence (pre-rendered in Blender Cycles), Apple-style.
+const N = 48, SRC = i => `villa/f_${String(i).padStart(3, '0')}.webp`;
+const canvas = document.getElementById('scene'), ctx = canvas.getContext('2d');
+const sections = [...document.querySelectorAll('.beat')];
+const dots = [...document.querySelectorAll('.progress a')];
+const U_AT = [0, 0.25, 0.5, 0.75, 0.88, 1];       // path position at the top of each story beat
+const frames = new Array(N);
+let want = 0, shown = -1;
+
+document.getElementById('visit').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, m = document.getElementById('visit-msg');
+  m.textContent = f.name.value.trim()
+    ? `Danke, ${f.name.value.trim()}. In dieser Demo wird nichts versendet – auf der echten Seite melden wir uns innerhalb von 24 Stunden.`
+    : 'Bitte geben Sie Ihren Namen an.';
+  m.hidden = false;
+});
+
+const load = i => new Promise(res => { const im = new Image(); im.decoding = 'async'; im.onload = () => { frames[i] = im; res(); }; im.onerror = res; im.src = SRC(i); });
+// first frame first, then the rest in path order
+load(0).then(() => { draw(true); for (let i = 1; i < N; i++) load(i).then(() => draw(true)); });
+
+function size() {
+  const d = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = Math.round(innerWidth * d); canvas.height = Math.round(innerHeight * d);
+  shown = -1; draw(true);
+}
+function cover(im, alpha) {
+  const cw = canvas.width, ch = canvas.height, s = Math.max(cw / im.width, ch / im.height);
+  const w = im.width * s, h = im.height * s;
+  const fx = innerWidth < 700 ? 0.42 : 0.5;            // keep the house in frame on phones
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(im, (cw - w) * fx, (ch - h) / 2, w, h);
+}
+function nearest(i) { for (let d = 0; d < N; d++) { if (frames[i - d]) return i - d; if (frames[i + d]) return i + d; } return -1; }
+function draw(force) {
+  const x = want * (N - 1), a = Math.floor(x), f = x - a;
+  const key = Math.round(x * 20);
+  if (!force && key === shown) return;
+  shown = key;
+  const ia = nearest(a), ib = nearest(Math.min(a + 1, N - 1));
+  if (ia < 0) return;
+  ctx.globalAlpha = 1;
+  cover(frames[ia], 1);
+  if (ib >= 0 && ib !== ia && f > 0.01) cover(frames[ib], f);   // cross-fade between neighbours
+  ctx.globalAlpha = 1;
+}
+function readScroll() {
+  const y = scrollY + innerHeight * 0.35;
+  let i = 0;
+  while (i < sections.length - 1 && sections[i + 1].offsetTop <= y) i++;
+  const top = sections[i].offsetTop, next = i < sections.length - 1 ? sections[i + 1].offsetTop : top + sections[i].offsetHeight;
+  const f = Math.min(Math.max((y - top) / Math.max(next - top, 1), 0), 1);
+  const u = i < sections.length - 1 ? U_AT[i] + (U_AT[i + 1] - U_AT[i]) * f : 1;
+  // at the very bottom, pin to the last frame
+  const atEnd = scrollY >= document.documentElement.scrollHeight - innerHeight - 2;
+  want = atEnd ? 1 : u;
+  dots.forEach((d, k) => d.classList.toggle('on', k === i));
+}
+let ticking = false;
+addEventListener('scroll', () => { readScroll(); if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; draw(false); }); } }, {passive: true});
+addEventListener('resize', size);
+readScroll(); size();
+})();
+</script>
+</body>
+</html>
