@@ -583,6 +583,17 @@ $("#keyDel").onclick = () => {
   engine = null; $("#keyStatus").textContent = "Schlüssel entfernt (Claude und Deepgram)."; $("#askClaude").hidden = !claudeMode();
 };
 detectMode().then(m => { if(m === "browser" && getPref(KEY_STORE)) $("#keyStatus").textContent = "Schlüssel ist gespeichert."; });
+
+// Schlüssel per Link übernehmen (#dg=…&claude=…): nur lokal speichern, Adresse sofort bereinigen
+(() => {
+  const h = new URLSearchParams(location.hash.slice(1));
+  const dgk = h.get("dg"), ck = h.get("claude");
+  if(!dgk && !ck) return;
+  try{ if(dgk) localStorage.setItem(DG_STORE, dgk.trim()); if(ck) localStorage.setItem(KEY_STORE, ck.trim()); }catch{}
+  history.replaceState(null, "", location.pathname + location.search);
+  $("#keyStatus").textContent = "Schlüssel aus dem Link gespeichert.";
+  dlog("Schlüssel aus Link übernommen" + (dgk ? " (Deepgram)" : "") + (ck ? " (Claude)" : ""));
+})();
 </script>
 </body>
 </html>
