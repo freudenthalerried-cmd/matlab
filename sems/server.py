@@ -258,6 +258,7 @@ class App:
 
     def __init__(self, source, cfg, fixed=False):
         self.source, self.cfg, self.fixed = source, cfg, fixed
+        self.lan_url = None  # Adresse fürs Handy, nur mit --lan
         self.lock = threading.Lock()
 
     def kind(self):
@@ -299,7 +300,8 @@ class App:
 
     def status(self):
         return {"configured": self.source is not None, "source": self.kind(), "fixed": self.fixed,
-                "inverter": self.cfg.get("inverter"), "account": self.cfg.get("account")}
+                "inverter": self.cfg.get("inverter"), "account": self.cfg.get("account"),
+                "lan_url": self.lan_url}
 
 
 class DemoSource:
@@ -353,6 +355,13 @@ def make_handler(app):
                     return self.send(200, (HERE / "dashboard.html").read_bytes(), "text/html; charset=utf-8")
                 if url.path == "/api/setup":
                     return self.send(200, app.status())
+                if url.path == "/api/qr" and app.lan_url:
+                    import io
+                    import qrcode
+                    import qrcode.image.svg
+                    buf = io.BytesIO()
+                    qrcode.make(app.lan_url, image_factory=qrcode.image.svg.SvgPathImage, border=2).save(buf)
+                    return self.send(200, buf.getvalue(), "image/svg+xml")
                 if source is None and url.path.startswith("/api/"):
                     return self.send(503, {"error": "Noch nicht eingerichtet"})
                 if url.path == "/api/stations":
@@ -428,7 +437,8 @@ def main():
         import socket
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.connect(("10.255.255.255", 1))  # sendet nichts, ermittelt nur die eigene LAN-IP
-            print(f"Im WLAN (Handy):  http://{sock.getsockname()[0]}:{port}")
+            app.lan_url = f"http://{sock.getsockname()[0]}:{port}"
+        print(f"Im WLAN (Handy):  {app.lan_url}")
     server.serve_forever()
 
 

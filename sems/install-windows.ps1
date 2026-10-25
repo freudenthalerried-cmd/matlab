@@ -41,8 +41,8 @@ Write-Host "3/5 Programm herunterladen ..."
 foreach ($f in @("server.py", "sems_client.py", "dashboard.html")) {
     Invoke-WebRequest -UseBasicParsing -Uri "$Src/$f" -OutFile (Join-Path $Dir $f)
 }
-& $Python -m pip install --upgrade --quiet --disable-pip-version-check goodwe
-if ($LASTEXITCODE -ne 0) { throw "pip install goodwe fehlgeschlagen." }
+& $Python -m pip install --upgrade --quiet --disable-pip-version-check goodwe qrcode
+if ($LASTEXITCODE -ne 0) { throw "pip install fehlgeschlagen." }
 
 Write-Host "4/5 Autostart und Desktop-Verknuepfung anlegen ..."
 $Shell = New-Object -ComObject WScript.Shell
@@ -61,5 +61,7 @@ Start-Sleep -Seconds 8   # erster Start sucht den Wechselrichter im WLAN
 Start-Process "http://127.0.0.1:8080/"
 Write-Host ""
 Write-Host "Fertig. Der PV-Monitor startet ab jetzt automatisch mit Windows."
-Write-Host "Oeffnen: Desktop-Symbol 'PV-Monitor'. Fragt Windows nach der Firewall: 'Zulassen' (fuer das Handy im WLAN)."
+Write-Host "Oeffnen: Desktop-Symbol 'PV-Monitor'. Handy: im Dashboard auf das Handy-Symbol tippen und QR-Code scannen. Fragt Windows nach der Firewall: 'Zulassen' (fuer das Handy im WLAN)."
 Write-Host "Log: $env:APPDATA\PV-Monitor\server.log"
+$Ip = (Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway } | Select-Object -First 1).IPv4Address.IPAddress
+if ($Ip) { Write-Host ""; Write-Host "Handy-Link (nur im eigenen WLAN): http://${Ip}:8080" -ForegroundColor Green }

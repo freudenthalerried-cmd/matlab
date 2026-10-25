@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10b981">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PV-Monitor">
 <title>PV-Monitor</title>
 <style>
 :root{
@@ -61,6 +65,10 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
 .hint{color:var(--muted);font-size:13px;margin:0 0 8px}
 button.primary{background:var(--bat);border-color:var(--bat);color:#fff;font-weight:600}
 .err.ok{color:var(--bat)}
+.phone{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.phone img{background:#fff;padding:8px;border-radius:8px}
+.phone p{margin:0 0 8px}
+.url{font-size:20px;font-weight:700;word-break:break-all}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px}
 </style>
 </head>
@@ -74,10 +82,24 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:8px 16px 24px
       <option value="7">7 Tage</option><option value="30">30 Tage</option><option value="365">12 Monate</option>
     </select>
     <button id="refresh" title="Aktualisieren">⟳</button>
+    <button id="phone" title="Am Handy öffnen" hidden>📱</button>
     <button id="settings" title="Einrichtung" hidden>⚙</button>
   </div>
 </header>
 <main>
+  <section class="card" id="phone-card" hidden>
+    <h2>Am Handy öffnen</h2>
+    <div class="phone">
+      <img id="qr" alt="QR-Code mit der Handy-Adresse" width="180" height="180">
+      <div>
+        <p>Mit der Handy-Kamera scannen (Handy muss im selben WLAN sein) oder eintippen:</p>
+        <p class="url" id="lan-url"></p>
+        <p class="hint">Tipp: Im Handy-Browser „Zum Startbildschirm hinzufügen“ wählen,
+          dann ist der PV-Monitor wie eine App mit einem Tipp erreichbar.</p>
+        <button type="button" id="phone-close">Schließen</button>
+      </div>
+    </div>
+  </section>
   <section class="card" id="setup" hidden>
     <h2>Einrichtung</h2>
     <p class="hint">Einmalig ausfüllen, danach startet alles automatisch. Am besten ist die
@@ -364,6 +386,15 @@ async function init() {
   if (st) {
     $("settings").hidden = false;
     $("settings").onclick = () => openSetup(st, false);
+    if (st.lan_url) {
+      $("phone").hidden = false;
+      $("phone").onclick = () => {
+        $("lan-url").textContent = st.lan_url;
+        $("qr").src = "api/qr";
+        $("phone-card").hidden = false;
+      };
+      $("phone-close").onclick = () => $("phone-card").hidden = true;
+    }
     if (!st.configured) return openSetup(st, true);
   }
   try {
