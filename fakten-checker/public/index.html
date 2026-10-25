@@ -59,6 +59,10 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .settings[open]{gap:8px} .settings label{display:block;margin-top:6px;color:var(--muted)}
 select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
 .hint{color:var(--muted);margin:0}
+.meter{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.meter span{display:block;height:100%;width:0;background:var(--ok);transition:width .1s}
+.diagtext{white-space:pre-wrap;font:.75rem/1.4 var(--f-num);margin:0;max-height:30vh;overflow:auto;overflow-wrap:anywhere}
+.claude{display:block;text-align:center;background:var(--accent);color:var(--panel);border-radius:12px;padding:14px;font:800 1.1rem var(--f-ui);text-decoration:none}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
@@ -79,7 +83,8 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
   </header>
   <details class="settings" id="settings" hidden>
     <summary>Einstellungen</summary>
-    <label for="key">Claude-API-Schlüssel (bleibt nur auf diesem Gerät)</label>
+    <p class="hint">Ohne Schlüssel prüft die Claude-App mit deinem Abo: Knopf „Mit Claude prüfen“. Mit Schlüssel prüft die App automatisch nach jedem Satz.</p>
+    <label for="key">Claude-API-Schlüssel, optional (bleibt nur auf diesem Gerät)</label>
     <input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…">
     <label for="model">Modell</label>
     <select id="model">
@@ -92,11 +97,21 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
     </div>
     <p class="hint" id="keyStatus"></p>
   </details>
-  <div class="live" id="live" aria-live="polite">Tippe auf „Gespräch beginnen“. Alles Gesagte wird mitgeschrieben, gespeichert und Behauptungen automatisch geprüft.</div>
+  <div class="live" id="live" aria-live="polite">Tippe auf „Gespräch beginnen“. Alles Gesagte wird live mitgeschrieben und gespeichert.</div>
+  <a class="claude" id="askClaude" href="https://claude.ai/new" target="_blank" rel="noopener" hidden>Mit Claude prüfen</a>
   <div class="opts">
     <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
     <label><input type="checkbox" id="audio"> Audio zusätzlich aufnehmen (bleibt auf diesem Gerät)</label>
   </div>
+  <details class="settings" id="diag">
+    <summary>Diagnose (bei Problemen öffnen)</summary>
+    <div class="row">
+      <button type="button" class="ghost" id="micTest">Mikrofon testen</button>
+      <button type="button" class="ghost" id="diagCopy">Diagnose kopieren</button>
+    </div>
+    <div class="meter"><span id="level"></span></div>
+    <pre class="diagtext" id="diagText"></pre>
+  </details>
   <section class="log">
     <h2>Gespräche (<span id="convCount">0</span>)</h2>
     <div id="convList"></div>
@@ -126,7 +141,8 @@ async function detectMode(){
   if(mode) return mode;
   try{ const r = await fetch("api/ping"); mode = r.ok && (await r.json()).ok ? "server" : "browser"; }
   catch{ mode = "browser"; }
-  if(mode === "browser"){ $("#settings").hidden = false; if(!getPref(KEY_STORE)) $("#settings").open = true; }
+  if(mode === "browser") $("#settings").hidden = false;
+  $("#askClaude").hidden = !claudeMode();
   return mode;
 }
 async function newClient(key){
@@ -225,7 +241,8 @@ async function check(text, target = conv()){
   }catch(e){ statusEl.textContent = e.message; }
 }
 
-$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; addLine(v); check(v); } });
+$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(!v) return; $("#q").value=""; addLine(v);
+  if(claudeMode()) statusEl.textContent = "Notiert. Zum Prüfen „Mit Claude prüfen“ tippen."; else check(v); });
 
 // Gespräche: Transkript und Prüfergebnisse je Gespräch, nur im Browser gespeichert
 const STORE = "fc-gespraeche";
@@ -354,16 +371,66 @@ function setMic(on){
   } else { wake?.release().catch(() => {}); wake = null; }
   $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Gespräch beginnen";
 }
-function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
+function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8 && !claudeMode()) check(t); }
+
+// Ohne API-Schlüssel: Mitschrift mit einem Tipp an die Claude-App übergeben (nutzt das Claude-Abo)
+const claudeMode = () => mode === "browser" && !getPref(KEY_STORE);
+const ASK = `Du bist mein Faktenchecker. Unten steht die Live-Mitschrift eines Gesprächs (Spracherkennung, kann Fehler enthalten). Prüfe jede Tatsachenbehauptung (Zahlen, Statistiken, Fakten), Standardregion Österreich. Pro Behauptung, kurz und fürs Handy:
+✅/⚠️/❌ Aussage → richtige Zahl (Quelle, Stand)
+Gegenargument: 1–2 Sätze, die ich sofort sagen kann.
+Nutze nur zuverlässige Quellen (Statistik Austria, Eurostat, OECD, WHO …), suche im Web, wenn du kannst, und erfinde keine Zahlen.
+
+Mitschrift:
+`;
+function claudeLink(){
+  const c = active || convs[0];
+  const text = (c?.lines || []).map(l => l.text).join(" ").slice(-1800);
+  return "https://claude.ai/new?q=" + encodeURIComponent(ASK + (text || "(noch leer)"));
+}
+$("#askClaude").addEventListener("click", () => { $("#askClaude").href = claudeLink(); dlog("An Claude übergeben"); });
+// Diagnose: zeigt, was Browser und Spracherkennung tun
+const diag = [];
+function dlog(msg){
+  diag.push(new Date().toLocaleTimeString("de-AT") + "  " + msg);
+  $("#diagText").textContent = diag.slice(-40).join("\n");
+}
+function say(msg){ statusEl.textContent = msg; live.textContent = msg; dlog("Hinweis: " + msg); }
+dlog("Browser: " + navigator.userAgent);
+dlog("Spracherkennung: " + (SR ? "vorhanden" : "FEHLT – bitte Google Chrome verwenden"));
+dlog("Sichere Verbindung (HTTPS): " + (window.isSecureContext ? "ja" : "NEIN – Mikrofon geht nur über https"));
+navigator.permissions?.query({name:"microphone"}).then(r => { dlog("Mikrofon-Berechtigung: " + r.state); r.onchange = () => dlog("Mikrofon-Berechtigung: " + r.state); }).catch(() => dlog("Mikrofon-Berechtigung: unbekannt"));
+$("#diagCopy").onclick = async () => {
+  try{ await navigator.clipboard.writeText(diag.join("\n")); dlog("Diagnose kopiert."); }catch{ dlog("Kopieren nicht möglich, bitte Screenshot machen."); }
+};
+$("#micTest").onclick = async () => {
+  if(listening){ dlog("Mikrofon-Test geht nur, wenn kein Gespräch läuft."); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    dlog("Mikrofon-Test: Zugriff erlaubt, bitte 4 Sekunden sprechen …");
+    const ctx = new AudioContext(), an = ctx.createAnalyser(), buf = new Uint8Array(an.fftSize);
+    ctx.createMediaStreamSource(stream).connect(an);
+    let peak = 0; const t0 = Date.now();
+    const tick = () => {
+      an.getByteTimeDomainData(buf);
+      const lvl = Math.max(...buf.map(v => Math.abs(v - 128))) / 128; peak = Math.max(peak, lvl);
+      $("#level").style.width = Math.round(lvl * 100) + "%";
+      if(Date.now() - t0 < 4000) requestAnimationFrame(tick);
+      else { stream.getTracks().forEach(t => t.stop()); ctx.close(); $("#level").style.width = "0";
+        dlog(peak > 0.05 ? `Mikrofon-Test: Ton empfangen (Spitze ${Math.round(peak*100)} %). Mikrofon funktioniert.` : "Mikrofon-Test: KEIN Ton empfangen. Mikrofon stumm oder von anderer App belegt."); }
+    };
+    tick();
+  }catch(err){ dlog("Mikrofon-Test: Zugriff verweigert (" + err.name + "). Im Browser beim Schloss-Symbol Mikrofon erlauben."); }
+};
+
 $("#mic").onclick = () => {
-  if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte den Link in Google Chrome öffnen (nicht in der Claude-App)."; return; }
+  if(!SR){ say("Dieser Browser kann keine Sprache erkennen. Bitte den Link in Google Chrome öffnen (nicht in der Claude-App)."); return; }
   if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); endConv(); return; }
-  if(!$("#consent").checked){ statusEl.textContent = "Bitte zuerst bestätigen, dass alle Gesprächspartner Bescheid wissen."; $("#consent").focus(); return; }
+  if(!$("#consent").checked){ say("Bitte zuerst das Häkchen „Alle Gesprächspartner wissen …“ setzen."); $("#consent").focus(); return; }
   endConv(); beginConv();
   // Android: Audio-Mitschnitt und Spracherkennung blockieren sich gegenseitig das Mikrofon
   if($("#audio").checked && !ANDROID) startAudio();
   else if($("#audio").checked) statusEl.textContent = "Audio-Mitschnitt ist am Handy nicht gleichzeitig möglich, es wird nur mitgeschrieben.";
-  setMic(true); live.textContent = "Starte Mikrofon …";
+  setMic(true); live.textContent = "Starte Mikrofon …"; statusEl.textContent = "";
   startRec();
 };
 
@@ -377,33 +444,38 @@ const SR_ERR = {
 };
 function startRec(){
   rec = new SR(); rec.lang = "de-AT"; rec.continuous = !ANDROID; rec.interimResults = true; rec.maxAlternatives = 1;
-  rec.onaudiostart = () => { live.textContent = finals || "Höre zu … bitte sprechen."; };
+  rec.onstart = () => dlog("Erkennung gestartet");
+  rec.onaudiostart = () => { dlog("Mikrofon liefert Ton"); live.textContent = finals || "Höre zu … bitte sprechen."; };
+  rec.onspeechstart = () => dlog("Sprache erkannt");
   rec.onresult = e => {
+    if(!listening) return; // späte Ergebnisse nach dem Stoppen ignorieren
     restarts = 0;
     let interim = "";
     for(let i = e.resultIndex; i < e.results.length; i++){
       const t = e.results[i][0].transcript.trim();
       if(!t) continue;
-      if(e.results[i].isFinal){ addLine(t); pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
+      if(e.results[i].isFinal){ dlog("Text: " + t); addLine(t); pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
       else interim += t;
     }
     live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
   };
   rec.onerror = e => {
+    dlog("Fehler der Spracherkennung: " + e.error + (e.message ? " – " + e.message : ""));
     if(e.error === "not-allowed" || e.error === "service-not-allowed"){
       setMic(false); stopAudio(); endConv();
-      statusEl.textContent = "Mikrofon ist blockiert. Im Browser auf das Schloss neben der Adresse tippen → Mikrofon erlauben, dann neu laden.";
+      say("Mikrofon ist blockiert. Im Browser auf das Schloss neben der Adresse tippen → Mikrofon erlauben, dann neu laden.");
       return;
     }
     if(e.error !== "aborted") statusEl.textContent = SR_ERR[e.error] || "Spracherkennung: " + e.error;
   };
   // Erkennung endet nach Stille oder Fehlern: mit wachsender Pause neu starten
   rec.onend = () => {
+    dlog("Erkennung beendet" + (listening ? ", starte neu" : ""));
     if(!listening) return;
     const wait = ANDROID ? 100 : Math.min(250 * 2 ** restarts++, 5000);
     setTimeout(() => { if(listening) try{ rec.start(); }catch{ startRec(); } }, wait);
   };
-  try{ rec.start(); }catch(err){ statusEl.textContent = "Spracherkennung konnte nicht starten: " + err.message; }
+  try{ rec.start(); }catch(err){ say("Spracherkennung konnte nicht starten: " + err.message); }
 }
 
 // Einstellungen für die Browser-Version
@@ -417,11 +489,12 @@ $("#keySave").onclick = async () => {
     try{ localStorage.setItem(KEY_STORE, key); localStorage.setItem(MODEL_STORE, $("#model").value); }catch{}
     engine = null; $("#key").value = "";
     $("#keyStatus").textContent = "Schlüssel funktioniert und ist gespeichert."; $("#settings").open = false;
+    $("#askClaude").hidden = !claudeMode();
   }catch(err){ $("#keyStatus").textContent = browserError(err); }
 };
 $("#keyDel").onclick = () => {
   try{ localStorage.removeItem(KEY_STORE); }catch{}
-  engine = null; $("#keyStatus").textContent = "Schlüssel entfernt.";
+  engine = null; $("#keyStatus").textContent = "Schlüssel entfernt."; $("#askClaude").hidden = !claudeMode();
 };
 detectMode().then(m => { if(m === "browser" && getPref(KEY_STORE)) $("#keyStatus").textContent = "Schlüssel ist gespeichert."; });
 </script>
