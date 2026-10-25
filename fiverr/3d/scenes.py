@@ -272,7 +272,39 @@ def scene_tech():
     lights_and_camera(target=(0, 0, 1.7), ortho=5.6)
 
 
-SCENES = {"bau": scene_bau, "immo": scene_immo, "gastro": scene_gastro, "tech": scene_tech}
+def scene_studio():
+    """Pixelwerkstatt hero: desk with monitor showing a landing page, floating pixel cubes."""
+    base((4.8, 3.8), color="#f4f6f8", side="#d8dee6")
+    box((0, 0.6, 0.25), (3.6, 1.8, 0.1), "#c98f5e", b=0.03)                  # desk top
+    for x in (-1.6, 1.6):
+        box((x, 0.6, 0.1), (0.12, 1.6, 0.2), "#3d4a5c", b=0.02)
+    # monitor
+    box((0, 1.15, 0.36), (0.9, 0.5, 0.06), "#2b3340", b=0.02, metal=0.4, rough=0.3)
+    box((0, 1.2, 0.75), (0.12, 0.08, 0.8), "#2b3340", b=0.02, metal=0.4, rough=0.3)
+    box((0, 1.1, 1.45), (2.6, 0.12, 1.55), "#1b1f27", b=0.06, rough=0.3)
+    box((0, 1.035, 1.45), (2.42, 0.01, 1.38), "#f7f8fa", b=0, emit=0.35)
+    box((-0.45, 1.025, 1.75), (1.2, 0.01, 0.2), "#121a24", b=0, emit=0.2)    # headline bar
+    box((-0.6, 1.025, 1.48), (0.9, 0.01, 0.08), "#9aa6b5", b=0, emit=0.2)
+    box((-0.75, 1.025, 1.25), (0.6, 0.01, 0.16), "#ff5a1f", b=0, emit=0.6)   # cta
+    box((0.62, 1.02, 1.42), (0.75, 0.02, 0.75), "#1aa39a", b=0.01, emit=0.4)  # hero image
+    # keyboard, mug, plant
+    box((-0.2, 0.1, 0.33), (1.4, 0.45, 0.06), "#e6e9ee", b=0.02)
+    cup = cyl((1.15, 0.05, 0.47), 0.17, 0.34, "#ff5a1f", b=0.02, rough=0.3)
+    torus((1.33, 0.05, 0.48), 0.09, 0.03, "#ff5a1f", rot=(math.pi / 2, 0, 0), rough=0.3)
+    cyl((-1.35, 1.0, 0.45), 0.2, 0.3, "#f7f8fa", b=0.03)
+    sphere((-1.35, 1.0, 0.8), 0.32, "#7fc8a9", rough=0.7)
+    # floating pixel cubes rising out of the screen corner
+    pix = [((1.35, 0.8, 2.35), 0.34, "#ff5a1f"), ((1.85, 0.35, 2.85), 0.26, "#1aa39a"),
+           ((1.2, 0.1, 3.2), 0.22, "#ffc928"), ((2.2, 0.9, 3.35), 0.18, "#ff5a1f"),
+           ((1.65, -0.2, 3.65), 0.15, "#121a24"), ((2.35, 0.2, 2.3), 0.22, "#ffc928")]
+    for loc, s, c in pix:
+        o = box(loc, (s, s, s), c, b=0.02, rough=0.25)
+        o.rotation_euler = (0.3, 0.2, 0.5)
+    tree(1.9, -1.3, s=0.8)
+    lights_and_camera(target=(-0.1, -0.1, 1.15), ortho=7.2)
+
+
+SCENES = {"studio": scene_studio, "bau": scene_bau, "immo": scene_immo, "gastro": scene_gastro, "tech": scene_tech}
 
 for name in WANT:
     reset()

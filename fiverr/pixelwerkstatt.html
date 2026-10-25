@@ -1,0 +1,289 @@
+<title>Pixelwerkstatt</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Pixelwerkstatt – Landingpages und 3D-Webdesign aus Österreich.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: "Werkbank" – asymmetric hero with the 3D render as the workpiece; a pixel grid is the one bold motif, mono captions carry real px/KB values. */
+:root{
+  --paper:#eef1f3; --card:#ffffff; --ink:#131b24; --muted:#56626e; --line:#d5dbe1;
+  --signal:#ff5a1f; --teal:#12857e; --signal-ink:#ffffff;
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151b; --card:#161e26; --ink:#e7ecf0; --muted:#9aa6b2; --line:#26313b;
+  --signal:#ff6a33; --teal:#36b7ad; --signal-ink:#140a05; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --card:#161e26; --ink:#e7ecf0; --muted:#9aa6b2; --line:#26313b;
+  --signal:#ff6a33; --teal:#36b7ad; --signal-ink:#140a05; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--body);overflow-x:clip}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.04;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h2{font-size:clamp(32px,4.2vw,48px);font-weight:800}
+h3{font-size:22px;font-weight:600}
+p{margin:0}
+.mono{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--signal);outline-offset:3px;border-radius:6px}
+
+/* nav */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font:800 21px/1 var(--display);text-decoration:none;letter-spacing:-.02em}
+.mark{display:grid;grid-template-columns:repeat(3,7px);gap:2px}
+.mark i{width:7px;height:7px;background:var(--ink)}
+.mark i:nth-child(3),.mark i:nth-child(5){background:var(--signal)}
+.mark i:nth-child(7){background:transparent}
+nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0;font-size:15px}
+nav ul a{text-decoration:none;color:var(--muted)}
+nav ul a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:999px;font:600 16px/1 var(--body);text-decoration:none;border:0;cursor:pointer;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.go{background:var(--signal);color:var(--signal-ink)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+nav .btn{padding:10px 18px;font-size:14px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:40px;align-items:center;padding-block:56px 72px}
+.hero-text{display:grid;gap:24px;min-width:0}
+.hero h1{font-size:clamp(44px,6.4vw,84px);font-weight:800}
+.hero h1 .px{color:var(--signal);position:relative;white-space:nowrap}
+.hero h1 .px::after{content:"";position:absolute;right:-.26em;bottom:.14em;width:.16em;height:.16em;background:var(--teal)}
+.hero .lead{font-size:19px;color:var(--muted);max-width:30em}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:28px;padding-top:8px;border-top:1px solid var(--line)}
+.facts div{display:grid;gap:2px}
+.facts b{font:800 26px/1.1 var(--display)}
+.stage{position:relative;min-width:0}
+.stage .grid{position:absolute;inset:6% 4% 10% 10%;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:32px 32px;border-radius:var(--r);opacity:.7;
+  -webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent);mask-image:radial-gradient(closest-side,#000 55%,transparent)}
+.stage img{position:relative;width:100%;height:auto;-webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);mask-composite:intersect;animation:hover 7s ease-in-out infinite}
+.stage figcaption{position:relative;margin-top:8px;text-align:center}
+@keyframes hover{0%,100%{translate:0 0}50%{translate:0 -12px}}
+
+/* sections */
+section{padding-block:72px}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px 40px;margin-bottom:36px}
+.head p{color:var(--muted);max-width:34em}
+
+/* work */
+.work{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+.tile{grid-column:span 2;display:grid;gap:12px;text-decoration:none;min-width:0}
+.tile.big{grid-column:span 3}
+.shot{border-radius:var(--r);overflow:hidden;background:var(--card);border:1px solid var(--line);aspect-ratio:16/10;max-width:100%}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .5s}
+.tile:hover .shot img{transform:scale(1.03)}
+.tile .meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tile h3{font-size:19px}
+.tag{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--teal) 14%,transparent);color:var(--teal);white-space:nowrap}
+.tag.d3{background:color-mix(in srgb,var(--signal) 14%,transparent);color:var(--signal)}
+
+/* services */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.svc article{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:32px;display:grid;gap:16px;align-content:start}
+.svc article.hot{border-color:var(--signal)}
+.svc ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.svc li{display:grid;grid-template-columns:14px 1fr;gap:12px;align-items:baseline}
+.svc li::before{content:"";width:8px;height:8px;background:var(--teal);translate:0 -2px}
+.svc .hot li::before{background:var(--signal)}
+
+/* process: a real sequence, so it is numbered */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:s;border-top:1px solid var(--line)}
+.steps li{list-style:none;padding:24px 24px 0 0;display:grid;gap:8px;counter-increment:s;min-width:0}
+.steps li::before{content:"Schritt " counter(s);font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--signal)}
+.steps p{color:var(--muted);font-size:16px}
+.steps ol{margin:0;padding:0}
+
+/* prices */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:640px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:16px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+thead th{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.p{font:800 22px/1 var(--display);white-space:nowrap}
+td small{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.note{margin-top:14px;color:var(--muted);font-size:15px}
+
+/* faq */
+.faq{display:grid;gap:0;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line);padding-block:18px}
+summary{cursor:pointer;font:600 19px/1.3 var(--display);list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--signal);font-weight:800}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);margin-top:10px;max-width:42em}
+
+/* contact */
+.contact{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;background:var(--ink);color:var(--paper);border-radius:22px;padding:48px}
+.contact .mono{color:color-mix(in srgb,var(--paper) 65%,transparent)}
+.contact p{color:color-mix(in srgb,var(--paper) 78%,transparent)}
+.contact-info{display:grid;gap:18px;align-content:start;min-width:0}
+.mail{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.mail code{font:500 16px/1 var(--mono);padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--paper) 10%,transparent);user-select:all}
+.mail button{font:600 14px/1 var(--body);padding:12px 14px;border-radius:10px;border:0;background:var(--signal);color:var(--signal-ink);cursor:pointer}
+form{display:grid;gap:12px;min-width:0}
+label{display:grid;gap:6px;font-size:14px;color:color-mix(in srgb,var(--paper) 78%,transparent)}
+input,select,textarea{font:400 16px/1.4 var(--body);padding:12px 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--paper) 20%,transparent);background:color-mix(in srgb,var(--paper) 6%,transparent);color:var(--paper);width:100%}
+select option{color:#131b24}
+textarea{min-height:110px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-msg{font-size:15px;color:var(--paper);background:color-mix(in srgb,var(--teal) 35%,transparent);padding:12px 14px;border-radius:10px}
+footer{padding-block:36px 48px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--muted);font-size:14px}
+
+@media (max-width:900px){
+  nav ul{display:none}
+  .hero,.svc,.contact{grid-template-columns:1fr}
+  .stage{order:-1;max-width:520px;margin:0 auto;width:100%}
+  .work{grid-template-columns:1fr 1fr}
+  .tile,.tile.big{grid-column:span 1}
+  .steps{grid-template-columns:1fr 1fr;row-gap:24px}
+  .contact{padding:28px 20px}
+}
+@media (max-width:560px){
+  .work,.two,.steps{grid-template-columns:1fr}
+  nav .btn{display:none}
+  section{padding-block:52px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header><div class="wrap"><nav>
+  <a class="brand" href="#top"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>Pixelwerkstatt</a>
+  <ul><li><a href="#arbeiten">Arbeiten</a></li><li><a href="#leistungen">Leistungen</a></li><li><a href="#ablauf">Ablauf</a></li><li><a href="#preise">Preise</a></li><li><a href="#faq">FAQ</a></li></ul>
+  <a class="btn go" href="#kontakt">Projekt anfragen</a>
+</nav></div></header>
+
+<main id="top">
+<div class="wrap hero">
+  <div class="hero-text">
+    <span class="mono">Webdesign · 3D · aus Österreich</span>
+    <h1>Landingpages, die <span class="px">Anfragen</span> bringen.</h1>
+    <p class="lead">Ich baue schnelle, mobil optimierte Landingpages für Betriebe im deutschsprachigen Raum – auf Wunsch mit eigens gerenderten 3D-Grafiken, die sonst niemand hat.</p>
+    <div class="cta-row"><a class="btn go" href="#kontakt">Kostenloses Erstgespräch</a><a class="btn ghost" href="#arbeiten">Arbeiten ansehen</a></div>
+    <div class="facts">
+      <div><b>ab 4 Tagen</b><span class="mono">Lieferzeit</span></div>
+      <div><b>≈ 100 KB</b><span class="mono">pro 3D-Grafik</span></div>
+      <div><b>Deutsch</b><span class="mono">persönlich, direkt</span></div>
+    </div>
+  </div>
+  <figure class="stage" style="margin:0">
+    <div class="grid" aria-hidden="true"></div>
+    <img src="pw/studio.webp" width="948" height="778" alt="3D-Illustration: Arbeitsplatz mit Monitor, auf dem eine Landingpage zu sehen ist, daneben schweben farbige Pixel-Würfel">
+    <figcaption class="mono">Blender-Render · 948 × 778 px · 75 KB</figcaption>
+  </figure>
+</div>
+
+<section id="arbeiten"><div class="wrap">
+  <div class="head"><h2>Arbeiten</h2><p>Demo-Projekte für fiktive Betriebe, damit du Stil und Qualität vorab siehst. Ein Klick öffnet die echte Seite.</p></div>
+  <div class="work">
+    <a class="tile big" href="landingpages/3d-bau.html"><div class="shot"><img src="pw/work-3d-bau.webp" width="960" height="600" alt="Landingpage Baumeister mit 3D-Baustelle" loading="lazy"></div><div class="meta"><h3>Hollerer Bau</h3><span class="tag d3">3D</span></div><span class="mono">Baumeister · Demo</span></a>
+    <a class="tile big" href="landingpages/3d-immo.html"><div class="shot"><img src="pw/work-3d-immo.webp" width="960" height="600" alt="Landingpage Immobilienmakler mit 3D-Villa" loading="lazy"></div><div class="meta"><h3>Weitblick Immobilien</h3><span class="tag d3">3D</span></div><span class="mono">Makler · Demo</span></a>
+    <a class="tile" href="landingpages/3d-gastro.html"><div class="shot"><img src="pw/work-3d-gastro.webp" width="960" height="600" alt="Landingpage Café mit 3D-Frühstückstisch" loading="lazy"></div><div class="meta"><h3>Café Morgenrot</h3><span class="tag d3">3D</span></div><span class="mono">Gastro · Demo</span></a>
+    <a class="tile" href="landingpages/3d-tech.html"><div class="shot"><img src="pw/work-3d-tech.webp" width="960" height="600" alt="Landingpage App mit 3D-Smartphone" loading="lazy"></div><div class="meta"><h3>Flowbase</h3><span class="tag d3">3D</span></div><span class="mono">App / SaaS · Demo</span></a>
+    <a class="tile" href="landingpages/demo-handwerk.html"><div class="shot"><img src="pw/work-handwerk.webp" width="960" height="600" alt="Landingpage Elektriker" loading="lazy"></div><div class="meta"><h3>Voltwerk</h3><span class="tag">Klassisch</span></div><span class="mono">Elektriker · Demo</span></a>
+    <a class="tile big" href="landingpages/demo-coaching.html"><div class="shot"><img src="pw/work-coaching.webp" width="960" height="600" alt="Landingpage Coaching" loading="lazy"></div><div class="meta"><h3>Klarsicht Coaching</h3><span class="tag">Klassisch</span></div><span class="mono">Coaching · Demo</span></a>
+    <a class="tile big" href="landingpages/demo-app.html"><div class="shot"><img src="pw/work-app.webp" width="960" height="600" alt="Landingpage Projekt-App" loading="lazy"></div><div class="meta"><h3>Planbar</h3><span class="tag">Klassisch</span></div><span class="mono">Software · Demo</span></a>
+  </div>
+</div></section>
+
+<section id="leistungen"><div class="wrap">
+  <div class="head"><h2>Leistungen</h2><p>Zwei Pakete, ein Ziel: Besucher sollen anrufen, schreiben oder buchen.</p></div>
+  <div class="svc">
+    <article>
+      <span class="mono">Klassisch</span>
+      <h3>Landingpage</h3>
+      <p>Eine Seite mit klarer Struktur, starkem Call-to-Action und allem, was Vertrauen schafft.</p>
+      <ul><li>Design passend zu Logo und Farben</li><li>Optimiert für Handy, Tablet und Desktop</li><li>Kontaktformular oder WhatsApp-Button</li><li>SEO-Grundlagen und schnelle Ladezeit</li></ul>
+    </article>
+    <article class="hot">
+      <span class="mono">Mit 3D</span>
+      <h3>3D-Landingpage</h3>
+      <p>Alles aus der klassischen Landingpage, dazu eigene 3D-Szenen aus deiner Branche – in deinen Farben gerendert.</p>
+      <ul><li>Individuelle 3D-Grafiken, keine Stockbilder</li><li>Dezente Bewegung, die Blicke lenkt</li><li>Grafiken auch als PNG für Social Media</li><li>Trotzdem schnell: optimierte Bildformate</li></ul>
+    </article>
+  </div>
+</div></section>
+
+<section id="ablauf"><div class="wrap">
+  <div class="head"><h2>Ablauf</h2><p>Vom ersten Gespräch bis zur fertigen Seite in rund einer Woche.</p></div>
+  <ol class="steps">
+    <li><h3>Gespräch</h3><p>20 Minuten am Telefon oder per Nachricht: Angebot, Zielgruppe, Wunschtermin.</p></li>
+    <li><h3>Entwurf</h3><p>Du bekommst einen Entwurf der Seite, bei 3D auch eine Skizze der Szene.</p></li>
+    <li><h3>Feinschliff</h3><p>Wir überarbeiten, bis Texte, Bilder und Farben passen.</p></li>
+    <li><h3>Livegang</h3><p>Ich richte die Seite auf deiner Domain ein oder liefere alle Dateien.</p></li>
+  </ol>
+</div></section>
+
+<section id="preise"><div class="wrap">
+  <div class="head"><h2>Preise</h2><p>Fixpreise, keine Stundenabrechnung. Alle Preise inklusive Korrekturrunden.</p></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">Paket</th><th scope="col">Landingpage</th><th scope="col">3D-Landingpage</th><th scope="col">Lieferzeit</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Start</th><td><span class="p">120 €</span><small>bis 4 Abschnitte</small></td><td><span class="p">160 €</span><small>+ 1 3D-Grafik</small></td><td>4–5 Tage</td></tr>
+      <tr><th scope="row">Business</th><td><span class="p">240 €</span><small>bis 8 Abschnitte, Formular, SEO-Basis</small></td><td><span class="p">320 €</span><small>+ 2 3D-Grafiken mit Bewegung</small></td><td>5–6 Tage</td></tr>
+      <tr><th scope="row">Komplett</th><td><span class="p">450 €</span><small>+ Texte, Impressum, Einrichtung</small></td><td><span class="p">590 €</span><small>+ 4 3D-Grafiken</small></td><td>7–8 Tage</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Auch über Fiverr buchbar.</p>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="head"><h2>Häufige Fragen</h2></div>
+  <div class="faq">
+    <details><summary>Brauche ich eigenes Hosting und eine Domain?</summary><p>Ja, beides läuft auf deinen Namen. Im Paket „Komplett“ richte ich die Seite dort für dich ein.</p></details>
+    <details><summary>Sind die 3D-Grafiken wirklich individuell?</summary><p>Ja. Jede Szene wird für dein Projekt neu in Blender gebaut und in deinen Farben gerendert.</p></details>
+    <details><summary>Macht 3D die Seite langsam?</summary><p>Nein. Die Grafiken werden als optimierte Bilder eingebunden, eine Szene hat rund 100 KB.</p></details>
+    <details><summary>Kann ich die Seite später selbst ändern?</summary><p>Ja. Ich zeige dir bei der Übergabe, wie du Texte und Bilder austauschst.</p></details>
+  </div>
+</div></section>
+
+<section id="kontakt"><div class="wrap">
+  <div class="contact">
+    <div class="contact-info">
+      <span class="mono">Kontakt</span>
+      <h2>Erzähl mir von deinem Projekt.</h2>
+      <p>Antwort innerhalb von 24 Stunden, unverbindlich und kostenlos.</p>
+      <div class="mail"><code id="mail">hallo@pixelwerkstatt.at</code><button type="button" id="copy">Adresse kopieren</button></div>
+    </div>
+    <form id="anfrage" novalidate>
+      <div class="two">
+        <label for="f-name">Name<input id="f-name" name="name" autocomplete="name" required></label>
+        <label for="f-mail">E-Mail<input id="f-mail" name="email" type="email" autocomplete="email" required></label>
+      </div>
+      <label for="f-art">Was brauchst du?<select id="f-art" name="art"><option>Landingpage</option><option selected>3D-Landingpage</option><option>Noch unklar</option></select></label>
+      <label for="f-text">Kurz zu deinem Betrieb<textarea id="f-text" name="text" placeholder="Branche, Angebot, Wunschtermin"></textarea></label>
+      <button class="btn go" type="submit">Anfrage absenden</button>
+      <p class="form-msg" id="form-msg" hidden></p>
+    </form>
+  </div>
+</div></section>
+</main>
+
+<footer class="wrap"><span>© 2026 Pixelwerkstatt · Stefan Freudenthaler</span><span><a href="#top">Impressum</a> · <a href="#top">Datenschutz</a></span></footer>
+
+<script>
+document.getElementById('copy').addEventListener('click', e => {
+  const t = document.getElementById('mail').textContent;
+  const done = () => { e.target.textContent = 'Kopiert'; };
+  const select = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById('mail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = 'Markiert – Strg+C'; };
+  try { navigator.clipboard.writeText(t).then(done, select); } catch (_) { select(); }
+});
+document.getElementById('anfrage').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, msg = document.getElementById('form-msg');
+  if (!f.name.value.trim() || !f.email.checkValidity() || !f.email.value) {
+    msg.textContent = 'Bitte Name und eine gültige E-Mail-Adresse angeben.';
+  } else {
+    msg.textContent = 'Danke, ' + f.name.value.trim() + '! Der Formularversand wird beim Livegang angebunden – bis dahin bitte direkt an die E-Mail-Adresse links schreiben.';
+  }
+  msg.hidden = false;
+});
+</script>
