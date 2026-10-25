@@ -264,6 +264,7 @@ terrain("mountains_across", 1600, 260,
 
 bpy.ops.mesh.primitive_plane_add(size=3000, location=(0, -900, -2.2))
 bpy.context.object.data.materials.append(M["lake"])
+bpy.context.object.name = "lake"
 
 # trees (linked duplicates of 3 variants)
 def make_tree(name, h):
@@ -430,7 +431,17 @@ def render(path):
     bpy.ops.render.render(write_still=True)
 
 
-if MODE == "test":
+if MODE == "export":
+    # lighter terrain for the web, then GLB (materials are re-assigned in three.js by object name)
+    for name, ratio in (("site", 0.18), ("mountains_back", 0.08), ("mountains_across", 0.08)):
+        md = bpy.data.objects[name].modifiers.new("dec", "DECIMATE")
+        md.ratio = ratio
+    for v in variants:
+        v.location = (0, 0, -100)
+    bpy.ops.export_scene.gltf(filepath=f"{OUT}/villa.glb", export_format="GLB", export_apply=True,
+                              export_lights=False, export_cameras=False, export_materials="PLACEHOLDER",
+                              export_yup=True)
+elif MODE == "test":
     u = float(sys.argv[3])
     sc.render.resolution_x, sc.render.resolution_y = 960, 540
     sc.cycles.samples = 40
