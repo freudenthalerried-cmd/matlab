@@ -215,9 +215,26 @@ function stopAudio(){ if(recorder?.state === "recording") recorder.stop(); recor
 // Spracherkennung: gesammelte Sätze werden nach kurzer Pause gemeinsam geprüft
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false, pending = "", timer = null, finals = "";
+// Dauerbetrieb: Bildschirm wach halten, Laufzeit anzeigen, nach Abbrüchen neu starten
+let wake = null, started = 0, clock = null, restarts = 0;
+async function keepAwake(){ try{ wake = await navigator.wakeLock?.request("screen"); }catch{} }
+document.addEventListener("visibilitychange", () => {
+  if(!listening) return;
+  if(document.visibilityState === "visible"){ keepAwake(); statusEl.textContent = "Hört weiter zu."; }
+  else statusEl.textContent = "Im Hintergrund kann der Browser das Mikrofon pausieren. App bitte offen lassen.";
+});
+window.addEventListener("beforeunload", e => { if(listening) e.preventDefault(); });
 function setMic(on){
   listening = on; $("#mic").setAttribute("aria-pressed", on);
-  $("#micLabel").textContent = on ? "Mithören stoppen" : "Mithören starten";
+  clearInterval(clock);
+  if(on){
+    started = Date.now(); keepAwake();
+    clock = setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      $("#micLabel").textContent = `Stoppen · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }, 1000);
+  } else { wake?.release().catch(() => {}); wake = null; }
+  $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Mithören starten";
 }
 function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
 $("#mic").onclick = () => {
@@ -235,8 +252,17 @@ $("#mic").onclick = () => {
     }
     live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
   };
-  rec.onerror = e => { if(e.error === "not-allowed"){ setMic(false); statusEl.textContent = "Mikrofon wurde nicht erlaubt."; } };
-  rec.onend = () => { if(listening) try{ rec.start(); }catch{} };
+  rec.onerror = e => {
+    if(e.error === "not-allowed" || e.error === "service-not-allowed"){ setMic(false); stopAudio(); statusEl.textContent = "Mikrofon wurde nicht erlaubt."; }
+    else if(e.error === "network") statusEl.textContent = "Keine Verbindung zur Spracherkennung, versuche erneut …";
+  };
+  // Chrome beendet die Erkennung nach Stille oder Fehlern; mit wachsender Pause neu starten
+  rec.onresult = (orig => e => { restarts = 0; orig(e); })(rec.onresult);
+  rec.onend = () => {
+    if(!listening) return;
+    const wait = Math.min(250 * 2 ** restarts++, 5000);
+    setTimeout(() => { if(listening) try{ rec.start(); }catch{} }, wait);
+  };
   rec.start(); setMic(true); live.textContent = "Höre zu …";
 };
 </script>
