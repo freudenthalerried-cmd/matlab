@@ -97,6 +97,7 @@
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-marke": "node bin/markenpruefung.mjs",
     "pruefe-browserproben": "node bin/browserprobenpruefung.mjs",
+    "freigabe": "node bin/freigabepruefung.mjs",
     "zettel": "node bin/zettel.mjs",
     "veroeffentlichen": "node bin/veroeffentlichen.mjs",
     "abgleich-veroeffentlichung": "node bin/veroeffentlichungsabgleich.mjs",

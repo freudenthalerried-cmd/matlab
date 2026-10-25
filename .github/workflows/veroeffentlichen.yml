@@ -1,0 +1,169 @@
+# Die gebaute Seite auf den Webspace schieben.
+#
+# Weisung des Auftraggebers vom 25. Oktober 2026: „mach die github action".
+#
+# WARUM HIER UND NICHT IN DER SITZUNG
+# Der Container, in dem gebaut wird, erreicht den Webspace nicht: Sein
+# Netzausgang weist all-inkl.com und kasserver.com ab. Dieser Lauf hier
+# findet auf GitHubs Rechnern statt, und denen ist dieses Tor gleichgueltig.
+#
+# WARUM NUR VON HAND
+# Es gibt keinen push-Ausloeser. Eine Seite, die draussen steht, nimmt man
+# nicht zurueck — die Suchmaschine hat sie dann schon gelesen. Wann der Shop
+# hinausgeht, entscheidet der Auftraggeber und nicht ein Merge. Soll das
+# spaeter automatisch laufen, gehoert dieser Absatz mit geaendert.
+#
+# WAS HOCHGELADEN WIRD
+# `shop/ausgabe/site`, so wie es im Repository liegt — NICHT neu gebaut.
+# Gebaut werden kann hier nicht: Dazu braucht es `preise/baustoff-preise.json`
+# mit den Einkaufspreisen, und die Datei ist absichtlich ausserhalb des
+# Repositories. Was hochgeht, ist also der Stand des letzten Commits, und
+# genau das prueft Schritt 3.
+
+name: Seite veröffentlichen
+
+on:
+  workflow_dispatch:
+    inputs:
+      vorschau:
+        description: >-
+          Vorschau trotz unvollständigem Impressum hochladen.
+          Nur ankreuzen, wenn die Seite NICHT als Shop erreichbar sein soll.
+        type: boolean
+        default: false
+      entfernte_dateien_loeschen:
+        description: >-
+          Dateien am Server löschen, die hier nicht mehr existieren.
+          Beim ersten Mal AUS lassen — es löscht alles im Zielordner,
+          was nicht aus diesem Repository kommt.
+        type: boolean
+        default: false
+
+# Zwei Läufe gleichzeitig würden sich auf halbem Weg überschreiben.
+concurrency:
+  group: veroeffentlichen
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  hochladen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stand holen
+        uses: actions/checkout@v4
+        with:
+          # Die Freigabeprüfung vergleicht Commitzeiten statt Dateizeiten.
+          # Mit einem flachen Klon fehlt ihr die Geschichte dafür.
+          fetch-depth: 0
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Zugangsdaten vorhanden?
+        env:
+          SERVER: ${{ secrets.FTP_SERVER }}
+          BENUTZER: ${{ secrets.FTP_BENUTZER }}
+          PASSWORT: ${{ secrets.FTP_PASSWORT }}
+          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+        run: |
+          fehlt=""
+          [ -n "$SERVER" ]   || fehlt="$fehlt FTP_SERVER"
+          [ -n "$BENUTZER" ] || fehlt="$fehlt FTP_BENUTZER"
+          [ -n "$PASSWORT" ] || fehlt="$fehlt FTP_PASSWORT"
+          [ -n "$ZIEL" ]     || fehlt="$fehlt FTP_ZIELPFAD"
+          if [ -n "$fehlt" ]; then
+            echo "Abbruch: es fehlen Secrets:$fehlt"
+            echo ""
+            echo "Einzutragen unter Settings → Secrets and variables → Actions:"
+            echo "  FTP_SERVER     z. B. wXXXXXXX.kasserver.com"
+            echo "  FTP_BENUTZER   der FTP-Benutzername von All-Inkl"
+            echo "  FTP_PASSWORT   das zugehörige Passwort"
+            echo "  FTP_ZIELPFAD   der Ordner am Server, z. B. /bauversand.com"
+            echo ""
+            echo "Ein Passwort gehört in ein Secret und nicht in diese Datei."
+            exit 1
+          fi
+          echo "Alle vier Secrets sind gesetzt."
+
+      # Die eigentliche Sperre. Vier Fragen, und jede einzelne verhindert
+      # einen Schaden, den man nicht zurücknehmen kann. Der Grund je Frage
+      # steht im Kopf von shop/bin/freigabepruefung.mjs.
+      - name: Darf diese Ausgabe hinaus?
+        run: |
+          if [ "${{ inputs.vorschau }}" = "true" ]; then
+            node shop/bin/freigabepruefung.mjs --ohne-impressum
+          else
+            node shop/bin/freigabepruefung.mjs
+          fi
+
+      - name: lftp holen
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      # FTPS, nicht blankes FTP: Ein Passwort im Klartext ueber das Netz ist
+      # kein Passwort mehr. All-Inkl kann FTPS; weigert sich der Server,
+      # bricht der Lauf ab, statt unverschluesselt weiterzumachen.
+      #
+      # Das Passwort steht in LFTP_PASSWORD und nicht in der Befehlszeile:
+      # Was in argv steht, liest jeder Prozess auf derselben Maschine mit.
+      #
+      # Zuerst nur anmelden und das Zielverzeichnis auflisten. Ein falsches
+      # Passwort oder ein Tippfehler im Pfad faellt dann in zwei Sekunden auf
+      # und nicht nach dem halben Hochladen.
+      - name: Verbindung prüfen
+        env:
+          SERVER: ${{ secrets.FTP_SERVER }}
+          BENUTZER: ${{ secrets.FTP_BENUTZER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORT }}
+          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+        run: |
+          set -o pipefail
+          lftp --env-password -u "$BENUTZER" "$SERVER" -e "
+            set ftp:ssl-force true;
+            set ftp:ssl-protect-data true;
+            set ssl:verify-certificate true;
+            set net:max-retries 2;
+            set net:timeout 20;
+            cd \"$ZIEL\";
+            pwd;
+            cls -1 | head -20;
+            bye;
+          " || {
+            echo ""
+            echo "Die Anmeldung ist nicht zustande gekommen. Die drei haeufigsten Gruende:"
+            echo "  1. Benutzername oder Passwort stimmen nicht (Secrets pruefen)."
+            echo "  2. FTP_ZIELPFAD gibt es am Server nicht — Pfad im All-Inkl-Kundenbereich ansehen."
+            echo "  3. Der Server weist FTPS ab. Das ist ein Befund und kein Schalter:"
+            echo "     Wer deswegen auf blankes FTP umstellt, schickt das Passwort offen."
+            exit 1
+          }
+
+      - name: Hochladen
+        env:
+          SERVER: ${{ secrets.FTP_SERVER }}
+          BENUTZER: ${{ secrets.FTP_BENUTZER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORT }}
+          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.entfernte_dateien_loeschen }}" = "true" ]; then
+            LOESCHEN="--delete"
+            echo "Spiegeln MIT Loeschen: Was im Zielordner liegt und hier nicht, wird entfernt."
+          else
+            LOESCHEN=""
+            echo "Spiegeln OHNE Loeschen: Fremde Dateien im Zielordner bleiben stehen."
+          fi
+          lftp --env-password -u "$BENUTZER" "$SERVER" -e "
+            set ftp:ssl-force true;
+            set ftp:ssl-protect-data true;
+            set ssl:verify-certificate true;
+            set net:max-retries 3;
+            set net:timeout 20;
+            mirror -R --verbose --parallel=4 $LOESCHEN shop/ausgabe/site \"$ZIEL\";
+            bye;
+          "
+          echo ""
+          echo "Fertig. Was jetzt draussen steht, liest als Naechstes eine Suchmaschine."

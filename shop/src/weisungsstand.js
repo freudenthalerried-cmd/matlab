@@ -384,6 +384,27 @@ export const WEISUNGEN = Object.freeze([
       + 'nach dem Bild, und ein erfundenes zeigt eine Ware, die es nicht gibt. Dieselbe Sorte '
       + 'Fehler wie eine erfundene Kennwerttabelle, nur sichtbarer.',
   }),
+  Object.freeze({
+    nr: 19,
+    datum: '25.10.',
+    stichwort: '„mach die github action"',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/bin/freigabepruefung.mjs', muster: /veroeffentlichen\.yml/ }),
+      Object.freeze({ datei: 'shop/src/freigabe.js', muster: /freigabebefund/ }),
+    ]),
+    warum: 'Erfüllt, und die Action ist der kleinere Teil davon. Sie läuft auf GitHubs '
+      + 'Rechnern, weil der Netzausgang dieser Umgebung den Webspace abweist, und sie lädt den '
+      + 'Stand des letzten Commits hoch — bauen kann sie nicht, denn dazu bräuchte sie die '
+      + 'Preisdatei, und die liegt absichtlich außerhalb des Repositories. Die zweite Spur '
+      + 'zeigt auf den größeren Teil: eine eigene Sperre vor dem ersten Weg nach draußen, auf '
+      + 'dem etwas das Haus verlässt, ohne dass ein Mensch es vorher ansieht. Sie steht '
+      + 'bewusst **nicht** im Prüfregister — sie ist heute rot, weil vier Pflichtangaben '
+      + 'fehlen, und daran darf kein Commit scheitern. **Die Action selbst liegt außerhalb '
+      + 'des Shops** (`.github/workflows/veroeffentlichen.yml`), und diese Tafel führt nur '
+      + 'Stellen im Shop. Die erste Spur zeigt deshalb auf das Werkzeug, das die Action '
+      + 'ruft, und sucht darin den Dateinamen der Action: Verschwindet die eine, zeigt die '
+      + 'andere ins Leere — und `test/freigabe.test.js` hält beide gegeneinander.',
+  }),
 ]);
 
 

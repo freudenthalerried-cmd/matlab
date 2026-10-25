@@ -93,6 +93,13 @@ export const LESER = Object.freeze([
   // Auskunft von gestern für heute grün zu melden.
   Object.freeze({ werkzeug: 'bin/sperrgutpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/geheimnispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 25. Oktober.** Die Freigabeprüfung liest genau den Ordner,
+  // den die Action danach hochlädt. Sie fragt selbst, ob die Ausgabe ihrer
+  // Quelle hinterherhängt — aber an **Commit**zeiten, und das ist die Frage
+  // für den fremden Klon. Hier, auf diesem Rechner, gilt die andere: Ein Bau,
+  // der noch nicht gelaufen ist, würde sonst freigegeben, obwohl die Quelle
+  // schon weiter ist. Zwei Fragen, zwei Wächter.
+  Object.freeze({ werkzeug: 'bin/freigabepruefung.mjs', erzeugnis: 'ausgabe/site' }),
   // **Ergänzt am 8. September.** `npm run paket` packt genau diesen Ordner in
   // ein Archiv, das der Auftraggeber hochlädt. Ein Paket aus einem veralteten
   // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf

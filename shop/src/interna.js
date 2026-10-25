@@ -105,6 +105,25 @@ export const INTERNA = Object.freeze([
 ]);
 
 /**
+ * Die begründete Ausnahme für das ausgelieferte `shop.js`.
+ *
+ * **Hier, weil zwei Prüfer sie brauchen — 25. Oktober 2026.** Der Bau prüft
+ * das Bündel seit dem 23. Oktober, und die Freigabeprüfung vor dem Hochladen
+ * prüft es noch einmal am fertigen Verzeichnis. Zweimal geschrieben hieße
+ * einmal gepflegt — und die zweite Fassung wäre die, die irgendwann mehr
+ * freigibt als die erste.
+ */
+export const BUENDELAUSNAHME = Object.freeze({
+  ausnahme: 'Zwei Zahlwegkennungen (`eps`, `karte-stripe`) reisen im Datensatz mit ihrem '
+    + 'Kundennamen und ihrem Kundensatz — die Oberfläche braucht die Kennung, um den Weg zu '
+    + 'wählen, und zeigt den Namen. Und die Wortliste, mit der die Kasse ihren eigenen '
+    + 'Anfragetext gegen die Weisung „keine spanne ausgeben" hält, steht in '
+    + '`src/kundenanfrage.js` und läuft im Browser: Der Text entsteht dort. Ein Wächter, der '
+    + 'sein eigenes Suchwort nicht mitnehmen darf, kann nicht suchen.',
+  nur: Object.freeze(['programmkennung', 'eigene-marge']),
+});
+
+/**
  * Stellen im Text, die nicht veröffentlicht gehören.
  *
  * Wie überall in dieser Prüfkette: ein **Verdacht**, kein Urteil. Wo ein

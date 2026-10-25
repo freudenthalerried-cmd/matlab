@@ -31,7 +31,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
-import { pruefeSeiten } from '../src/interna.js';
+import { pruefeSeiten, BUENDELAUSNAHME } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } from '../src/bilder.js';
 import {
   VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte, organisationsdaten,
@@ -3337,13 +3337,8 @@ function main() {
   const imBuendel = pruefeSeiten([{
     kennung: 'ausgabe/site/shop.js',
     html: shopskriptQuelle,
-    ausnahme: 'Zwei Zahlwegkennungen (`eps`, `karte-stripe`) reisen im Datensatz mit ihrem '
-      + 'Kundennamen und ihrem Kundensatz — die Oberfläche braucht die Kennung, um den Weg zu '
-      + 'wählen, und zeigt den Namen. Und die Wortliste, mit der die Kasse ihren eigenen '
-      + 'Anfragetext gegen die Weisung „keine spanne ausgeben" hält, steht in '
-      + '`src/kundenanfrage.js` und läuft im Browser: Der Text entsteht dort. Ein Wächter, der '
-      + 'sein eigenes Suchwort nicht mitnehmen darf, kann nicht suchen.',
-    nur: ['programmkennung', 'eigene-marge'],
+    ausnahme: BUENDELAUSNAHME.ausnahme,
+    nur: [...BUENDELAUSNAHME.nur],
   }]);
   if (!imBuendel.sauber) {
     console.error('Interna im ausgelieferten Skript — nichts ausgegeben:\n');

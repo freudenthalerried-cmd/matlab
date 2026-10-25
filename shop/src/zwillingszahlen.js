@@ -379,6 +379,16 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'nr', wert: 19,
+    warum: 'Die laufende Nummer der neunzehnten Weisung in der Weisungstafel '
+      + '(`src/weisungsstand.js`). Sie zaehlt Weisungen des Auftraggebers und waechst mit '
+      + 'jeder neuen; die drei anderen Fundstellen sind eine Gate-Nummer, eine Zahl von '
+      + 'Sicherungsstufen und eine Zahl von Begriffen. Vier Zaehlungen von vier verschiedenen '
+      + 'Dingen, die heute zufaellig gleich weit sind. Eine gemeinsame Konstante verbaende '
+      + 'Stellen, die nichts miteinander zu tun haben, und beim naechsten Satz des '
+      + 'Auftraggebers waere sie wieder falsch.',
+  }),
+  Object.freeze({
     name: 'status', wert: 403,
     warum: 'Ein HTTP-Statuscode im Abweisungsregister (`src/abweisung.js`) — „verboten". Die '
       + 'anderen beiden Fundstellen sind derselbe Code an anderer Stelle: der erwartete Status '
