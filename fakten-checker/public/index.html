@@ -51,6 +51,9 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .ghost{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--fg);border-radius:8px;font:600 .85rem var(--f-ui);padding:8px 12px;cursor:pointer}
 .detail{white-space:pre-wrap;font-size:.92rem;border-top:1px solid var(--line);padding-top:10px;overflow-wrap:anywhere}
 .foot{font-size:.75rem;color:var(--muted)}
+.counter{background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.counter p{margin:0;font-size:1.02rem;line-height:1.4}
+.clabel{font:700 .72rem var(--f-ui);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
@@ -111,6 +114,11 @@ function fill(c, r, stage){
   const parts = [top, el("p","claim","„"+(r.claim||"")+"“")];
   if(r.number) parts.push(el("p","num", r.number));
   parts.push(el("p","fact", r.fact||""));
+  if(r.counter){
+    const box = el("div","counter");
+    box.append(el("span","clabel", v === "stimmt" ? "Einordnung" : "Gegenargument"), el("p", null, r.counter));
+    parts.push(box);
+  }
   const dl = el("dl");
   [["Kennzahl",r.definition],["Quelle",r.source],["Stand",r.asOf],["Sicherheit",r.confidence],["Hinweis",r.note]]
     .forEach(([k,val])=>{ if(val) dl.append(el("dt",null,k), el("dd",null,String(val))); });
@@ -183,6 +191,7 @@ $("#save").onclick = () => {
   out.push("", "GEPRÜFTE BEHAUPTUNGEN");
   log.checks.forEach(c => {
     out.push(`[${hhmm(c.t)}] „${c.claim}“ → ${LABEL[c.verdict] || "Unklar"} (${c.stage})`, `   ${c.number ? c.number + " – " : ""}${c.fact || ""}`);
+    if(c.counter) out.push(`   ${c.verdict === "stimmt" ? "Einordnung" : "Gegenargument"}: ${c.counter}`);
     if(c.definition) out.push(`   Kennzahl: ${c.definition}`);
     if(c.source) out.push(`   Quelle: ${c.source}${c.asOf ? ", Stand " + c.asOf : ""}`);
     (c.sources || []).forEach(s => out.push(`   ${s.url}`));

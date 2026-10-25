@@ -19,7 +19,8 @@ const RULES = `Du bist ein strenger, neutraler Faktenchecker für Gespräche im 
 Nutze nur Zahlen aus zuverlässigen Quellen (Statistik Austria, Eurostat, OECD, WHO, Weltbank, Ministerien, peer-reviewte Studien). Nenne Quelle und Datenjahr.
 Hängt das Ergebnis von der Definition ab (z. B. Staatsbürgerschaft vs. Migrationshintergrund), erkläre das in "definition" und bewerte "teilweise".
 Erfinde keine Zahlen. Bei Unsicherheit: verdict "unklar", confidence "niedrig".
-Felder je Aussage: claim (Aussage kurz), verdict ("stimmt"|"teilweise"|"falsch"|"unklar"), number (eine Kernzahl, max. 12 Zeichen, z. B. "≈ 20 %"), fact (ein Satz Deutsch mit der richtigen Zahl), definition (welche Kennzahl genau, max. 1 Satz), source, asOf (Datenstand), confidence ("hoch"|"mittel"|"niedrig"), note (optional, max. 1 Satz).`;
+Felder je Aussage: claim (Aussage kurz), verdict ("stimmt"|"teilweise"|"falsch"|"unklar"), number (eine Kernzahl, max. 12 Zeichen, z. B. "≈ 20 %"), fact (ein Satz Deutsch mit der richtigen Zahl), definition (welche Kennzahl genau, max. 1 Satz), source, asOf (Datenstand), confidence ("hoch"|"mittel"|"niedrig"), note (optional, max. 1 Satz),
+counter (Gegenargument: 1–2 kurze, sachliche Sätze in einfacher Alltagssprache, die man im Gespräch sofort laut sagen kann, mit konkreter Zahl und Quelle; stimmt die Aussage, stattdessen eine Einordnung, die wichtigen Kontext ergänzt).`;
 
 async function ask(prompt, { effort, webUses = 0, maxTokens }) {
   const messages = [{ role: "user", content: prompt }];
