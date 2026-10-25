@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klarsicht Coaching – Demo</title>
+<style>
+:root{--ink:#2b2a26;--muted:#77736a;--bg:#f6f1ea;--green:#3f5f4a;--sand:#e8dccb;--rose:#c9826b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--ink);background:var(--bg);line-height:1.6}
+.sans{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{display:flex;justify-content:space-between;align-items:center;height:80px}
+.logo{font-size:24px;font-style:italic}
+.logo b{color:var(--green);font-style:normal}
+nav .btn{font-size:14px;padding:10px 20px}
+.btn{display:inline-block;background:var(--green);color:#fff;padding:15px 30px;border-radius:99px;font-family:"Segoe UI",system-ui,Arial,sans-serif;font-weight:600}
+.btn.line{background:none;color:var(--green);border:1.5px solid var(--green)}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center;padding:48px 0 88px}
+.kicker{font-family:"Segoe UI",system-ui,Arial,sans-serif;text-transform:uppercase;letter-spacing:3px;font-size:12px;color:var(--rose);margin-bottom:16px}
+h1{font-size:54px;line-height:1.08;font-weight:400;margin-bottom:22px}
+h1 i{color:var(--green)}
+.hero p{font-size:19px;color:var(--muted);margin-bottom:30px;max-width:480px}
+.portrait{aspect-ratio:4/5;border-radius:240px 240px 24px 24px;background:linear-gradient(160deg,#b9c8b5 0%,#3f5f4a 100%);position:relative;overflow:hidden}
+.portrait:before{content:"";position:absolute;left:50%;top:22%;width:38%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:#e8dccbcc}
+.portrait:after{content:"";position:absolute;left:50%;bottom:-10%;width:78%;height:52%;transform:translateX(-50%);border-radius:50% 50% 0 0;background:#e8dccbcc}
+.quote{position:absolute;left:-28px;bottom:40px;background:#fff;padding:18px 22px;border-radius:16px;box-shadow:0 20px 40px #0000001a;font-size:15px;max-width:240px;z-index:2}
+.hero-r{position:relative}
+.logos{display:flex;justify-content:space-between;color:#a79f92;font-family:"Segoe UI",system-ui,Arial,sans-serif;font-weight:700;letter-spacing:2px;font-size:14px;border-top:1px solid #ddd2c2;border-bottom:1px solid #ddd2c2;padding:22px 0}
+section{padding:88px 0}
+h2{font-size:38px;font-weight:400;margin-bottom:14px}
+.center{text-align:center;max-width:640px;margin:0 auto 52px}
+.center p{color:var(--muted)}
+.pains{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pain{background:#fff;border-radius:20px;padding:30px}
+.pain h3{font-weight:400;font-size:22px;margin:10px 0 8px}
+.pain p{color:var(--muted);font-size:16px}
+.num{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--rose);font-weight:700}
+.offer{background:var(--green);color:#f6f1ea;border-radius:28px;padding:56px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.offer h2{color:#fff}
+.offer ul{list-style:none;font-family:"Segoe UI",system-ui,Arial,sans-serif}
+.offer li{padding:12px 0;border-bottom:1px solid #ffffff22}
+.offer li:before{content:"✓  ";color:#e8b9a6}
+.price{font-size:44px;margin:12px 0}
+.offer .btn{background:#f6f1ea;color:var(--green)}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:36px 0}
+nav .btn{white-space:nowrap}
+@media(max-width:860px){.logo{font-size:19px}.hero,.pains,.offer{grid-template-columns:1fr}h1{font-size:38px}.offer{padding:32px}.quote{left:12px}.logos{flex-wrap:wrap;gap:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><div class="logo"><b>Klarsicht</b> Coaching</div><a class="btn sans" href="#termin">Gratis-Gespräch</a></nav>
+
+<div class="hero">
+  <div>
+    <div class="kicker">Business- & Life-Coaching</div>
+    <h1>Mehr Klarheit.<br>Weniger Stress.<br><i>Endlich Fokus.</i></h1>
+    <p>Ich begleite Führungskräfte und Selbstständige dabei, wieder Prioritäten zu setzen – ohne Burnout, ohne schlechtes Gewissen.</p>
+    <a class="btn" href="#termin">Kostenloses Erstgespräch</a>&nbsp;&nbsp;<a class="btn line" href="#angebot">Programm ansehen</a>
+  </div>
+  <div class="hero-r"><div class="portrait"></div><div class="quote">„Nach 8 Wochen hatte ich meine Abende zurück.“<br><small class="sans" style="color:#77736a">— Julia, Geschäftsführerin</small></div></div>
+</div>
+
+<div class="logos"><span>500+ KLIENTEN</span><span>ZERTIFIZIERT</span><span>ONLINE & VOR ORT</span><span>SEIT 2014</span><span>4,9 ★ BEWERTUNG</span></div>
+</div>
+
+<section><div class="wrap">
+  <div class="center"><h2>Kommt dir das bekannt vor?</h2><p>Die meisten meiner Klientinnen und Klienten kommen mit genau diesen drei Themen.</p></div>
+  <div class="pains">
+    <div class="pain"><span class="num">01</span><h3>Immer erreichbar</h3><p>Der Kalender ist voll, aber die wichtigen Dinge bleiben liegen.</p></div>
+    <div class="pain"><span class="num">02</span><h3>Keine Energie mehr</h3><p>Am Wochenende erholst du dich nur noch, statt zu leben.</p></div>
+    <div class="pain"><span class="num">03</span><h3>Unklare Richtung</h3><p>Du spürst, dass sich etwas ändern muss – aber was?</p></div>
+  </div>
+</div></section>
+
+<div class="wrap" id="angebot"><div class="offer">
+  <div><div class="kicker" style="color:#e8b9a6">Das Programm</div><h2>8 Wochen Klarsicht</h2><p>Persönliches 1:1-Coaching mit klarem Fahrplan und messbaren Ergebnissen.</p><div class="price">ab 890 €</div><a class="btn" href="#termin">Platz sichern</a></div>
+  <ul><li>8 × 60 Min. Einzelcoaching (online oder vor Ort)</li><li>Persönlicher Fokus-Plan</li><li>WhatsApp-Support zwischen den Terminen</li><li>Arbeitsbuch & Übungen</li><li>Zufriedenheitsgarantie</li></ul>
+</div></div>
+
+<section id="termin"><div class="wrap"><div class="center"><h2>Lass uns sprechen.</h2><p>20 Minuten, kostenlos, unverbindlich. Wir finden heraus, ob Coaching dir jetzt hilft.</p><br><a class="btn" href="#">Termin wählen →</a></div></div></section>
+<footer class="sans">Demo-Landingpage · Design: Pixelwerkstatt · fiktive Person</footer>
+</body>
+</html>
