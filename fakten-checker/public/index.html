@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fakten-Checker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f5f8; --panel:#fff; --fg:#14202e; --muted:#5b6878; --line:#d9dfe7;
+  --accent:#1f5fbf; --ok:#1d7a4a; --warn:#b26a00; --bad:#b3261e; --unk:#6b7280;
+  --ok-bg:#e3f3ea; --warn-bg:#fbeed6; --bad-bg:#f9e1df; --unk-bg:#eceef1;
+  --f-ui:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e141b; --panel:#16202b; --fg:#e6edf5; --muted:#93a1b2; --line:#2a3644;
+  --accent:#6aa5ff; --ok:#5fd194; --warn:#f0b351; --bad:#ff8a80; --unk:#a3acb9;
+  --ok-bg:#13301f; --warn-bg:#352711; --bad-bg:#3a1916; --unk-bg:#232c37; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-ui)}
+.wrap{max-width:720px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:1.6rem;font-weight:800;margin:0} h1 span{color:var(--accent)}
+.mic{display:flex;align-items:center;gap:10px;border:0;border-radius:99px;padding:12px 20px;font:800 1rem var(--f-ui);cursor:pointer;background:var(--accent);color:var(--panel)}
+.mic[aria-pressed="true"]{background:var(--bad)}
+.dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.mic[aria-pressed="true"] .dot{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.live{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:3em;color:var(--muted);font-size:.9rem}
+.live b{color:var(--fg);font-weight:400}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.go{background:var(--accent);color:var(--panel);border:0;border-radius:8px;font:800 1rem var(--f-ui);padding:10px 16px;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.status{font-size:.85rem;color:var(--muted);min-height:1.2em}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--unk);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card[data-v="stimmt"]{border-left-color:var(--ok)} .card[data-v="teilweise"]{border-left-color:var(--warn)} .card[data-v="falsch"]{border-left-color:var(--bad)}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:700 .75rem var(--f-ui);text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:99px;background:var(--unk-bg);color:var(--unk)}
+.pill.stimmt{background:var(--ok-bg);color:var(--ok)} .pill.teilweise{background:var(--warn-bg);color:var(--warn)} .pill.falsch{background:var(--bad-bg);color:var(--bad)}
+.stage{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 8px}
+.claim{color:var(--muted);font-size:.9rem;margin:0}
+.num{font:700 2rem var(--f-num);font-variant-numeric:tabular-nums;margin:0;line-height:1.1}
+.fact{font-size:1.05rem;margin:0;font-weight:600}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.85rem}
+dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.src{font-size:.8rem;display:flex;flex-direction:column;gap:2px} .src a{color:var(--accent);overflow-wrap:anywhere}
+.ghost{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--fg);border-radius:8px;font:600 .85rem var(--f-ui);padding:8px 12px;cursor:pointer}
+.detail{white-space:pre-wrap;font-size:.92rem;border-top:1px solid var(--line);padding-top:10px;overflow-wrap:anywhere}
+.foot{font-size:.75rem;color:var(--muted)}
+.counter{background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.counter p{margin:0;font-size:1.02rem;line-height:1.4}
+.clabel{font:700 .72rem var(--f-ui);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.settings{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:6px}
+.settings summary{cursor:pointer;font-weight:600}
+.settings[open]{gap:8px} .settings label{display:block;margin-top:6px;color:var(--muted)}
+select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
+.hint{color:var(--muted);margin:0}
+.opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.opts label{display:flex;gap:8px;align-items:center}
+.log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
+.log h2{font-size:1rem;margin:0 0 6px}
+.conv{border-top:1px solid var(--line);padding:6px 0}
+.conv summary{cursor:pointer;font-weight:600}
+.log ol{margin:8px 0;padding-left:1.4em;max-height:40vh;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.log time{color:var(--muted);font-family:var(--f-num);font-size:.78rem;margin-right:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.mic[aria-pressed="true"] .dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Fakten<span>-</span>Checker</h1>
+    <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Gespräch beginnen</span></button>
+  </header>
+  <details class="settings" id="settings" hidden>
+    <summary>Einstellungen</summary>
+    <label for="key">Claude-API-Schlüssel (bleibt nur auf diesem Gerät)</label>
+    <input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…">
+    <label for="model">Modell</label>
+    <select id="model">
+      <option value="claude-opus-5-5">Opus 5.5 – genauer</option>
+      <option value="claude-haiku-5-5">Haiku 5.5 – schneller und günstiger</option>
+    </select>
+    <div class="row">
+      <button type="button" class="ghost" id="keySave">Speichern und testen</button>
+      <button type="button" class="ghost" id="keyDel">Schlüssel entfernen</button>
+    </div>
+    <p class="hint" id="keyStatus"></p>
+  </details>
+  <div class="live" id="live" aria-live="polite">Tippe auf „Gespräch beginnen“. Alles Gesagte wird mitgeschrieben, gespeichert und Behauptungen automatisch geprüft.</div>
+  <div class="opts">
+    <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
+    <label><input type="checkbox" id="audio"> Audio zusätzlich aufnehmen (bleibt auf diesem Gerät)</label>
+  </div>
+  <section class="log">
+    <h2>Gespräche (<span id="convCount">0</span>)</h2>
+    <div id="convList"></div>
+  </section>
+  <form id="form">
+    <input id="q" autocomplete="off" placeholder="Oder Behauptung eintippen …">
+    <button class="go">Prüfen</button>
+  </form>
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="cards" id="cards"></div>
+  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über den Browser (bei Chrome über Google).</p>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const cards = $("#cards"), statusEl = $("#status"), live = $("#live");
+const LABEL = {stimmt:"Stimmt", teilweise:"Teilweise", falsch:"Falsch", unklar:"Unklar"};
+const seen = new Set();
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+
+// Betriebsart: mit eigenem Node-Server oder direkt im Browser mit eigenem API-Schlüssel
+const SDK_URL = "./vendor/anthropic.js"; // npm run build:sdk
+const KEY_STORE = "fc-apikey", MODEL_STORE = "fc-model";
+const getPref = k => { try{ return localStorage.getItem(k) || ""; }catch{ return ""; } };
+let mode = null, engine = null;
+async function detectMode(){
+  if(mode) return mode;
+  try{ const r = await fetch("api/ping"); mode = r.ok && (await r.json()).ok ? "server" : "browser"; }
+  catch{ mode = "browser"; }
+  if(mode === "browser"){ $("#settings").hidden = false; if(!getPref(KEY_STORE)) $("#settings").open = true; }
+  return mode;
+}
+async function newClient(key){
+  const { default: Anthropic } = await import(SDK_URL);
+  return new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
+}
+async function getEngine(){
+  if(engine) return engine;
+  const key = getPref(KEY_STORE);
+  if(!key){ $("#settings").open = true; throw new Error("Bitte zuerst unter Einstellungen deinen API-Schlüssel eintragen."); }
+  const [client, { createEngine }] = await Promise.all([newClient(key), import("./engine.js")]);
+  engine = createEngine(client, getPref(MODEL_STORE) || "claude-opus-5-5");
+  return engine;
+}
+function browserError(err){
+  const s = err?.status;
+  if(s === 401) return "API-Schlüssel ist ungültig. Bitte unter Einstellungen prüfen.";
+  if(s === 402 || s === 403) return "Kein Guthaben oder kein Zugriff. Bitte in der Claude-Console prüfen.";
+  if(s === 429) return "Zu viele Anfragen, kurz warten.";
+  if(s >= 500) return "Claude ist gerade nicht erreichbar.";
+  if(err?.message === "refused") return "Diese Aussage wurde nicht geprüft.";
+  return err?.message || "Unbekannter Fehler.";
+}
+async function api(path, body){
+  if(await detectMode() === "browser"){
+    const e = await getEngine();
+    try{
+      if(path.endsWith("check")) return { claims: await e.check(body.text, body.context) };
+      if(path.endsWith("verify")) return await e.verify(body.claim);
+      return await e.detail(body.claim);
+    }catch(err){ throw new Error(browserError(err)); }
+  }
+  const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || "Fehler " + r.status);
+  return data;
+}
+
+function fill(c, r, stage){
+  const v = LABEL[r.verdict] ? r.verdict : "unklar";
+  c.dataset.v = v;
+  const top = el("div","top");
+  top.append(el("span","pill "+v, LABEL[v]), el("span","stage", stage));
+  const parts = [top, el("p","claim","„"+(r.claim||"")+"“")];
+  if(r.number) parts.push(el("p","num", r.number));
+  parts.push(el("p","fact", r.fact||""));
+  if(r.counter){
+    const box = el("div","counter");
+    box.append(el("span","clabel", v === "stimmt" ? "Einordnung" : "Gegenargument"), el("p", null, r.counter));
+    parts.push(box);
+  }
+  const dl = el("dl");
+  [["Kennzahl",r.definition],["Quelle",r.source],["Stand",r.asOf],["Sicherheit",r.confidence],["Hinweis",r.note]]
+    .forEach(([k,val])=>{ if(val) dl.append(el("dt",null,k), el("dd",null,String(val))); });
+  parts.push(dl);
+  if(r.sources?.length) parts.push(links(r.sources));
+  const more = el("button","ghost","Genauer ansehen"); more.type="button";
+  const det = el("div","detail"); det.hidden = true;
+  more.onclick = () => deep(r.claim, det, more);
+  parts.push(more, det);
+  c.replaceChildren(...parts);
+}
+function links(list){
+  const d = el("div","src");
+  list.forEach(s=>{ const a=el("a",null,s.title); a.href=s.url; a.target="_blank"; a.rel="noopener"; d.append(a); });
+  return d;
+}
+
+async function verify(c, claim, entry){
+  try{ const r = await api("api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveConvs(); fill(c, r, "Live geprüft"); }
+  catch{ c.querySelector(".stage").textContent = "Schnellcheck (Live-Prüfung fehlgeschlagen)"; }
+}
+async function deep(claim, det, btn){
+  if(!det.hidden){ det.hidden = true; btn.textContent = "Genauer ansehen"; return; }
+  det.hidden = false; btn.textContent = "Zuklappen";
+  if(det.textContent) return;
+  det.textContent = "Recherchiere in offiziellen Quellen …";
+  try{ const r = await api("api/detail", {claim}); det.textContent = r.text; if(r.sources?.length) det.append(links(r.sources)); }
+  catch(e){ det.textContent = e.message; }
+}
+
+let context = "";
+async function check(text, target = conv()){
+  const t0 = performance.now();
+  statusEl.textContent = "Prüfe …";
+  try{
+    const {claims} = await api("api/check", {text, context});
+    context = (context + " " + text).slice(-1500);
+    const fresh = claims.filter(r => r.claim && !seen.has(r.claim.toLowerCase()));
+    fresh.forEach(r => {
+      seen.add(r.claim.toLowerCase());
+      const entry = {...r, stage:"Schnellcheck", t:new Date().toISOString()}; target.checks.push(entry); saveConvs(); renderConvs();
+      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim, entry);
+    });
+    statusEl.textContent = fresh.length ? `${fresh.length} Behauptung(en) in ${((performance.now()-t0)/1000).toFixed(1)} s` : "Nichts Prüfbares erkannt.";
+  }catch(e){ statusEl.textContent = e.message; }
+}
+
+$("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; addLine(v); check(v); } });
+
+// Gespräche: Transkript und Prüfergebnisse je Gespräch, nur im Browser gespeichert
+const STORE = "fc-gespraeche";
+let convs = [], active = null;
+const openIds = new Set();
+try{ convs = JSON.parse(localStorage.getItem(STORE)) || []; }catch{}
+try{
+  const old = JSON.parse(localStorage.getItem("fc-log"));
+  if(old?.lines?.length){ convs.push({id:"alt", start:old.lines[0].t, lines:old.lines, checks:old.checks || []}); localStorage.removeItem("fc-log"); }
+}catch{}
+function saveConvs(){
+  try{ localStorage.setItem(STORE, JSON.stringify(convs)); }
+  catch{ statusEl.textContent = "Speicher voll: ältere Gespräche exportieren und löschen."; }
+}
+function beginConv(){
+  active = {id:Date.now().toString(36), start:new Date().toISOString(), lines:[], checks:[]};
+  convs.unshift(active); openIds.add(active.id); saveConvs(); renderConvs(); return active;
+}
+function endConv(){
+  if(!active) return;
+  active.end = new Date().toISOString(); active = null;
+  saveConvs(); renderConvs();
+}
+const conv = () => active || beginConv();
+const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+const when = iso => new Date(iso).toLocaleString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+function addLine(text){ conv().lines.push({t:new Date().toISOString(), text:text.trim()}); saveConvs(); renderConvs(); }
+
+function transcript(c, withChecks){
+  const out = ["FAKTEN-CHECKER – Gespräch vom " + when(c.start), "", "TRANSKRIPT"];
+  c.lines.forEach(l => out.push(`[${hhmm(l.t)}] ${l.text}`));
+  if(withChecks && c.checks.length){
+    out.push("", "GEPRÜFTE BEHAUPTUNGEN");
+    c.checks.forEach(k => {
+      out.push(`[${hhmm(k.t)}] „${k.claim}“ → ${LABEL[k.verdict] || "Unklar"} (${k.stage})`, `   ${k.number ? k.number + " – " : ""}${k.fact || ""}`);
+      if(k.counter) out.push(`   ${k.verdict === "stimmt" ? "Einordnung" : "Gegenargument"}: ${k.counter}`);
+      if(k.definition) out.push(`   Kennzahl: ${k.definition}`);
+      if(k.source) out.push(`   Quelle: ${k.source}${k.asOf ? ", Stand " + k.asOf : ""}`);
+      (k.sources || []).forEach(s => out.push(`   ${s.url}`));
+    });
+  }
+  return out.join("\n");
+}
+function download(name, blob){
+  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const stamp = (iso = new Date().toISOString()) => iso.slice(0,16).replace("T","_").replace(":","-");
+function btn(label, fn){ const b = el("button","ghost",label); b.type = "button"; b.onclick = () => fn(b); return b; }
+
+// Ganzes Transkript nachträglich prüfen, in Abschnitten
+async function checkTranscript(c){
+  const text = c.lines.map(l => l.text).join(" ");
+  for(let i = 0; i < text.length; i += 3000) await check(text.slice(i, i + 3000), c);
+}
+
+function renderConvs(){
+  $("#convCount").textContent = convs.length;
+  $("#convList").replaceChildren(...convs.map(c => {
+    const d = el("details","conv"); d.open = openIds.has(c.id);
+    d.ontoggle = () => d.open ? openIds.add(c.id) : openIds.delete(c.id);
+    const mins = Math.max(1, Math.round((new Date(c.end || Date.now()) - new Date(c.start)) / 60000));
+    d.append(el("summary", null, `${when(c.start)} · ${c === active ? "läuft" : mins + " Min."} · ${c.lines.length} Sätze · ${c.checks.length} Prüfungen`));
+    const ol = el("ol");
+    c.lines.forEach(l => { const li = el("li"); li.append(el("time", null, hhmm(l.t)), document.createTextNode(l.text)); ol.append(li); });
+    const row = el("div","row");
+    row.append(
+      btn("Als Textdatei", () => download(`gespraech_${stamp(c.start)}.txt`, new Blob([transcript(c, true)], {type:"text/plain;charset=utf-8"}))),
+      btn("Kopieren", async b => {
+        try{ await navigator.clipboard.writeText(transcript(c, false)); b.textContent = "Kopiert"; }
+        catch{ b.textContent = "Kopieren nicht möglich"; }
+        setTimeout(() => b.textContent = "Kopieren", 1500);
+      }),
+      btn("Alle Aussagen prüfen", b => { b.disabled = true; checkTranscript(c).finally(() => b.disabled = false); }),
+      btn("Löschen", b => {
+        if(b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Wirklich löschen?"; return; }
+        if(c === active) active = null;
+        convs = convs.filter(x => x !== c); saveConvs(); renderConvs();
+      }),
+    );
+    d.append(ol, row);
+    return d;
+  }));
+  const last = $("#convList .conv[open] ol"); if(last) last.scrollTop = last.scrollHeight;
+}
+renderConvs();
+
+// Optionaler Audio-Mitschnitt, wird beim Stoppen als Datei angeboten
+let recorder = null;
+async function startAudio(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      download(`gespraech_${stamp()}.webm`, new Blob(chunks, {type: recorder.mimeType || "audio/webm"}));
+    };
+    recorder.start(1000);
+  }catch{ statusEl.textContent = "Audio-Aufnahme nicht möglich, Mitschrift läuft trotzdem."; }
+}
+function stopAudio(){ if(recorder?.state === "recording") recorder.stop(); recorder = null; }
+
+// Spracherkennung: gesammelte Sätze werden nach kurzer Pause gemeinsam geprüft
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false, pending = "", timer = null, finals = "";
+// Dauerbetrieb: Bildschirm wach halten, Laufzeit anzeigen, nach Abbrüchen neu starten
+let wake = null, started = 0, clock = null, restarts = 0;
+async function keepAwake(){ try{ wake = await navigator.wakeLock?.request("screen"); }catch{} }
+document.addEventListener("visibilitychange", () => {
+  if(!listening) return;
+  if(document.visibilityState === "visible"){ keepAwake(); statusEl.textContent = "Hört weiter zu."; }
+  else statusEl.textContent = "Im Hintergrund kann der Browser das Mikrofon pausieren. App bitte offen lassen.";
+});
+window.addEventListener("beforeunload", e => { if(listening) e.preventDefault(); });
+function setMic(on){
+  listening = on; $("#mic").setAttribute("aria-pressed", on);
+  clearInterval(clock);
+  if(on){
+    started = Date.now(); keepAwake();
+    clock = setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      $("#micLabel").textContent = `Stoppen · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }, 1000);
+  } else { wake?.release().catch(() => {}); wake = null; }
+  $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Gespräch beginnen";
+}
+function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
+$("#mic").onclick = () => {
+  if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte Chrome oder Edge verwenden, oder Text eintippen."; return; }
+  if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); endConv(); return; }
+  if(!$("#consent").checked){ statusEl.textContent = "Bitte zuerst bestätigen, dass alle Gesprächspartner Bescheid wissen."; $("#consent").focus(); return; }
+  endConv(); beginConv();
+  if($("#audio").checked) startAudio();
+  rec = new SR(); rec.lang = "de-AT"; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = e => {
+    let interim = "";
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal){ addLine(t); pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
+      else interim += t;
+    }
+    live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
+  };
+  rec.onerror = e => {
+    if(e.error === "not-allowed" || e.error === "service-not-allowed"){ setMic(false); stopAudio(); statusEl.textContent = "Mikrofon wurde nicht erlaubt."; }
+    else if(e.error === "network") statusEl.textContent = "Keine Verbindung zur Spracherkennung, versuche erneut …";
+  };
+  // Chrome beendet die Erkennung nach Stille oder Fehlern; mit wachsender Pause neu starten
+  rec.onresult = (orig => e => { restarts = 0; orig(e); })(rec.onresult);
+  rec.onend = () => {
+    if(!listening) return;
+    const wait = Math.min(250 * 2 ** restarts++, 5000);
+    setTimeout(() => { if(listening) try{ rec.start(); }catch{} }, wait);
+  };
+  rec.start(); setMic(true); live.textContent = "Höre zu …";
+};
+
+// Einstellungen für die Browser-Version
+$("#model").value = getPref(MODEL_STORE) || "claude-opus-5-5";
+$("#keySave").onclick = async () => {
+  const key = $("#key").value.trim() || getPref(KEY_STORE);
+  if(!key){ $("#keyStatus").textContent = "Bitte Schlüssel eingeben."; return; }
+  $("#keyStatus").textContent = "Teste Schlüssel …";
+  try{
+    await (await newClient(key)).models.retrieve($("#model").value);
+    try{ localStorage.setItem(KEY_STORE, key); localStorage.setItem(MODEL_STORE, $("#model").value); }catch{}
+    engine = null; $("#key").value = "";
+    $("#keyStatus").textContent = "Schlüssel funktioniert und ist gespeichert."; $("#settings").open = false;
+  }catch(err){ $("#keyStatus").textContent = browserError(err); }
+};
+$("#keyDel").onclick = () => {
+  try{ localStorage.removeItem(KEY_STORE); }catch{}
+  engine = null; $("#keyStatus").textContent = "Schlüssel entfernt.";
+};
+detectMode().then(m => { if(m === "browser" && getPref(KEY_STORE)) $("#keyStatus").textContent = "Schlüssel ist gespeichert."; });
+</script>
+</body>
+</html>
