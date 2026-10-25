@@ -9,7 +9,7 @@ Hört bei Gesprächen mit, erkennt prüfbare Behauptungen und zeigt in Sekunden,
 3. **Live-Prüfung** (`/api/verify`): Startet automatisch danach. Die Websuche ist auf offizielle Quellen beschränkt (Statistik Austria, Eurostat, OECD, WHO, gv.at …), die Karte wird mit Links aktualisiert.
 4. **Genauer ansehen** (`/api/detail`): Ausführliche Recherche mit Entwicklung, Vergleichen und Fallstricken bei Definitionen.
 
-**Aufzeichnung:** Jeder erkannte Satz landet mit Uhrzeit in der Mitschrift und bleibt im Browser gespeichert. „Als Textdatei speichern“ exportiert Gespräch und Prüfergebnisse samt Quellen. Optional wird zusätzlich das Audio aufgenommen und beim Stoppen als `.webm`-Datei gespeichert. Start ist erst möglich, wenn bestätigt wurde, dass alle Gesprächspartner Bescheid wissen.
+**Aufzeichnung:** „Gespräch beginnen“ öffnet das Mikrofon und schreibt alles mit Uhrzeit mit. Jedes Gespräch wird einzeln im Browser gespeichert und erscheint unter „Gespräche“: ansehen, als Textdatei exportieren (mit Prüfergebnissen und Quellen), kopieren, nachträglich komplett prüfen oder löschen. Optional wird zusätzlich das Audio aufgenommen und beim Stoppen als `.webm` gespeichert. Start ist erst möglich, wenn bestätigt wurde, dass alle Gesprächspartner Bescheid wissen.
 
 Gleiche Behauptungen werden 24 h zwischengespeichert. Das ist der Grundstock der späteren Wissensdatenbank.
 

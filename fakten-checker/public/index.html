@@ -57,7 +57,9 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
-.log summary{cursor:pointer;font-weight:600}
+.log h2{font-size:1rem;margin:0 0 6px}
+.conv{border-top:1px solid var(--line);padding:6px 0}
+.conv summary{cursor:pointer;font-weight:600}
 .log ol{margin:8px 0;padding-left:1.4em;max-height:40vh;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
 .log time{color:var(--muted);font-family:var(--f-num);font-size:.78rem;margin-right:6px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
@@ -68,21 +70,17 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 <div class="wrap">
   <header>
     <h1>Fakten<span>-</span>Checker</h1>
-    <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Mithören starten</span></button>
+    <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Gespräch beginnen</span></button>
   </header>
-  <div class="live" id="live" aria-live="polite">Tippe auf „Mithören starten“. Erkannte Sprache erscheint hier, Behauptungen werden automatisch geprüft.</div>
+  <div class="live" id="live" aria-live="polite">Tippe auf „Gespräch beginnen“. Alles Gesagte wird mitgeschrieben, gespeichert und Behauptungen automatisch geprüft.</div>
   <div class="opts">
     <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
     <label><input type="checkbox" id="audio"> Audio zusätzlich aufnehmen (bleibt auf diesem Gerät)</label>
   </div>
-  <details class="log">
-    <summary>Mitschrift (<span id="logCount">0</span> Sätze)</summary>
-    <ol id="logList"></ol>
-    <div class="row">
-      <button type="button" class="ghost" id="save">Als Textdatei speichern</button>
-      <button type="button" class="ghost" id="clear">Mitschrift löschen</button>
-    </div>
-  </details>
+  <section class="log">
+    <h2>Gespräche (<span id="convCount">0</span>)</h2>
+    <div id="convList"></div>
+  </section>
   <form id="form">
     <input id="q" autocomplete="off" placeholder="Oder Behauptung eintippen …">
     <button class="go">Prüfen</button>
@@ -137,7 +135,7 @@ function links(list){
 }
 
 async function verify(c, claim, entry){
-  try{ const r = await api("/api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveLog(); fill(c, r, "Live geprüft"); }
+  try{ const r = await api("/api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveConvs(); fill(c, r, "Live geprüft"); }
   catch{ c.querySelector(".stage").textContent = "Schnellcheck (Live-Prüfung fehlgeschlagen)"; }
 }
 async function deep(claim, det, btn){
@@ -150,7 +148,7 @@ async function deep(claim, det, btn){
 }
 
 let context = "";
-async function check(text){
+async function check(text, target = conv()){
   const t0 = performance.now();
   statusEl.textContent = "Prüfe …";
   try{
@@ -159,7 +157,7 @@ async function check(text){
     const fresh = claims.filter(r => r.claim && !seen.has(r.claim.toLowerCase()));
     fresh.forEach(r => {
       seen.add(r.claim.toLowerCase());
-      const entry = {...r, stage:"Schnellcheck", t:new Date().toISOString()}; log.checks.push(entry); saveLog();
+      const entry = {...r, stage:"Schnellcheck", t:new Date().toISOString()}; target.checks.push(entry); saveConvs(); renderConvs();
       const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim, entry);
     });
     statusEl.textContent = fresh.length ? `${fresh.length} Behauptung(en) in ${((performance.now()-t0)/1000).toFixed(1)} s` : "Nichts Prüfbares erkannt.";
@@ -168,41 +166,87 @@ async function check(text){
 
 $("#form").addEventListener("submit", e => { e.preventDefault(); const v=$("#q").value.trim(); if(v){ $("#q").value=""; addLine(v); check(v); } });
 
-// Mitschrift: Sätze und Prüfergebnisse, nur im Browser gespeichert
-const LOG_KEY = "fc-log";
-let log = { lines: [], checks: [] };
-try{ log = JSON.parse(localStorage.getItem(LOG_KEY)) || log; }catch{}
-function saveLog(){ try{ localStorage.setItem(LOG_KEY, JSON.stringify(log)); }catch{} }
-const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
-function logLine(line){
-  const li = el("li"); li.append(el("time", null, hhmm(line.t)), document.createTextNode(line.text));
-  $("#logList").append(li); $("#logCount").textContent = log.lines.length;
+// Gespräche: Transkript und Prüfergebnisse je Gespräch, nur im Browser gespeichert
+const STORE = "fc-gespraeche";
+let convs = [], active = null;
+const openIds = new Set();
+try{ convs = JSON.parse(localStorage.getItem(STORE)) || []; }catch{}
+try{
+  const old = JSON.parse(localStorage.getItem("fc-log"));
+  if(old?.lines?.length){ convs.push({id:"alt", start:old.lines[0].t, lines:old.lines, checks:old.checks || []}); localStorage.removeItem("fc-log"); }
+}catch{}
+function saveConvs(){
+  try{ localStorage.setItem(STORE, JSON.stringify(convs)); }
+  catch{ statusEl.textContent = "Speicher voll: ältere Gespräche exportieren und löschen."; }
 }
-function addLine(text){ const line = {t:new Date().toISOString(), text:text.trim()}; log.lines.push(line); saveLog(); logLine(line); }
-log.lines.forEach(logLine);
+function beginConv(){
+  active = {id:Date.now().toString(36), start:new Date().toISOString(), lines:[], checks:[]};
+  convs.unshift(active); openIds.add(active.id); saveConvs(); renderConvs(); return active;
+}
+function endConv(){ if(active){ active.end = new Date().toISOString(); saveConvs(); renderConvs(); } active = null; }
+const conv = () => active || beginConv();
+const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+const when = iso => new Date(iso).toLocaleString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+function addLine(text){ conv().lines.push({t:new Date().toISOString(), text:text.trim()}); saveConvs(); renderConvs(); }
+
+function transcript(c, withChecks){
+  const out = ["FAKTEN-CHECKER – Gespräch vom " + when(c.start), "", "TRANSKRIPT"];
+  c.lines.forEach(l => out.push(`[${hhmm(l.t)}] ${l.text}`));
+  if(withChecks && c.checks.length){
+    out.push("", "GEPRÜFTE BEHAUPTUNGEN");
+    c.checks.forEach(k => {
+      out.push(`[${hhmm(k.t)}] „${k.claim}“ → ${LABEL[k.verdict] || "Unklar"} (${k.stage})`, `   ${k.number ? k.number + " – " : ""}${k.fact || ""}`);
+      if(k.counter) out.push(`   ${k.verdict === "stimmt" ? "Einordnung" : "Gegenargument"}: ${k.counter}`);
+      if(k.definition) out.push(`   Kennzahl: ${k.definition}`);
+      if(k.source) out.push(`   Quelle: ${k.source}${k.asOf ? ", Stand " + k.asOf : ""}`);
+      (k.sources || []).forEach(s => out.push(`   ${s.url}`));
+    });
+  }
+  return out.join("\n");
+}
 function download(name, blob){
   const a = el("a"); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-const stamp = () => new Date().toISOString().slice(0,16).replace("T","_").replace(":","-");
-$("#save").onclick = () => {
-  const out = ["FAKTEN-CHECKER – Mitschrift vom " + new Date().toLocaleString("de-AT"), "", "GESPRÄCH"];
-  log.lines.forEach(l => out.push(`[${hhmm(l.t)}] ${l.text}`));
-  out.push("", "GEPRÜFTE BEHAUPTUNGEN");
-  log.checks.forEach(c => {
-    out.push(`[${hhmm(c.t)}] „${c.claim}“ → ${LABEL[c.verdict] || "Unklar"} (${c.stage})`, `   ${c.number ? c.number + " – " : ""}${c.fact || ""}`);
-    if(c.counter) out.push(`   ${c.verdict === "stimmt" ? "Einordnung" : "Gegenargument"}: ${c.counter}`);
-    if(c.definition) out.push(`   Kennzahl: ${c.definition}`);
-    if(c.source) out.push(`   Quelle: ${c.source}${c.asOf ? ", Stand " + c.asOf : ""}`);
-    (c.sources || []).forEach(s => out.push(`   ${s.url}`));
-  });
-  download(`mitschrift_${stamp()}.txt`, new Blob([out.join("\n")], {type:"text/plain;charset=utf-8"}));
-};
-$("#clear").onclick = () => {
-  if($("#clear").dataset.sure !== "1"){ $("#clear").dataset.sure = "1"; $("#clear").textContent = "Wirklich löschen?"; return; }
-  log = { lines: [], checks: [] }; saveLog(); $("#logList").replaceChildren(); $("#logCount").textContent = 0;
-  $("#clear").dataset.sure = ""; $("#clear").textContent = "Mitschrift löschen";
-};
+const stamp = (iso = new Date().toISOString()) => iso.slice(0,16).replace("T","_").replace(":","-");
+function btn(label, fn){ const b = el("button","ghost",label); b.type = "button"; b.onclick = () => fn(b); return b; }
+
+// Ganzes Transkript nachträglich prüfen, in Abschnitten
+async function checkTranscript(c){
+  const text = c.lines.map(l => l.text).join(" ");
+  for(let i = 0; i < text.length; i += 3000) await check(text.slice(i, i + 3000), c);
+}
+
+function renderConvs(){
+  $("#convCount").textContent = convs.length;
+  $("#convList").replaceChildren(...convs.map(c => {
+    const d = el("details","conv"); d.open = openIds.has(c.id);
+    d.ontoggle = () => d.open ? openIds.add(c.id) : openIds.delete(c.id);
+    const mins = Math.max(1, Math.round((new Date(c.end || Date.now()) - new Date(c.start)) / 60000));
+    d.append(el("summary", null, `${when(c.start)} · ${c === active ? "läuft" : mins + " Min."} · ${c.lines.length} Sätze · ${c.checks.length} Prüfungen`));
+    const ol = el("ol");
+    c.lines.forEach(l => { const li = el("li"); li.append(el("time", null, hhmm(l.t)), document.createTextNode(l.text)); ol.append(li); });
+    const row = el("div","row");
+    row.append(
+      btn("Als Textdatei", () => download(`gespraech_${stamp(c.start)}.txt`, new Blob([transcript(c, true)], {type:"text/plain;charset=utf-8"}))),
+      btn("Kopieren", async b => {
+        try{ await navigator.clipboard.writeText(transcript(c, false)); b.textContent = "Kopiert"; }
+        catch{ b.textContent = "Kopieren nicht möglich"; }
+        setTimeout(() => b.textContent = "Kopieren", 1500);
+      }),
+      btn("Alle Aussagen prüfen", b => { b.disabled = true; checkTranscript(c).finally(() => b.disabled = false); }),
+      btn("Löschen", b => {
+        if(b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Wirklich löschen?"; return; }
+        if(c === active) active = null;
+        convs = convs.filter(x => x !== c); saveConvs(); renderConvs();
+      }),
+    );
+    d.append(ol, row);
+    return d;
+  }));
+  const last = $("#convList .conv[open] ol"); if(last) last.scrollTop = last.scrollHeight;
+}
+renderConvs();
 
 // Optionaler Audio-Mitschnitt, wird beim Stoppen als Datei angeboten
 let recorder = null;
@@ -243,13 +287,14 @@ function setMic(on){
       $("#micLabel").textContent = `Stoppen · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
     }, 1000);
   } else { wake?.release().catch(() => {}); wake = null; }
-  $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Mithören starten";
+  $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Gespräch beginnen";
 }
 function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
 $("#mic").onclick = () => {
   if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte Chrome oder Edge verwenden, oder Text eintippen."; return; }
-  if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); return; }
+  if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); endConv(); return; }
   if(!$("#consent").checked){ statusEl.textContent = "Bitte zuerst bestätigen, dass alle Gesprächspartner Bescheid wissen."; $("#consent").focus(); return; }
+  endConv(); beginConv();
   if($("#audio").checked) startAudio();
   rec = new SR(); rec.lang = "de-AT"; rec.continuous = true; rec.interimResults = true;
   rec.onresult = e => {
