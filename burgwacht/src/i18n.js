@@ -1,0 +1,75 @@
+// Sprache: Deutsch für deutschsprachige Browser, sonst Englisch. ?lang=en|de erzwingt.
+const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='de'||q==='en')return q}catch(e){}return(navigator.language||'de').toLowerCase().startsWith('de')?'de':'en'})();
+const I18N={
+  // Gebäude, Gegner, Karten
+  'Bogenturm':'Archer Tower','Kanone':'Cannon','Frostmagier':'Frost Mage','Blitzturm':'Tesla Tower','Sägewerk':'Sawmill','Goldmine':'Gold Mine','Kristallmine':'Crystal Mine','Kaserne':'Barracks',
+  'Schnell. Trifft Boden und Luft.':'Fast. Hits ground and air.','Flächenschaden. Nur Bodenziele.':'Splash damage. Ground only.','Magie verlangsamt Gegner.':'Magic that slows enemies.',
+  'Kettenblitz, ignoriert Rüstung.':'Chain lightning, ignores armor.','Holz alle 6 s. +1 pro Nachbarbaum.':'Wood every 6 s. +1 per adjacent tree.','Gold alle 6 s. +2 pro Nachbarfels.':'Gold every 6 s. +2 per adjacent rock.',
+  'Nur auf leuchtenden Kristalladern.':'Only on glowing crystal veins.','3 Soldaten blockieren den Weg.':'3 soldiers block the road.',
+  'Goblin':'Goblin','Wolf':'Wolf','Ork':'Orc','Fledermaus':'Bat','Dunkler Ritter':'Dark Knight','Troll':'Troll','Drache':'Dragon',
+  'Grüntal':'Green Vale','Herbstwald':'Autumn Woods','Wüstenpass':'Desert Pass','Flusstal':'River Valley','Ascheberg':'Ash Mountain',
+  // HUD & Panels
+  'Welle':'Wave','Los geht\'s!':'Let\'s go!','Starten':'Start','Zuerst bauen, dann los!':'Build first, then go!','Bauen ✓':'Build ✓','Spielen':'Play','Pause':'Paused','Weiter':'Continue','Sieg!':'Victory!','Nochmal':'Play again',
+  'Bau dein Reich. Halte die Burg. Überlebe 20 Wellen.':'Build your realm. Hold the castle. Survive 20 waves.','Wirtschaft':'Economy','Verteidigung':'Defense','Burg ausbauen':'Upgrade castle',
+  'Sägewerke neben Wäldern, Goldminen neben Felsen bringen Bonus.':'Sawmills next to forests and gold mines next to rocks earn a bonus.',
+  'Türme stoppen Goblins, Ritter, Fledermäuse und Bosse.':'Towers stop goblins, knights, bats and bosses.','Schaltet Blitztürme, Stufe-3-Türme und die Burg-Balliste frei.':'Unlocks tesla towers, level 3 towers and the castle ballista.',
+  'Tempo (F)':'Speed (F)','Pause (P)':'Pause (P)','Tag-Nacht-Wechsel an/aus':'Day/night cycle on/off','Ton an/aus (M)':'Sound on/off (M)','Meteor (Q)':'Meteor (Q)','Eissturm (E)':'Blizzard (E)',
+  'Hier bauen':'Build here','Abbrechen':'Cancel','Schließen':'Close','Held (H), Wirbelschlag (R)':'Hero (H), Whirlwind (R)',
+  'Schaden':'Damage','Schüsse/s':'Shots/s','Reichweite':'Range','Verlangsamung':'Slow','Ketten':'Chains','Radius':'Radius','Soldaten':'Soldiers','Leben je Soldat':'HP per soldier',
+  'Ertrag / 6 s':'Yield / 6 s','Nachbarbonus':'Neighbor bonus','Max. Stufe':'Max level','voll ausgebaut':'fully upgraded','Ausbauen':'Upgrade','Sammelpunkt':'Rally point','auf Weg tippen':'tap the road',
+  'Abreißen':'Demolish','Wirklich?':'Sure?','Burg':'Castle','Leben':'Lives','Max. Gebäudestufe':'Max building level','Wald':'Forest','Fällen':'Chop','Fels':'Rock','Abbauen':'Mine','Kristallader':'Crystal vein','Kristallmine bauen':'Build crystal mine',
+  'Bäume geben Sägewerken Bonus. Fällen bringt sofort Holz und macht Platz.':'Trees boost sawmills. Chopping gives wood right away and frees space.',
+  'Felsen geben Goldminen Bonus. Abbauen bringt Gold und macht Platz.':'Rocks boost gold mines. Mining gives gold and frees space.',
+  'Hier kann eine Kristallmine gebaut werden. Kristalle brauchst du für Blitztürme und Zauber.':'You can build a crystal mine here. Crystals power tesla towers and spells.',
+  'Stufe 2: +10 Leben, Blitzturm und Stufe-3-Ausbau für alle Gebäude.':'Level 2: +10 lives, tesla tower and level 3 for all buildings.','Stufe 3: +10 Leben und eine Balliste auf dem Bergfried.':'Level 3: +10 lives and a ballista on the keep.',
+  'Voll ausgebaut. Die Balliste wacht über das Tor.':'Fully upgraded. The ballista guards the gate.','Held Eckbert':'Sir Eckbert','Stufe':'Level','Erfahrung':'Experience','Bewegen':'Move','dann auf Karte tippen':'then tap the map','Wirbelschlag':'Whirlwind',
+  'Kämpft im Nahkampf und hält Gegner auf. Sammelt Erfahrung durch Siege in seiner Nähe.':'Fights in melee and holds enemies back. Gains experience from kills nearby.',
+  'Bäume':'trees','Felsen':'rocks','max.':'max.','Die Burg ist gefallen':'The castle has fallen','Wellen':'Waves','Besiegte':'Defeated','Gebäude':'Buildings','Gold verdient':'Gold earned',
+  // Meldungen
+  'Nur auf Kristalladern baubar':'Only buildable on crystal veins','Hier kann nicht gebaut werden':'You can\'t build here','Nicht genug Rohstoffe':'Not enough resources','Baue zuerst die Burg aus':'Upgrade the castle first',
+  'Blitzturm und Stufe-3-Ausbau frei':'Tesla tower and level 3 unlocked','Burg-Balliste schießt mit':'The castle ballista joins the fight','Fels abbauen kostet 10 Holz':'Mining a rock costs 10 wood',
+  'Verteidige die Burg!':'Defend the castle!','Welle geschafft':'Wave cleared','Mehr Leben und Schaden':'More health and damage','Der Held ist gefallen und kehrt in 15 s zurück':'The hero has fallen and returns in 15 s',
+  'Der Held ist noch nicht zurück':'The hero is not back yet','Wirbelschlag lädt noch':'Whirlwind is recharging','Tippe auf die Karte, um den Helden zu bewegen':'Tap the map to move the hero',
+  'Zum Abreißen nochmal tippen':'Tap again to demolish','Tippe auf den Weg für den neuen Sammelpunkt':'Tap the road for the new rally point','Der Sammelpunkt muss auf dem Weg in Reichweite liegen':'The rally point must be on the road within range',
+  'Zauber lädt noch':'Spell is recharging','Zauber wirken nur während einer Welle':'Spells only work during a wave','Tippe auf die Karte, um den Meteor zu werfen':'Tap the map to drop the meteor',
+  'Tag-Nacht-Wechsel an':'Day/night cycle on','Immer Tag':'Always day','Baue Türme am Weg und ein Sägewerk neben dem Wald':'Build towers along the road and a sawmill next to the forest',
+  'Nochmal tippen zum Bauen':'Tap again to build','Wische, um die Karte zu verschieben. Die Burg liegt rechts.':'Swipe to move the map. The castle is on the right.',
+  'Ziehen verschiebt die Karte, zwei Finger zoomen. Die Burg liegt rechts.':'Drag to move the map, pinch to zoom. The castle is on the right.','kein Nachbarbonus':'no neighbor bonus','kein Bonus':'no bonus',
+  // Meta
+  'Werbung':'Ad','Demo: Auf CrazyGames läuft hier ein echter Werbespot.':'Demo: a real ad plays here on CrazyGames.','Edelsteine':'gems','Nicht genug Edelsteine':'Not enough gems',
+  'Scharfe Spitzen':'Sharp Tips','+8 % Schaden aller Türme und Kämpfer':'+8% damage for all towers and fighters','Schatzkammer':'Treasury','+40 Startgold':'+40 starting gold','Dicke Mauern':'Thick Walls','+4 Burgleben':'+4 castle lives',
+  'Kristallkunde':'Crystal Lore','−12 % Abklingzeit für Zauber':'−12% spell cooldown','Heldenmut':'Valor','+15 % Leben und Schaden für den Helden':'+15% hero health and damage','Drill':'Drill','+20 % Leben für Soldaten':'+20% soldier health',
+  '+150 Startgold':'+150 starting gold','+25 Kristalle':'+25 crystals','+10 Burgleben':'+10 castle lives','Held startet auf Stufe 3':'Hero starts at level 3',
+  'Erster Sieg':'First Victory','Gewinne eine Karte':'Win a map','Makellos':'Flawless','Hol 3 Sterne auf einer Karte':'Get 3 stars on a map','Schlächter':'Slayer','Besiege insgesamt 500 Gegner':'Defeat 500 enemies in total',
+  'Drachentöter':'Dragonslayer','Besiege einen Drachen':'Defeat a dragon','Festung':'Fortress','Baue die Burg auf Stufe 3':'Upgrade the castle to level 3','Legende':'Legend','Bringe den Helden auf Stufe 5':'Get the hero to level 5',
+  'Baumeister':'Master Builder','Habe 12 Gebäude gleichzeitig':'Have 12 buildings at once','Unberührt':'Untouched','Gewinne ohne ein Leben zu verlieren':'Win without losing a life','Unaufhaltsam':'Unstoppable',
+  'Erreiche Welle 15 im Endlos-Modus':'Reach wave 15 in endless mode','Treue':'Loyalty','Hol 7 Tage in Folge den Tagesbonus':'Claim the daily bonus 7 days in a row','Eroberer':'Conqueror','Gewinne alle fünf Karten':'Win all five maps',
+  'Erfolg!':'Achievement!','Tagesbonus':'Daily bonus','Upgrades':'Upgrades','Erfolge':'Achievements','Shop':'Shop','Erst Karte {n} gewinnen':'Win map {n} first','{n} Wellen':'{n} waves','Endlos':'Endless','Rekord':'Record',
+  'So lange du kannst':'As long as you can','Dauerhaft für alle Karten.':'Permanent for all maps.','Max.':'Max','Besiegte Gegner insgesamt':'Enemies defeated in total','Heute schon abgeholt. Komm morgen wieder!':'Already claimed today. Come back tomorrow!',
+  'Tag {n} in Folge':'Day {n} in a row','Abholen':'Claim','Verdoppeln':'Double','Tag':'Day','Gratis-Edelsteine':'Free gems','Kurzes Video ansehen':'Watch a short video','heute':'today','Morgen wieder':'Back tomorrow',
+  'Königspaket aktiv':'Royal Pack active','Keine Werbepausen, alle Karten frei, doppelte Edelsteine.':'No ad breaks, all maps unlocked, double gems.','Königspaket':'Royal Pack',
+  'Keine Werbepausen, alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'No ad breaks, all maps unlocked, double gems, +300 gems.','Code eingeben':'Enter code','Den Code bekommst du nach dem Kauf.':'You get the code after purchase.',
+  'Danke für deine Unterstützung!':'Thanks for your support!','Endlos-Modus':'Endless mode','Boosts für diese Runde':'Boosts for this round','Los!':'Go!','Endlos-Modus: Wie weit kommst du?':'Endless mode: how far can you go?',
+  'Endlos-Modus vorbei':'Endless run over','Du hast Welle {n} erreicht.':'You reached wave {n}.','Neuer Rekord!':'New record!','Alle {n} Wellen abgewehrt. Das Reich ist sicher.':'All {n} waves repelled. The realm is safe.',
+  'Du hast bis Welle {n} durchgehalten.':'You held out until wave {n}.','Weiterkämpfen: +10 Leben':'Keep fighting: +10 lives','Edelsteine verdoppeln':'Double gems','Werbung gerade nicht verfügbar':'Ad not available right now',
+  'Video':'Video','Zweite Chance':'Second chance','+10 Leben':'+10 lives','Code ungültig':'Invalid code','Zur Kartenwahl':'Back to maps',
+  'Alle Karten frei, doppelte Edelsteine, +300 Edelsteine.':'All maps unlocked, double gems, +300 gems.','Kaufbedingungen':'Terms of sale','Info':'Info','Impressum':'Legal notice','Datenschutz':'Privacy',
+  'Dein Fortschritt wird nur in diesem Browser gespeichert.':'Your progress is only stored in this browser.',
+  'Bestenliste':'Leaderboard','Endlos-Modus, beste Welle':'Endless mode, best wave','Lädt …':'Loading …','Noch keine Einträge. Sei der Erste!':'No entries yet. Be the first!',
+  'Bestenliste gerade nicht erreichbar.':'Leaderboard not reachable right now.','Unter welchem Namen eintragen?':'Which name should we use?','Eintragen':'Submit','Name: mindestens 2 Zeichen':'Name: at least 2 characters','In die Bestenliste eingetragen':'Added to the leaderboard',
+  'Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.':'Conquer five maps. Collect stars and gems for permanent upgrades.',
+};
+const PAT=[
+  [/^Welle (\d+)$/,'Wave $1'],[/^(\d+) Gegner übrig$/,'$1 enemies left'],[/^in (\d+) s · jetzt \+(\d+) Gold$/,'in $1 s · now +$2 gold'],[/^Stufe (\d+)$/,'Level $1'],
+  [/^Stufe (\d) braucht Burg (\d)$/,'Level $1 needs castle $2'],[/^(.+) braucht Burg Stufe (\d)$/,'$1 needs castle level $2'],[/^(.+): erst ab Burg Stufe (\d)$/,'$1: needs castle level $2'],
+  [/^Burg Stufe (\d)$/,'Castle level $1'],[/^Burg (\d)$/,'Castle $1'],[/^Früh gerufen \+(\d+) Gold$/,'Called early +$1 gold'],[/^(.+) greift an!$/,'$1 attacks!'],[/^(.+) besiegt!$/,'$1 defeated!'],[/^\+(\d+) Gold$/,'+$1 gold'],
+  [/^Held Stufe (\d)$/,'Hero level $1'],[/^Der Held kehrt in (\d+) s zurück$/,'The hero returns in $1 s'],[/^Braucht (\d+) Kristalle – baue eine Kristallmine$/,'Needs $1 crystals – build a crystal mine'],
+  [/^(\d+) Flächenschaden$/,'$1 area damage'],[/^(\d+) (Bäume|Felsen)$/,(m,a,b)=>a+' '+(b==='Bäume'?'trees':'rocks')],[/^\+(\d+) Bonus$/,'+$1 bonus'],[/^\+(\d+) Bonus \((\d+) (Bäume|Felsen)\)$/,(m,a,n,b)=>`+${a} bonus (${n} ${b==='Bäume'?'trees':'rocks'})`],
+  [/^Bestleistung: Welle (\d+)$/,'Best: wave $1'],[/^(.+): (\d+) Wellen$/,'$1: $2 waves'],[/^\+(\d+) gems: (.+)$/,'+$1 gems: $2'],
+  [/^Du hast bis Welle (\d+) durchgehalten\.$/,'You held out until wave $1.'],[/^Alle (\d+) Wellen abgewehrt\. Das Reich ist sicher\.$/,'All $1 waves repelled. The realm is safe.'],
+];
+function tr(s,v){let r=(LANG==='en'&&I18N[s])||s;if(v)for(const k in v)r=r.split('{'+k+'}').join(v[k]);return r}
+function trx(s){if(LANG!=='en'||typeof s!=='string'||!s)return s;const t=s.trim();if(I18N[t])return s.replace(t,I18N[t]);for(const[re,rp]of PAT)if(re.test(t))return s.replace(t,t.replace(re,rp));
+  const i=t.indexOf(': ');if(i>0){const a=t.slice(0,i),b=t.slice(i+2);if(I18N[a]||I18N[b])return s.replace(t,trx(a)+': '+trx(b))}return s}
+function trDOM(root){if(LANG!=='en'||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const v=n.nodeValue;if(v.trim()){const r=trx(v);if(r!==v)n.nodeValue=r}}
+  root.querySelectorAll&&root.querySelectorAll('[title],[aria-label]').forEach(e=>{for(const a of['title','aria-label'])if(e.hasAttribute(a))e.setAttribute(a,trx(e.getAttribute(a)))})}
