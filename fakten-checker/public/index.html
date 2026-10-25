@@ -54,6 +54,11 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .counter{background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .counter p{margin:0;font-size:1.02rem;line-height:1.4}
 .clabel{font:700 .72rem var(--f-ui);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.settings{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:6px}
+.settings summary{cursor:pointer;font-weight:600}
+.settings[open]{gap:8px} .settings label{display:block;margin-top:6px;color:var(--muted)}
+select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
+.hint{color:var(--muted);margin:0}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
@@ -72,6 +77,21 @@ dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
     <h1>Fakten<span>-</span>Checker</h1>
     <button class="mic" id="mic" aria-pressed="false"><span class="dot"></span><span id="micLabel">Gespräch beginnen</span></button>
   </header>
+  <details class="settings" id="settings" hidden>
+    <summary>Einstellungen</summary>
+    <label for="key">Claude-API-Schlüssel (bleibt nur auf diesem Gerät)</label>
+    <input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…">
+    <label for="model">Modell</label>
+    <select id="model">
+      <option value="claude-opus-5-5">Opus 5.5 – genauer</option>
+      <option value="claude-haiku-5-5">Haiku 5.5 – schneller und günstiger</option>
+    </select>
+    <div class="row">
+      <button type="button" class="ghost" id="keySave">Speichern und testen</button>
+      <button type="button" class="ghost" id="keyDel">Schlüssel entfernen</button>
+    </div>
+    <p class="hint" id="keyStatus"></p>
+  </details>
   <div class="live" id="live" aria-live="polite">Tippe auf „Gespräch beginnen“. Alles Gesagte wird mitgeschrieben, gespeichert und Behauptungen automatisch geprüft.</div>
   <div class="opts">
     <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
@@ -97,7 +117,48 @@ const seen = new Set();
 
 function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
+// Betriebsart: mit eigenem Node-Server oder direkt im Browser mit eigenem API-Schlüssel
+const SDK_URL = "./vendor/anthropic.js"; // npm run build:sdk
+const KEY_STORE = "fc-apikey", MODEL_STORE = "fc-model";
+const getPref = k => { try{ return localStorage.getItem(k) || ""; }catch{ return ""; } };
+let mode = null, engine = null;
+async function detectMode(){
+  if(mode) return mode;
+  try{ const r = await fetch("api/ping"); mode = r.ok && (await r.json()).ok ? "server" : "browser"; }
+  catch{ mode = "browser"; }
+  if(mode === "browser"){ $("#settings").hidden = false; if(!getPref(KEY_STORE)) $("#settings").open = true; }
+  return mode;
+}
+async function newClient(key){
+  const { default: Anthropic } = await import(SDK_URL);
+  return new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
+}
+async function getEngine(){
+  if(engine) return engine;
+  const key = getPref(KEY_STORE);
+  if(!key){ $("#settings").open = true; throw new Error("Bitte zuerst unter Einstellungen deinen API-Schlüssel eintragen."); }
+  const [client, { createEngine }] = await Promise.all([newClient(key), import("./engine.js")]);
+  engine = createEngine(client, getPref(MODEL_STORE) || "claude-opus-5-5");
+  return engine;
+}
+function browserError(err){
+  const s = err?.status;
+  if(s === 401) return "API-Schlüssel ist ungültig. Bitte unter Einstellungen prüfen.";
+  if(s === 402 || s === 403) return "Kein Guthaben oder kein Zugriff. Bitte in der Claude-Console prüfen.";
+  if(s === 429) return "Zu viele Anfragen, kurz warten.";
+  if(s >= 500) return "Claude ist gerade nicht erreichbar.";
+  if(err?.message === "refused") return "Diese Aussage wurde nicht geprüft.";
+  return err?.message || "Unbekannter Fehler.";
+}
 async function api(path, body){
+  if(await detectMode() === "browser"){
+    const e = await getEngine();
+    try{
+      if(path.endsWith("check")) return { claims: await e.check(body.text, body.context) };
+      if(path.endsWith("verify")) return await e.verify(body.claim);
+      return await e.detail(body.claim);
+    }catch(err){ throw new Error(browserError(err)); }
+  }
   const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
   const data = await r.json().catch(()=>({}));
   if(!r.ok) throw new Error(data.error || "Fehler " + r.status);
@@ -135,7 +196,7 @@ function links(list){
 }
 
 async function verify(c, claim, entry){
-  try{ const r = await api("/api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveConvs(); fill(c, r, "Live geprüft"); }
+  try{ const r = await api("api/verify", {claim}); Object.assign(entry, r, {stage:"Live geprüft"}); saveConvs(); fill(c, r, "Live geprüft"); }
   catch{ c.querySelector(".stage").textContent = "Schnellcheck (Live-Prüfung fehlgeschlagen)"; }
 }
 async function deep(claim, det, btn){
@@ -143,7 +204,7 @@ async function deep(claim, det, btn){
   det.hidden = false; btn.textContent = "Zuklappen";
   if(det.textContent) return;
   det.textContent = "Recherchiere in offiziellen Quellen …";
-  try{ const r = await api("/api/detail", {claim}); det.textContent = r.text; if(r.sources?.length) det.append(links(r.sources)); }
+  try{ const r = await api("api/detail", {claim}); det.textContent = r.text; if(r.sources?.length) det.append(links(r.sources)); }
   catch(e){ det.textContent = e.message; }
 }
 
@@ -152,7 +213,7 @@ async function check(text, target = conv()){
   const t0 = performance.now();
   statusEl.textContent = "Prüfe …";
   try{
-    const {claims} = await api("/api/check", {text, context});
+    const {claims} = await api("api/check", {text, context});
     context = (context + " " + text).slice(-1500);
     const fresh = claims.filter(r => r.claim && !seen.has(r.claim.toLowerCase()));
     fresh.forEach(r => {
@@ -183,7 +244,11 @@ function beginConv(){
   active = {id:Date.now().toString(36), start:new Date().toISOString(), lines:[], checks:[]};
   convs.unshift(active); openIds.add(active.id); saveConvs(); renderConvs(); return active;
 }
-function endConv(){ if(active){ active.end = new Date().toISOString(); saveConvs(); renderConvs(); } active = null; }
+function endConv(){
+  if(!active) return;
+  active.end = new Date().toISOString(); active = null;
+  saveConvs(); renderConvs();
+}
 const conv = () => active || beginConv();
 const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
 const when = iso => new Date(iso).toLocaleString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
@@ -319,6 +384,25 @@ $("#mic").onclick = () => {
   };
   rec.start(); setMic(true); live.textContent = "Höre zu …";
 };
+
+// Einstellungen für die Browser-Version
+$("#model").value = getPref(MODEL_STORE) || "claude-opus-5-5";
+$("#keySave").onclick = async () => {
+  const key = $("#key").value.trim() || getPref(KEY_STORE);
+  if(!key){ $("#keyStatus").textContent = "Bitte Schlüssel eingeben."; return; }
+  $("#keyStatus").textContent = "Teste Schlüssel …";
+  try{
+    await (await newClient(key)).models.retrieve($("#model").value);
+    try{ localStorage.setItem(KEY_STORE, key); localStorage.setItem(MODEL_STORE, $("#model").value); }catch{}
+    engine = null; $("#key").value = "";
+    $("#keyStatus").textContent = "Schlüssel funktioniert und ist gespeichert."; $("#settings").open = false;
+  }catch(err){ $("#keyStatus").textContent = browserError(err); }
+};
+$("#keyDel").onclick = () => {
+  try{ localStorage.removeItem(KEY_STORE); }catch{}
+  engine = null; $("#keyStatus").textContent = "Schlüssel entfernt.";
+};
+detectMode().then(m => { if(m === "browser" && getPref(KEY_STORE)) $("#keyStatus").textContent = "Schlüssel ist gespeichert."; });
 </script>
 </body>
 </html>
