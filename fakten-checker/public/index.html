@@ -356,34 +356,55 @@ function setMic(on){
 }
 function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8) check(t); }
 $("#mic").onclick = () => {
-  if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte Chrome oder Edge verwenden, oder Text eintippen."; return; }
+  if(!SR){ statusEl.textContent = "Dieser Browser kann keine Sprache erkennen. Bitte den Link in Google Chrome öffnen (nicht in der Claude-App)."; return; }
   if(listening){ setMic(false); rec?.stop(); stopAudio(); flush(); endConv(); return; }
   if(!$("#consent").checked){ statusEl.textContent = "Bitte zuerst bestätigen, dass alle Gesprächspartner Bescheid wissen."; $("#consent").focus(); return; }
   endConv(); beginConv();
-  if($("#audio").checked) startAudio();
-  rec = new SR(); rec.lang = "de-AT"; rec.continuous = true; rec.interimResults = true;
+  // Android: Audio-Mitschnitt und Spracherkennung blockieren sich gegenseitig das Mikrofon
+  if($("#audio").checked && !ANDROID) startAudio();
+  else if($("#audio").checked) statusEl.textContent = "Audio-Mitschnitt ist am Handy nicht gleichzeitig möglich, es wird nur mitgeschrieben.";
+  setMic(true); live.textContent = "Starte Mikrofon …";
+  startRec();
+};
+
+// Android-Chrome arbeitet zuverlässiger mit kurzen Erkennungsrunden, die sofort neu gestartet werden
+const ANDROID = /Android/i.test(navigator.userAgent);
+const SR_ERR = {
+  "no-speech": "Nichts gehört, höre weiter zu …",
+  "audio-capture": "Kein Mikrofon gefunden oder von einer anderen App belegt.",
+  "network": "Spracherkennung braucht Internet (Google-Dienst), versuche erneut …",
+  "language-not-supported": "Deutsch wird von dieser Spracherkennung nicht unterstützt.",
+};
+function startRec(){
+  rec = new SR(); rec.lang = "de-AT"; rec.continuous = !ANDROID; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.onaudiostart = () => { live.textContent = finals || "Höre zu … bitte sprechen."; };
   rec.onresult = e => {
+    restarts = 0;
     let interim = "";
     for(let i = e.resultIndex; i < e.results.length; i++){
-      const t = e.results[i][0].transcript;
+      const t = e.results[i][0].transcript.trim();
+      if(!t) continue;
       if(e.results[i].isFinal){ addLine(t); pending += " " + t; finals = (finals + " " + t).slice(-400); clearTimeout(timer); timer = setTimeout(flush, 900); }
       else interim += t;
     }
     live.replaceChildren(document.createTextNode(finals + " "), el("b", null, interim));
   };
   rec.onerror = e => {
-    if(e.error === "not-allowed" || e.error === "service-not-allowed"){ setMic(false); stopAudio(); statusEl.textContent = "Mikrofon wurde nicht erlaubt."; }
-    else if(e.error === "network") statusEl.textContent = "Keine Verbindung zur Spracherkennung, versuche erneut …";
+    if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+      setMic(false); stopAudio(); endConv();
+      statusEl.textContent = "Mikrofon ist blockiert. Im Browser auf das Schloss neben der Adresse tippen → Mikrofon erlauben, dann neu laden.";
+      return;
+    }
+    if(e.error !== "aborted") statusEl.textContent = SR_ERR[e.error] || "Spracherkennung: " + e.error;
   };
-  // Chrome beendet die Erkennung nach Stille oder Fehlern; mit wachsender Pause neu starten
-  rec.onresult = (orig => e => { restarts = 0; orig(e); })(rec.onresult);
+  // Erkennung endet nach Stille oder Fehlern: mit wachsender Pause neu starten
   rec.onend = () => {
     if(!listening) return;
-    const wait = Math.min(250 * 2 ** restarts++, 5000);
-    setTimeout(() => { if(listening) try{ rec.start(); }catch{} }, wait);
+    const wait = ANDROID ? 100 : Math.min(250 * 2 ** restarts++, 5000);
+    setTimeout(() => { if(listening) try{ rec.start(); }catch{ startRec(); } }, wait);
   };
-  rec.start(); setMic(true); live.textContent = "Höre zu …";
-};
+  try{ rec.start(); }catch(err){ statusEl.textContent = "Spracherkennung konnte nicht starten: " + err.message; }
+}
 
 // Einstellungen für die Browser-Version
 $("#model").value = getPref(MODEL_STORE) || "claude-opus-5-5";
