@@ -57,3 +57,36 @@ Mit dem Kauf stimmst du zu, dass die Lieferung sofort beginnt und das Rücktritt
 
 ## Kurztext für Social Media (Deutsch)
 Mein Browser-Spiel ist online: Burgwacht 🏰 Baue Türme, trainiere deinen Helden und halte die Burg gegen Drachen! Gratis im Browser, auch am Handy. 👉 LINK
+
+## Google Play
+
+**App-Name (max. 30 Zeichen):** Burgwacht: Tower Defense
+
+**Kurzbeschreibung DE (max. 80):** Baue Türme, trainiere deinen Helden und halte die Burg gegen Drachen!
+**Kurzbeschreibung EN (max. 80):** Build towers, train your hero and hold the castle against dragons!
+
+**Vollständige Beschreibung DE**
+Burgwacht ist ein farbenfrohes 3D-Tower-Defense mit Aufbau-Strategie. Baue Bogentürme, Kanonen, Frostmagier und Blitztürme entlang der Straße – und vergiss deine Wirtschaft nicht: Sägewerke bringen neben Wäldern mehr Holz, Goldminen neben Felsen mehr Gold, und leuchtende Kristalladern versorgen deine stärksten Zauber.
+
+• 5 Karten: Grüntal, Herbstwald, Wüstenpass, Flusstal und der Vulkan Ascheberg
+• Endlos-Modus für Rekordjäger
+• Ein Held, den du über das Schlachtfeld schickst – mit Stufenaufstieg und Wirbelschlag
+• Kasernen mit Soldaten, die den Weg blockieren
+• Burg-Ausbau, Boss-Wellen mit Trollen und feuerspeienden Drachen
+• Meteor- und Eissturm-Zauber
+• Edelsteine, dauerhafte Upgrades, Tagesbonus und Erfolge
+• Spielt offline, auf Deutsch und Englisch
+
+**Full description EN**
+Burgwacht is a colorful 3D tower defense with a strategy twist. Build archer towers, cannons, frost mages and tesla coils along the road – and don't forget your economy: sawmills earn more next to forests, gold mines next to rocks, and glowing crystal veins power your strongest spells.
+
+• 5 maps: Green Vale, Autumn Woods, Desert Pass, River Valley and the volcanic Ash Mountain
+• Endless mode for high-score hunters
+• A hero you send across the battlefield – with level-ups and a whirlwind attack
+• Barracks with soldiers that block the road
+• Castle upgrades, boss waves with trolls and fire-breathing dragons
+• Meteor and blizzard spells
+• Gems, permanent upgrades, daily bonus and achievements
+• Plays offline, in English and German
+
+**Kategorie:** Spiele → Strategie · **Tags:** Tower Defense, Strategie, Burg, Fantasy
