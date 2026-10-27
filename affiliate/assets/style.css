@@ -26,7 +26,8 @@ thead th{background:var(--soft)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
 .card{border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
 .card h3{margin:0}
-.card .btn{margin-top:auto;text-align:center}
+.card .btn{text-align:center}
+.card .btn:first-of-type{margin-top:auto}
 .pc ul{list-style:none;padding:0;margin:4px 0}
 .pro li::before{content:"✔ ";color:var(--pro)}
 .con li::before{content:"✖ ";color:var(--con)}

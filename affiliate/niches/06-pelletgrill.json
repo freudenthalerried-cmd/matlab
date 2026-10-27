@@ -10,39 +10,193 @@
   "beschreibung": "Pelletgrills im Vergleich: Weber Searwood, Traeger Ironwood & Woodridge, Pit Boss. Mit Pelletverbrauchs-Rechner und gratis Kaufcheckliste.",
   "einleitung": "Ein Pelletgrill hält die Temperatur automatisch – du stellst 110 °C ein und smokst ein Pulled Pork über Nacht, ohne nachzulegen. Gleichzeitig grillt er Steaks und backt Pizza. Hier findest du das passende Modell.",
   "kurzantwort": "Wer viel Low & Slow smokt, ist mit Traeger am besten bedient. Wer auch scharf angrillen will, wählt den Weber Searwood (bis ca. 315 °C). Pit Boss bietet die meiste Grillfläche fürs Geld.",
-  "spalten": ["Max. Temperatur", "WLAN/App", "Stärke"],
+  "spalten": [
+    "Max. Temperatur",
+    "WLAN/App",
+    "Stärke"
+  ],
   "produkte": [
-    {"name": "Weber Searwood 600", "badge": "Allrounder", "fuer": "Grillen und Smoken gleichermaßen", "specs": ["ca. 315 °C", "ja", "Scharf angrillen"], "pro": ["Sehr schnelles Aufheizen", "DirectFlame-Modus für Steaks", "Weber-Service und Ersatzteile"], "contra": ["Rauchgeschmack etwas milder", "Höherer Preis"], "suche": "Weber Searwood 600 Pelletgrill"},
-    {"name": "Traeger Ironwood (aktuelle Generation)", "badge": "Smoke-Profi", "fuer": "Low & Slow, BBQ-Enthusiasten", "specs": ["ca. 260 °C", "ja", "Intensiver Rauch"], "pro": ["Super Smoke Modus", "Sehr stabile Temperatur", "Große Community & Rezepte-App"], "contra": ["Für Steaks weniger heiß", "Premium-Preis"], "suche": "Traeger Ironwood Pelletgrill"},
-    {"name": "Traeger Woodridge Pro", "badge": "Preis-Leistung", "fuer": "Einsteiger mit Anspruch", "specs": ["ca. 260 °C", "ja", "Einfache Bedienung"], "pro": ["Günstigerer Traeger-Einstieg", "WLAN serienmäßig", "Gute Verarbeitung"], "contra": ["Weniger Zubehör-Schnittstellen", "Kleiner als Ironwood"], "suche": "Traeger Woodridge Pro"},
-    {"name": "Pit Boss Navigator 850", "fuer": "Große Familien und Partys", "specs": ["ca. 260 °C (Flammrost direkt heißer)", "ja", "Viel Fläche"], "pro": ["Sehr viel Grillfläche", "Flame-Broiler für direkte Hitze", "Günstig pro cm²"], "contra": ["Verarbeitung einfacher", "App weniger ausgereift"], "suche": "Pit Boss Navigator 850"}
+    {
+      "name": "Weber Searwood 600",
+      "badge": "Allrounder",
+      "fuer": "Grillen und Smoken gleichermaßen",
+      "specs": [
+        "ca. 315 °C",
+        "ja",
+        "Scharf angrillen"
+      ],
+      "pro": [
+        "Sehr schnelles Aufheizen",
+        "DirectFlame-Modus für Steaks",
+        "Weber-Service und Ersatzteile"
+      ],
+      "contra": [
+        "Rauchgeschmack etwas milder",
+        "Höherer Preis"
+      ],
+      "suche": "Weber Searwood 600 Pelletgrill"
+    },
+    {
+      "name": "Traeger Ironwood (aktuelle Generation)",
+      "badge": "Smoke-Profi",
+      "fuer": "Low & Slow, BBQ-Enthusiasten",
+      "specs": [
+        "ca. 260 °C",
+        "ja",
+        "Intensiver Rauch"
+      ],
+      "pro": [
+        "Super Smoke Modus",
+        "Sehr stabile Temperatur",
+        "Große Community & Rezepte-App"
+      ],
+      "contra": [
+        "Für Steaks weniger heiß",
+        "Premium-Preis"
+      ],
+      "suche": "Traeger Ironwood Pelletgrill",
+      "cashback_shop": "traeger"
+    },
+    {
+      "name": "Traeger Woodridge Pro",
+      "badge": "Preis-Leistung",
+      "fuer": "Einsteiger mit Anspruch",
+      "specs": [
+        "ca. 260 °C",
+        "ja",
+        "Einfache Bedienung"
+      ],
+      "pro": [
+        "Günstigerer Traeger-Einstieg",
+        "WLAN serienmäßig",
+        "Gute Verarbeitung"
+      ],
+      "contra": [
+        "Weniger Zubehör-Schnittstellen",
+        "Kleiner als Ironwood"
+      ],
+      "suche": "Traeger Woodridge Pro",
+      "cashback_shop": "traeger"
+    },
+    {
+      "name": "Pit Boss Navigator 850",
+      "fuer": "Große Familien und Partys",
+      "specs": [
+        "ca. 260 °C (Flammrost direkt heißer)",
+        "ja",
+        "Viel Fläche"
+      ],
+      "pro": [
+        "Sehr viel Grillfläche",
+        "Flame-Broiler für direkte Hitze",
+        "Günstig pro cm²"
+      ],
+      "contra": [
+        "Verarbeitung einfacher",
+        "App weniger ausgereift"
+      ],
+      "suche": "Pit Boss Navigator 850"
+    }
   ],
   "rechner": {
     "titel": "Pelletverbrauch & Kosten berechnen",
     "text": "Faustregel: Low & Slow (110–135 °C) ca. 0,5–0,8 kg/h, Grillen (200 °C+) ca. 1,5–2 kg/h. Holzpellets für Grills kosten ca. 1–2 € pro kg.",
     "inputs": [
-      {"id": "stunden", "label": "Garzeit", "wert": 10, "einheit": "h", "step": 0.5},
-      {"id": "verbrauch", "label": "Verbrauch", "wert": 0.7, "einheit": "kg/h", "step": 0.1},
-      {"id": "kgpreis", "label": "Pelletpreis", "wert": 1.4, "einheit": "€/kg", "step": 0.1},
-      {"id": "sack", "label": "Sackgröße", "wert": 9, "einheit": "kg", "step": 1}
+      {
+        "id": "stunden",
+        "label": "Garzeit",
+        "wert": 10,
+        "einheit": "h",
+        "step": 0.5
+      },
+      {
+        "id": "verbrauch",
+        "label": "Verbrauch",
+        "wert": 0.7,
+        "einheit": "kg/h",
+        "step": 0.1
+      },
+      {
+        "id": "kgpreis",
+        "label": "Pelletpreis",
+        "wert": 1.4,
+        "einheit": "€/kg",
+        "step": 0.1
+      },
+      {
+        "id": "sack",
+        "label": "Sackgröße",
+        "wert": 9,
+        "einheit": "kg",
+        "step": 1
+      }
     ],
     "outputs": [
-      {"label": "Pelletverbrauch", "formel": "stunden * verbrauch", "einheit": "kg", "stellen": 1},
-      {"label": "Kosten", "formel": "stunden * verbrauch * kgpreis", "einheit": "€", "stellen": 2},
-      {"label": "Benötigte Säcke", "formel": "Math.ceil(stunden * verbrauch / sack)", "einheit": "Stk."}
+      {
+        "label": "Pelletverbrauch",
+        "formel": "stunden * verbrauch",
+        "einheit": "kg",
+        "stellen": 1
+      },
+      {
+        "label": "Kosten",
+        "formel": "stunden * verbrauch * kgpreis",
+        "einheit": "€",
+        "stellen": 2
+      },
+      {
+        "label": "Benötigte Säcke",
+        "formel": "Math.ceil(stunden * verbrauch / sack)",
+        "einheit": "Stk."
+      }
     ]
   },
   "ratgeber": [
-    {"h": "So funktioniert ein Pelletgrill", "t": "Eine Förderschnecke transportiert Holzpellets aus dem Tank in einen Brenntopf. Ein Ventilator und die Steuerung regeln die Glut so, dass die eingestellte Temperatur gehalten wird – ähnlich einem Backofen, aber mit echtem Holzrauch.\n\nDu brauchst nur Strom (230 V) und Pellets. Kein Anzünden, kein Nachlegen."},
-    {"h": "Grillfläche und Temperatur", "t": "Für 4–6 Personen reichen etwa 2.500–3.500 cm². Wer gerne Steaks mit Branding grillt, sollte auf eine maximale Temperatur über 300 °C oder einen Direktflammen-Modus achten – klassische Pelletgrills liegen oft bei 260 °C."},
-    {"h": "Die richtigen Pellets", "t": "Verwende ausschließlich Grillpellets aus 100 % Hartholz ohne Zusätze – keine Heizpellets! Buche ist ein guter Allrounder, Hickory und Kirsche bringen mehr Aroma. Pellets trocken lagern, feuchte Pellets verstopfen die Schnecke."}
+    {
+      "h": "So funktioniert ein Pelletgrill",
+      "t": "Eine Förderschnecke transportiert Holzpellets aus dem Tank in einen Brenntopf. Ein Ventilator und die Steuerung regeln die Glut so, dass die eingestellte Temperatur gehalten wird – ähnlich einem Backofen, aber mit echtem Holzrauch.\n\nDu brauchst nur Strom (230 V) und Pellets. Kein Anzünden, kein Nachlegen."
+    },
+    {
+      "h": "Grillfläche und Temperatur",
+      "t": "Für 4–6 Personen reichen etwa 2.500–3.500 cm². Wer gerne Steaks mit Branding grillt, sollte auf eine maximale Temperatur über 300 °C oder einen Direktflammen-Modus achten – klassische Pelletgrills liegen oft bei 260 °C."
+    },
+    {
+      "h": "Die richtigen Pellets",
+      "t": "Verwende ausschließlich Grillpellets aus 100 % Hartholz ohne Zusätze – keine Heizpellets! Buche ist ein guter Allrounder, Hickory und Kirsche bringen mehr Aroma. Pellets trocken lagern, feuchte Pellets verstopfen die Schnecke."
+    }
   ],
   "faq": [
-    {"f": "Schmeckt Essen vom Pelletgrill nach Rauch?", "a": "Ja, bei niedrigen Temperaturen deutlich. Bei hohen Temperaturen ist das Raucharoma milder, ähnlich wie bei Holzkohle."},
-    {"f": "Braucht ein Pelletgrill Strom?", "a": "Ja, für Schnecke, Ventilator und Steuerung. Der Verbrauch ist gering (meist unter 50 W im Betrieb, kurz mehr beim Zünden)."},
-    {"f": "Kann ich auf einem Pelletgrill Pizza backen?", "a": "Ja, mit Pizzastein. Für echte neapolitanische Pizza (über 400 °C) ist ein Pizzaofen aber besser."},
-    {"f": "Darf ich einen Pelletgrill am Balkon verwenden?", "a": "Das regelt die Hausordnung bzw. Gemeinde. Wegen Rauchentwicklung ist er auf Balkonen in Mehrparteienhäusern oft problematisch."},
-    {"f": "Wie viele Pellets brauche ich für ein Pulled Pork?", "a": "Bei 12 Stunden und ca. 0,7 kg/h etwa 8–9 kg – also rund ein Sack."}
+    {
+      "f": "Schmeckt Essen vom Pelletgrill nach Rauch?",
+      "a": "Ja, bei niedrigen Temperaturen deutlich. Bei hohen Temperaturen ist das Raucharoma milder, ähnlich wie bei Holzkohle."
+    },
+    {
+      "f": "Braucht ein Pelletgrill Strom?",
+      "a": "Ja, für Schnecke, Ventilator und Steuerung. Der Verbrauch ist gering (meist unter 50 W im Betrieb, kurz mehr beim Zünden)."
+    },
+    {
+      "f": "Kann ich auf einem Pelletgrill Pizza backen?",
+      "a": "Ja, mit Pizzastein. Für echte neapolitanische Pizza (über 400 °C) ist ein Pizzaofen aber besser."
+    },
+    {
+      "f": "Darf ich einen Pelletgrill am Balkon verwenden?",
+      "a": "Das regelt die Hausordnung bzw. Gemeinde. Wegen Rauchentwicklung ist er auf Balkonen in Mehrparteienhäusern oft problematisch."
+    },
+    {
+      "f": "Wie viele Pellets brauche ich für ein Pulled Pork?",
+      "a": "Bei 12 Stunden und ca. 0,7 kg/h etwa 8–9 kg – also rund ein Sack."
+    }
   ],
-  "checkliste": ["Personenzahl und benötigte Grillfläche festgelegt", "Maximaltemperatur für Steaks wichtig?", "WLAN/App gewünscht?", "Stromanschluss am Grillplatz vorhanden", "Hausordnung/Nachbarn wegen Rauch geklärt", "Abdeckhaube eingeplant", "Lagerplatz für Pellets trocken", "Grillpellets (nicht Heizpellets) besorgt", "Kerntemperaturfühler inklusive?", "Garantie auf Steuerung und Korpus verglichen"]
+  "checkliste": [
+    "Personenzahl und benötigte Grillfläche festgelegt",
+    "Maximaltemperatur für Steaks wichtig?",
+    "WLAN/App gewünscht?",
+    "Stromanschluss am Grillplatz vorhanden",
+    "Hausordnung/Nachbarn wegen Rauch geklärt",
+    "Abdeckhaube eingeplant",
+    "Lagerplatz für Pellets trocken",
+    "Grillpellets (nicht Heizpellets) besorgt",
+    "Kerntemperaturfühler inklusive?",
+    "Garantie auf Steuerung und Korpus verglichen"
+  ]
 }

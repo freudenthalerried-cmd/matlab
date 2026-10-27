@@ -57,7 +57,31 @@ Pin-/Post-Vorlage:
 - **`google-ads-editor.csv`** – Keywords (Phrase), ausschließende Keywords inkl. „amazon“, 8 Anzeigentitel und 3 Beschreibungen pro Nische, Längen geprüft. In Google Ads Editor importieren oder Titel/Beschreibungen in eine responsive Suchanzeige kopieren. Nur die 3 Test-Nischen aus Abschnitt 4 aktivieren.
 - Pins neu erzeugen nach Textänderungen: `python3 affiliate/build.py && node affiliate/pins.js && python3 affiliate/build.py`
 
-## 7. Vor dem Go-live prüfen
+## 7. Cashback-Portal (Alternative zu Amazon)
+
+Amazon verbietet Cashback. Darum gibt es ein eigenes Portal (`cashback/`, PHP + MySQL), das über **Awin** läuft. Viele Hersteller rechnen dort ab und erlauben teilweise Cashback.
+
+**Ablauf (vollautomatisch):** Kunde registriert sich (E-Mail-Bestätigung) → klickt „Zum Shop mit Cashback“ → seine zufällige Kennung geht als `clickref` an Awin → täglicher Cronjob holt die Verkäufe über die Awin-API → Cashback wird vorgemerkt bzw. nach Bestätigung durch den Shop gutgeschrieben → Kunde wird per E-Mail informiert → Auszahlungsantrag ab 20 € → du bekommst eine E-Mail, überweist und klickst im Admin auf „bezahlt“.
+
+Einzige Handarbeit: die Überweisung selbst. Automatische Auszahlungen habe ich bewusst nicht gebaut. Bei echtem Geld ist die Kontrolle durch dich der Schutz gegen Betrug.
+
+**Einrichten (einmalig, ca. 1 Stunde):**
+1. Bei **Awin** als Publisher registrieren (einmalige Kaution von 5 €, wird mit der ersten Auszahlung erstattet). Bei der Anmeldung „Cashback/Loyalty“ als Werbeform angeben und alle Domains eintragen.
+2. Bei den Partnerprogrammen der Hersteller bewerben (Kandidaten stehen in `cashback/shops.json`). **In den Programmbedingungen prüfen, ob „Cashback“ erlaubt ist.** Nur dann in `shops.json` `advertiser_id`, `provision_prozent` und `"aktiv": true` setzen.
+3. Eine der Reserve-Domains als Cashback-Domain nutzen, im KAS auf `/affiliate/cashback/` zeigen lassen und SSL aktivieren.
+4. KAS → Datenbanken → neue MySQL-DB anlegen → in phpMyAdmin `schema.sql` ausführen.
+5. `config.sample.php` als `config.php` ausfüllen (DB-Daten, Awin Publisher-ID + API-Token, langen Zufallswert für `cron_key`, Adresse) und per FTP nach `/affiliate/cashback/` hochladen. Diese Datei liegt nie im Git.
+6. KAS → Tools → Cronjobs: täglich `https://<cashback-domain>/cron.php?key=<cron_key>`.
+7. In `config.json` `cashback_domain` setzen. Danach zeigen die Vergleichsseiten bei passenden Produkten zusätzlich den Button „Beim Hersteller mit X % Cashback“.
+8. Mit `admin_email` registrieren: Dann erscheint im Menü „Admin“.
+
+**Ehrlich:**
+- Neue Cashback-Publisher ohne Besucher werden von manchen Händlern abgelehnt. Starte mit den Vergleichsseiten, Cashback ist der Zusatznutzen.
+- Bei 50 % Weitergabe bleibt dir die halbe Provision. Dafür kaufen mehr Besucher über deinen Link statt über Shoop, iGraal & Co.
+- Ausgezahltes Cashback ist für dich Betriebsausgabe; die Provisionen sind steuerpflichtiges Einkommen. Gewerbeanmeldung und Steuer mit Steuerberater klären, Teilnahmebedingungen vor dem Start rechtlich prüfen lassen.
+- Getestet: Registrierung, Bestätigung, Login-Sperre, Passwort-Reset, Klick-Tracking, Awin-Abgleich (mit Test-API), Gutschrift, Auszahlung, Admin. Die echte Awin-API konnte ich ohne Zugangsdaten nicht testen; das Datenformat entspricht der Awin-Dokumentation.
+
+## 8. Vor dem Go-live prüfen
 
 - Produktdaten in `niches/*.json` sind Herstellerangaben (Stand Oktober 2026), Modellnamen und Specs vor dem Launch einmal kontrollieren. Neue Generationen ersetzen alte schnell.
 - Impressum ausgefüllt? Amazon-Tag gesetzt? (Der Build warnt sonst.)

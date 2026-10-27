@@ -9,5 +9,7 @@
     "telefon": "",
     "uid": ""
   },
-  "ftp_basis": "/affiliate"
+  "ftp_basis": "/affiliate",
+  "cashback_domain": "",
+  "cashback_anteil": 0.5
 }

@@ -10,41 +10,220 @@
   "beschreibung": "Powerstations im Vergleich: EcoFlow, Anker SOLIX, Bluetti, Jackery. Mit Laufzeit- und Solar-Ladezeit-Rechner sowie Blackout-Checkliste.",
   "einleitung": "Eine Powerstation versorgt bei Stromausfall Kühlschrank, Router und Licht – und beim Camping Kaffeemaschine und E-Bike. Entscheidend sind Kapazität (Wh), Dauerleistung (W) und eine echte USV-Funktion. Wir zeigen, welche Größe du brauchst.",
   "kurzantwort": "Für Camping und Router-Notstrom reichen ca. 1.000 Wh mit 1.800 W Dauerleistung. Wer bei einem Blackout auch Kühltruhe oder Heizungspumpe mehrere Tage betreiben will, braucht 3–4 kWh, idealerweise mit Solarmodul.",
-  "spalten": ["Kapazität", "Dauerleistung", "Akku"],
+  "spalten": [
+    "Kapazität",
+    "Dauerleistung",
+    "Akku"
+  ],
   "produkte": [
-    {"name": "EcoFlow DELTA 3 Plus", "badge": "Allrounder", "fuer": "Haushalt-Notstrom und Camping", "specs": ["1.024 Wh", "1.800 W", "LiFePO4"], "pro": ["USV-Umschaltung in ca. 10 ms", "Sehr schnelles Laden am Netz", "Erweiterbar per Zusatzakku"], "contra": ["Lüfter beim Schnellladen hörbar", "Zubehör teuer"], "suche": "EcoFlow DELTA 3 Plus"},
-    {"name": "Anker SOLIX C1000", "badge": "Preis-Leistung", "fuer": "Einsteiger, Camping", "specs": ["1.056 Wh", "1.800 W", "LiFePO4"], "pro": ["Kompakt für die Kapazität", "Schnellladen in unter 1 Stunde", "Robustes Gehäuse"], "contra": ["Erweiterung nur mit eigenem Zusatzakku", "Wenige USB-C-Ports"], "suche": "Anker SOLIX C1000"},
-    {"name": "Bluetti AC180", "fuer": "Wohnmobil und Garten", "specs": ["1.152 Wh", "1.800 W", "LiFePO4"], "pro": ["Viel Kapazität fürs Geld", "Solar-Eingang bis 500 W", "Leiser Betrieb"], "contra": ["Etwas schwerer", "App-Verbindung manchmal träge"], "suche": "Bluetti AC180"},
-    {"name": "Jackery Explorer 1000 v2", "fuer": "Leichtes Gepäck, Outdoor", "specs": ["1.070 Wh", "1.500 W", "LiFePO4"], "pro": ["Leicht (ca. 11 kg)", "Sehr einfache Bedienung", "Gute Solarpanels im Set"], "contra": ["Geringere Dauerleistung", "Nicht erweiterbar"], "suche": "Jackery Explorer 1000 v2"},
-    {"name": "EcoFlow DELTA Pro 3", "badge": "Blackout-Profi", "fuer": "Hausnotstrom über mehrere Tage", "specs": ["4.096 Wh", "4.000 W", "LiFePO4"], "pro": ["Betreibt auch Herd und Wärmepumpe kurzzeitig", "Bis ca. 48 kWh erweiterbar", "Rollen zum Transport"], "contra": ["Schwer (über 50 kg)", "Hoher Preis"], "suche": "EcoFlow DELTA Pro 3"}
+    {
+      "name": "EcoFlow DELTA 3 Plus",
+      "badge": "Allrounder",
+      "fuer": "Haushalt-Notstrom und Camping",
+      "specs": [
+        "1.024 Wh",
+        "1.800 W",
+        "LiFePO4"
+      ],
+      "pro": [
+        "USV-Umschaltung in ca. 10 ms",
+        "Sehr schnelles Laden am Netz",
+        "Erweiterbar per Zusatzakku"
+      ],
+      "contra": [
+        "Lüfter beim Schnellladen hörbar",
+        "Zubehör teuer"
+      ],
+      "suche": "EcoFlow DELTA 3 Plus",
+      "cashback_shop": "ecoflow"
+    },
+    {
+      "name": "Anker SOLIX C1000",
+      "badge": "Preis-Leistung",
+      "fuer": "Einsteiger, Camping",
+      "specs": [
+        "1.056 Wh",
+        "1.800 W",
+        "LiFePO4"
+      ],
+      "pro": [
+        "Kompakt für die Kapazität",
+        "Schnellladen in unter 1 Stunde",
+        "Robustes Gehäuse"
+      ],
+      "contra": [
+        "Erweiterung nur mit eigenem Zusatzakku",
+        "Wenige USB-C-Ports"
+      ],
+      "suche": "Anker SOLIX C1000",
+      "cashback_shop": "anker-solix"
+    },
+    {
+      "name": "Bluetti AC180",
+      "fuer": "Wohnmobil und Garten",
+      "specs": [
+        "1.152 Wh",
+        "1.800 W",
+        "LiFePO4"
+      ],
+      "pro": [
+        "Viel Kapazität fürs Geld",
+        "Solar-Eingang bis 500 W",
+        "Leiser Betrieb"
+      ],
+      "contra": [
+        "Etwas schwerer",
+        "App-Verbindung manchmal träge"
+      ],
+      "suche": "Bluetti AC180",
+      "cashback_shop": "bluetti"
+    },
+    {
+      "name": "Jackery Explorer 1000 v2",
+      "fuer": "Leichtes Gepäck, Outdoor",
+      "specs": [
+        "1.070 Wh",
+        "1.500 W",
+        "LiFePO4"
+      ],
+      "pro": [
+        "Leicht (ca. 11 kg)",
+        "Sehr einfache Bedienung",
+        "Gute Solarpanels im Set"
+      ],
+      "contra": [
+        "Geringere Dauerleistung",
+        "Nicht erweiterbar"
+      ],
+      "suche": "Jackery Explorer 1000 v2",
+      "cashback_shop": "jackery"
+    },
+    {
+      "name": "EcoFlow DELTA Pro 3",
+      "badge": "Blackout-Profi",
+      "fuer": "Hausnotstrom über mehrere Tage",
+      "specs": [
+        "4.096 Wh",
+        "4.000 W",
+        "LiFePO4"
+      ],
+      "pro": [
+        "Betreibt auch Herd und Wärmepumpe kurzzeitig",
+        "Bis ca. 48 kWh erweiterbar",
+        "Rollen zum Transport"
+      ],
+      "contra": [
+        "Schwer (über 50 kg)",
+        "Hoher Preis"
+      ],
+      "suche": "EcoFlow DELTA Pro 3",
+      "cashback_shop": "ecoflow"
+    }
   ],
   "rechner": {
     "titel": "Laufzeit- & Solar-Rechner",
     "text": "Addiere die Leistung aller Geräte, die gleichzeitig laufen sollen (Router ca. 15 W, Kühlschrank im Schnitt ca. 50 W, LED-Lampe 8 W, Laptop 60 W).",
     "inputs": [
-      {"id": "wh", "label": "Kapazität der Powerstation", "wert": 1024, "einheit": "Wh", "step": 1},
-      {"id": "last", "label": "Verbrauch der Geräte", "wert": 120, "einheit": "W", "step": 5},
-      {"id": "eff", "label": "Wirkungsgrad Wechselrichter", "wert": 85, "einheit": "%", "step": 1},
-      {"id": "solar", "label": "Solarmodul-Leistung", "wert": 400, "einheit": "W", "step": 10}
+      {
+        "id": "wh",
+        "label": "Kapazität der Powerstation",
+        "wert": 1024,
+        "einheit": "Wh",
+        "step": 1
+      },
+      {
+        "id": "last",
+        "label": "Verbrauch der Geräte",
+        "wert": 120,
+        "einheit": "W",
+        "step": 5
+      },
+      {
+        "id": "eff",
+        "label": "Wirkungsgrad Wechselrichter",
+        "wert": 85,
+        "einheit": "%",
+        "step": 1
+      },
+      {
+        "id": "solar",
+        "label": "Solarmodul-Leistung",
+        "wert": 400,
+        "einheit": "W",
+        "step": 10
+      }
     ],
     "outputs": [
-      {"label": "Laufzeit", "formel": "wh * eff / 100 / last", "einheit": "h", "stellen": 1},
-      {"label": "Laufzeit in Tagen", "formel": "wh * eff / 100 / last / 24", "einheit": "Tage", "stellen": 1},
-      {"label": "Solar-Ladezeit (ca. 70 % Ausbeute)", "formel": "wh / (solar * 0.7)", "einheit": "h Sonne", "stellen": 1}
+      {
+        "label": "Laufzeit",
+        "formel": "wh * eff / 100 / last",
+        "einheit": "h",
+        "stellen": 1
+      },
+      {
+        "label": "Laufzeit in Tagen",
+        "formel": "wh * eff / 100 / last / 24",
+        "einheit": "Tage",
+        "stellen": 1
+      },
+      {
+        "label": "Solar-Ladezeit (ca. 70 % Ausbeute)",
+        "formel": "wh / (solar * 0.7)",
+        "einheit": "h Sonne",
+        "stellen": 1
+      }
     ]
   },
   "ratgeber": [
-    {"h": "Kapazität vs. Dauerleistung", "t": "Die Kapazität (Wh) bestimmt, wie lange Geräte laufen. Die Dauerleistung (W) bestimmt, welche Geräte überhaupt laufen. Ein Wasserkocher mit 2.000 W funktioniert nur an einer Powerstation mit mindestens 2.000 W Dauerleistung – egal wie groß der Akku ist."},
-    {"h": "USV-Funktion für Router und PC", "t": "Mit USV-Funktion (unterbrechungsfreie Stromversorgung) hängt die Powerstation dauerhaft zwischen Steckdose und Gerät. Fällt der Strom aus, übernimmt sie in Millisekunden. Für Router, NAS und Aquarienpumpen ideal. Achte auf eine Umschaltzeit unter 20 ms."},
-    {"h": "LiFePO4 ist Pflicht", "t": "Lithium-Eisenphosphat-Akkus (LiFePO4) halten 3.000 Zyklen und mehr, sind thermisch stabil und verlieren kaum Kapazität im Lager. Ältere NMC-Akkus sind leichter, aber nach 500–800 Zyklen spürbar schwächer."},
-    {"h": "Blackout-Vorsorge in Österreich", "t": "Der Zivilschutzverband empfiehlt, sich für mindestens 14 Tage selbst versorgen zu können. Eine Powerstation mit Solarmodul macht dich bei Licht, Kommunikation und Kühlung unabhängig. Heizungspumpen dürfen nur nach Rücksprache mit dem Installateur angeschlossen werden."}
+    {
+      "h": "Kapazität vs. Dauerleistung",
+      "t": "Die Kapazität (Wh) bestimmt, wie lange Geräte laufen. Die Dauerleistung (W) bestimmt, welche Geräte überhaupt laufen. Ein Wasserkocher mit 2.000 W funktioniert nur an einer Powerstation mit mindestens 2.000 W Dauerleistung – egal wie groß der Akku ist."
+    },
+    {
+      "h": "USV-Funktion für Router und PC",
+      "t": "Mit USV-Funktion (unterbrechungsfreie Stromversorgung) hängt die Powerstation dauerhaft zwischen Steckdose und Gerät. Fällt der Strom aus, übernimmt sie in Millisekunden. Für Router, NAS und Aquarienpumpen ideal. Achte auf eine Umschaltzeit unter 20 ms."
+    },
+    {
+      "h": "LiFePO4 ist Pflicht",
+      "t": "Lithium-Eisenphosphat-Akkus (LiFePO4) halten 3.000 Zyklen und mehr, sind thermisch stabil und verlieren kaum Kapazität im Lager. Ältere NMC-Akkus sind leichter, aber nach 500–800 Zyklen spürbar schwächer."
+    },
+    {
+      "h": "Blackout-Vorsorge in Österreich",
+      "t": "Der Zivilschutzverband empfiehlt, sich für mindestens 14 Tage selbst versorgen zu können. Eine Powerstation mit Solarmodul macht dich bei Licht, Kommunikation und Kühlung unabhängig. Heizungspumpen dürfen nur nach Rücksprache mit dem Installateur angeschlossen werden."
+    }
   ],
   "faq": [
-    {"f": "Wie lange läuft ein Kühlschrank an einer Powerstation?", "a": "Ein moderner Kühlschrank braucht im Schnitt 40–60 W. An einer 1.000-Wh-Station läuft er also etwa 14–20 Stunden."},
-    {"f": "Kann ich eine Powerstation mit Solar laden?", "a": "Ja. Ein 400-W-Modul lädt eine 1.000-Wh-Station an einem sonnigen Tag in rund 3–4 Sonnenstunden."},
-    {"f": "Darf ich eine Powerstation ins Hausnetz einspeisen?", "a": "Nicht über eine Steckdose. Für die Einspeisung ins Hausnetz braucht es eine fachgerecht installierte Umschalteinrichtung durch einen Elektriker."},
-    {"f": "Wie lagere ich eine Powerstation richtig?", "a": "Bei 50–80 % Ladung, trocken und bei 10–25 °C. Alle 3–6 Monate nachladen."},
-    {"f": "Lohnt sich eine Powerstation statt Notstromaggregat?", "a": "Für Innenräume und kurze Ausfälle ja: kein Lärm, keine Abgase, kein Benzin lagern. Für tagelange hohe Lasten ist ein Aggregat günstiger."}
+    {
+      "f": "Wie lange läuft ein Kühlschrank an einer Powerstation?",
+      "a": "Ein moderner Kühlschrank braucht im Schnitt 40–60 W. An einer 1.000-Wh-Station läuft er also etwa 14–20 Stunden."
+    },
+    {
+      "f": "Kann ich eine Powerstation mit Solar laden?",
+      "a": "Ja. Ein 400-W-Modul lädt eine 1.000-Wh-Station an einem sonnigen Tag in rund 3–4 Sonnenstunden."
+    },
+    {
+      "f": "Darf ich eine Powerstation ins Hausnetz einspeisen?",
+      "a": "Nicht über eine Steckdose. Für die Einspeisung ins Hausnetz braucht es eine fachgerecht installierte Umschalteinrichtung durch einen Elektriker."
+    },
+    {
+      "f": "Wie lagere ich eine Powerstation richtig?",
+      "a": "Bei 50–80 % Ladung, trocken und bei 10–25 °C. Alle 3–6 Monate nachladen."
+    },
+    {
+      "f": "Lohnt sich eine Powerstation statt Notstromaggregat?",
+      "a": "Für Innenräume und kurze Ausfälle ja: kein Lärm, keine Abgase, kein Benzin lagern. Für tagelange hohe Lasten ist ein Aggregat günstiger."
+    }
   ],
-  "checkliste": ["Geräte für den Notfall aufgelistet (Watt notiert)", "Höchste Einzelleistung ≤ Dauerleistung der Station", "Benötigte Laufzeit mit dem Rechner geprüft", "LiFePO4-Akku", "USV-Funktion für Router/PC nötig?", "Solarmodul für längere Ausfälle eingeplant", "Gewicht und Transport (Griffe/Rollen) passend", "Erweiterbarkeit mit Zusatzakku", "Lagerort trocken und frostfrei", "Erinnerung zum Nachladen alle 3 Monate gesetzt"]
+  "checkliste": [
+    "Geräte für den Notfall aufgelistet (Watt notiert)",
+    "Höchste Einzelleistung ≤ Dauerleistung der Station",
+    "Benötigte Laufzeit mit dem Rechner geprüft",
+    "LiFePO4-Akku",
+    "USV-Funktion für Router/PC nötig?",
+    "Solarmodul für längere Ausfälle eingeplant",
+    "Gewicht und Transport (Griffe/Rollen) passend",
+    "Erweiterbarkeit mit Zusatzakku",
+    "Lagerort trocken und frostfrei",
+    "Erinnerung zum Nachladen alle 3 Monate gesetzt"
+  ]
 }

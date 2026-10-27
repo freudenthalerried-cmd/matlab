@@ -17,6 +17,7 @@ DIST = ROOT / "dist"
 CFG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
 TODAY = date.today().isoformat()
 DISCLOSURE = "Als Amazon-Partner verdiene ich an qualifizierten Verkäufen."
+CASHBACK = {s["id"]: s for s in json.loads((ROOT / "cashback" / "shops.json").read_text(encoding="utf-8")) if s["aktiv"]}
 
 e = html.escape
 
@@ -28,6 +29,16 @@ def amazon_link(query):
 def cta(query, label="Aktuellen Preis bei Amazon prüfen*"):
     return (f'<a class="btn" href="{e(amazon_link(query))}" target="_blank" '
             f'rel="sponsored nofollow noopener">{label}</a>')
+
+
+def cashback_cta(p):
+    """Zweiter Button zum Hersteller mit Cashback – nur wenn Portal-Domain gesetzt und Shop freigeschaltet."""
+    s = CASHBACK.get(p.get("cashback_shop", ""))
+    if not s or not CFG.get("cashback_domain"):
+        return ""
+    pct = round(s["provision_prozent"] * CFG.get("cashback_anteil", 0.5), 1)
+    return (f'<a class="btn alt" href="https://{CFG["cashback_domain"]}/go.php?shop={e(s["id"])}" '
+            f'rel="sponsored nofollow noopener" target="_blank">Beim Hersteller mit {pct:g} % Cashback*</a>')
 
 
 def page(n, title, desc, path, body, schema=None):
@@ -87,7 +98,7 @@ def index(n):
 <p class="fuer"><strong>Ideal für:</strong> {e(p['fuer'])}</p>
 <div class="pc"><ul class="pro">{''.join(f'<li>{e(x)}</li>' for x in p['pro'])}</ul>
 <ul class="con">{''.join(f'<li>{e(x)}</li>' for x in p['contra'])}</ul></div>
-{cta(p['suche'])}
+{cta(p['suche'])}{cashback_cta(p)}
 </article>""" for i, p in enumerate(n["produkte"], 1))
 
     r = n["rechner"]
@@ -288,6 +299,12 @@ def build():
             shutil.copytree(pins, out / "pins")
         print(f"✓ {n['slug']:<26} → {n['domain']}  ({len(n['_artikel'])} Artikel)")
     marketing(niches)
+    out = DIST / "cashback"
+    shutil.copytree(ROOT / "cashback", out, ignore=shutil.ignore_patterns("config.php", "extra.css", "*.log", "*.sqlite"))
+    (out / "style.css").write_text((ROOT / "assets" / "style.css").read_text(encoding="utf-8")
+                                   + (ROOT / "cashback" / "extra.css").read_text(encoding="utf-8"), encoding="utf-8")
+    shutil.copy(ROOT / "assets" / "app.js", out / "app.js")
+    print("✓ cashback-portal → dist/cashback")
     if warn:
         print("\n⚠ config.json: amazon_tag und/oder Impressum-Adresse noch nicht ausgefüllt!", file=sys.stderr)
 

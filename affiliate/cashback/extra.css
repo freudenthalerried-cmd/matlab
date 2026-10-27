@@ -1,0 +1,8 @@
+.form{display:grid;gap:14px;max-width:460px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.95rem}
+.form input,.form select{padding:10px;font-size:1rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.form .check{flex-direction:row;align-items:flex-start;gap:8px}
+.box{border:1px solid var(--line);border-radius:12px;padding:18px;margin:12px 0}
+.msg{padding:12px 14px;border-radius:8px;background:var(--soft);border-left:4px solid var(--pro)}
+.msg.err{border-left-color:var(--con)}
+.btn+.btn{margin-left:8px}
