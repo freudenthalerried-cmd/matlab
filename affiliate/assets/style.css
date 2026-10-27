@@ -54,3 +54,5 @@ footer{margin-top:3em;border-top:1px solid var(--line);font-size:.85rem;color:va
  .related{columns:1}
 }
 @media print{.top,.disclosure,footer,.noprint{display:none}body{font-size:13pt}}
+.post{max-width:760px}
+.crumb{font-size:.85rem;color:var(--mut);margin-top:16px}

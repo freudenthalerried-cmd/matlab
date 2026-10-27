@@ -1,0 +1,41 @@
+{
+  "artikel": [
+    {"slug": "laser-tv-vs-oled", "titel": "Laser-TV vs. OLED: Was ist besser fürs Wohnzimmer? (2026)", "h1": "Laser-TV vs. OLED-Fernseher: Der ehrliche Vergleich", "pin": "Laser-TV oder OLED? Der ehrliche Vergleich", "beschreibung": "Laser-TV oder OLED? Bildqualität, Größe, Preis pro Zoll, Stromverbrauch und Gaming im direkten Vergleich – mit klarer Empfehlung.", "kurzantwort": "OLED gewinnt bei Schwarzwert, Kontrast und hellem Tageslicht. Ein Laser-TV gewinnt ab 100 Zoll beim Preis pro Zoll und wirkt ausgeschaltet unauffälliger. Wer abends Filme in Kinogröße will, nimmt Laser-TV; wer viel tagsüber schaut, OLED.",
+     "abschnitte": [
+       {"h": "Bildgröße und Preis pro Zoll", "t": "Ein 83-Zoll-OLED kostet meist deutlich mehr als ein guter Laser-TV mit 120 Zoll inklusive ALR-Leinwand. Ab 100 Zoll gibt es praktisch keine bezahlbaren Fernseher mehr – genau dort spielt der Laser-TV seine Stärke aus.\n\nRechne beim Laser-TV aber die Leinwand mit ein: Ohne sie ist der Vergleich mit einem OLED unfair."},
+       {"h": "Schwarzwert und Kontrast", "t": "OLED-Pixel schalten sich komplett ab – perfektes Schwarz. Ein Projektor kann das physikalisch nicht: Die Leinwand ist nie schwärzer als der Raum. In dunklen Räumen mit ALR-Leinwand ist der Unterschied geringer, als viele erwarten, bei Weltraumszenen aber sichtbar."},
+       {"h": "Tageslicht", "t": "Bei Sonnenlicht im Raum ist ein OLED klar im Vorteil. Laser-TVs mit 3.000 Lumen und ALR-Leinwand schaffen auch bei normalem Tageslicht ein brauchbares Bild, aber nicht bei direkter Sonne auf die Leinwand."},
+       {"h": "Augenkomfort", "t": "Ein Laser-TV wirft reflektiertes Licht – viele empfinden das bei langen Filmabenden als angenehmer als ein selbstleuchtendes Display. Personen, die empfindlich auf den Regenbogeneffekt reagieren, sollten Triple-Laser-Modelle vorher testen."}
+     ],
+     "faq": [
+       {"f": "Ist ein Laser-TV schlechter fürs Gaming als ein OLED?", "a": "OLEDs bieten meist 120 Hz und unter 10 ms Latenz. Laser-TVs liegen oft bei 15–50 ms und 60 Hz in 4K. Für Gelegenheitsspieler reicht ein Laser-TV, für kompetitive Spieler ist OLED besser."},
+       {"f": "Was verbraucht mehr Strom?", "a": "Ein 120-Zoll-Laser-TV braucht etwa 250–450 W, ein 77-Zoll-OLED etwa 150–400 W je nach Helligkeit. Pro Zoll Bildfläche ist der Laser-TV effizienter."}
+     ]},
+    {"slug": "alr-leinwand", "titel": "ALR-Leinwand für Laser-TV: Ratgeber, Typen & Größen (2026)", "h1": "ALR-Leinwand für Laser-TV: Welche brauchst du wirklich?", "pin": "ALR-Leinwand: So wird dein Laser-TV taghell", "beschreibung": "Warum ein Laser-TV eine ALR-Leinwand braucht, welche Typen (Fresnel, Lamellen, CLR) es gibt und welche Größe passt.", "kurzantwort": "Für Ultrakurzdistanz-Laser-TVs brauchst du eine UST-ALR-Leinwand (Fresnel- oder Lamellenstruktur). Normale ALR-Leinwände für Deckenbeamer funktionieren mit UST-Geräten nicht. Wähle die Größe passend zur Diagonale deines Geräts bei optimalem Abstand.",
+     "abschnitte": [
+       {"h": "Wie funktioniert eine ALR-Leinwand?", "t": "ALR steht für Ambient Light Rejecting. Mikroskopisch feine Strukturen reflektieren Licht, das steil von unten kommt (vom Laser-TV), zum Zuschauer – Licht von der Decke oder vom Fenster wird dagegen weggelenkt. Dadurch steigt der Kontrast bei Tageslicht um ein Vielfaches."},
+       {"h": "Die drei wichtigsten Typen", "t": "Fresnel-Leinwände bieten den besten Kontrast und die höchste Lichtausbeute, sind aber teurer und nicht rollbar. Lamellen- bzw. CLR-Leinwände (Ceiling Light Rejecting) sind günstiger und blocken vor allem Deckenlicht. Grau beschichtete Leinwände ohne Struktur verbessern den Schwarzwert leicht, sind aber kein echtes ALR für UST.\n\nWichtig: Nur Leinwände mit der Kennzeichnung 'UST' oder 'für Ultrakurzdistanz' verwenden."},
+       {"h": "Fester Rahmen oder elektrisch?", "t": "Rahmenleinwände sind plan und günstiger. Elektrisch ausfahrbare Bodenleinwände (Floor Rising) verschwinden im Sideboard – schick, aber deutlich teurer und anfälliger für Wellen im Tuch."},
+       {"h": "Größe richtig wählen", "t": "Stelle zuerst den Laser-TV auf und miss das Bild bei optimalem Abstand. Die Leinwand muss exakt passen, weil UST-Geräte bei Bildgrößenänderung den Abstand ändern müssen. Unser Bildgrößen-Rechner auf der Startseite hilft dabei."}
+     ],
+     "faq": [
+       {"f": "Kann ich eine normale Leinwand für einen Laser-TV nehmen?", "a": "Ja, aber nur in dunklen Räumen. Normale ALR-Leinwände für Deckenbeamer sind für UST ungeeignet und erzeugen ein dunkles, ungleichmäßiges Bild."},
+       {"f": "Wie viel kostet eine ALR-Leinwand?", "a": "Für 100–120 Zoll etwa 300–700 € für CLR/Lamellen und 800–1.500 € für Fresnel-Modelle."}
+     ]},
+    {"slug": "laser-tv-gaming", "titel": "Laser-TV zum Zocken: Latenz, 120 Hz & PS5 (2026)", "h1": "Laser-TV fürs Gaming: Was PS5, Xbox und PC-Spieler wissen müssen", "pin": "Gaming auf 120 Zoll: Taugt ein Laser-TV?", "beschreibung": "Input-Lag, 4K/120 Hz, HDR und Regenbogeneffekt: So gut eignen sich Laser-TVs für PS5, Xbox und PC.", "kurzantwort": "Für Konsolenspiele im Wohnzimmer sind Laser-TVs mit Gaming-Modus gut geeignet (rund 15–30 ms Latenz). Für schnelle Online-Shooter bleibt ein Gaming-Monitor oder OLED-TV die bessere Wahl.",
+     "abschnitte": [
+       {"h": "Input-Lag", "t": "Entscheidend ist der Low-Latency-Modus (ALLM). Aktuelle Laser-TVs erreichen damit etwa 15–30 ms in 1080p und teilweise 4K. Das reicht für Rennspiele, Abenteuer- und Sportspiele problemlos."},
+       {"h": "120 Hz und VRR", "t": "Viele Laser-TVs unterstützen 120 Hz nur in 1080p, nicht in 4K. VRR (variable Bildrate) fehlt oft noch. Wer auf flüssige 4K/120 Hz Wert legt, sollte gezielt danach filtern."},
+       {"h": "Das Erlebnis zählt", "t": "Ehrlich gesagt: Ein Open-World-Spiel auf 120 Zoll ist ein anderes Erlebnis als auf 65 Zoll. Der leichte Nachteil bei der Latenz wird für die meisten Gelegenheitsspieler durch die Immersion mehr als ausgeglichen."}
+     ],
+     "faq": [
+       {"f": "Unterstützen Laser-TVs Dolby Vision Gaming?", "a": "Einige Modelle unterstützen Dolby Vision, aber nicht immer im Gaming-Modus. Prüfe das im Datenblatt des jeweiligen Modells."},
+       {"f": "Brennt ein Standbild ein?", "a": "Nein. Anders als bei OLED gibt es bei Projektoren kein Einbrennen von HUD-Elementen."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["laser tv test", "laser tv vergleich", "bester laser tv", "laser tv 120 zoll", "ultrakurzdistanz beamer test", "ust beamer 4k", "laser tv kaufen", "laser tv oder oled"],
+    "headlines": ["Laser-TV Vergleich 2026", "Die besten 4K Laser-TVs", "Gratis Bildgrößen-Rechner", "100–150 Zoll ohne Riesen-TV", "Unabhängig & kostenlos", "Triple-Laser im Check", "ALR-Leinwand Ratgeber", "Kaufcheckliste gratis"],
+    "descriptions": ["Hisense, AWOL, XGIMI & Co. im Vergleich. Finde das passende Modell für dein Wohnzimmer.", "Mit kostenlosem Bildgrößen-Rechner und Kaufcheckliste. Jetzt in 2 Minuten entscheiden.", "Helligkeit, Laser-Typ und Leinwand erklärt. Ehrliche Vor- und Nachteile je Modell."]
+  }
+}

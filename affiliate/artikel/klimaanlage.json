@@ -1,0 +1,39 @@
+{
+  "artikel": [
+    {"slug": "monoblock-vs-split", "titel": "Monoblock oder Split-Klimaanlage? Der ehrliche Vergleich", "h1": "Monoblock vs. Split-Klimagerät: Was kühlt wirklich besser?", "pin": "Monoblock oder Split? Was wirklich kühlt", "beschreibung": "Kühlleistung, Lautstärke, Stromverbrauch und Montage: Monoblock-Klimageräte und Split-Anlagen im direkten Vergleich.", "kurzantwort": "Split-Geräte kühlen effizienter und deutlich leiser, weil der Kompressor draußen arbeitet. Monoblöcke sind günstiger und flexibel, verlieren durch den Abluftschlauch aber viel Wirkung. Mobile Split-Geräte sind der Mittelweg ohne Installateur.",
+     "abschnitte": [
+       {"h": "Effizienz", "t": "Monoblöcke saugen Raumluft an, kühlen sie und blasen die Wärme über den Schlauch hinaus. Dadurch entsteht Unterdruck, warme Luft strömt nach. Split-Geräte haben diesen Effekt nicht und erreichen deutlich höhere Effizienzwerte."},
+       {"h": "Lautstärke", "t": "Im Monoblock läuft der Kompressor im Raum – oft 50–65 dB. Bei Split-Geräten ist innen nur der Lüfter hörbar, meist um 40 dB oder weniger. Für Schlafzimmer ist das ein entscheidender Unterschied."},
+       {"h": "Kosten und Montage", "t": "Monoblöcke sind am günstigsten und sofort einsatzbereit. Mobile Split-Geräte kosten mehr, brauchen aber keinen Kältetechniker. Fest installierte Split-Anlagen sind am effizientesten, benötigen aber Montage und oft Zustimmungen."}
+     ],
+     "faq": [
+       {"f": "Gibt es Monoblöcke ohne Schlauch?", "a": "Ohne Abluft funktioniert Kühlung physikalisch nicht. 'Klimageräte ohne Schlauch' sind meist Luftkühler mit Wasserverdunstung – sie kühlen kaum und erhöhen die Luftfeuchtigkeit."},
+       {"f": "Wie dichte ich das Fenster beim Monoblock ab?", "a": "Mit einem Fensterabdichtungs-Set (Stoff mit Reißverschluss). Das verbessert die Kühlleistung spürbar."}
+     ]},
+    {"slug": "klimaanlage-mietwohnung", "titel": "Klimaanlage in der Mietwohnung: Was ist erlaubt? (Österreich)", "h1": "Klimaanlage in der Mietwohnung: Was erlaubt ist und was nicht", "pin": "Klimaanlage in der Mietwohnung: Das ist erlaubt", "beschreibung": "Mobile Klimageräte, Außeneinheit am Balkon, Kernbohrung: Was Mieter in Österreich ohne Zustimmung dürfen und wann der Vermieter gefragt werden muss.", "kurzantwort": "Mobile Geräte ohne bauliche Veränderung darfst du als Mieter grundsätzlich nutzen. Sobald etwas an Fassade oder Balkon montiert oder gebohrt wird, brauchst du die Zustimmung des Vermieters – im Wohnungseigentum meist auch die der Eigentümergemeinschaft.",
+     "abschnitte": [
+       {"h": "Ohne Zustimmung möglich", "t": "Monoblock-Geräte mit Fensterabdichtung und mobile Split-Geräte, deren Außeneinheit nur am Fenster eingehängt oder auf den Balkonboden gestellt wird, gelten in der Regel nicht als bauliche Veränderung. Sie lassen sich beim Auszug rückstandslos entfernen."},
+       {"h": "Zustimmung nötig", "t": "Kernbohrungen durch die Außenwand, an der Fassade montierte Außeneinheiten und Eingriffe in die Elektrik. Hol dir die Zustimmung schriftlich ein und beschreibe Gerät, Montageort und Lautstärke."},
+       {"h": "Rücksicht auf Nachbarn", "t": "Außeneinheiten können nachts störend sein. Achte auf leise Modelle und montiere nicht direkt unter Schlafzimmerfenstern der Nachbarn. Das vermeidet Konflikte."}
+     ],
+     "faq": [
+       {"f": "Kann der Vermieter ein mobiles Klimagerät verbieten?", "a": "In der Regel nicht, solange nichts beschädigt wird und keine unzumutbare Lärmbelästigung entsteht. Im Zweifel den Mietvertrag prüfen."},
+       {"f": "Wer zahlt den Strom?", "a": "Du als Mieter – der Verbrauch läuft über deinen eigenen Zähler."}
+     ]},
+    {"slug": "klimaanlage-schlafzimmer-leise", "titel": "Leise Klimaanlage fürs Schlafzimmer: Worauf achten?", "h1": "Leise Klimaanlage fürs Schlafzimmer: Endlich wieder gut schlafen", "pin": "Hitze im Schlafzimmer? Die leise Lösung", "beschreibung": "Dezibel richtig lesen, Nachtmodus, Luftführung und Gerätetypen: So findest du eine wirklich leise Klimaanlage für das Schlafzimmer.", "kurzantwort": "Fürs Schlafzimmer eignen sich Split- oder mobile Split-Geräte mit Nachtmodus und unter 40 dB Innenlautstärke. Monoblöcke sind mit 50 dB und mehr für die meisten zu laut. Tipp: Den Raum vor dem Schlafengehen herunterkühlen und nachts im Flüstermodus laufen lassen.",
+     "abschnitte": [
+       {"h": "Dezibel richtig lesen", "t": "Hersteller geben oft den leisesten Wert an. Achte auf die Lautstärke bei mittlerer Leistung. Faustregel: +10 dB werden als doppelt so laut empfunden. 35 dB entspricht Flüstern, 50 dB einem normalen Gespräch."},
+       {"h": "Nachtmodus und Luftführung", "t": "Ein Nachtmodus reduziert Lüfterdrehzahl und hebt die Solltemperatur schrittweise an. Die Luft sollte nicht direkt aufs Bett blasen – einstellbare Lamellen sind wichtig für Komfort und Gesundheit."},
+       {"h": "Gesund kühlen", "t": "Die Temperatur nicht mehr als 6–8 °C unter die Außentemperatur senken. 24–26 °C sind im Schlafzimmer meist ideal. Filter regelmäßig reinigen."}
+     ],
+     "faq": [
+       {"f": "Wie leise sind mobile Split-Geräte?", "a": "Innen meist um 40 dB, im Flüstermodus darunter – deutlich leiser als Monoblöcke."},
+       {"f": "Kann ich die Klimaanlage die ganze Nacht laufen lassen?", "a": "Ja, mit Nachtmodus und moderater Temperatur ist das unproblematisch und kostet bei effizienten Geräten wenig Strom."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["klimaanlage ohne installateur", "mobile klimaanlage test", "mobile split klimaanlage", "portasplit test", "klimaanlage mietwohnung", "leise klimaanlage schlafzimmer", "klimagerät test"],
+    "headlines": ["Klima ohne Installateur", "Mobile Split vs. Monoblock", "Gratis Kühlleistungsrechner", "Leise fürs Schlafzimmer", "Unabhängiger Vergleich", "Auch für Mietwohnungen", "Jetzt vor der Hitze kaufen", "Kaufcheckliste gratis"],
+    "descriptions": ["Klimageräte zur Selbstmontage im Vergleich. Was kühlt wirklich, was macht nur Lärm?", "Mit kostenlosem Rechner: Wie viel kW brauchst du, was kostet der Betrieb?", "Ehrliche Kaufberatung für Mietwohnung und Eigenheim. Ohne Anmeldung."]
+  }
+}

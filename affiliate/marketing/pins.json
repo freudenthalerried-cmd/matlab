@@ -1,0 +1,282 @@
+[
+ {
+  "slug": "laser-tv",
+  "domain": "laser-tv-vergleich.at",
+  "farbe": "#5b3cc4",
+  "icon": "📽️",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Laser-TV Vergleich 2026: 100 bis 150 Zoll ohne Riesen-Fernseher",
+    "sub": "Für helle Wohnzimmer ist ein Triple-Laser-Modell mit mindestens 2.500 ISO-Lumen plus ALR-Leinwand die beste Wa"
+   },
+   {
+    "datei": "laser-tv-vs-oled",
+    "titel": "Laser-TV vs. OLED-Fernseher: Der ehrliche Vergleich",
+    "sub": "OLED gewinnt bei Schwarzwert, Kontrast und hellem Tageslicht. Ein Laser-TV gewinnt ab 100 Zoll beim Preis pro "
+   },
+   {
+    "datei": "alr-leinwand",
+    "titel": "ALR-Leinwand für Laser-TV: Welche brauchst du wirklich?",
+    "sub": "Für Ultrakurzdistanz-Laser-TVs brauchst du eine UST-ALR-Leinwand (Fresnel- oder Lamellenstruktur). Normale ALR"
+   },
+   {
+    "datei": "laser-tv-gaming",
+    "titel": "Laser-TV fürs Gaming: Was PS5, Xbox und PC-Spieler wissen müssen",
+    "sub": "Für Konsolenspiele im Wohnzimmer sind Laser-TVs mit Gaming-Modus gut geeignet (rund 15–30 ms Latenz). Für schn"
+   }
+  ]
+ },
+ {
+  "slug": "balkonkraftwerk-speicher",
+  "domain": "balkonkraftwerk-speicher-vergleich.at",
+  "farbe": "#1f8a4c",
+  "icon": "🔋",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Balkonkraftwerk mit Speicher: Lohnt sich das 2026?",
+    "sub": "Ein Speicher lohnt sich vor allem, wenn du tagsüber kaum zuhause bist und 4 Module (ca. 1.600–2.000 Wp) betrei"
+   },
+   {
+    "datei": "balkonkraftwerk-anmelden-oesterreich",
+    "titel": "Balkonkraftwerk in Österreich anmelden: So geht's in 15 Minuten",
+    "sub": "In Österreich meldest du ein Balkonkraftwerk bis 800 W über das Online-Formular deines Netzbetreibers an. Du b"
+   },
+   {
+    "datei": "speicher-nachruesten",
+    "titel": "Speicher für ein bestehendes Balkonkraftwerk nachrüsten",
+    "sub": "Am einfachsten ist ein AC-gekoppelter Speicher, der an die Steckdose kommt und mit einem Smart Meter arbeitet "
+   },
+   {
+    "datei": "nulleinspeisung-smart-meter",
+    "titel": "Nulleinspeisung: Mit Smart Meter 70 % und mehr Eigenverbrauch",
+    "sub": "Bei Nulleinspeisung misst ein Smart Meter laufend deinen Verbrauch, und der Speicher gibt genau so viel Strom "
+   }
+  ]
+ },
+ {
+  "slug": "maehroboter-ohne-draht",
+  "domain": "maehroboter-ohne-draht.at",
+  "farbe": "#3d8b1f",
+  "icon": "🤖",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Mähroboter ohne Begrenzungsdraht: Die besten Modelle 2026",
+    "sub": "Für offene Gärten ist RTK-Navigation die zuverlässigste Lösung. Bei vielen Bäumen oder Hausnähe lieber ein Mod"
+   },
+   {
+    "datei": "maehroboter-hanglage",
+    "titel": "Mähroboter für Hanglage: Darauf kommt es bei steilen Gärten an",
+    "sub": "Bis etwa 35 % Steigung reichen Standardmodelle. Für 45–50 % brauchst du Modelle mit Spikeradern oder großem Re"
+   },
+   {
+    "datei": "rtk-vs-kamera",
+    "titel": "RTK, Kamera oder LiDAR: Mähroboter-Navigation ohne Draht erklärt",
+    "sub": "RTK ist am genauesten in offenen Gärten, Kamera-Navigation ist am einfachsten einzurichten, LiDAR funktioniert"
+   },
+   {
+    "datei": "igelschutz-maehroboter",
+    "titel": "Igelschutz beim Mähroboter: 5 Regeln, die Leben retten",
+    "sub": "Mähroboter nie in der Dämmerung oder nachts fahren lassen, weil Igel dann aktiv sind und von vielen Sensoren n"
+   }
+  ]
+ },
+ {
+  "slug": "poolroboter",
+  "domain": "poolroboter-vergleich.at",
+  "farbe": "#0a7fb5",
+  "icon": "🏊",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Poolroboter Vergleich 2026: Boden, Wand und Wasserlinie automatisch sauber",
+    "sub": "Für Aufstellpools und kleine Becken bis 50 m² reicht ein kabelloser Bodenreiniger. Für eingelassene Pools mit "
+   },
+   {
+    "datei": "poolroboter-aufstellpool",
+    "titel": "Poolroboter für den Aufstellpool: Was funktioniert wirklich?",
+    "sub": "Für Aufstellpools ab ca. 4 m Durchmesser eignen sich leichte, kabellose Bodenreiniger. Bei weichen Wänden (Qui"
+   },
+   {
+    "datei": "kabellos-vs-kabel",
+    "titel": "Poolroboter kabellos oder mit Kabel: Was passt zu deinem Pool?",
+    "sub": "Kabellos ist bequemer und ideal bis etwa 100 m² Beckenfläche. Kabelmodelle sind bei sehr großen Pools, täglich"
+   },
+   {
+    "datei": "poolroboter-pflege",
+    "titel": "Poolroboter richtig pflegen: So hält er viele Saisonen",
+    "sub": "Filter nach jedem Einsatz ausspülen, Roboter nicht in der Sonne trocknen lassen, Akku-Modelle über den Winter "
+   }
+  ]
+ },
+ {
+  "slug": "infrarotkabine",
+  "domain": "infrarotkabine-vergleich.at",
+  "farbe": "#c4501a",
+  "icon": "♨️",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Infrarotkabine für zuhause: Welche Bauart passt zu dir?",
+    "sub": "Für Wohlfühlwärme und Muskelentspannung reicht eine Kabine mit Flächenstrahlern (Carbon). Wer gezielte Tiefenw"
+   },
+   {
+    "datei": "vollspektrum-vs-carbon",
+    "titel": "Vollspektrum vs. Carbon: Welcher Infrarotstrahler ist besser?",
+    "sub": "Carbon-Flächenstrahler geben milde, gleichmäßige Wärme (vor allem IR-C) und sind günstiger. Vollspektrumstrahl"
+   },
+   {
+    "datei": "infrarotkabine-wohnung",
+    "titel": "Infrarotkabine in der Wohnung: Was du vor dem Kauf klären musst",
+    "sub": "Eine 1–2-Personen-Infrarotkabine braucht etwa 1–1,5 m² Stellfläche, 2 m Raumhöhe und eine eigene 230-V-Steckdo"
+   },
+   {
+    "datei": "infrarotkabine-vs-sauna",
+    "titel": "Infrarotkabine vs. Sauna: Was passt besser zu dir?",
+    "sub": "Die Infrarotkabine ist günstiger, kleiner, braucht keinen Starkstrom und ist in 10–15 Minuten bereit. Die finn"
+   }
+  ]
+ },
+ {
+  "slug": "pelletgrill",
+  "domain": "pelletgrill-vergleich.at",
+  "farbe": "#a3341c",
+  "icon": "🔥",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Pelletgrill Vergleich 2026: Smoken, Grillen und Backen mit Holzpellets",
+    "sub": "Wer viel Low & Slow smokt, ist mit Traeger am besten bedient. Wer auch scharf angrillen will, wählt den Weber "
+   },
+   {
+    "datei": "pelletgrill-vs-gasgrill",
+    "titel": "Pelletgrill vs. Gasgrill: Welcher passt zu deinem Grillstil?",
+    "sub": "Der Gasgrill ist schneller heiß, ideal für Steaks und Würstel unter der Woche. Der Pelletgrill liefert echtes "
+   },
+   {
+    "datei": "pulled-pork-pelletgrill",
+    "titel": "Pulled Pork im Pelletgrill: Die einfache Schritt-für-Schritt-Anleitung",
+    "sub": "Schweinenacken (2–3 kg) mit Rub einreiben, bei 110–120 °C smoken, bis 92–95 °C Kerntemperatur erreicht sind (c"
+   },
+   {
+    "datei": "grillpellets-holzarten",
+    "titel": "Grillpellets im Überblick: Welche Holzart passt zu welchem Fleisch?",
+    "sub": "Rind: Hickory, Eiche oder Mesquite. Schwein: Apfel, Kirsche, Hickory. Geflügel und Fisch: Apfel, Erle oder Buc"
+   }
+  ]
+ },
+ {
+  "slug": "powerstation",
+  "domain": "powerstation-vergleich.at",
+  "farbe": "#d08700",
+  "icon": "⚡",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Powerstation Vergleich 2026: Die besten tragbaren Akkus für Blackout und Camping",
+    "sub": "Für Camping und Router-Notstrom reichen ca. 1.000 Wh mit 1.800 W Dauerleistung. Wer bei einem Blackout auch Kü"
+   },
+   {
+    "datei": "blackout-vorsorge-oesterreich",
+    "titel": "Blackout-Vorsorge: So planst du deinen Notstrom richtig",
+    "sub": "Für Licht, Handy, Router und Radio reichen 300–500 Wh pro Tag. Mit Kühlschrank sind es 1,2–1,8 kWh pro Tag. Ei"
+   },
+   {
+    "datei": "powerstation-kuehlschrank",
+    "titel": "Kühlschrank mit Powerstation betreiben: Laufzeit und richtige Größe",
+    "sub": "Ein moderner Kühlschrank verbraucht 0,4–1 kWh pro Tag. Eine 1.000-Wh-Powerstation hält ihn also etwa 1–2 Tage "
+   },
+   {
+    "datei": "powerstation-solarpanel",
+    "titel": "Powerstation mit Solarmodul laden: So groß muss das Panel sein",
+    "sub": "Als Faustregel sollte die Solarleistung (W) etwa 30–50 % der Akkukapazität (Wh) betragen – für 1.000 Wh also 3"
+   }
+  ]
+ },
+ {
+  "slug": "3d-drucker",
+  "domain": "3d-drucker-vergleich.at",
+  "farbe": "#00897b",
+  "icon": "🖨️",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "3D-Drucker Vergleich 2026: Welcher Drucker passt für Einsteiger und Profis?",
+    "sub": "Einsteiger: Bambu Lab A1 mit AMS lite. Wer auch technische Materialien (ABS, ASA) druckt, braucht ein geschlos"
+   },
+   {
+    "datei": "3d-drucker-anfaenger",
+    "titel": "3D-Drucker für Anfänger: In 30 Minuten zum ersten Druck",
+    "sub": "Für Anfänger eignet sich ein vollautomatisch kalibrierender Drucker wie der Bambu Lab A1. Dazu brauchst du nur"
+   },
+   {
+    "datei": "filament-arten",
+    "titel": "Filament-Ratgeber: Welches Material für welchen Zweck?",
+    "sub": "PLA für Deko und Prototypen, PETG für robuste Alltagsteile, ASA für draußen (UV-beständig), ABS für hitzebestä"
+   },
+   {
+    "datei": "mehrfarbdruck",
+    "titel": "Mehrfarbig 3D-drucken: So funktionieren AMS, CFS und MMU",
+    "sub": "Filamentwechsler wie AMS (Bambu Lab), CFS (Creality) oder MMU (Prusa) wechseln automatisch zwischen 4 oder meh"
+   }
+  ]
+ },
+ {
+  "slug": "massagesessel",
+  "domain": "massagesessel-vergleich.at",
+  "farbe": "#7a4b2a",
+  "icon": "💺",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Massagesessel Vergleich 2026: Welcher Sessel lohnt sich wirklich?",
+    "sub": "Für die meisten lohnt sich ein Sessel mit SL-Schiene (massiert vom Nacken bis zum Gesäß), Zero-Gravity-Liegepo"
+   },
+   {
+    "datei": "zero-gravity",
+    "titel": "Zero Gravity beim Massagesessel: Was steckt dahinter?",
+    "sub": "Zero Gravity ist eine Liegeposition, bei der die Beine über Herzhöhe liegen und das Körpergewicht gleichmäßig "
+   },
+   {
+    "datei": "massagesessel-kleine-wohnung",
+    "titel": "Massagesessel für kleine Räume: So viel Platz brauchst du wirklich",
+    "sub": "Platzsparende Massagesessel brauchen etwa 0,8 × 1,4 m Stellfläche und dank Wandfreiheits-Technik nur 5–10 cm A"
+   },
+   {
+    "datei": "massagesessel-ruecken",
+    "titel": "Massagesessel bei Rückenverspannungen: Funktionen, die den Unterschied machen",
+    "sub": "Bei Verspannungen helfen vor allem SL-Schiene (bis zum Gesäß), 3D/4D-Tiefenregelung, Wärme im Lendenbereich un"
+   }
+  ]
+ },
+ {
+  "slug": "klimaanlage",
+  "domain": "klimaanlage-ohne-installateur.at",
+  "farbe": "#0f6fa8",
+  "icon": "❄️",
+  "pins": [
+   {
+    "datei": "index",
+    "titel": "Klimaanlage ohne Installateur: Was wirklich kühlt (und was nur Lärm macht)",
+    "sub": "Die beste Kühlleistung ohne Installateur liefert eine mobile Split-Klimaanlage wie die Midea PortaSplit: leise"
+   },
+   {
+    "datei": "monoblock-vs-split",
+    "titel": "Monoblock vs. Split-Klimagerät: Was kühlt wirklich besser?",
+    "sub": "Split-Geräte kühlen effizienter und deutlich leiser, weil der Kompressor draußen arbeitet. Monoblöcke sind gün"
+   },
+   {
+    "datei": "klimaanlage-mietwohnung",
+    "titel": "Klimaanlage in der Mietwohnung: Was erlaubt ist und was nicht",
+    "sub": "Mobile Geräte ohne bauliche Veränderung darfst du als Mieter grundsätzlich nutzen. Sobald etwas an Fassade ode"
+   },
+   {
+    "datei": "klimaanlage-schlafzimmer-leise",
+    "titel": "Leise Klimaanlage fürs Schlafzimmer: Endlich wieder gut schlafen",
+    "sub": "Fürs Schlafzimmer eignen sich Split- oder mobile Split-Geräte mit Nachtmodus und unter 40 dB Innenlautstärke. "
+   }
+  ]
+ }
+]

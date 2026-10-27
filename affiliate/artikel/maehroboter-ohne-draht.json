@@ -1,0 +1,39 @@
+{
+  "artikel": [
+    {"slug": "maehroboter-hanglage", "titel": "Mähroboter für Hanglage: Welche schaffen 50 % und mehr? (2026)", "h1": "Mähroboter für Hanglage: Darauf kommt es bei steilen Gärten an", "pin": "Steiler Garten? Diese Mähroboter schaffen den Hang", "beschreibung": "Steigung richtig messen, Allrad vs. Heckantrieb, Rutschgefahr bei Nässe: So findest du den Mähroboter für deinen Hang.", "kurzantwort": "Bis etwa 35 % Steigung reichen Standardmodelle. Für 45–50 % brauchst du Modelle mit Spikeradern oder großem Reifenprofil, ab 50 % einen Allrad-Mähroboter. Plane immer 10 Prozentpunkte Reserve ein, weil nasses Gras die Haftung stark reduziert.",
+     "abschnitte": [
+       {"h": "Steigung richtig messen", "t": "Steigung in Prozent = Höhenunterschied ÷ waagrechte Länge × 100. Lege eine Latte waagrecht an den Hang, miss am Ende den Abstand zum Boden. Beispiel: 1 m Latte, 35 cm Abstand = 35 %. Wichtig ist die steilste Stelle, nicht der Durchschnitt.\n\nAlternativ zeigen viele Wasserwaage-Apps am Handy die Neigung in Grad: 20° entsprechen rund 36 %, 30° etwa 58 %."},
+       {"h": "Allrad oder Heckantrieb?", "t": "Heckangetriebene Mähroboter verlieren am Hang Traktion, vor allem bergab bei Nässe. Allrad-Modelle verteilen die Kraft auf alle Räder und kommen deutlich steilere Flächen hoch. Der Nachteil: höherer Preis, mehr Gewicht und breitere Bauweise."},
+       {"h": "Tipps für Hanggärten", "t": "Lass den Roboter nicht direkt nach Regen fahren, Regensensor aktivieren. Lege die Ladestation an einer ebenen Stelle an. Und schräge Querfahrten sind für die Mähleistung besser als senkrecht zum Hang – manche Apps erlauben die Mährichtung festzulegen."}
+     ],
+     "faq": [
+       {"f": "Was passiert, wenn der Hang zu steil ist?", "a": "Der Roboter rutscht, dreht durch oder hinterlässt Spuren im Rasen. Viele Modelle erkennen das und stoppen mit Fehlermeldung."},
+       {"f": "Gibt es Mähroboter für 100 % Steigung?", "a": "Für Privatgärten kaum. Bei über 80 % ist ein Profi-Gerät oder eine Bepflanzung mit Bodendeckern sinnvoller."}
+     ]},
+    {"slug": "rtk-vs-kamera", "titel": "RTK oder Kamera: Welche Mähroboter-Navigation ist besser?", "h1": "RTK, Kamera oder LiDAR: Mähroboter-Navigation ohne Draht erklärt", "pin": "RTK vs. Kamera: Welcher Mähroboter findet sich zurecht?", "beschreibung": "Wie RTK, Kamera und LiDAR bei drahtlosen Mährobotern funktionieren, welche Gärten wofür geeignet sind und wo die Grenzen liegen.", "kurzantwort": "RTK ist am genauesten in offenen Gärten, Kamera-Navigation ist am einfachsten einzurichten, LiDAR funktioniert am besten unter Bäumen und an Hauswänden. Für schwierige Gärten ist eine Kombination aus RTK und Kamera oder LiDAR ideal.",
+     "abschnitte": [
+       {"h": "RTK: Satelliten plus Referenzstation", "t": "Die Referenzantenne im Garten korrigiert GPS-Fehler auf 2–3 cm. Voraussetzung ist freie Sicht zum Himmel. Problemzonen: direkt an hohen Hauswänden, unter dichten Baumkronen, in engen Innenhöfen."},
+       {"h": "Kamera: Rasen erkennen wie ein Mensch", "t": "Eine KI erkennt, wo Rasen aufhört und Beet oder Weg beginnt. Keine Antenne nötig, Einrichtung in Minuten. Schwächen: klare Rasenkanten sind Pflicht, bei Dämmerung und Gegenlicht sinkt die Zuverlässigkeit."},
+       {"h": "LiDAR: Laser-Scan der Umgebung", "t": "LiDAR erstellt eine 3D-Karte aus Bäumen, Hauswänden und Zäunen. Dadurch klappt die Ortung auch dort, wo Satelliten schwach sind. LiDAR-Modelle sind etwas teurer, aber in verwinkelten Gärten oft die stressfreiste Lösung."}
+     ],
+     "faq": [
+       {"f": "Fällt RTK bei Bewölkung aus?", "a": "Nein, Wolken stören die Satellitensignale nicht. Probleme machen nur feste Hindernisse wie Gebäude und dichte Bäume."},
+       {"f": "Kann ich einen Mähroboter mit Draht auf drahtlos umrüsten?", "a": "Nein, die Navigation ist fest verbaut. Den alten Draht kannst du nach dem Wechsel im Boden lassen."}
+     ]},
+    {"slug": "igelschutz-maehroboter", "titel": "Mähroboter und Igel: So schützt du Tiere im Garten", "h1": "Igelschutz beim Mähroboter: 5 Regeln, die Leben retten", "pin": "Mähroboter & Igel: 5 Regeln für einen sicheren Garten", "beschreibung": "Warum Mähroboter nachts für Igel gefährlich sind, welche Sensoren helfen und welche Einstellungen du unbedingt setzen solltest.", "kurzantwort": "Mähroboter nie in der Dämmerung oder nachts fahren lassen, weil Igel dann aktiv sind und von vielen Sensoren nicht erkannt werden. Mähe nur tagsüber, aktiviere die Hinderniserkennung und lass Wildecken stehen.",
+     "abschnitte": [
+       {"h": "Warum Igel gefährdet sind", "t": "Igel flüchten nicht, sondern rollen sich zusammen. Klassische Stoßsensoren lösen bei einem kleinen Tier oft zu spät aus. Tierschutzorganisationen berichten jedes Jahr von verletzten Igeln durch nächtlich fahrende Mähroboter."},
+       {"h": "Die 5 Regeln", "t": "1. Zeitplan nur zwischen etwa 9 und 18 Uhr. 2. Kamera- oder Ultraschall-Hinderniserkennung aktivieren. 3. Wildecken und Laubhaufen mit einer Sperrzone in der App ausklammern. 4. Vor dem ersten Mähen im Frühling den Garten ablaufen. 5. Schnitthöhe nicht unter 4 cm stellen."},
+       {"h": "Worauf beim Kauf achten", "t": "Modelle mit Kamera-KI erkennen kleine Tiere und Gegenstände deutlich besser als reine Stoßsensoren. Achte in Tests auf die Kategorie Hinderniserkennung – sie trennt gute von mittelmäßigen Geräten."}
+     ],
+     "faq": [
+       {"f": "Ist nächtliches Mähen in Österreich verboten?", "a": "Ein generelles Verbot gibt es nicht, einzelne Gemeinden regeln es aber in Lärmschutz- oder Tierschutzverordnungen. Aus Tierschutzgründen solltest du in jedem Fall darauf verzichten."},
+       {"f": "Erkennt eine Kamera einen Igel zuverlässig?", "a": "Bei Tageslicht deutlich besser als nachts. Deshalb ist der Zeitplan die wichtigste Schutzmaßnahme."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["mähroboter ohne begrenzungsdraht", "mähroboter ohne draht test", "rtk mähroboter", "mähroboter ohne kabel", "mähroboter hanglage", "navimow test", "luba 2 test"],
+    "headlines": ["Mähroboter ohne Draht 2026", "Kein Kabel verlegen mehr", "RTK, Kamera & LiDAR erklärt", "Gratis Flächenrechner", "Auch für Hanglage", "Unabhängiger Vergleich", "Segway, Mammotion & Co.", "Kaufcheckliste gratis"],
+    "descriptions": ["Mähroboter ohne Begrenzungsdraht im Vergleich. Finde das Modell für deinen Garten.", "Mit kostenlosem Flächenrechner: Welche Größe und Navigation passt zu deinem Rasen?", "Ehrliche Vor- und Nachteile, Hang-Tauglichkeit und Igelschutz auf einen Blick."]
+  }
+}

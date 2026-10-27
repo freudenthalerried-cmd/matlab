@@ -30,7 +30,7 @@ Inhalte stehen in `niches/*.json` → `python3 affiliate/build.py` → `affiliat
 - Interaktiver Rechner + Gratis-Checkliste pro Nische = echter Mehrwert (wichtig für Google-Ads-Freigabe und Backlinks)
 - Querverlinkung der Portale untereinander, keine Cookies, keine Tracker (keine Cookie-Banner nötig)
 
-**Nächster Hebel (Monat 2–3):** Pro Nische 5–10 Long-Tail-Unterseiten, z. B. „Laser-TV vs. OLED“, „Balkonkraftwerk Speicher Österreich Förderung“, „Mähroboter Hanglage“. Ich kann sie im gleichen Generator ergänzen.
+**Erledigt:** 3 Ratgeber-Artikel pro Nische (`artikel/<slug>.json`, 30 Seiten). **Nächster Hebel (Monat 2–3):** weitere Long-Tail-Unterseiten, z. B. „Laser-TV vs. OLED“, „Balkonkraftwerk Speicher Österreich Förderung“, „Mähroboter Hanglage“. Ich kann sie im gleichen Generator ergänzen.
 
 ## 4. Google Ads – Startplan (statt 10 × 100 €)
 
@@ -51,7 +51,13 @@ Accounts (Telefon-Verifizierung, Identität) musst du selbst anlegen, ich liefer
 Pin-/Post-Vorlage:
 > **[Frage aus der Zielgruppe]?** 🤔 Wir haben [Anzahl] Modelle verglichen und einen kostenlosen [Rechner] gebaut. Ergebnis in 30 Sekunden 👉 [Domain] #[Nische] #Vergleich #Österreich
 
-## 6. Vor dem Go-live prüfen
+## 6. Fertige Marketing-Dateien (`affiliate/marketing/`)
+
+- **`pinterest-bulk.csv`** – 40 Pins (4 pro Nische), Bilder liegen nach dem Deploy unter `https://<domain>/pins/*.jpg`. Pinterest → *Erstellen → Pins in großen Mengen erstellen* → CSV hochladen. Vorher die 10 Boards (Namen = Spalte „Pinterest board“) anlegen. Erst hochladen, wenn die Domains online sind.
+- **`google-ads-editor.csv`** – Keywords (Phrase), ausschließende Keywords inkl. „amazon“, 8 Anzeigentitel und 3 Beschreibungen pro Nische, Längen geprüft. In Google Ads Editor importieren oder Titel/Beschreibungen in eine responsive Suchanzeige kopieren. Nur die 3 Test-Nischen aus Abschnitt 4 aktivieren.
+- Pins neu erzeugen nach Textänderungen: `python3 affiliate/build.py && node affiliate/pins.js && python3 affiliate/build.py`
+
+## 7. Vor dem Go-live prüfen
 
 - Produktdaten in `niches/*.json` sind Herstellerangaben (Stand Oktober 2026), Modellnamen und Specs vor dem Launch einmal kontrollieren. Neue Generationen ersetzen alte schnell.
 - Impressum ausgefüllt? Amazon-Tag gesetzt? (Der Build warnt sonst.)

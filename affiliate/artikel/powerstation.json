@@ -1,0 +1,40 @@
+{
+  "artikel": [
+    {"slug": "blackout-vorsorge-oesterreich", "titel": "Blackout-Vorsorge Österreich: Strom für 14 Tage planen (2026)", "h1": "Blackout-Vorsorge: So planst du deinen Notstrom richtig", "pin": "Blackout-Vorsorge: Notstrom-Plan für 14 Tage", "beschreibung": "Welche Geräte im Blackout wirklich Strom brauchen, wie viel kWh das sind und welche Powerstation mit Solarmodul reicht.", "kurzantwort": "Für Licht, Handy, Router und Radio reichen 300–500 Wh pro Tag. Mit Kühlschrank sind es 1,2–1,8 kWh pro Tag. Eine Powerstation mit 1–2 kWh plus 200–400 W Solarmodul deckt das Wichtigste auch bei längeren Ausfällen ab.",
+     "abschnitte": [
+       {"h": "Schritt 1: Prioritäten festlegen", "t": "Unverzichtbar: Licht (LED), Handy, Radio, Router, ggf. medizinische Geräte. Wünschenswert: Kühlschrank, Laptop. Luxus: Kaffeemaschine, Wasserkocher. Geräte mit Heizfunktion fressen am meisten Energie und sollten im Blackout tabu sein."},
+       {"h": "Schritt 2: Tagesbedarf berechnen", "t": "Beispiel: 3 LED-Lampen (je 8 W, 5 h) = 120 Wh, Handy laden 2× = 30 Wh, Router 15 W × 12 h = 180 Wh, Kühlschrank ca. 1.000 Wh. Summe: etwa 1,3 kWh pro Tag. Den Kühlschrank im Blackout nur stundenweise betreiben spart viel."},
+       {"h": "Schritt 3: Nachladen mit Solar", "t": "Ein 400-W-Solarmodul liefert in Österreich im Sommer etwa 1,5–2 kWh am Tag, im Winter deutlich weniger. Für eine längere Autarkie ist das Solarmodul wichtiger als ein riesiger Akku."},
+       {"h": "Weitere Vorsorge", "t": "Wasser, haltbare Lebensmittel, Medikamente, Kurbelradio, Bargeld und ein Plan, wo sich die Familie trifft. Der Zivilschutzverband bietet dazu eine umfangreiche Checkliste."}
+     ],
+     "faq": [
+       {"f": "Kann ich eine Gastherme mit Powerstation betreiben?", "a": "Technisch oft möglich, weil Steuerung und Pumpe wenig Strom brauchen. Der Anschluss sollte aber vom Installateur geprüft werden – Steckdose an der Therme vorausgesetzt."},
+       {"f": "Wie lange hält eine geladene Powerstation im Schrank?", "a": "LiFePO4-Akkus verlieren nur wenige Prozent pro Monat. Trotzdem alle 3 Monate nachladen und prüfen."}
+     ]},
+    {"slug": "powerstation-kuehlschrank", "titel": "Kühlschrank an der Powerstation: Wie lange hält sie? (Rechner)", "h1": "Kühlschrank mit Powerstation betreiben: Laufzeit und richtige Größe", "pin": "Wie lange läuft dein Kühlschrank an der Powerstation?", "beschreibung": "Wie viel Strom ein Kühlschrank wirklich braucht, warum der Anlaufstrom wichtig ist und welche Powerstation-Größe reicht.", "kurzantwort": "Ein moderner Kühlschrank verbraucht 0,4–1 kWh pro Tag. Eine 1.000-Wh-Powerstation hält ihn also etwa 1–2 Tage am Laufen. Wichtig ist, dass die Dauerleistung den Anlaufstrom des Kompressors (oft 500–1.000 W kurzzeitig) verkraftet.",
+     "abschnitte": [
+       {"h": "Der echte Verbrauch", "t": "Auf dem Energielabel steht der Jahresverbrauch, z. B. 150 kWh. Geteilt durch 365 ergibt das gut 0,4 kWh pro Tag. Ältere Kühlschränke und Kühl-Gefrier-Kombis liegen oft bei 0,8–1,2 kWh."},
+       {"h": "Anlaufstrom beachten", "t": "Der Kompressor zieht beim Start kurz ein Vielfaches seiner Nennleistung. Powerstations mit 1.500 W Dauer- und 3.000 W Spitzenleistung haben damit keine Probleme. Kleine Stationen unter 500 W schalten manchmal ab."},
+       {"h": "Laufzeit verlängern", "t": "Tür so selten wie möglich öffnen, gefüllte Wasserflaschen als Kältespeicher, Gefrierfach voll halten. Im Blackout den Kühlschrank im Wechsel 2 Stunden an, 2 Stunden aus betreiben – die Kühlung hält und du sparst fast die Hälfte."}
+     ],
+     "faq": [
+       {"f": "Kann ich eine Gefriertruhe an einer Powerstation betreiben?", "a": "Ja, Gefriertruhen sind oft sehr effizient. Rechne mit 0,5–1 kWh pro Tag."},
+       {"f": "Schadet die Powerstation dem Kühlschrank?", "a": "Nein, sofern sie einen reinen Sinus ausgibt – das tun alle aktuellen Markenmodelle."}
+     ]},
+    {"slug": "powerstation-solarpanel", "titel": "Powerstation mit Solarpanel: Richtige Größe & Ladezeit", "h1": "Powerstation mit Solarmodul laden: So groß muss das Panel sein", "pin": "Welches Solarpanel passt zu deiner Powerstation?", "beschreibung": "Faltbare Panels oder starre Module, Spannungsgrenzen, Ladezeit und Ausrichtung: So lädst du deine Powerstation mit Sonnenstrom.", "kurzantwort": "Als Faustregel sollte die Solarleistung (W) etwa 30–50 % der Akkukapazität (Wh) betragen – für 1.000 Wh also 300–500 W. Prüfe unbedingt die maximale Eingangsspannung der Powerstation, bevor du Panels in Reihe schaltest.",
+     "abschnitte": [
+       {"h": "Faltbar oder starr?", "t": "Faltbare Panels sind leicht und ideal für Camping, kosten aber pro Watt mehr. Starre Module (z. B. normale 400-W-Glasmodule) sind günstiger und robuster, aber schwer. Für Blackout-Vorsorge zuhause sind starre Module oft die bessere Wahl."},
+       {"h": "Spannung und Stecker", "t": "Jede Powerstation hat einen Spannungsbereich am Solareingang, z. B. 12–60 V. Zwei Module in Reihe addieren die Spannung – liegt die über dem Maximum, kann das Gerät beschädigt werden. Für Steckerverbindungen gibt es passende Adapter (z. B. MC4 auf XT60)."},
+       {"h": "Ausrichtung", "t": "Süd und etwa 30–40° Neigung bringen im Sommer die besten Erträge, im Winter steiler aufstellen (ca. 60°). Schon leichter Schatten auf einer Zelle kann die Leistung stark senken."}
+     ],
+     "faq": [
+       {"f": "Kann ich mein Balkonkraftwerk-Modul an die Powerstation anschließen?", "a": "Oft ja, wenn Spannung und Strom im erlaubten Bereich liegen. Prüfe die Datenblätter beider Geräte."},
+       {"f": "Lädt die Powerstation auch bei Bewölkung?", "a": "Ja, aber mit deutlich weniger Leistung – oft nur 10–30 % der Nennleistung."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["powerstation test", "powerstation vergleich", "powerstation blackout", "powerstation 1000wh", "ecoflow delta test", "powerstation notstrom", "beste powerstation"],
+    "headlines": ["Powerstation Vergleich 2026", "Notstrom für den Blackout", "Gratis Laufzeit-Rechner", "EcoFlow, Anker, Bluetti", "Unabhängiger Vergleich", "Mit Solar unabhängig", "LiFePO4 & USV erklärt", "Blackout-Checkliste gratis"],
+    "descriptions": ["Die besten Powerstations für Blackout und Camping im Vergleich. Finde die richtige Größe.", "Mit kostenlosem Laufzeit- und Solar-Rechner: Wie lange laufen deine Geräte?", "Ehrliche Kaufberatung und Blackout-Checkliste zum Ausdrucken. Ohne Anmeldung."]
+  }
+}

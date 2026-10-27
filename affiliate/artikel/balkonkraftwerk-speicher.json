@@ -1,0 +1,40 @@
+{
+  "artikel": [
+    {"slug": "balkonkraftwerk-anmelden-oesterreich", "titel": "Balkonkraftwerk anmelden in Österreich: Schritt für Schritt (2026)", "h1": "Balkonkraftwerk in Österreich anmelden: So geht's in 15 Minuten", "pin": "Balkonkraftwerk anmelden: Österreich-Anleitung", "beschreibung": "Anleitung: Balkonkraftwerk mit oder ohne Speicher in Österreich beim Netzbetreiber melden. Zähler, 800-W-Grenze, Mietwohnung.", "kurzantwort": "In Österreich meldest du ein Balkonkraftwerk bis 800 W über das Online-Formular deines Netzbetreibers an. Du brauchst Zählpunktnummer, Wechselrichter-Datenblatt und Konformitätserklärung. Ein Speicher ändert an der Meldung meist nichts.",
+     "abschnitte": [
+       {"h": "Was du vor der Anmeldung brauchst", "t": "Halte bereit: die 33-stellige Zählpunktnummer (steht auf der Stromrechnung), das Datenblatt und die Konformitätserklärung des Wechselrichters (Norm für Netzanschluss), die Modulleistung und den Montageort.\n\nDie Unterlagen findest du beim Händler oder auf der Herstellerseite zum Download."},
+       {"h": "Ablauf beim Netzbetreiber", "t": "Die meisten österreichischen Netzbetreiber bieten ein eigenes Formular für Kleinst-Erzeugungsanlagen. Nach der Meldung prüft der Netzbetreiber den Zähler; ein alter Ferraris-Zähler ohne Rücklaufsperre wird in der Regel gegen einen Smart Meter getauscht. Das ist für dich meist kostenlos.\n\nWichtig: Erst einschalten, wenn der Netzbetreiber grünes Licht gibt oder die im Formular genannte Frist abgelaufen ist."},
+       {"h": "Einspeisung vergütet bekommen?", "t": "Für Überschussstrom kannst du einen Einspeisevertrag mit einem Stromhändler abschließen. Bei 800 W lohnt sich der Aufwand wenig – mit Speicher und Nulleinspeisung ist der Eigenverbrauch ohnehin die wirtschaftlichere Variante."},
+       {"h": "Mietwohnung und Eigentum", "t": "Eine Montage an Balkon oder Fassade verändert das Erscheinungsbild des Hauses. Hol dir daher die Zustimmung des Vermieters bzw. der Eigentümergemeinschaft schriftlich. Bodenaufstellung auf der eigenen Terrasse ist meist unproblematischer."}
+     ],
+     "faq": [
+       {"f": "Muss ich ein Balkonkraftwerk mit Speicher extra anmelden?", "a": "Meist nicht separat, solange die Einspeiseleistung durch den Wechselrichter auf 800 W begrenzt bleibt. Gib den Speicher im Formular trotzdem an, wenn danach gefragt wird."},
+       {"f": "Was passiert, wenn ich nicht anmelde?", "a": "Der Netzbetreiber kann die Anlage untersagen und bei Zählerschäden Kosten verrechnen. Die Anmeldung ist kostenlos und schnell – es gibt keinen Grund, sie zu sparen."}
+     ]},
+    {"slug": "speicher-nachruesten", "titel": "Balkonkraftwerk-Speicher nachrüsten: AC oder DC? (2026)", "h1": "Speicher für ein bestehendes Balkonkraftwerk nachrüsten", "pin": "Speicher nachrüsten: So holst du mehr aus deinem Balkonkraftwerk", "beschreibung": "Wie du einen Speicher an ein bestehendes Balkonkraftwerk anschließt: AC-Speicher, DC-Speicher, Wechselrichter-Kompatibilität und Kosten.", "kurzantwort": "Am einfachsten ist ein AC-gekoppelter Speicher, der an die Steckdose kommt und mit einem Smart Meter arbeitet – er passt zu jedem Wechselrichter. Ein DC-Speicher zwischen Modulen und Wechselrichter ist effizienter, muss aber zum vorhandenen Wechselrichter passen.",
+     "abschnitte": [
+       {"h": "Variante 1: AC-Speicher an der Steckdose", "t": "Der AC-Speicher lädt aus dem Hausnetz, wenn dein Smart Meter Überschuss misst, und gibt Strom ab, wenn du mehr verbrauchst. Vorteil: Du musst an der bestehenden Anlage nichts ändern. Nachteil: Zweimal Wechselrichten kostet rund 10–15 % Wirkungsgrad."},
+       {"h": "Variante 2: DC-Speicher zwischen Modul und Wechselrichter", "t": "Hier werden die Modulkabel in den Speicher gesteckt und vom Speicher weiter zum Wechselrichter. Das ist effizienter, setzt aber voraus, dass der Wechselrichter mit dem Speicherausgang klarkommt. Hersteller veröffentlichen dafür Kompatibilitätslisten."},
+       {"h": "Lohnt sich das Nachrüsten?", "t": "Wenn dein Smart Meter tagsüber regelmäßig Einspeisung zeigt, ja. Bei 2 Modulen und Homeoffice-Verbrauch tagsüber eher nicht – dann wird der Strom schon direkt verbraucht. Nutze unseren Amortisationsrechner mit deiner realen Eigenverbrauchsquote."}
+     ],
+     "faq": [
+       {"f": "Brauche ich für einen AC-Speicher einen Smart Meter?", "a": "Ja, sonst weiß der Speicher nicht, wann er laden oder entladen soll. Häufig genutzt wird ein Shelly Pro 3EM oder das Zubehör des Speicher-Herstellers."},
+       {"f": "Darf ich mehr als 800 W aus dem Speicher abgeben?", "a": "Nein, auch der Speicher muss die Einspeisung ins Hausnetz auf die zulässige Leistung begrenzen."}
+     ]},
+    {"slug": "nulleinspeisung-smart-meter", "titel": "Nulleinspeisung mit Smart Meter: So steigt dein Eigenverbrauch", "h1": "Nulleinspeisung: Mit Smart Meter 70 % und mehr Eigenverbrauch", "pin": "Nulleinspeisung: Kein Solarstrom mehr verschenken", "beschreibung": "Was Nulleinspeisung bedeutet, welche Smart Meter funktionieren und wie viel du damit beim Balkonkraftwerk mit Speicher sparst.", "kurzantwort": "Bei Nulleinspeisung misst ein Smart Meter laufend deinen Verbrauch, und der Speicher gibt genau so viel Strom ab, wie gerade gebraucht wird. So fließt kaum Strom ungenutzt ins Netz und die Eigenverbrauchsquote steigt typischerweise von 30–40 % auf 60–80 %.",
+     "abschnitte": [
+       {"h": "So funktioniert die Regelung", "t": "Der Smart Meter sitzt im Zählerkasten (Klemmen um die Phasen) oder liest den Netzbetreiber-Zähler über die Kundenschnittstelle aus. Er meldet den aktuellen Verbrauch per WLAN an den Speicher. Der Speicher passt seine Abgabe im Sekundentakt an."},
+       {"h": "Welche Smart Meter funktionieren?", "t": "Viele Speicher-Hersteller haben eigene Zähler im Sortiment. Herstellerübergreifend verbreitet sind Shelly-Messgeräte. Den Einbau im Zählerkasten muss ein Elektriker machen; das Auslesen der Kundenschnittstelle am Smart Meter des Netzbetreibers geht oft ohne Elektriker."},
+       {"h": "Wie viel bringt das?", "t": "Beispiel: 1.800 Wp, 1.700 kWh Jahresertrag. Ohne Speicher nutzt du vielleicht 35 % = 595 kWh. Mit Speicher und Nulleinspeisung 70 % = 1.190 kWh. Bei 28 Cent/kWh sind das rund 165 € mehr Ersparnis pro Jahr."}
+     ],
+     "faq": [
+       {"f": "Ist Nulleinspeisung in Österreich erlaubt?", "a": "Ja. Du darfst deinen erzeugten Strom selbst verbrauchen; die Anmeldung beim Netzbetreiber ist trotzdem nötig."},
+       {"f": "Funktioniert Nulleinspeisung ohne Speicher?", "a": "Nur begrenzt: Der Wechselrichter kann drosseln, aber nicht speichern. Den Überschuss vom Mittag gibt es dann abends nicht."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["balkonkraftwerk speicher test", "balkonkraftwerk mit speicher", "balkonkraftwerk speicher vergleich", "balkonkraftwerk speicher österreich", "solarbank test", "balkonkraftwerk speicher lohnt sich", "speicher balkonkraftwerk nachrüsten"],
+    "headlines": ["Balkonkraftwerk-Speicher 2026", "Lohnt sich ein Speicher?", "Gratis Amortisationsrechner", "Anker, Zendure, EcoFlow & Co.", "Ehrlicher Vergleich", "Für Österreich & Deutschland", "Eigenverbrauch bis 80 %", "Kaufcheckliste gratis"],
+    "descriptions": ["5 Speicher im Vergleich. Mit kostenlosem Rechner: Ab wann rechnet sich dein Speicher?", "DC oder AC, wie viel kWh, welcher Smart Meter? Alle Antworten auf einer Seite.", "Unabhängig, ohne Anmeldung. Inklusive Anleitung zur Meldung beim Netzbetreiber."]
+  }
+}

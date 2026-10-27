@@ -1,0 +1,39 @@
+{
+  "artikel": [
+    {"slug": "pelletgrill-vs-gasgrill", "titel": "Pelletgrill oder Gasgrill? Geschmack, Kosten, Bedienung", "h1": "Pelletgrill vs. Gasgrill: Welcher passt zu deinem Grillstil?", "pin": "Pelletgrill oder Gasgrill? Die ehrliche Antwort", "beschreibung": "Raucharoma, Temperaturbereich, Betriebskosten und Komfort: Pelletgrill und Gasgrill im direkten Vergleich.", "kurzantwort": "Der Gasgrill ist schneller heiß, ideal für Steaks und Würstel unter der Woche. Der Pelletgrill liefert echtes Holzraucharoma und hält niedrige Temperaturen stundenlang automatisch – perfekt für Pulled Pork, Ribs und Brisket.",
+     "abschnitte": [
+       {"h": "Geschmack", "t": "Gas verbrennt geschmacksneutral. Pellets erzeugen echten Holzrauch – je niedriger die Temperatur, desto intensiver das Aroma. Wer BBQ-Klassiker liebt, wird mit einem Gasgrill nie ganz zufrieden sein."},
+       {"h": "Temperatur und Tempo", "t": "Gasgrills sind in 10 Minuten auf 300 °C und mehr. Pelletgrills brauchen 10–15 Minuten und erreichen meist 260–315 °C. Für scharfes Angrillen haben einige Pelletgrills eine Direktflammen-Zone."},
+       {"h": "Betriebskosten", "t": "Eine 11-kg-Gasflasche reicht für viele kurze Grillabende. Pellets verbrauchst du bei langen Low-&-Slow-Sessions schneller, bei kurzen Grillabenden ist der Unterschied gering. Nutze unseren Pellet-Rechner für deine Gewohnheiten."}
+     ],
+     "faq": [
+       {"f": "Kann ich auf dem Gasgrill smoken?", "a": "Mit einer Räucherbox geht es, das Aroma ist aber schwächer und die Temperatur schwerer konstant zu halten."},
+       {"f": "Was ist sicherer auf dem Balkon?", "a": "Beide können durch die Hausordnung eingeschränkt sein. Pelletgrills erzeugen mehr Rauch, Gasgrills brauchen eine sichere Flaschenlagerung."}
+     ]},
+    {"slug": "pulled-pork-pelletgrill", "titel": "Pulled Pork im Pelletgrill: Rezept, Zeiten & Temperatur", "h1": "Pulled Pork im Pelletgrill: Die einfache Schritt-für-Schritt-Anleitung", "pin": "Pulled Pork im Pelletgrill – gelingt garantiert", "beschreibung": "Pulled Pork im Pelletgrill: Fleisch, Rub, Temperatur, Garzeit, Stall-Phase und Ruhezeit. Mit Pelletverbrauch.", "kurzantwort": "Schweinenacken (2–3 kg) mit Rub einreiben, bei 110–120 °C smoken, bis 92–95 °C Kerntemperatur erreicht sind (ca. 1,5–2 h pro kg), dann eine Stunde ruhen lassen und zerzupfen. Pelletverbrauch: etwa 6–9 kg.",
+     "abschnitte": [
+       {"h": "Vorbereitung", "t": "Kaufe Schweinenacken mit Knochen (ca. 2,5 kg). Am Vorabend mit Senf als Haftgrund einstreichen und großzügig mit Rub (Paprika, brauner Zucker, Salz, Pfeffer, Knoblauch) einreiben. Über Nacht im Kühlschrank ziehen lassen."},
+       {"h": "Smoken", "t": "Pelletgrill auf 110–120 °C, Buche oder Hickory als Pellets. Fleisch mit Kerntemperaturfühler auflegen. Nach etwa 65–75 °C stagniert die Temperatur oft stundenlang (Stall) – ganz normal. Wer es eilig hat, wickelt das Fleisch dann in Butcher-Papier."},
+       {"h": "Fertigstellen", "t": "Bei 92–95 °C Kerntemperatur herunternehmen, in Papier gewickelt eine Stunde in einer Kühlbox ruhen lassen. Dann mit zwei Gabeln zerzupfen und mit etwas Bratensaft oder BBQ-Sauce vermengen."}
+     ],
+     "faq": [
+       {"f": "Wie lange dauert Pulled Pork im Pelletgrill?", "a": "Bei 2,5 kg etwa 10–14 Stunden inklusive Ruhezeit. Plane lieber zu viel Zeit ein."},
+       {"f": "Welche Pellets passen zu Pulled Pork?", "a": "Hickory für kräftigen Rauch, Apfel oder Kirsche für mild-fruchtiges Aroma, Buche als Allrounder."}
+     ]},
+    {"slug": "grillpellets-holzarten", "titel": "Grillpellets: Holzarten, Geschmack & Qualität erkennen", "h1": "Grillpellets im Überblick: Welche Holzart passt zu welchem Fleisch?", "pin": "Welche Grillpellets zu welchem Fleisch?", "beschreibung": "Buche, Hickory, Kirsche, Apfel, Mesquite: Welche Grillpellets zu Rind, Schwein, Geflügel und Fisch passen – und woran du Qualität erkennst.", "kurzantwort": "Rind: Hickory, Eiche oder Mesquite. Schwein: Apfel, Kirsche, Hickory. Geflügel und Fisch: Apfel, Erle oder Buche. Gute Pellets sind 100 % Hartholz ohne Bindemittel, staubarm und glänzend.",
+     "abschnitte": [
+       {"h": "Holzarten und Aroma", "t": "Buche ist mild und vielseitig. Hickory und Mesquite sind kräftig und passen zu Rind. Obsthölzer wie Apfel und Kirsche geben süßlich-milde Noten und eine schöne rötliche Farbe. Erle ist klassisch für Fisch."},
+       {"h": "Qualität erkennen", "t": "Hochwertige Pellets haben wenig Staub im Sack, glänzen leicht und zerbröseln nicht. Viel Staub bedeutet mehr Asche und schwankende Temperaturen. Verwende nie Heizpellets – sie können Nadelholz oder Zusätze enthalten."},
+       {"h": "Lagerung", "t": "Pellets saugen Feuchtigkeit und quellen auf. Lagere sie trocken in einem dicht schließenden Eimer. Feuchte Pellets können die Förderschnecke blockieren."}
+     ],
+     "faq": [
+       {"f": "Kann ich Holzarten mischen?", "a": "Ja, Mischungen wie Hickory-Kirsche sind sehr beliebt. Viele Hersteller bieten fertige Blends an."},
+       {"f": "Wie viel Pellets brauche ich pro Saison?", "a": "Bei einem Grillabend pro Woche etwa 40–80 kg, bei regelmäßigem Low & Slow deutlich mehr."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["pelletgrill test", "pelletgrill vergleich", "bester pelletgrill", "pelletsmoker test", "traeger test", "weber searwood test", "pelletgrill kaufen"],
+    "headlines": ["Pelletgrill Vergleich 2026", "Weber, Traeger, Pit Boss", "Gratis Pellet-Rechner", "Smoken & Grillen in einem", "Unabhängiger Vergleich", "Pelletgrill oder Gasgrill?", "Pulled Pork leicht gemacht", "Kaufcheckliste gratis"],
+    "descriptions": ["Die besten Pelletgrills im Vergleich. Finde das Modell für deinen Grillstil.", "Mit kostenlosem Rechner für Pelletverbrauch und Kosten pro Grillabend.", "Ehrliche Vor- und Nachteile, Rezepte und Holzarten-Ratgeber. Ohne Anmeldung."]
+  }
+}

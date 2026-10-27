@@ -115,6 +115,7 @@ def index(n):
 <section><h2>Die Modelle im Detail</h2><div class="cards">{cards}</div></section>
 {calc}
 <section id="ratgeber" class="guide"><h2>Kaufratgeber: {e(n['thema'])} richtig auswählen</h2>{guide}
+{'<h3>Ratgeber-Artikel</h3><ul class="related">' + "".join(f"<li><a href='{e(a['slug'])}.html'>{e(a['h1'])}</a></li>" for a in n['_artikel']) + '</ul>' if n['_artikel'] else ''}
 <div class="lead-magnet"><strong>Gratis-Kaufcheckliste:</strong> Alle Punkte zum Abhaken vor dem Kauf – zum Ausdrucken oder als PDF speichern. <a class="btn alt" href="checkliste.html">Checkliste öffnen</a></div></section>
 <section id="faq"><h2>Häufige Fragen</h2>{faq}</section>
 {'<section><h2>Weitere Vergleiche</h2><ul class="related">' + related + '</ul></section>' if related else ''}
@@ -168,13 +169,87 @@ def datenschutz(n):
     return page(n, f"Datenschutz – {n['marke']}", "Datenschutzerklärung", "datenschutz.html", body)
 
 
+def artikel(n, a):
+    secs = "".join(f"<h2>{e(x['h'])}</h2>" + "".join(f"<p>{e(t)}</p>" for t in x["t"].split("\n\n"))
+                   for x in a["abschnitte"])
+    faq = "".join(f"<details><summary>{e(q['f'])}</summary><p>{e(q['a'])}</p></details>" for q in a["faq"])
+    top = n["produkte"][0]
+    more = "".join(f"<li><a href='{e(o['slug'])}.html'>{e(o['h1'])}</a></li>" for o in n["_artikel"] if o is not a)
+    body = f"""<article class="post">
+<p class="crumb"><a href="./">{e(n['marke'])}</a> › Ratgeber</p>
+<h1>{e(a['h1'])}</h1>
+<div class="answer"><strong>Kurzantwort:</strong> {e(a['kurzantwort'])}</div>
+<p class="meta">Aktualisiert: {e(CFG['stand'])}</p>
+{secs}
+<div class="lead-magnet"><span><strong>Unsere Empfehlung:</strong> {e(top['name'])} – ideal für {e(top['fuer'])}.</span>{cta(top['suche'])}</div>
+<p><a class="btn alt" href="./#vergleich">Zum kompletten Vergleich</a> <a class="btn alt" href="./#rechner">{e(n['rechner']['titel'])}</a></p>
+<h2>Häufige Fragen</h2>{faq}
+<h2>Weitere Ratgeber</h2><ul class="related">{more}</ul>
+</article>"""
+    schema = [
+        {"@context": "https://schema.org", "@type": "Article", "headline": a["h1"], "description": a["beschreibung"],
+         "dateModified": TODAY, "inLanguage": "de", "author": {"@type": "Person", "name": CFG["betreiber"]["name"]}},
+        {"@context": "https://schema.org", "@type": "FAQPage",
+         "mainEntity": [{"@type": "Question", "name": q["f"],
+                         "acceptedAnswer": {"@type": "Answer", "text": q["a"]}} for q in a["faq"]]},
+    ]
+    return page(n, a["titel"], a["beschreibung"], a["slug"] + ".html", body, schema)
+
+
+def marketing(niches):
+    """Google-Ads-Editor-Import und Pinterest-Bulk-CSV nach marketing/."""
+    out = ROOT / "marketing"
+    out.mkdir(exist_ok=True)
+    ads, pins, errors = [], [], []
+    for n in niches:
+        ad = n.get("_ads")
+        if ad:
+            camp, grp = f"Affiliate – {n['marke']}", n["thema"]
+            for h in ad["headlines"]:
+                if len(h) > 30: errors.append(f"{n['slug']}: Headline > 30 Zeichen: {h}")
+            for d in ad["descriptions"]:
+                if len(d) > 90: errors.append(f"{n['slug']}: Beschreibung > 90 Zeichen: {d}")
+            for k in ad["keywords"]:
+                ads.append([camp, grp, k, "Phrase", "", "", "", "", ""])
+            for k in ADS_NEGATIVE:
+                ads.append([camp, grp, k, "Negative Broad", "", "", "", "", ""])
+            ads.append([camp, grp, "", "", " | ".join(ad["headlines"]), " | ".join(ad["descriptions"]),
+                        f"https://{n['domain']}/", "Vergleich", "Rechner"])
+        for a in [{"slug": "", "h1": n["h1"], "beschreibung": n["beschreibung"], "pin": n["titel"]}] + n["_artikel"]:
+            name = a["slug"] or "index"
+            pins.append([a.get("pin", a["h1"]), f"https://{n['domain']}/pins/{name}.jpg", n["marke"], "",
+                         a["beschreibung"], f"https://{n['domain']}/{a['slug'] + '.html' if a['slug'] else ''}", "",
+                         n["thema"]])
+    import csv
+    with open(out / "google-ads-editor.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["Campaign", "Ad group", "Keyword", "Criterion Type", "Headlines (| getrennt)",
+                    "Descriptions (| getrennt)", "Final URL", "Path 1", "Path 2"])
+        w.writerows(ads)
+    with open(out / "pinterest-bulk.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["Title", "Media URL", "Pinterest board", "Thumbnail", "Description", "Link", "Publish date", "Keywords"])
+        w.writerows(pins)
+    json.dump([{"slug": n["slug"], "domain": n["domain"], "farbe": n["farbe"], "icon": n["icon"],
+                "pins": [{"datei": "index", "titel": n["h1"], "sub": n["kurzantwort"][:110]}]
+                + [{"datei": a["slug"], "titel": a["h1"], "sub": a["kurzantwort"][:110]} for a in n["_artikel"]]}
+               for n in niches], open(out / "pins.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    for err in errors:
+        print("⚠", err, file=sys.stderr)
+
+
+ADS_NEGATIVE = ["gebraucht", "reparatur", "anleitung", "pdf", "defekt", "ersatzteil", "amazon"]
+
+
 def llms(n):
     lines = [f"# {n['marke']}", "", f"> {n['kurzantwort']}", "",
              f"Unabhängiger Vergleich: {n['thema']} (Stand {CFG['stand']}).", "", "## Modelle"]
     lines += [f"- {p['name']}: ideal für {p['fuer']}. " + "; ".join(f"{c}: {v}" for c, v in zip(n['spalten'], p['specs']))
               for p in n["produkte"]]
     lines += ["", "## Häufige Fragen"] + [f"- {q['f']} {q['a']}" for q in n["faq"]]
-    lines += ["", "## Seiten", f"- [Vergleich & Rechner](https://{n['domain']}/)",
+    lines += ["", "## Seiten", f"- [Vergleich & Rechner](https://{n['domain']}/)"]
+    lines += [f"- [{a['h1']}](https://{n['domain']}/{a['slug']}.html): {a['kurzantwort']}" for a in n["_artikel"]]
+    lines += [
               f"- [Kaufcheckliste](https://{n['domain']}/checkliste.html)"]
     return "\n".join(lines) + "\n"
 
@@ -186,6 +261,9 @@ def build():
     warn = "BITTE" in CFG["betreiber"]["adresse"] or CFG["amazon_tag"].startswith("DEIN")
     for n in niches:
         n["_verwandt"] = [(o["domain"], o["titel"]) for o in niches if o is not n][:4]
+        extra = ROOT / "artikel" / f"{n['slug']}.json"
+        x = json.loads(extra.read_text(encoding="utf-8")) if extra.exists() else {}
+        n["_artikel"], n["_ads"] = x.get("artikel", []), x.get("ads")
         out = DIST / n["slug"]
         out.mkdir(parents=True)
         files = {
@@ -197,13 +275,19 @@ def build():
             "robots.txt": f"User-agent: *\nAllow: /\nSitemap: https://{n['domain']}/sitemap.xml\n",
             "sitemap.xml": "<?xml version='1.0' encoding='UTF-8'?>\n<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>"
                            + "".join(f"<url><loc>https://{n['domain']}/{p}</loc><lastmod>{TODAY}</lastmod></url>"
-                                     for p in ("", "checkliste.html")) + "</urlset>\n",
+                                     for p in ["", "checkliste.html"] + [a["slug"] + ".html" for a in n["_artikel"]])
+                           + "</urlset>\n",
         }
+        files.update({a["slug"] + ".html": artikel(n, a) for a in n["_artikel"]})
         for name, content in files.items():
             (out / name).write_text(content, encoding="utf-8")
         for a in ("style.css", "app.js"):
             shutil.copy(ROOT / "assets" / a, out / a)
-        print(f"✓ {n['slug']:<20} → {n['domain']}")
+        pins = ROOT / "pins" / n["slug"]
+        if pins.exists():
+            shutil.copytree(pins, out / "pins")
+        print(f"✓ {n['slug']:<26} → {n['domain']}  ({len(n['_artikel'])} Artikel)")
+    marketing(niches)
     if warn:
         print("\n⚠ config.json: amazon_tag und/oder Impressum-Adresse noch nicht ausgefüllt!", file=sys.stderr)
 

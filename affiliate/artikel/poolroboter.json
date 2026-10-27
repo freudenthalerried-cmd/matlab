@@ -1,0 +1,39 @@
+{
+  "artikel": [
+    {"slug": "poolroboter-aufstellpool", "titel": "Poolroboter für Aufstellpool & Stahlwandbecken (2026)", "h1": "Poolroboter für den Aufstellpool: Was funktioniert wirklich?", "pin": "Aufstellpool sauber ohne Schrubben: So geht's", "beschreibung": "Welcher Poolroboter für Quick-Up-, Frame- und Stahlwandpools geeignet ist und worauf du bei Folie und Bodenfalten achten musst.", "kurzantwort": "Für Aufstellpools ab ca. 4 m Durchmesser eignen sich leichte, kabellose Bodenreiniger. Bei weichen Wänden (Quick-Up, Frame) Wandreinigung abschalten oder Modelle ohne Wandkletterfunktion wählen. Bei Stahlwandbecken funktioniert auch Wandreinigung gut.",
+     "abschnitte": [
+       {"h": "Folie und Bodenfalten", "t": "Faltige Böden bremsen Poolroboter und können zu Hängenbleiben führen. Eine glatte Bodenfolie oder Bodenschutzvlies unter dem Pool hilft. Bürsten aus PVC oder Gummi sind schonender für Folien als harte Bürsten."},
+       {"h": "Kabellos ist hier fast Pflicht", "t": "Bei Aufstellpools ist der Rand oft zu hoch oder instabil für eine Kabeltrommel. Kabellose Geräte lässt du einfach ins Wasser gleiten und holst sie mit dem Haken wieder heraus."},
+       {"h": "Filteranlage nicht vergessen", "t": "Kleine Kartuschenfilter von Aufstellpools sind schnell überlastet. Ein Poolroboter mit eigenem Feinfilter sammelt Schmutz, bevor er im Filter landet – dadurch sinkt der Wartungsaufwand spürbar."}
+     ],
+     "faq": [
+       {"f": "Kann ein Poolroboter ein Quick-Up-Becken beschädigen?", "a": "Bei normaler Nutzung nicht. Vermeide aber Modelle, die mit hohem Druck an weichen Wänden hochklettern."},
+       {"f": "Ab welcher Größe lohnt sich ein Poolroboter?", "a": "Ab etwa 4 m Durchmesser bzw. 10 m² Bodenfläche spart er spürbar Zeit."}
+     ]},
+    {"slug": "kabellos-vs-kabel", "titel": "Poolroboter kabellos oder mit Kabel? Vor- und Nachteile", "h1": "Poolroboter kabellos oder mit Kabel: Was passt zu deinem Pool?", "pin": "Poolroboter: Kabellos oder mit Kabel?", "beschreibung": "Akkulaufzeit, Reinigungsleistung, Handhabung und Kosten: der direkte Vergleich zwischen kabellosen Poolrobotern und Kabelmodellen.", "kurzantwort": "Kabellos ist bequemer und ideal bis etwa 100 m² Beckenfläche. Kabelmodelle sind bei sehr großen Pools, täglicher Reinigung und langer Lebensdauer im Vorteil, weil es keinen Akku gibt, der altert.",
+     "abschnitte": [
+       {"h": "Komfort", "t": "Kabellose Roboter sind in Sekunden im Wasser, es gibt kein Kabel, das sich verdreht. Nach der Reinigung parken viele an der Wasserlinie, sodass du sie leicht herausholen kannst."},
+       {"h": "Laufzeit und Leistung", "t": "Akkus halten meist 2–3 Stunden. Kabelmodelle laufen unbegrenzt mit stabiler Saugleistung – auch am Ende des Zyklus. Bei großen, stark verschmutzten Becken ist das ein echter Vorteil."},
+       {"h": "Kosten über die Lebensdauer", "t": "Ein Akkutausch nach 3–5 Jahren kann einen spürbaren Teil des Neupreises kosten. Kabelroboter haben dafür Verschleißteile wie Kabel-Drehgelenk und Motor. Rechne bei beiden mit 5–8 Jahren Lebensdauer bei guter Pflege."}
+     ],
+     "faq": [
+       {"f": "Wie lange lädt ein kabelloser Poolroboter?", "a": "Je nach Modell 3–5 Stunden, manche Premium-Modelle laden schneller oder kabellos per Ladestation."},
+       {"f": "Verdreht sich das Kabel bei Kabelrobotern?", "a": "Modelle mit Drehgelenk (Swivel) verhindern das weitgehend. Ohne Drehgelenk musst du das Kabel gelegentlich ausdrehen."}
+     ]},
+    {"slug": "poolroboter-pflege", "titel": "Poolroboter reinigen, lagern & überwintern: Pflege-Anleitung", "h1": "Poolroboter richtig pflegen: So hält er viele Saisonen", "pin": "So hält dein Poolroboter doppelt so lang", "beschreibung": "Filter reinigen, Bürsten tauschen, Akku richtig lagern und überwintern: die Pflege-Anleitung für deinen Poolroboter.", "kurzantwort": "Filter nach jedem Einsatz ausspülen, Roboter nicht in der Sonne trocknen lassen, Akku-Modelle über den Winter bei etwa 50–60 % Ladung frostfrei lagern. Bürsten tauschen, wenn sie glatt geworden sind.",
+     "abschnitte": [
+       {"h": "Nach jedem Einsatz", "t": "Filterkorb leeren und mit klarem Wasser ausspülen. Den Roboter nicht stundenlang in der prallen Sonne lassen – UV-Strahlung macht Kunststoff spröde. Kabelroboter: Kabel locker aufrollen, nicht knicken."},
+       {"h": "Einmal im Monat", "t": "Bürsten und Räder auf Haare und Fäden prüfen. Bei Chlorwasser die Oberfläche kurz mit Süßwasser abspülen. Ladekontakte trocken halten."},
+       {"h": "Überwintern", "t": "Komplett reinigen und trocknen lassen. Akku-Modelle auf etwa 50–60 % laden und alle 2–3 Monate nachladen. Frostfrei und trocken lagern, nicht direkt auf kaltem Betonboden."}
+     ],
+     "faq": [
+       {"f": "Wie oft muss ich die Bürsten tauschen?", "a": "Je nach Nutzung alle 1–2 Saisonen. Spätestens wenn der Roboter an Wänden rutscht, sind sie abgenutzt."},
+       {"f": "Darf der Poolroboter bei Schockchlorung im Wasser sein?", "a": "Besser nicht. Bei sehr hohen Chlorwerten den Roboter herausnehmen, das schont Dichtungen und Kunststoff."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["poolroboter test", "poolroboter kabellos", "poolroboter vergleich", "poolsauger akku", "bester poolroboter", "poolroboter aufstellpool", "aiper test"],
+    "headlines": ["Poolroboter Vergleich 2026", "Kabellos oder mit Kabel?", "Gratis Poolrechner", "Boden, Wand & Wasserlinie", "Beatbot, Aiper, Dolphin", "Unabhängiger Vergleich", "Auch für Aufstellpools", "Kaufcheckliste gratis"],
+    "descriptions": ["Die besten Poolroboter im Vergleich. Finde den passenden Sauger für dein Becken.", "Mit kostenlosem Poolrechner: Volumen, Fläche und passende Geräteklasse in Sekunden.", "Ehrliche Vor- und Nachteile, Pflege-Tipps und Checkliste. Ohne Anmeldung."]
+  }
+}
