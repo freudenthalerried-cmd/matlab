@@ -68,7 +68,7 @@ TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <style>
-:root{{--a:{accent};--a2:{accent2};--bg:{bg};--ink:{ink};--muted:color-mix(in srgb,var(--ink) 60%,transparent)}}
+:root{{--fx-accent:{accent};--a:{accent};--a2:{accent2};--bg:{bg};--ink:{ink};--muted:color-mix(in srgb,var(--ink) 60%,transparent)}}
 *{{box-sizing:border-box;margin:0;padding:0}}
 html{{overflow-x:clip}}
 body{{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden}}
@@ -145,6 +145,7 @@ if(matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:re
   st.addEventListener('mouseleave',()=>im.style.transform='');
 }}
 </script>
+<script src="fx.js" defer></script>
 </body>
 </html>
 """

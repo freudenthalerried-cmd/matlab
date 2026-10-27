@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Weitblick Immobilien – Demo</title>
 <style>
-:root{--a:#3d6b5c;--a2:#4fb3d9;--bg:#f1f4f0;--ink:#1d2a26;--muted:color-mix(in srgb,var(--ink) 60%,transparent)}
+:root{--fx-accent:#3d6b5c;--a:#3d6b5c;--a2:#4fb3d9;--bg:#f1f4f0;--ink:#1d2a26;--muted:color-mix(in srgb,var(--ink) 60%,transparent)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{overflow-x:clip}
 body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden}
@@ -82,5 +82,6 @@ if(matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:re
   st.addEventListener('mouseleave',()=>im.style.transform='');
 }
 </script>
+<script src="fx.js" defer></script>
 </body>
 </html>
