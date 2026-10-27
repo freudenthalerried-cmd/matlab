@@ -10,38 +10,182 @@
   "beschreibung": "Poolroboter im Vergleich: Beatbot, Aiper, Maytronics Dolphin. Kabellos oder mit Kabel? Mit Poolvolumen-Rechner und gratis Checkliste.",
   "einleitung": "Ein Poolroboter spart dir pro Saison 30–50 Stunden Handarbeit und entlastet die Filteranlage. Kabellose Modelle sind in Sekunden einsatzbereit, Kabelmodelle reinigen dafür unbegrenzt lange. Hier findest du das passende Gerät für deinen Pool.",
   "kurzantwort": "Für Aufstellpools und kleine Becken bis 50 m² reicht ein kabelloser Bodenreiniger. Für eingelassene Pools mit Wänden und Wasserlinie lohnt sich ein Premium-Modell mit Wandreinigung – kabellos für Komfort, mit Kabel für große Becken.",
-  "spalten": ["Typ", "Reinigt", "Pool bis"],
+  "spalten": [
+    "Typ",
+    "Reinigt",
+    "Pool bis"
+  ],
   "produkte": [
-    {"name": "Beatbot AquaSense 2 Ultra", "badge": "Premium", "fuer": "Eingelassene Pools, maximale Automatisierung", "specs": ["kabellos", "Boden, Wand, Wasserlinie, Oberfläche", "ca. 300 m²"], "pro": ["Reinigt sogar die Wasseroberfläche", "Selbstständiges Parken am Rand", "Sehr lange Akkulaufzeit"], "contra": ["Hoher Preis", "Schwer beim Herausheben"], "suche": "Beatbot AquaSense 2 Ultra"},
-    {"name": "Aiper Scuba X1", "badge": "Bestseller-Klasse", "fuer": "Mittlere bis große Pools", "specs": ["kabellos", "Boden, Wand, Wasserlinie", "ca. 200 m²"], "pro": ["Starke Saugleistung", "App mit Reinigungsplänen", "Feinfilter"], "contra": ["Akku tauschen nur über Service", "Bei Steinpools Navigation teils ungenau"], "suche": "Aiper Scuba X1 Poolroboter"},
-    {"name": "Maytronics Dolphin S300i", "fuer": "Große Pools, Dauerbetrieb", "specs": ["mit Kabel", "Boden, Wand, Wasserlinie", "bis 12 m Länge"], "pro": ["Unbegrenzte Laufzeit", "Marktführer, gute Ersatzteilversorgung", "Bewährte Bürstentechnik"], "contra": ["Kabel kann sich verdrehen", "Weniger komfortabel beim Einsetzen"], "suche": "Dolphin S300i Poolroboter"},
-    {"name": "Aiper Scuba S1", "badge": "Einstieg", "fuer": "Aufstellpools und kleine Becken", "specs": ["kabellos", "Boden, Wand", "ca. 150 m²"], "pro": ["Günstig", "Leicht", "Einfach zu bedienen"], "contra": ["Keine Wasserlinienreinigung", "Kleinerer Filterkorb"], "suche": "Aiper Scuba S1"}
+    {
+      "name": "Beatbot AquaSense 2 Ultra",
+      "badge": "Premium",
+      "fuer": "Eingelassene Pools, maximale Automatisierung",
+      "specs": [
+        "kabellos",
+        "Boden, Wand, Wasserlinie, Oberfläche",
+        "ca. 320 m²"
+      ],
+      "pro": [
+        "Reinigt sogar die Wasseroberfläche",
+        "Selbstständiges Parken am Rand",
+        "Sehr lange Akkulaufzeit"
+      ],
+      "contra": [
+        "Hoher Preis",
+        "Schwer beim Herausheben"
+      ],
+      "suche": "Beatbot AquaSense 2 Ultra"
+    },
+    {
+      "name": "Aiper Scuba X1",
+      "badge": "Bestseller-Klasse",
+      "fuer": "Mittlere bis große Pools",
+      "specs": [
+        "kabellos",
+        "Boden, Wand, Wasserlinie",
+        "ca. 200 m²"
+      ],
+      "pro": [
+        "Starke Saugleistung",
+        "App mit Reinigungsplänen",
+        "Feinfilter"
+      ],
+      "contra": [
+        "Akku tauschen nur über Service",
+        "Bei Steinpools Navigation teils ungenau"
+      ],
+      "suche": "Aiper Scuba X1 Poolroboter"
+    },
+    {
+      "name": "Maytronics Dolphin S300i",
+      "fuer": "Große Pools, Dauerbetrieb",
+      "specs": [
+        "mit Kabel",
+        "Boden, Wand, Wasserlinie",
+        "bis 12 m Länge"
+      ],
+      "pro": [
+        "Unbegrenzte Laufzeit",
+        "Marktführer, gute Ersatzteilversorgung",
+        "Bewährte Bürstentechnik"
+      ],
+      "contra": [
+        "Kabel kann sich verdrehen",
+        "Weniger komfortabel beim Einsetzen"
+      ],
+      "suche": "Dolphin S300i Poolroboter"
+    },
+    {
+      "name": "Aiper Scuba S1",
+      "badge": "Einstieg",
+      "fuer": "Aufstellpools und kleine Becken",
+      "specs": [
+        "kabellos",
+        "Boden, Wand",
+        "ca. 150 m²"
+      ],
+      "pro": [
+        "Günstig",
+        "Leicht",
+        "Einfach zu bedienen"
+      ],
+      "contra": [
+        "Keine Wasserlinienreinigung",
+        "Kleinerer Filterkorb"
+      ],
+      "suche": "Aiper Scuba S1"
+    }
   ],
   "rechner": {
     "titel": "Poolrechner: Volumen, Reinigungsfläche & Roboterklasse",
     "text": "Gib die Innenmaße deines Beckens ein. Der Rechner zeigt Volumen, zu reinigende Fläche und die passende Geräteklasse.",
     "inputs": [
-      {"id": "laenge", "label": "Länge", "wert": 8, "einheit": "m", "step": 0.1},
-      {"id": "breite", "label": "Breite", "wert": 4, "einheit": "m", "step": 0.1},
-      {"id": "tiefe", "label": "Mittlere Wassertiefe", "wert": 1.4, "einheit": "m", "step": 0.1}
+      {
+        "id": "laenge",
+        "label": "Länge",
+        "wert": 8,
+        "einheit": "m",
+        "step": 0.1
+      },
+      {
+        "id": "breite",
+        "label": "Breite",
+        "wert": 4,
+        "einheit": "m",
+        "step": 0.1
+      },
+      {
+        "id": "tiefe",
+        "label": "Mittlere Wassertiefe",
+        "wert": 1.4,
+        "einheit": "m",
+        "step": 0.1
+      }
     ],
     "outputs": [
-      {"label": "Wasservolumen", "formel": "laenge * breite * tiefe", "einheit": "m³", "stellen": 1},
-      {"label": "Boden + Wände", "formel": "laenge * breite + 2 * (laenge + breite) * tiefe", "einheit": "m²"},
-      {"label": "Empfohlene Klasse", "formel": "laenge * breite <= 25 ? 'Einsteiger kabellos' : laenge * breite <= 60 ? 'Mittelklasse mit Wandreinigung' : 'Premium oder Kabelmodell'"}
+      {
+        "label": "Wasservolumen",
+        "formel": "laenge * breite * tiefe",
+        "einheit": "m³",
+        "stellen": 1
+      },
+      {
+        "label": "Boden + Wände",
+        "formel": "laenge * breite + 2 * (laenge + breite) * tiefe",
+        "einheit": "m²"
+      },
+      {
+        "label": "Empfohlene Klasse",
+        "formel": "laenge * breite <= 25 ? 'Einsteiger kabellos' : laenge * breite <= 60 ? 'Mittelklasse mit Wandreinigung' : 'Premium oder Kabelmodell'"
+      }
     ]
   },
   "ratgeber": [
-    {"h": "Kabellos oder mit Kabel?", "t": "Kabellose Poolroboter sind in Sekunden im Wasser und es gibt kein Kabelgewirr. Die Laufzeit liegt meist bei 2–3 Stunden – genug für Pools bis rund 100 m² Grundfläche. Kabelroboter laufen unbegrenzt und sind bei sehr großen Becken im Vorteil.\n\nWichtig bei kabellosen Modellen: Wie wird der Akku getauscht? Ein Akkutausch durch den Service ist nach 3–5 Jahren oft fällig."},
-    {"h": "Wand und Wasserlinie", "t": "Die meisten Schmutzränder entstehen an der Wasserlinie (Sonnencreme, Pollen). Modelle mit Wasserlinienreinigung sparen dir das Schrubben von Hand. Bei Aufstellpools mit weicher Folie reicht ein Bodenreiniger."},
-    {"h": "Filterfeinheit zählt", "t": "Feine Filter (unter 100 Mikrometer) holen auch Pollen und Feinstaub aus dem Wasser und entlasten die Sandfilteranlage. Grobe Filter eignen sich für Laub. Ideal sind Geräte mit wechselbaren Filtern."}
+    {
+      "h": "Kabellos oder mit Kabel?",
+      "t": "Kabellose Poolroboter sind in Sekunden im Wasser und es gibt kein Kabelgewirr. Die Laufzeit liegt meist bei 2–3 Stunden – genug für Pools bis rund 100 m² Grundfläche. Kabelroboter laufen unbegrenzt und sind bei sehr großen Becken im Vorteil.\n\nWichtig bei kabellosen Modellen: Wie wird der Akku getauscht? Ein Akkutausch durch den Service ist nach 3–5 Jahren oft fällig."
+    },
+    {
+      "h": "Wand und Wasserlinie",
+      "t": "Die meisten Schmutzränder entstehen an der Wasserlinie (Sonnencreme, Pollen). Modelle mit Wasserlinienreinigung sparen dir das Schrubben von Hand. Bei Aufstellpools mit weicher Folie reicht ein Bodenreiniger."
+    },
+    {
+      "h": "Filterfeinheit zählt",
+      "t": "Feine Filter (unter 100 Mikrometer) holen auch Pollen und Feinstaub aus dem Wasser und entlasten die Sandfilteranlage. Grobe Filter eignen sich für Laub. Ideal sind Geräte mit wechselbaren Filtern."
+    }
   ],
   "faq": [
-    {"f": "Lohnt sich ein Poolroboter für einen Aufstellpool?", "a": "Ja, ab etwa 4 m Durchmesser. Günstige kabellose Bodenreiniger sparen viel Zeit und funktionieren auch auf Folienböden."},
-    {"f": "Wie oft sollte der Poolroboter laufen?", "a": "In der Saison 2–3 Mal pro Woche, bei viel Laub oder Badebetrieb auch täglich."},
-    {"f": "Kann der Poolroboter im Wasser bleiben?", "a": "Kabelroboter können zwischen den Zyklen im Wasser bleiben, sollten aber regelmäßig herausgenommen werden. Kabellose Modelle müssen zum Laden raus."},
-    {"f": "Ersetzt ein Poolroboter die Filteranlage?", "a": "Nein. Der Roboter reinigt Boden und Wände, die Filteranlage sorgt für Umwälzung und Wasserqualität. Der Roboter entlastet sie aber deutlich."},
-    {"f": "Wie lange hält der Akku?", "a": "Typisch 3–5 Saisonen. Prüfe vor dem Kauf, ob der Hersteller einen Akkutausch anbietet."}
+    {
+      "f": "Lohnt sich ein Poolroboter für einen Aufstellpool?",
+      "a": "Ja, ab etwa 4 m Durchmesser. Günstige kabellose Bodenreiniger sparen viel Zeit und funktionieren auch auf Folienböden."
+    },
+    {
+      "f": "Wie oft sollte der Poolroboter laufen?",
+      "a": "In der Saison 2–3 Mal pro Woche, bei viel Laub oder Badebetrieb auch täglich."
+    },
+    {
+      "f": "Kann der Poolroboter im Wasser bleiben?",
+      "a": "Kabelroboter können zwischen den Zyklen im Wasser bleiben, sollten aber regelmäßig herausgenommen werden. Kabellose Modelle müssen zum Laden raus."
+    },
+    {
+      "f": "Ersetzt ein Poolroboter die Filteranlage?",
+      "a": "Nein. Der Roboter reinigt Boden und Wände, die Filteranlage sorgt für Umwälzung und Wasserqualität. Der Roboter entlastet sie aber deutlich."
+    },
+    {
+      "f": "Wie lange hält der Akku?",
+      "a": "Typisch 3–5 Saisonen. Prüfe vor dem Kauf, ob der Hersteller einen Akkutausch anbietet."
+    }
   ],
-  "checkliste": ["Poolmaße und Form (rechteckig, rund, Freiform) notiert", "Beckenmaterial: Folie, Fliese, Polyester, Beton?", "Soll Wand und Wasserlinie gereinigt werden?", "Kabellos oder Kabel entschieden", "Akkulaufzeit passend zur Poolgröße", "Akkutausch-Service des Herstellers geprüft", "Filterfeinheit für Pollen/Feinschmutz", "Gewicht beim Herausheben bedacht", "Lagerung im Winter frostfrei geplant", "Ersatzbürsten und Filter verfügbar?"]
+  "checkliste": [
+    "Poolmaße und Form (rechteckig, rund, Freiform) notiert",
+    "Beckenmaterial: Folie, Fliese, Polyester, Beton?",
+    "Soll Wand und Wasserlinie gereinigt werden?",
+    "Kabellos oder Kabel entschieden",
+    "Akkulaufzeit passend zur Poolgröße",
+    "Akkutausch-Service des Herstellers geprüft",
+    "Filterfeinheit für Pollen/Feinschmutz",
+    "Gewicht beim Herausheben bedacht",
+    "Lagerung im Winter frostfrei geplant",
+    "Ersatzbürsten und Filter verfügbar?"
+  ]
 }

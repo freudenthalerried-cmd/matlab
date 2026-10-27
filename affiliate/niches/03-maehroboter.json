@@ -23,7 +23,7 @@
       "specs": [
         "500 m²",
         "RTK + Kamera",
-        "ca. 45 %"
+        "ca. 30 %"
       ],
       "pro": [
         "Günstiger Einstieg in drahtloses Mähen",
@@ -42,9 +42,9 @@
       "badge": "Hangprofi",
       "fuer": "Große Grundstücke mit Hanglage",
       "specs": [
-        "bis 5.000 m² (je Version)",
+        "bis 10.000 m² (je Version)",
         "RTK + Vision",
-        "ca. 80 %"
+        "bis ca. 80 % (je Version)"
       ],
       "pro": [
         "Allradantrieb für extreme Steigungen",
@@ -62,9 +62,9 @@
       "name": "Husqvarna Automower 430X NERA",
       "fuer": "Qualitätsbewusste mit mittleren Gärten",
       "specs": [
-        "3.200 m²",
+        "4.800 m² (mit EPOS)",
         "EPOS (RTK)",
-        "ca. 45 %"
+        "ca. 50 %"
       ],
       "pro": [
         "Premium-Verarbeitung & Händlerservice",
@@ -78,42 +78,42 @@
       "suche": "Husqvarna Automower 430X NERA"
     },
     {
-      "name": "Ecovacs GOAT A1600 RTK",
-      "fuer": "Smart-Home-Fans",
+      "name": "Ecovacs GOAT A1600 LiDAR Pro",
+      "fuer": "Gärten mit Bäumen und Hauswänden",
       "specs": [
         "1.600 m²",
-        "RTK + LiDAR",
+        "Dual-LiDAR (ohne RTK)",
         "ca. 50 %"
       ],
       "pro": [
         "LiDAR auch unter Bäumen stabil",
-        "Gute Hinderniserkennung",
-        "Kantenmähen gelungen"
+        "Keine RTK-Antenne nötig",
+        "Gute Hinderniserkennung"
       ],
       "contra": [
         "App mit vielen Optionen anfangs unübersichtlich",
         "Ersatzteilversorgung prüfen"
       ],
-      "suche": "Ecovacs GOAT A1600 RTK"
+      "suche": "Ecovacs GOAT A1600 LiDAR Pro"
     },
     {
-      "name": "Worx Landroid Vision",
-      "fuer": "Kleine Gärten ohne Satellitensicht",
+      "name": "Worx Landroid Vision Cloud WR330E",
+      "fuer": "Große Gärten ohne Antennen-Aufbau",
       "specs": [
-        "bis 1.600 m² (je Version)",
-        "Kamera/KI",
-        "ca. 35 %"
+        "bis 3.000 m²",
+        "Kamera + RTK-Cloud (ohne Antenne)",
+        "ca. 30 %"
       ],
       "pro": [
         "Keine Antenne und kein Draht",
-        "Erkennt Rasenkanten selbst",
-        "Günstig"
+        "Kamera erkennt Rasenkanten selbst",
+        "Für große Flächen geeignet"
       ],
       "contra": [
         "Braucht klare Rasenkanten",
-        "Bei Dämmerung eingeschränkt"
+        "Geringere Hangtauglichkeit"
       ],
-      "suche": "Worx Landroid Vision"
+      "suche": "Worx Landroid Vision Cloud WR330E"
     }
   ],
   "rechner": {

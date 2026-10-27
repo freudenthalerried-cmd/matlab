@@ -10,42 +10,211 @@
   "beschreibung": "Klimageräte zur Selbstmontage im Vergleich: Midea PortaSplit, Monoblock, Quick-Connect-Split, Fenstergeräte. Mit Kühlleistungs- und Stromkostenrechner.",
   "einleitung": "Klassische Split-Klimaanlagen brauchen einen Kältetechniker. Es gibt aber Geräte, die du selbst aufstellst – vom einfachen Monoblock bis zur mobilen Split-Anlage. Hier erfährst du, welche Bauart für Mietwohnung, Dachgeschoss oder Homeoffice am besten kühlt.",
   "kurzantwort": "Die beste Kühlleistung ohne Installateur liefert eine mobile Split-Klimaanlage wie die Midea PortaSplit: leise und effizient, ohne Kältemittelarbeiten. Ein Monoblock mit Abluftschlauch ist günstiger, aber lauter und weniger effizient.",
-  "spalten": ["Bauart", "Lautstärke innen", "Montage"],
+  "spalten": [
+    "Bauart",
+    "Lautstärke innen",
+    "Montage"
+  ],
   "produkte": [
-    {"name": "Midea PortaSplit", "badge": "Testsieger-Kandidat", "fuer": "Mietwohnungen, Schlafzimmer, Homeoffice", "specs": ["Mobile Split", "sehr leise", "ohne Kältetechniker"], "pro": ["Effizienz fast wie fest installierte Split", "Außeneinheit hängt am Fenster/Balkon", "Auch Heizfunktion"], "contra": ["Höherer Preis als Monoblock", "Fensterspalt für Leitung nötig"], "suche": "Midea PortaSplit Klimaanlage"},
-    {"name": "Monoblock mit Abluftschlauch (z. B. De'Longhi Pinguino)", "badge": "Günstig", "fuer": "Gelegentliche Hitzetage, kleine Räume", "specs": ["Monoblock", "laut", "sofort einsatzbereit"], "pro": ["Günstig", "Rollen – in jeden Raum", "Keine Montage"], "contra": ["Lauter, da Kompressor im Raum", "Warme Luft strömt über Fensterspalt zurück"], "suche": "DeLonghi Pinguino Monoblock Klimagerät"},
-    {"name": "Split-Klima mit Quick-Connect zur Selbstmontage", "fuer": "Eigenheim, dauerhafte Lösung", "specs": ["Fest-Split", "sehr leise", "vorbefüllte Leitungen, Wanddurchbruch nötig"], "pro": ["Höchste Effizienz", "Heizen per Wärmepumpe", "Leiseste Lösung"], "contra": ["Kernbohrung durch die Wand", "Mietwohnung: Zustimmung nötig"], "suche": "Split Klimaanlage Quick Connect Selbstmontage"},
-    {"name": "Klimagerät ohne Außeneinheit (Wanddurchführung)", "fuer": "Denkmalschutz, keine Außenmontage erlaubt", "specs": ["Monoblock-Wandgerät", "mittel", "2 Bohrungen nach außen"], "pro": ["Nichts hängt außen", "Effizienter als mobile Monoblöcke", "Fest montiert"], "contra": ["Bohrungen nötig", "Lauter als Split"], "suche": "Klimagerät ohne Außeneinheit Wandgerät"}
+    {
+      "name": "Midea PortaSplit",
+      "badge": "Testsieger-Kandidat",
+      "fuer": "Mietwohnungen, Schlafzimmer, Homeoffice",
+      "specs": [
+        "Mobile Split",
+        "sehr leise",
+        "ohne Kältetechniker"
+      ],
+      "pro": [
+        "Effizienz fast wie fest installierte Split",
+        "Außeneinheit hängt am Fenster/Balkon",
+        "Auch Heizfunktion"
+      ],
+      "contra": [
+        "Höherer Preis als Monoblock",
+        "Fensterspalt für Leitung nötig",
+        "R32-Version laut Medienberichten nur noch bis Ende 2026 im Handel (F-Gase-Verordnung)"
+      ],
+      "suche": "Midea PortaSplit Klimaanlage"
+    },
+    {
+      "name": "Monoblock mit Abluftschlauch (z. B. De'Longhi Pinguino)",
+      "badge": "Günstig",
+      "fuer": "Gelegentliche Hitzetage, kleine Räume",
+      "specs": [
+        "Monoblock",
+        "laut",
+        "sofort einsatzbereit"
+      ],
+      "pro": [
+        "Günstig",
+        "Rollen – in jeden Raum",
+        "Keine Montage"
+      ],
+      "contra": [
+        "Lauter, da Kompressor im Raum",
+        "Warme Luft strömt über Fensterspalt zurück"
+      ],
+      "suche": "DeLonghi Pinguino Monoblock Klimagerät"
+    },
+    {
+      "name": "Split-Klima mit Quick-Connect zur Selbstmontage",
+      "fuer": "Eigenheim, dauerhafte Lösung",
+      "specs": [
+        "Fest-Split",
+        "sehr leise",
+        "vorbefüllte Leitungen, Wanddurchbruch nötig"
+      ],
+      "pro": [
+        "Höchste Effizienz",
+        "Heizen per Wärmepumpe",
+        "Leiseste Lösung"
+      ],
+      "contra": [
+        "Kernbohrung durch die Wand",
+        "Mietwohnung: Zustimmung nötig"
+      ],
+      "suche": "Split Klimaanlage Quick Connect Selbstmontage"
+    },
+    {
+      "name": "Klimagerät ohne Außeneinheit (Wanddurchführung)",
+      "fuer": "Denkmalschutz, keine Außenmontage erlaubt",
+      "specs": [
+        "Monoblock-Wandgerät",
+        "mittel",
+        "2 Bohrungen nach außen"
+      ],
+      "pro": [
+        "Nichts hängt außen",
+        "Effizienter als mobile Monoblöcke",
+        "Fest montiert"
+      ],
+      "contra": [
+        "Bohrungen nötig",
+        "Lauter als Split"
+      ],
+      "suche": "Klimagerät ohne Außeneinheit Wandgerät"
+    }
   ],
   "rechner": {
     "titel": "Kühlleistungs- & Stromkostenrechner",
     "text": "Faustregel Wärmelast: 30 W/m³ normal, 40 W/m³ bei viel Sonne, 50 W/m³ im Dachgeschoss. EER/SEER steht im Datenblatt (Monoblock ca. 2,6, Split 3,5–6).",
     "inputs": [
-      {"id": "flaeche", "label": "Raumfläche", "wert": 25, "einheit": "m²", "step": 1},
-      {"id": "hoehe", "label": "Raumhöhe", "wert": 2.5, "einheit": "m", "step": 0.1},
-      {"id": "last", "label": "Wärmelast", "wert": 40, "einheit": "W/m³", "step": 5},
-      {"id": "eer", "label": "Effizienz (EER)", "wert": 3.5, "step": 0.1},
-      {"id": "stunden", "label": "Betriebsstunden pro Saison", "wert": 400, "einheit": "h", "step": 10},
-      {"id": "preis", "label": "Strompreis", "wert": 0.28, "einheit": "€/kWh", "step": 0.01}
+      {
+        "id": "flaeche",
+        "label": "Raumfläche",
+        "wert": 25,
+        "einheit": "m²",
+        "step": 1
+      },
+      {
+        "id": "hoehe",
+        "label": "Raumhöhe",
+        "wert": 2.5,
+        "einheit": "m",
+        "step": 0.1
+      },
+      {
+        "id": "last",
+        "label": "Wärmelast",
+        "wert": 40,
+        "einheit": "W/m³",
+        "step": 5
+      },
+      {
+        "id": "eer",
+        "label": "Effizienz (EER)",
+        "wert": 3.5,
+        "step": 0.1
+      },
+      {
+        "id": "stunden",
+        "label": "Betriebsstunden pro Saison",
+        "wert": 400,
+        "einheit": "h",
+        "step": 10
+      },
+      {
+        "id": "preis",
+        "label": "Strompreis",
+        "wert": 0.28,
+        "einheit": "€/kWh",
+        "step": 0.01
+      }
     ],
     "outputs": [
-      {"label": "Benötigte Kühlleistung", "formel": "flaeche * hoehe * last / 1000", "einheit": "kW", "stellen": 1},
-      {"label": "Entspricht", "formel": "flaeche * hoehe * last / 1000 * 3412", "einheit": "BTU/h"},
-      {"label": "Stromkosten pro Saison", "formel": "flaeche * hoehe * last / 1000 / eer * stunden * 0.6 * preis", "einheit": "€"}
+      {
+        "label": "Benötigte Kühlleistung",
+        "formel": "flaeche * hoehe * last / 1000",
+        "einheit": "kW",
+        "stellen": 1
+      },
+      {
+        "label": "Entspricht",
+        "formel": "flaeche * hoehe * last / 1000 * 3412",
+        "einheit": "BTU/h"
+      },
+      {
+        "label": "Stromkosten pro Saison",
+        "formel": "flaeche * hoehe * last / 1000 / eer * stunden * 0.6 * preis",
+        "einheit": "€"
+      }
     ]
   },
   "ratgeber": [
-    {"h": "Warum Monoblöcke oft enttäuschen", "t": "Ein Monoblock-Gerät bläst warme Luft durch einen Schlauch nach draußen. Dabei entsteht Unterdruck, und warme Außenluft strömt über Fenster- und Türspalten wieder herein. Die effektive Kühlleistung liegt deshalb oft deutlich unter der Angabe. Eine gute Fensterabdichtung verbessert das spürbar."},
-    {"h": "Mobile Split-Geräte: der neue Mittelweg", "t": "Mobile Split-Klimaanlagen trennen Kompressor (außen) und Verdampfer (innen) wie eine fest installierte Anlage. Die Kältemittelleitung ist fest verbunden, du brauchst also keinen Kältetechniker. Ergebnis: deutlich leiser und effizienter als Monoblöcke."},
-    {"h": "Rechtliches in Mietwohnung und Eigentum", "t": "Geräte ohne bauliche Veränderung (Monoblock, mobile Split) darfst du meist ohne Zustimmung nutzen. Außeneinheiten an der Fassade, Kernbohrungen und fest montierte Geräte brauchen die Zustimmung von Vermieter bzw. Eigentümergemeinschaft – teils auch eine Bewilligung der Gemeinde."},
-    {"h": "Der beste Kaufzeitpunkt", "t": "In Hitzewellen sind Klimageräte oft ausverkauft und teurer. Wer im Herbst oder Frühjahr kauft, hat die größere Auswahl und bessere Preise."}
+    {
+      "h": "Warum Monoblöcke oft enttäuschen",
+      "t": "Ein Monoblock-Gerät bläst warme Luft durch einen Schlauch nach draußen. Dabei entsteht Unterdruck, und warme Außenluft strömt über Fenster- und Türspalten wieder herein. Die effektive Kühlleistung liegt deshalb oft deutlich unter der Angabe. Eine gute Fensterabdichtung verbessert das spürbar."
+    },
+    {
+      "h": "Mobile Split-Geräte: der neue Mittelweg",
+      "t": "Mobile Split-Klimaanlagen trennen Kompressor (außen) und Verdampfer (innen) wie eine fest installierte Anlage. Die Kältemittelleitung ist fest verbunden, du brauchst also keinen Kältetechniker. Ergebnis: deutlich leiser und effizienter als Monoblöcke."
+    },
+    {
+      "h": "Rechtliches in Mietwohnung und Eigentum",
+      "t": "Geräte ohne bauliche Veränderung (Monoblock, mobile Split) darfst du meist ohne Zustimmung nutzen. Außeneinheiten an der Fassade, Kernbohrungen und fest montierte Geräte brauchen die Zustimmung von Vermieter bzw. Eigentümergemeinschaft – teils auch eine Bewilligung der Gemeinde."
+    },
+    {
+      "h": "Der beste Kaufzeitpunkt",
+      "t": "In Hitzewellen sind Klimageräte oft ausverkauft und teurer. Wer im Herbst oder Frühjahr kauft, hat die größere Auswahl und bessere Preise."
+    }
   ],
   "faq": [
-    {"f": "Welche Klimaanlage kann ich ohne Installateur aufstellen?", "a": "Monoblock-Geräte, mobile Split-Klimaanlagen wie die Midea PortaSplit und Quick-Connect-Splits mit vorbefüllten Leitungen. Letztere brauchen allerdings eine Wandbohrung."},
-    {"f": "Wie viel kW Kühlleistung brauche ich für 25 m²?", "a": "Bei 2,5 m Raumhöhe und normaler Sonneneinstrahlung etwa 2–2,5 kW. Im Dachgeschoss eher 3 kW."},
-    {"f": "Wie laut sind mobile Klimageräte?", "a": "Monoblöcke erreichen 50–65 dB im Raum. Mobile Split-Geräte liegen innen bei rund 40–45 dB, weil der Kompressor draußen arbeitet."},
-    {"f": "Was kostet der Betrieb einer Klimaanlage?", "a": "Eine effiziente 2,5-kW-Anlage verbraucht im Schnitt 0,4–0,7 kWh pro Stunde. Berechne mit unserem Rechner deine Saisonkosten."},
-    {"f": "Kann ich mit einer Klimaanlage auch heizen?", "a": "Viele Split-Geräte haben eine Wärmepumpen-Heizfunktion – in der Übergangszeit oft günstiger als eine Elektroheizung."}
+    {
+      "f": "Welche Klimaanlage kann ich ohne Installateur aufstellen?",
+      "a": "Monoblock-Geräte, mobile Split-Klimaanlagen wie die Midea PortaSplit und Quick-Connect-Splits mit vorbefüllten Leitungen. Letztere brauchen allerdings eine Wandbohrung."
+    },
+    {
+      "f": "Wie viel kW Kühlleistung brauche ich für 25 m²?",
+      "a": "Bei 2,5 m Raumhöhe und normaler Sonneneinstrahlung etwa 2–2,5 kW. Im Dachgeschoss eher 3 kW."
+    },
+    {
+      "f": "Wie laut sind mobile Klimageräte?",
+      "a": "Monoblöcke erreichen 50–65 dB im Raum. Mobile Split-Geräte liegen innen bei rund 40–45 dB, weil der Kompressor draußen arbeitet."
+    },
+    {
+      "f": "Was kostet der Betrieb einer Klimaanlage?",
+      "a": "Eine effiziente 2,5-kW-Anlage verbraucht im Schnitt 0,4–0,7 kWh pro Stunde. Berechne mit unserem Rechner deine Saisonkosten."
+    },
+    {
+      "f": "Kann ich mit einer Klimaanlage auch heizen?",
+      "a": "Viele Split-Geräte haben eine Wärmepumpen-Heizfunktion – in der Übergangszeit oft günstiger als eine Elektroheizung."
+    },
+    {
+      "f": "Wird die Midea PortaSplit ab 2027 verboten?",
+      "a": "Laut Medienberichten darf die aktuelle Version mit Kältemittel R32 wegen der EU-F-Gase-Verordnung ab 2027 nicht mehr neu verkauft werden. Bereits gekaufte Geräte dürfen weiter betrieben werden. Eine Nachfolgeversion mit dem Kältemittel R290 ist angekündigt."
+    }
   ],
-  "checkliste": ["Raumgröße und Raumhöhe gemessen", "Benötigte kW mit dem Rechner ermittelt", "Lautstärke im Schlafzimmer wichtig?", "Fenster-/Balkonsituation für Außeneinheit geprüft", "Bauliche Veränderung nötig? Zustimmung eingeholt", "Effizienzklasse und EER/SEER verglichen", "Kondenswasser-Ablauf geklärt", "Heizfunktion gewünscht?", "Steckdose mit ausreichender Absicherung vorhanden", "Kauf vor der Hitzewelle geplant"]
+  "checkliste": [
+    "Raumgröße und Raumhöhe gemessen",
+    "Benötigte kW mit dem Rechner ermittelt",
+    "Lautstärke im Schlafzimmer wichtig?",
+    "Fenster-/Balkonsituation für Außeneinheit geprüft",
+    "Bauliche Veränderung nötig? Zustimmung eingeholt",
+    "Effizienzklasse und EER/SEER verglichen",
+    "Kondenswasser-Ablauf geklärt",
+    "Heizfunktion gewünscht?",
+    "Steckdose mit ausreichender Absicherung vorhanden",
+    "Kauf vor der Hitzewelle geplant"
+  ]
 }
