@@ -38,7 +38,7 @@
       "cashback_shop": "anker-solix"
     },
     {
-      "name": "Zendure SolarFlow 800 Pro",
+      "name": "Zendure SolarFlow 800 Pro 2",
       "fuer": "Technikaffine mit Home-Assistant",
       "specs": [
         "1,92 kWh",
@@ -54,7 +54,7 @@
         "App-Einrichtung etwas komplexer",
         "Gewicht"
       ],
-      "suche": "Zendure SolarFlow 800 Pro",
+      "suche": "Zendure SolarFlow 800 Pro 2",
       "cashback_shop": "zendure"
     },
     {
@@ -98,12 +98,12 @@
       "suche": "Growatt NOAH 2000"
     },
     {
-      "name": "Marstek Venus E",
+      "name": "Marstek Venus E 3.0",
       "badge": "Meiste kWh",
       "fuer": "Bestehende Anlagen nachrüsten (AC)",
       "specs": [
         "5,12 kWh",
-        "bis 3 Geräte",
+        "15,36 kWh (3 Geräte)",
         "AC"
       ],
       "pro": [
@@ -115,7 +115,7 @@
         "Schwer (ca. 60 kg)",
         "Für Innenräume gedacht"
       ],
-      "suche": "Marstek Venus E 5,12 kWh"
+      "suche": "Marstek Venus E 3.0 5,12 kWh"
     }
   ],
   "rechner": {

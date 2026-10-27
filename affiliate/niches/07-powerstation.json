@@ -38,12 +38,12 @@
       "cashback_shop": "ecoflow"
     },
     {
-      "name": "Anker SOLIX C1000",
+      "name": "Anker SOLIX C1000 Gen 2",
       "badge": "Preis-Leistung",
       "fuer": "Einsteiger, Camping",
       "specs": [
-        "1.056 Wh",
-        "1.800 W",
+        "1.024 Wh",
+        "2.000 W",
         "LiFePO4"
       ],
       "pro": [
@@ -55,7 +55,7 @@
         "Erweiterung nur mit eigenem Zusatzakku",
         "Wenige USB-C-Ports"
       ],
-      "suche": "Anker SOLIX C1000",
+      "suche": "Anker SOLIX C1000 Gen 2",
       "cashback_shop": "anker-solix"
     },
     {
@@ -109,7 +109,7 @@
       ],
       "pro": [
         "Betreibt auch Herd und Wärmepumpe kurzzeitig",
-        "Bis ca. 48 kWh erweiterbar",
+        "Mit Zusatzakkus bis ca. 12 kWh erweiterbar",
         "Rollen zum Transport"
       ],
       "contra": [
