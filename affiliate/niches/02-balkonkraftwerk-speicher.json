@@ -1,0 +1,52 @@
+{
+  "slug": "balkonkraftwerk-speicher",
+  "domain": "balkonkraftwerk-speicher-vergleich.at",
+  "marke": "Balkonkraftwerk-Speicher Vergleich",
+  "thema": "Balkonkraftwerk-Speichern",
+  "icon": "🔋",
+  "farbe": "#1f8a4c",
+  "titel": "Balkonkraftwerk mit Speicher 2026: Vergleich & Amortisationsrechner",
+  "h1": "Balkonkraftwerk mit Speicher: Lohnt sich das 2026?",
+  "beschreibung": "Balkonkraftwerk-Speicher im Vergleich: Anker SOLIX, Zendure, EcoFlow, Growatt & Marstek. Mit Amortisationsrechner und gratis Kaufcheckliste.",
+  "einleitung": "Ohne Speicher verschenkt ein Balkonkraftwerk tagsüber oft die Hälfte seines Stroms ans Netz. Ein Speicher hebt den Eigenverbrauch auf 60–80 % – und macht die Anlage auch abends nutzbar. Hier siehst du, welcher Speicher passt und wann er sich rechnet.",
+  "kurzantwort": "Ein Speicher lohnt sich vor allem, wenn du tagsüber kaum zuhause bist und 4 Module (ca. 1.600–2.000 Wp) betreibst. Mit 1,6–2 kWh Kapazität liegt die Amortisation typischerweise bei 6–10 Jahren – rechne es unten mit deinen Werten nach.",
+  "spalten": ["Kapazität", "Erweiterbar bis", "Kopplung"],
+  "produkte": [
+    {"name": "Anker SOLIX Solarbank 2 E1600 Pro", "badge": "Testsieger-Kandidat", "fuer": "Einsteiger, die später erweitern wollen", "specs": ["1,6 kWh", "ca. 9,6 kWh", "DC (4 MPPT)"], "pro": ["Sehr ausgereifte App", "Mit Smart Meter nulleinspeisungsfähig", "Direkter Anschluss von bis zu 4 Modulen"], "contra": ["Smart Meter kostet extra", "Höherer Einstiegspreis"], "suche": "Anker SOLIX Solarbank 2 E1600 Pro"},
+    {"name": "Zendure SolarFlow 800 Pro", "fuer": "Technikaffine mit Home-Assistant", "specs": ["1,92 kWh", "ca. 11,5 kWh", "DC + AC"], "pro": ["Integrierter Wechselrichter", "Offene Schnittstellen", "Hohe PV-Eingangsleistung"], "contra": ["App-Einrichtung etwas komplexer", "Gewicht"], "suche": "Zendure SolarFlow 800 Pro"},
+    {"name": "EcoFlow STREAM Ultra", "fuer": "Wer schon EcoFlow-Geräte hat", "specs": ["1,92 kWh", "ca. 11,5 kWh", "DC + AC"], "pro": ["Steckdose am Gerät für Stromausfall", "Kompaktes Design", "Gute Ökosystem-Integration"], "contra": ["Zubehör proprietär", "Preise schwanken stark"], "suche": "EcoFlow STREAM Ultra Balkonkraftwerk Speicher"},
+    {"name": "Growatt NOAH 2000", "badge": "Preis-Leistung", "fuer": "Preisbewusste mit 2–4 Modulen", "specs": ["2,05 kWh", "ca. 8 kWh", "DC"], "pro": ["Gutes Preis-pro-kWh-Verhältnis", "LiFePO4-Zellen", "IP66 für draußen"], "contra": ["Wechselrichter separat nötig", "App weniger komfortabel"], "suche": "Growatt NOAH 2000"},
+    {"name": "Marstek Venus E", "badge": "Meiste kWh", "fuer": "Bestehende Anlagen nachrüsten (AC)", "specs": ["5,12 kWh", "bis 3 Geräte", "AC"], "pro": ["Sehr günstiger Preis pro kWh", "Lädt aus jeder vorhandenen PV-Anlage", "Für Steckdose ausgelegt"], "contra": ["Schwer (ca. 60 kg)", "Für Innenräume gedacht"], "suche": "Marstek Venus E 5,12 kWh"}
+  ],
+  "rechner": {
+    "titel": "Amortisationsrechner Balkonkraftwerk mit Speicher",
+    "text": "Typische Werte sind vorausgefüllt: Österreich erzielt je nach Ausrichtung 850–1.100 kWh pro kWp und Jahr. Mit Speicher sind 60–80 % Eigenverbrauch realistisch.",
+    "inputs": [
+      {"id": "wp", "label": "Modulleistung gesamt", "wert": 1800, "einheit": "Wp", "step": 10},
+      {"id": "ertrag", "label": "Ertrag pro kWp", "wert": 950, "einheit": "kWh/a", "step": 10},
+      {"id": "ev", "label": "Eigenverbrauchsquote", "wert": 70, "einheit": "%", "step": 1},
+      {"id": "preis", "label": "Strompreis", "wert": 0.28, "einheit": "€/kWh", "step": 0.01},
+      {"id": "kosten", "label": "Anschaffung gesamt", "wert": 1600, "einheit": "€", "step": 10}
+    ],
+    "outputs": [
+      {"label": "Jahresertrag", "formel": "wp / 1000 * ertrag", "einheit": "kWh"},
+      {"label": "Ersparnis pro Jahr", "formel": "wp / 1000 * ertrag * ev / 100 * preis", "einheit": "€"},
+      {"label": "Amortisation nach", "formel": "kosten / (wp / 1000 * ertrag * ev / 100 * preis)", "einheit": "Jahren", "stellen": 1},
+      {"label": "Gewinn nach 20 Jahren", "formel": "wp / 1000 * ertrag * ev / 100 * preis * 20 - kosten", "einheit": "€"}
+    ]
+  },
+  "ratgeber": [
+    {"h": "Wie viel Kapazität brauche ich?", "t": "Faustregel: Die Speicherkapazität sollte ungefähr dem abendlichen und nächtlichen Grundverbrauch entsprechen. Ein typischer Haushalt hat 100–200 W Grundlast (Kühlschrank, Router, Standby). Über 12 Stunden sind das 1,2–2,4 kWh – also genau die Klasse der meisten Balkonspeicher.\n\nMehr Kapazität bringt nur etwas, wenn die Module sie im Sommer auch füllen. Bei 2 Modulen sind über 2 kWh selten sinnvoll."},
+    {"h": "DC- oder AC-Kopplung?", "t": "DC-gekoppelte Speicher hängen zwischen Modulen und Wechselrichter – effizient und ideal für neue Anlagen. AC-gekoppelte Speicher werden einfach an die Steckdose gesteckt und eignen sich zum Nachrüsten jeder bestehenden Anlage, haben aber etwas höhere Umwandlungsverluste."},
+    {"h": "Rechtliches in Österreich", "t": "In Österreich sind Balkonkraftwerke bis 800 W Einspeiseleistung vereinfacht möglich. Die Anlage muss beim Netzbetreiber gemeldet werden; viele Netzbetreiber bieten dafür ein Online-Formular. Ein Speicher ändert an der Einspeisegrenze nichts – der Wechselrichter begrenzt weiterhin auf 800 W.\n\nIn Mietwohnungen und Eigentumsgemeinschaften vorher die Zustimmung für die Montage an Fassade oder Balkon klären."},
+    {"h": "Smart Meter für Nulleinspeisung", "t": "Mit einem Smart Meter (z. B. Shelly Pro 3EM oder dem Zubehör des Herstellers) gibt der Speicher genau so viel Strom ab, wie der Haushalt gerade braucht. Das steigert den Eigenverbrauch deutlich und ist der Grund, warum 70 % und mehr erreichbar sind."}
+  ],
+  "faq": [
+    {"f": "Lohnt sich ein Speicher für ein Balkonkraftwerk?", "a": "Meist ja, wenn tagsüber wenig verbraucht wird und mindestens 1.600 Wp Module installiert sind. Bei 2 Modulen und viel Verbrauch tagsüber ist der Speicher oft unwirtschaftlich."},
+    {"f": "Wie lange hält ein Balkonkraftwerk-Speicher?", "a": "Aktuelle LiFePO4-Speicher sind für etwa 6.000 Ladezyklen ausgelegt – das sind bei einem Zyklus pro Tag rund 15 Jahre."},
+    {"f": "Darf ich in Österreich mehr als 800 W einspeisen?", "a": "Für vereinfachte Anmeldung nein. Mehr Modulleistung ist erlaubt, die Einspeisung wird vom Wechselrichter aber auf 800 W begrenzt."},
+    {"f": "Funktioniert der Speicher bei Stromausfall?", "a": "Nur Modelle mit eigener Notstrom-Steckdose (z. B. EcoFlow STREAM). Normale Balkonkraftwerke schalten bei Netzausfall aus Sicherheitsgründen ab."},
+    {"f": "Kann ich einen Speicher nachrüsten?", "a": "Ja. AC-gekoppelte Speicher wie der Marstek Venus E lassen sich ohne Umbau an jede bestehende Anlage anschließen."}
+  ],
+  "checkliste": ["Anzahl und Leistung der Module festgelegt", "Ausrichtung und Verschattung geprüft (Süd/Ost/West)", "Grundlast des Haushalts gemessen (Steckdosen-Messgerät)", "Speichergröße passend zur Grundlast gewählt", "DC- oder AC-Kopplung entschieden", "Smart Meter für Nulleinspeisung eingeplant", "Meldung beim Netzbetreiber vorbereitet", "Zustimmung Vermieter/Eigentümergemeinschaft eingeholt", "Aufstellort frostfrei bzw. IP-Schutzklasse passend", "Amortisation mit eigenem Strompreis berechnet"]
+}

@@ -1,0 +1,13 @@
+{
+  "amazon_tag": "DEINTAG-21",
+  "amazon_domain": "www.amazon.de",
+  "stand": "Oktober 2026",
+  "betreiber": {
+    "name": "Stefan Freudenthaler",
+    "adresse": "BITTE AUSFÜLLEN: Straße Nr., PLZ Ort, Österreich",
+    "email": "freudenthaler.ried@gmail.com",
+    "telefon": "",
+    "uid": ""
+  },
+  "ftp_basis": "/affiliate"
+}

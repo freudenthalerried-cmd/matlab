@@ -1,0 +1,50 @@
+{
+  "slug": "3d-drucker",
+  "domain": "3d-drucker-vergleich.at",
+  "marke": "3D-Drucker Vergleich",
+  "thema": "3D-Druckern",
+  "icon": "🖨️",
+  "farbe": "#00897b",
+  "titel": "3D-Drucker Vergleich 2026: Bambu Lab, Prusa, Creality & Elegoo",
+  "h1": "3D-Drucker Vergleich 2026: Welcher Drucker passt für Einsteiger und Profis?",
+  "beschreibung": "3D-Drucker im Vergleich: Bambu Lab A1 & P1S, Prusa Core One, Creality K2 Plus, Elegoo Centauri Carbon. Mit Druckkostenrechner und Checkliste.",
+  "einleitung": "Moderne 3D-Drucker kalibrieren sich selbst, drucken in mehreren Farben und sind in 15 Minuten startklar. Die Unterschiede liegen in Bauraum, Gehäuse und Ökosystem. Wir helfen dir, nicht zu viel – und nicht zu wenig – zu kaufen.",
+  "kurzantwort": "Einsteiger: Bambu Lab A1 mit AMS lite. Wer auch technische Materialien (ABS, ASA) druckt, braucht ein geschlossenes Gehäuse wie beim P1S, Prusa Core One oder Elegoo Centauri Carbon. Für große Teile: Creality K2 Plus.",
+  "spalten": ["Bauraum", "Gehäuse", "Mehrfarbdruck"],
+  "produkte": [
+    {"name": "Bambu Lab A1", "badge": "Einsteiger-Tipp", "fuer": "Einsteiger, Familien, PLA-Druck", "specs": ["256 × 256 × 256 mm", "offen", "mit AMS lite (4 Farben)"], "pro": ["Vollautomatische Kalibrierung", "Sehr leise", "Mehrfarbdruck günstig nachrüstbar"], "contra": ["Kein Gehäuse für ABS/ASA", "Geschlossenes Ökosystem"], "suche": "Bambu Lab A1 AMS lite"},
+    {"name": "Bambu Lab P1S", "badge": "Preis-Leistung", "fuer": "Fortgeschrittene, technische Teile", "specs": ["256 × 256 × 256 mm", "geschlossen", "mit AMS (4–16 Farben)"], "pro": ["Gehäuse für ABS/ASA", "Sehr schnell", "Riesige Modell-Community"], "contra": ["Lauter als A1", "Kamera nur Basisqualität"], "suche": "Bambu Lab P1S Combo"},
+    {"name": "Prusa Core One", "fuer": "Open-Source-Fans, Langlebigkeit", "specs": ["250 × 220 × 270 mm", "geschlossen", "optional (MMU3)"], "pro": ["Offene Hard- und Software", "Hervorragender Support aus Europa", "Sehr langlebig, gut reparierbar"], "contra": ["Teurer für den Bauraum", "Bausatz-Variante braucht Zeit"], "suche": "Prusa Core One"},
+    {"name": "Creality K2 Plus", "badge": "Großer Bauraum", "fuer": "Große Bauteile, Cosplay, Prototypen", "specs": ["350 × 350 × 350 mm", "geschlossen, beheizt", "mit CFS (bis 16 Farben)"], "pro": ["Sehr großer Bauraum", "Aktiv beheizte Kammer", "Technische Filamente"], "contra": ["Groß und schwer", "Software weniger poliert als Bambu"], "suche": "Creality K2 Plus Combo"},
+    {"name": "Elegoo Centauri Carbon", "fuer": "Budget mit Gehäuse", "specs": ["256 × 256 × 256 mm", "geschlossen", "nicht serienmäßig"], "pro": ["Sehr günstig für einen CoreXY mit Gehäuse", "Schnell und präzise", "Einfacher Start"], "contra": ["Mehrfarbdruck eingeschränkt", "Jüngeres Ökosystem"], "suche": "Elegoo Centauri Carbon"}
+  ],
+  "rechner": {
+    "titel": "3D-Druck-Kostenrechner",
+    "text": "Gewicht und Druckzeit zeigt dir der Slicer. Ein PLA-Filament kostet ca. 15–25 €/kg, der Drucker braucht im Schnitt 100–150 W.",
+    "inputs": [
+      {"id": "gramm", "label": "Filamentmenge", "wert": 120, "einheit": "g", "step": 1},
+      {"id": "kg", "label": "Filamentpreis", "wert": 20, "einheit": "€/kg", "step": 1},
+      {"id": "std", "label": "Druckzeit", "wert": 5, "einheit": "h", "step": 0.5},
+      {"id": "watt", "label": "Leistungsaufnahme", "wert": 120, "einheit": "W", "step": 10},
+      {"id": "strom", "label": "Strompreis", "wert": 0.28, "einheit": "€/kWh", "step": 0.01}
+    ],
+    "outputs": [
+      {"label": "Materialkosten", "formel": "gramm / 1000 * kg", "einheit": "€", "stellen": 2},
+      {"label": "Stromkosten", "formel": "watt / 1000 * std * strom", "einheit": "€", "stellen": 2},
+      {"label": "Gesamt pro Druck", "formel": "gramm / 1000 * kg + watt / 1000 * std * strom", "einheit": "€", "stellen": 2}
+    ]
+  },
+  "ratgeber": [
+    {"h": "Offen oder geschlossen?", "t": "Für PLA und PETG reicht ein offener Drucker. ABS, ASA und Nylon verziehen sich ohne warmes Gehäuse und geben Dämpfe ab – dafür brauchst du einen geschlossenen Drucker, idealerweise mit Filter und Abluft."},
+    {"h": "Mehrfarbdruck", "t": "Systeme wie AMS (Bambu), CFS (Creality) oder MMU (Prusa) wechseln automatisch zwischen 4 und mehr Filamenten. Das ermöglicht bunte Figuren und Beschriftungen, erzeugt aber Abfall durch das Spülen beim Farbwechsel. Für Funktionsteile reicht eine Farbe."},
+    {"h": "Sicherheit und Aufstellort", "t": "3D-Drucker sollten auf einer stabilen, nicht brennbaren Fläche stehen und während langer Drucke nicht völlig unbeaufsichtigt sein. Für Kinderzimmer eignen sich nur PLA-Drucke in gut gelüfteten Räumen."}
+  ],
+  "faq": [
+    {"f": "Welcher 3D-Drucker ist für Anfänger am besten?", "a": "Aktuell gilt der Bambu Lab A1 als einfachster Einstieg: auspacken, App installieren, drucken. Kalibrierung läuft automatisch."},
+    {"f": "Was kostet ein 3D-Druck?", "a": "Ein typisches Bauteil mit 100 g PLA kostet etwa 2–3 € Material plus wenige Cent Strom. Nutze unseren Rechner für genaue Werte."},
+    {"f": "Ist 3D-Drucken gesundheitsschädlich?", "a": "PLA gilt als unbedenklich bei normaler Lüftung. ABS und ASA setzen Dämpfe frei – hier ein geschlossenes Gehäuse mit Filter und gute Lüftung nutzen."},
+    {"f": "Wo finde ich Vorlagen zum Drucken?", "a": "Auf Plattformen wie Printables, MakerWorld oder Thingiverse gibt es Millionen kostenloser Modelle."},
+    {"f": "Wie laut ist ein 3D-Drucker?", "a": "Zwischen 40 und 55 dB – leise Modelle wie der A1 sind mit einem Kühlschrank vergleichbar, schnelle Drucker mit Lüftern lauter."}
+  ],
+  "checkliste": ["Was will ich drucken? (Figuren, Ersatzteile, Prototypen)", "Benötigter Bauraum gemessen", "Materialien festgelegt (PLA/PETG oder auch ABS/ASA)", "Gehäuse nötig?", "Mehrfarbdruck gewünscht?", "Aufstellort stabil, belüftet, nicht brennbar", "Lautstärke im Wohnbereich akzeptabel?", "Ersatzteile (Düsen, Druckplatten) verfügbar", "Software/Slicer und Community geprüft", "Startset Filament eingeplant"]
+}

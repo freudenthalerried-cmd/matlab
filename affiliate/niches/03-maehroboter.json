@@ -1,0 +1,50 @@
+{
+  "slug": "maehroboter-ohne-draht",
+  "domain": "maehroboter-ohne-draht.at",
+  "marke": "Mähroboter ohne Draht",
+  "thema": "Mährobotern ohne Begrenzungsdraht",
+  "icon": "🤖",
+  "farbe": "#3d8b1f",
+  "titel": "Mähroboter ohne Begrenzungsdraht 2026: RTK & Kamera im Vergleich",
+  "h1": "Mähroboter ohne Begrenzungsdraht: Die besten Modelle 2026",
+  "beschreibung": "Mähroboter ohne Begrenzungsdraht im Vergleich: Segway Navimow, Mammotion LUBA, Husqvarna NERA, Ecovacs GOAT. Mit Flächenrechner und Checkliste.",
+  "einleitung": "Schluss mit Kabel verlegen und Drahtbrüchen: Moderne Mähroboter navigieren per Satellit (RTK) oder Kamera. Die Grenzen zeichnest du in der App. Wir zeigen, welche Technik für deinen Garten funktioniert.",
+  "kurzantwort": "Für offene Gärten ist RTK-Navigation die zuverlässigste Lösung. Bei vielen Bäumen oder Hausnähe lieber ein Modell mit RTK plus Kamera/LiDAR wählen. Die Nennfläche sollte mindestens 30 % über deiner Rasenfläche liegen.",
+  "spalten": ["Fläche bis", "Navigation", "Steigung bis"],
+  "produkte": [
+    {"name": "Segway Navimow i105E", "badge": "Preis-Leistung", "fuer": "Kleine bis mittlere Gärten", "specs": ["500 m²", "RTK + Kamera", "ca. 45 %"], "pro": ["Günstiger Einstieg in drahtloses Mähen", "Sehr einfache Einrichtung", "Leise"], "contra": ["Für verwinkelte Gärten begrenzt", "RTK-Antenne muss freie Sicht haben"], "suche": "Segway Navimow i105E"},
+    {"name": "Mammotion LUBA 2 AWD", "badge": "Hangprofi", "fuer": "Große Grundstücke mit Hanglage", "specs": ["bis 5.000 m² (je Version)", "RTK + Vision", "ca. 80 %"], "pro": ["Allradantrieb für extreme Steigungen", "Sehr große Flächen", "Mehrere Zonen"], "contra": ["Hoher Preis", "Breiter Radstand – schmale Durchgänge schwierig"], "suche": "Mammotion LUBA 2 AWD"},
+    {"name": "Husqvarna Automower 430X NERA", "fuer": "Qualitätsbewusste mit mittleren Gärten", "specs": ["3.200 m²", "EPOS (RTK)", "ca. 45 %"], "pro": ["Premium-Verarbeitung & Händlerservice", "Sehr zuverlässige Software", "Hindernis-Erkennung per Radar optional"], "contra": ["EPOS-Referenzstation extra", "Teuerster im Vergleich je m²"], "suche": "Husqvarna Automower 430X NERA"},
+    {"name": "Ecovacs GOAT A1600 RTK", "fuer": "Smart-Home-Fans", "specs": ["1.600 m²", "RTK + LiDAR", "ca. 50 %"], "pro": ["LiDAR auch unter Bäumen stabil", "Gute Hinderniserkennung", "Kantenmähen gelungen"], "contra": ["App mit vielen Optionen anfangs unübersichtlich", "Ersatzteilversorgung prüfen"], "suche": "Ecovacs GOAT A1600 RTK"},
+    {"name": "Worx Landroid Vision", "fuer": "Kleine Gärten ohne Satellitensicht", "specs": ["bis 1.600 m² (je Version)", "Kamera/KI", "ca. 35 %"], "pro": ["Keine Antenne und kein Draht", "Erkennt Rasenkanten selbst", "Günstig"], "contra": ["Braucht klare Rasenkanten", "Bei Dämmerung eingeschränkt"], "suche": "Worx Landroid Vision"}
+  ],
+  "rechner": {
+    "titel": "Flächenrechner: Welcher Mähroboter passt?",
+    "text": "Gib deine Rasenfläche und die Flächenleistung des Modells ein (steht im Datenblatt, oft 100–300 m²/h).",
+    "inputs": [
+      {"id": "flaeche", "label": "Rasenfläche", "wert": 600, "einheit": "m²", "step": 10},
+      {"id": "leistung", "label": "Flächenleistung des Modells", "wert": 150, "einheit": "m²/h", "step": 10},
+      {"id": "tage", "label": "Mähdurchgänge pro Woche", "wert": 3, "step": 1}
+    ],
+    "outputs": [
+      {"label": "Empfohlene Nennfläche ab", "formel": "flaeche * 1.3", "einheit": "m²"},
+      {"label": "Fahrzeit pro Durchgang", "formel": "flaeche / leistung", "einheit": "h", "stellen": 1},
+      {"label": "Mähzeit pro Woche", "formel": "flaeche / leistung * tage", "einheit": "h", "stellen": 1},
+      {"label": "Gesparte Zeit pro Saison (vs. selbst mähen ca. 1 h/400 m²)", "formel": "flaeche / 400 * 30", "einheit": "h"}
+    ]
+  },
+  "ratgeber": [
+    {"h": "RTK, Kamera oder LiDAR?", "t": "RTK nutzt Satellitensignale und eine Referenzantenne im Garten – präzise auf wenige Zentimeter, braucht aber freie Sicht zum Himmel. Kameras erkennen Rasenkanten und Hindernisse, haben aber bei Dunkelheit Schwächen. LiDAR tastet die Umgebung per Laser ab und funktioniert auch unter Bäumen.\n\nDie beste Kombination für schwierige Gärten: RTK plus Kamera oder LiDAR."},
+    {"h": "Nennfläche richtig deuten", "t": "Herstellerangaben gelten für ideale, rechteckige Flächen. Verwinkelte Gärten, Hänge und mehrere Zonen kosten Zeit. Plane deshalb mindestens 30 % Reserve ein – der Rechner oben zeigt dir die passende Klasse."},
+    {"h": "Sicherheit: Kinder, Tiere, Igel", "t": "Lass den Roboter nicht nachts fahren – Igel sind dann unterwegs und werden von vielen Sensoren nicht erkannt. Die meisten Apps erlauben Zeitpläne nur tagsüber. Hindernis-Erkennung per Kamera oder Ultraschall ist ein klares Plus."},
+    {"h": "Diebstahlschutz", "t": "Achte auf PIN-Sperre, Alarm und GPS-Ortung. Viele Premium-Modelle haben eine eingebaute SIM oder LTE-Option, mit der du das Gerät im Ernstfall orten kannst."}
+  ],
+  "faq": [
+    {"f": "Funktioniert ein Mähroboter ohne Draht wirklich zuverlässig?", "a": "Ja, aktuelle RTK-Modelle mähen auf wenige Zentimeter genau. Probleme gibt es nur bei schlechtem Satellitenempfang direkt an hohen Hauswänden oder unter dichten Bäumen."},
+    {"f": "Braucht ein RTK-Mähroboter Internet?", "a": "Für die Einrichtung und Updates ja, für den laufenden Betrieb meist nicht. Manche Modelle nutzen ein Netzwerk von Referenzstationen, das Mobilfunk erfordert."},
+    {"f": "Wie steil darf mein Garten sein?", "a": "Standardmodelle schaffen 35–50 % Steigung, Allrad-Modelle wie der LUBA 2 AWD bis zu 80 %."},
+    {"f": "Darf ein Mähroboter nachts fahren?", "a": "Erlaubt ist es meist, aus Tierschutzgründen (Igel) aber dringend abzuraten. Viele Gemeinden empfehlen Betrieb nur tagsüber."},
+    {"f": "Was kostet ein Mähroboter im Unterhalt?", "a": "Strom ca. 10–20 € pro Jahr, Ersatzmesser ca. 10–30 € pro Saison. Der Akku hält meist 3–5 Jahre."}
+  ],
+  "checkliste": ["Rasenfläche gemessen (z. B. mit Google Maps)", "Größte Steigung im Garten geschätzt", "Freie Himmelssicht für RTK-Antenne vorhanden?", "Schmale Durchgänge (unter 1 m) notiert", "Mehrere getrennte Rasenzonen?", "Stromanschluss für Ladestation geklärt", "Zeitplan nur tagsüber (Igelschutz)", "Diebstahlschutz: PIN, Alarm, Ortung", "Hinderniserkennung für Kinder/Haustiere", "Garage oder Überdachung für den Winter"]
+}

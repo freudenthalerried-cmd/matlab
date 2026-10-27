@@ -1,0 +1,220 @@
+{
+  "slug": "massagesessel",
+  "domain": "massagesessel-vergleich.at",
+  "marke": "Massagesessel Vergleich",
+  "thema": "Massagesesseln",
+  "icon": "💺",
+  "farbe": "#7a4b2a",
+  "titel": "Massagesessel Vergleich 2026: 4D, Zero Gravity & SL-Schiene erklärt",
+  "h1": "Massagesessel Vergleich 2026: Welcher Sessel lohnt sich wirklich?",
+  "beschreibung": "Massagesessel im Vergleich: 2D vs. 4D, Zero Gravity, SL-Schiene, Luftkissen. Mit Kosten-pro-Massage-Rechner und gratis Kaufcheckliste.",
+  "einleitung": "Ein guter Massagesessel ersetzt keinen Therapeuten – aber er ist jeden Abend verfügbar. Die Preisspanne reicht von 500 bis über 8.000 €. Wir erklären, welche Technik den Unterschied macht und wo du sparen kannst.",
+  "kurzantwort": "Für die meisten lohnt sich ein Sessel mit SL-Schiene (massiert vom Nacken bis zum Gesäß), Zero-Gravity-Liegeposition und Wärmefunktion. 4D-Mechanik lohnt sich bei Verspannungen im Nacken; Luftkissen-Modelle sind ideal für Beine und Füße.",
+  "spalten": [
+    "Mechanik",
+    "Schiene",
+    "Preisklasse"
+  ],
+  "produkte": [
+    {
+      "name": "4D-Massagesessel mit SL-Schiene & Zero Gravity",
+      "badge": "Premium-Klasse",
+      "fuer": "Starke Verspannungen, tägliche Nutzung",
+      "specs": [
+        "4D (Tiefe regelbar)",
+        "SL-Schiene",
+        "€€€€"
+      ],
+      "pro": [
+        "Tiefe der Massage stufenlos einstellbar",
+        "Körperscan passt sich an",
+        "Wärme an Rücken und Waden"
+      ],
+      "contra": [
+        "Groß und schwer (über 100 kg)",
+        "Höchster Preis"
+      ],
+      "suche": "Massagesessel 4D SL Schiene Zero Gravity"
+    },
+    {
+      "name": "3D-Massagesessel mit SL-Schiene",
+      "badge": "Preis-Leistung",
+      "fuer": "Die meisten Haushalte",
+      "specs": [
+        "3D",
+        "SL-Schiene",
+        "€€€"
+      ],
+      "pro": [
+        "Massage bis zum Gesäß",
+        "Zero Gravity meist inklusive",
+        "Gutes Preis-Leistungs-Verhältnis"
+      ],
+      "contra": [
+        "Weniger Feinjustierung als 4D",
+        "Bluetooth-Lautsprecher oft mäßig"
+      ],
+      "suche": "Massagesessel 3D SL Schiene"
+    },
+    {
+      "name": "2D-Massagesessel mit Luftkissen",
+      "fuer": "Einsteiger, Beine & Füße",
+      "specs": [
+        "2D + Luftkompression",
+        "S-Schiene",
+        "€€"
+      ],
+      "pro": [
+        "Günstiger Einstieg",
+        "Intensive Fuß- und Wadenmassage",
+        "Kompakter"
+      ],
+      "contra": [
+        "Rückenmassage weniger tief",
+        "Gesäß wird nicht erreicht"
+      ],
+      "suche": "Massagesessel 2D Luftkissen Fußmassage"
+    },
+    {
+      "name": "Platzsparender Massagesessel (Wandabstand ca. 5 cm)",
+      "fuer": "Kleine Wohnzimmer",
+      "specs": [
+        "3D",
+        "SL-Schiene",
+        "€€€"
+      ],
+      "pro": [
+        "Liegeposition ohne großen Wandabstand",
+        "Wohnzimmertaugliches Design",
+        "Zero Gravity"
+      ],
+      "contra": [
+        "Etwas kürzere Liegefläche",
+        "Weniger Programme"
+      ],
+      "suche": "Massagesessel platzsparend Wandabstand"
+    },
+    {
+      "name": "Massageauflage Shiatsu (Budget-Alternative)",
+      "fuer": "Ausprobieren, kleines Budget",
+      "specs": [
+        "Shiatsu-Rollen",
+        "–",
+        "€"
+      ],
+      "pro": [
+        "Auf jeden Stuhl legbar",
+        "Sehr günstig",
+        "Gut zum Testen"
+      ],
+      "contra": [
+        "Keine Ganzkörpermassage",
+        "Geringere Intensitätsregelung"
+      ],
+      "suche": "Massageauflage Shiatsu Wärme"
+    }
+  ],
+  "rechner": {
+    "titel": "Rechner: Was kostet eine Massage im eigenen Sessel?",
+    "text": "Vergleiche die Kosten pro Anwendung mit einer professionellen Massage.",
+    "inputs": [
+      {
+        "id": "preis",
+        "label": "Preis des Sessels",
+        "wert": 2500,
+        "einheit": "€",
+        "step": 50
+      },
+      {
+        "id": "proWoche",
+        "label": "Nutzungen pro Woche",
+        "wert": 4,
+        "step": 1
+      },
+      {
+        "id": "jahre",
+        "label": "Nutzungsdauer",
+        "wert": 7,
+        "einheit": "Jahre",
+        "step": 1
+      },
+      {
+        "id": "masseur",
+        "label": "Preis professionelle Massage",
+        "wert": 60,
+        "einheit": "€",
+        "step": 5
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Kosten pro Sessel-Massage",
+        "formel": "preis / (proWoche * 52 * jahre)",
+        "einheit": "€",
+        "stellen": 2
+      },
+      {
+        "label": "Ersparnis vs. 1 Profi-Massage pro Monat",
+        "formel": "masseur * 12 * jahre - preis",
+        "einheit": "€"
+      },
+      {
+        "label": "Amortisiert, wenn jede Nutzung eine Profi-Massage ersetzt, nach",
+        "formel": "preis / masseur / proWoche",
+        "einheit": "Wochen"
+      }
+    ]
+  },
+  "ratgeber": [
+    {
+      "h": "2D, 3D, 4D – was bedeutet das?",
+      "t": "2D-Mechaniken bewegen die Massageköpfe hoch/runter und links/rechts. 3D ergänzt die Tiefe – die Köpfe drücken stärker oder sanfter in die Muskulatur. 4D variiert zusätzlich Rhythmus und Geschwindigkeit, was einer Massage durch Hände am nächsten kommt."
+    },
+    {
+      "h": "S-Schiene oder SL-Schiene?",
+      "t": "Die S-Schiene folgt der Wirbelsäule vom Nacken bis zum unteren Rücken. Die SL-Schiene verlängert den Weg unter den Sitz und erreicht Gesäß und Oberschenkel-Rückseite – wichtig bei Ischias- und Lendenbeschwerden."
+    },
+    {
+      "h": "Platz, Gewicht, Lieferung",
+      "t": "Massagesessel wiegen oft 80–120 kg und kommen per Spedition. Prüfe Türbreiten, Treppen und ob die Lieferung bis in die Wohnung inklusive ist. Für die Liegeposition brauchst du hinten 5–50 cm Wandabstand, je nach Modell."
+    },
+    {
+      "h": "Gesundheitlicher Hinweis",
+      "t": "Bei Bandscheibenvorfall, Osteoporose, Thrombose, Schwangerschaft oder Herzschrittmacher vorher ärztlich abklären. Diese Seite ersetzt keine medizinische Beratung."
+    }
+  ],
+  "faq": [
+    {
+      "f": "Lohnt sich ein Massagesessel?",
+      "a": "Bei regelmäßiger Nutzung ja: Schon bei 3–4 Anwendungen pro Woche liegen die Kosten pro Massage nach einigen Jahren unter 2 €."
+    },
+    {
+      "f": "Wie lange sollte man im Massagesessel sitzen?",
+      "a": "15–30 Minuten pro Sitzung sind ideal. Längere Sitzungen können Muskeln überreizen."
+    },
+    {
+      "f": "Was ist Zero Gravity?",
+      "a": "Eine Liegeposition, in der die Beine über Herzhöhe liegen. Das entlastet die Wirbelsäule und intensiviert die Rückenmassage."
+    },
+    {
+      "f": "Wie viel Strom braucht ein Massagesessel?",
+      "a": "Meist 100–250 W. Eine 20-Minuten-Massage kostet damit nur wenige Cent."
+    },
+    {
+      "f": "Kann ich einen Massagesessel probesitzen?",
+      "a": "Bei Amazon nicht direkt – aber du hast in der Regel ein Rückgaberecht. Prüfe vorher Rückversandkosten bei Speditionsware."
+    }
+  ],
+  "checkliste": [
+    "Hauptbeschwerden notiert (Nacken, Rücken, Beine)",
+    "Körpergröße mit Herstellerangabe abgeglichen",
+    "Mechanik gewählt (2D/3D/4D)",
+    "Schiene: S oder SL?",
+    "Wandabstand für Liegeposition gemessen",
+    "Türbreiten und Treppen für Lieferung geprüft",
+    "Lieferung bis in die Wohnung inklusive?",
+    "Bezugsmaterial pflegeleicht?",
+    "Gesundheitliche Fragen ärztlich abgeklärt",
+    "Rückgabe- und Garantiebedingungen bei Speditionsware geprüft"
+  ]
+}

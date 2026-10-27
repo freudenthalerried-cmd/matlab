@@ -1,0 +1,207 @@
+{
+  "slug": "laser-tv",
+  "domain": "laser-tv-vergleich.at",
+  "marke": "Laser-TV Vergleich",
+  "thema": "Laser-TVs",
+  "icon": "📽️",
+  "farbe": "#5b3cc4",
+  "titel": "Laser-TV Vergleich 2026: Die besten 4K-Ultrakurzdistanz-Beamer",
+  "h1": "Laser-TV Vergleich 2026: 100 bis 150 Zoll ohne Riesen-Fernseher",
+  "beschreibung": "Laser-TV Vergleich 2026: Hisense, AWOL, XGIMI & Co. im Check. Mit Bildgrößen-Rechner, ALR-Leinwand-Tipps und gratis Kaufcheckliste.",
+  "einleitung": "Ein Laser-TV steht wenige Zentimeter vor der Wand und wirft ein 100- bis 150-Zoll-Bild – heller als klassische Beamer und deutlich günstiger als ein gleich großer Fernseher. Wir zeigen, welches Modell zu deinem Raum passt.",
+  "kurzantwort": "Für helle Wohnzimmer ist ein Triple-Laser-Modell mit mindestens 2.500 ISO-Lumen plus ALR-Leinwand die beste Wahl. Wer vor allem abends schaut, kommt mit einem günstigeren Modell ohne Spezialleinwand aus.",
+  "spalten": [
+    "Helligkeit (Hersteller)",
+    "Lichtquelle",
+    "Bildgröße"
+  ],
+  "produkte": [
+    {
+      "name": "Hisense PX3-Pro",
+      "badge": "Preis-Leistung",
+      "fuer": "Wohnzimmer mit Restlicht, Filmfans",
+      "specs": [
+        "ca. 3.000 Lumen",
+        "Triple-Laser (RGB)",
+        "90–130 Zoll"
+      ],
+      "pro": [
+        "Sehr große Farbraumabdeckung",
+        "Dolby Vision & integriertes Smart-TV",
+        "Gaming-Modus mit niedriger Latenz"
+      ],
+      "contra": [
+        "Regenbogeneffekt bei empfindlichen Personen möglich",
+        "Lautsprecher für große Räume nur Mittelklasse"
+      ],
+      "suche": "Hisense PX3-Pro Laser TV"
+    },
+    {
+      "name": "AWOL Vision LTV-3500 Pro",
+      "badge": "Hellster",
+      "fuer": "Helle Räume, Heimkino-Enthusiasten",
+      "specs": [
+        "ca. 3.500 Lumen",
+        "Triple-Laser (RGB)",
+        "85–150 Zoll"
+      ],
+      "pro": [
+        "Sehr hohe Helligkeit",
+        "3D-Unterstützung",
+        "Starkes HDR"
+      ],
+      "contra": [
+        "Höherer Preis",
+        "Smart-Funktionen über externen Stick besser"
+      ],
+      "suche": "AWOL Vision LTV-3500 Pro"
+    },
+    {
+      "name": "XGIMI Aura 2",
+      "fuer": "Design-Wohnzimmer, Streaming-Fans",
+      "specs": [
+        "ca. 2.300 Lumen",
+        "Laser (ALPD)",
+        "80–150 Zoll"
+      ],
+      "pro": [
+        "Google TV mit Netflix integriert",
+        "Kräftiger Harman/Kardon-Sound",
+        "Sehr leise"
+      ],
+      "contra": [
+        "Weniger hell als Triple-Laser",
+        "Groß und schwer"
+      ],
+      "suche": "XGIMI Aura 2 Laser TV"
+    },
+    {
+      "name": "Samsung The Premiere LSP9T",
+      "fuer": "Samsung-Ökosystem, Tizen-Nutzer",
+      "specs": [
+        "ca. 2.800 Lumen",
+        "Triple-Laser (RGB)",
+        "100–130 Zoll"
+      ],
+      "pro": [
+        "Bekanntes Samsung-Smart-TV",
+        "Gute Ausleuchtung",
+        "HDR10+"
+      ],
+      "contra": [
+        "Kein Dolby Vision",
+        "Älteres Modell, Preise schwanken stark"
+      ],
+      "suche": "Samsung The Premiere LSP9T"
+    },
+    {
+      "name": "Hisense C2 Ultra (kompakter Laser-Beamer)",
+      "badge": "Flexibel",
+      "fuer": "Wer keinen festen Wandplatz hat",
+      "specs": [
+        "ca. 3.000 Lumen",
+        "Triple-Laser (RGB)",
+        "65–300 Zoll"
+      ],
+      "pro": [
+        "Drehbarer Gimbal, überall nutzbar",
+        "Kein UST-Abstand nötig",
+        "Dolby Vision"
+      ],
+      "contra": [
+        "Kein Ultrakurzdistanz – braucht mehrere Meter Abstand",
+        "Leinwand-Ausrichtung manuell"
+      ],
+      "suche": "Hisense C2 Ultra Beamer"
+    }
+  ],
+  "rechner": {
+    "titel": "Bildgrößen-Rechner für Laser-TVs",
+    "text": "Gib den Abstand zwischen Wand und Gerät sowie das Projektionsverhältnis (steht im Datenblatt, bei UST meist 0,21–0,25) ein.",
+    "inputs": [
+      {
+        "id": "abstand",
+        "label": "Abstand Wand → Linse (nicht Geräterückseite)",
+        "wert": 55,
+        "einheit": "cm",
+        "step": 1
+      },
+      {
+        "id": "tr",
+        "label": "Projektionsverhältnis (Throw Ratio)",
+        "wert": 0.25,
+        "step": 0.01
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Bildbreite",
+        "formel": "abstand / tr",
+        "einheit": "cm"
+      },
+      {
+        "label": "Bilddiagonale (16:9)",
+        "formel": "abstand / tr / 0.8716 / 2.54",
+        "einheit": "Zoll"
+      },
+      {
+        "label": "Idealer Sitzabstand ab",
+        "formel": "abstand / tr / 0.8716 * 1.2 / 100",
+        "einheit": "m",
+        "stellen": 1
+      }
+    ]
+  },
+  "ratgeber": [
+    {
+      "h": "Was ist ein Laser-TV überhaupt?",
+      "t": "Ein Laser-TV ist ein Ultrakurzdistanz-Projektor (UST) mit Laserlichtquelle. Er steht auf dem Sideboard direkt vor der Wand und projiziert schräg nach oben. Der Laser hält rund 20.000–25.000 Stunden – bei vier Stunden täglich also über 13 Jahre.\n\nDer große Vorteil: 120 Zoll kosten als Laser-TV einen Bruchteil eines gleich großen Fernsehers, und im ausgeschalteten Zustand gibt es kein schwarzes Riesenrechteck an der Wand."
+    },
+    {
+      "h": "Triple-Laser oder Single-Laser?",
+      "t": "Triple-Laser-Geräte (je ein roter, grüner und blauer Laser) erreichen deutlich mehr Farben und wirken satter. Single-Laser-Modelle mit Farbrad sind günstiger, liefern aber blassere Rottöne. Für Filme und Sport lohnt sich Triple-Laser fast immer."
+    },
+    {
+      "h": "Ohne ALR-Leinwand geht es nur im dunklen Raum",
+      "t": "Eine ALR-Leinwand (Ambient Light Rejecting) schluckt Licht von oben und von der Seite und reflektiert nur das Licht vom Projektor. Dadurch bleibt das Bild auch tagsüber kontrastreich. Plane dafür zusätzlich 400–1.200 € ein – es ist die wichtigste Investition nach dem Gerät selbst.\n\nAuf einer weißen Wand funktioniert ein Laser-TV abends gut, tagsüber wirkt das Bild dagegen schnell flau."
+    },
+    {
+      "h": "Darauf achten: Helligkeitsangaben",
+      "t": "Hersteller nennen oft 'ANSI-Lumen', 'ISO-Lumen' oder nur 'Lumen'. Vergleichbar sind nur ANSI- bzw. ISO-Lumen. Unsere Tabelle übernimmt die Herstellerangaben – in Tests liegen reale Werte meist 10–20 % darunter."
+    }
+  ],
+  "faq": [
+    {
+      "f": "Ist ein Laser-TV besser als ein 85-Zoll-Fernseher?",
+      "a": "Bei der Bildgröße ja, bei Schwarzwert und Helligkeit am Tag nein. Wer über 100 Zoll will und eher abends schaut, ist mit einem Laser-TV plus ALR-Leinwand meist besser bedient."
+    },
+    {
+      "f": "Wie lange hält die Laserlichtquelle?",
+      "a": "Hersteller geben meist 20.000 bis 25.000 Stunden an. Bei vier Stunden täglich entspricht das über 13 Jahren."
+    },
+    {
+      "f": "Brauche ich eine spezielle Leinwand?",
+      "a": "In hellen Räumen ja: Eine ALR-Leinwand für UST-Projektoren verbessert den Kontrast deutlich. In abgedunkelten Räumen reicht eine glatte, weiße Wand."
+    },
+    {
+      "f": "Kann ich mit einem Laser-TV gamen?",
+      "a": "Ja. Aktuelle Modelle haben Gaming-Modi mit rund 15–50 ms Latenz. Für schnelle Shooter sind gute Fernseher weiterhin leicht im Vorteil."
+    },
+    {
+      "f": "Wie viel Strom verbraucht ein Laser-TV?",
+      "a": "Typisch 250–450 Watt im Betrieb – ähnlich wie ein großer OLED-Fernseher bei hoher Helligkeit."
+    }
+  ],
+  "checkliste": [
+    "Wandbreite gemessen – passt die gewünschte Bilddiagonale?",
+    "Sideboard tief genug (meist 40–50 cm) und stabil?",
+    "Abstand Wand–Gerät mit dem Rechner geprüft",
+    "Raum tagsüber hell? Dann ALR-Leinwand einplanen",
+    "Triple-Laser oder Single-Laser entschieden",
+    "Helligkeit in ANSI/ISO-Lumen verglichen",
+    "Benötigte Apps (Netflix, Disney+) direkt verfügbar?",
+    "HDMI-eARC für Soundbar oder AV-Receiver vorhanden?",
+    "Gaming: Latenz und 4K/120 Hz geprüft",
+    "Rückgabefrist und Garantie notiert"
+  ]
+}

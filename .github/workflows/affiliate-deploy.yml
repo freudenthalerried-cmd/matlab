@@ -1,0 +1,27 @@
+name: Affiliate-Seiten bauen & auf All-Inkl hochladen
+
+on:
+  push:
+    branches: [main]
+    paths: ["affiliate/**", ".github/workflows/affiliate-deploy.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.ALLINKL_FTP_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seiten bauen
+        run: python3 affiliate/build.py
+      - name: Per FTP zu All-Inkl hochladen
+        if: env.FTP_HOST != ''
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ env.FTP_HOST }}
+          username: ${{ secrets.ALLINKL_FTP_USER }}
+          password: ${{ secrets.ALLINKL_FTP_PASS }}
+          protocol: ftps
+          local-dir: affiliate/dist/
+          server-dir: affiliate/
