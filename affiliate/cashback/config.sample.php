@@ -21,7 +21,7 @@ return [
 
     'betreiber' => [
         'name'    => 'Stefan Freudenthaler',
-        'adresse' => 'BITTE AUSFÜLLEN: Straße Nr., PLZ Ort, Österreich',
+        'adresse' => 'Marwach 5, 4312 Ried in der Riedmark, Österreich',
         'email'   => 'freudenthaler.ried@gmail.com',
     ],
 ];
