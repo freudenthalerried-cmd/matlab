@@ -7,7 +7,7 @@
   "farbe": "#5b3cc4",
   "titel": "Laser-TV Vergleich 2026: Die besten 4K-Ultrakurzdistanz-Beamer",
   "h1": "Laser-TV Vergleich 2026: 100 bis 150 Zoll ohne Riesen-Fernseher",
-  "beschreibung": "Laser-TV Vergleich 2026: Hisense, AWOL, XGIMI & Co. im Check. Mit Bildgrößen-Rechner, ALR-Leinwand-Tipps und gratis Kaufcheckliste.",
+  "beschreibung": "Laser-TV Vergleich 2026: Hisense PX4 Pro, AWOL, XGIMI & Co. im Check. Mit Bildgrößen-Rechner, ALR-Leinwand-Tipps und gratis Kaufcheckliste.",
   "einleitung": "Ein Laser-TV steht wenige Zentimeter vor der Wand und wirft ein 100- bis 150-Zoll-Bild – heller als klassische Beamer und deutlich günstiger als ein gleich großer Fernseher. Wir zeigen, welches Modell zu deinem Raum passt.",
   "kurzantwort": "Für helle Wohnzimmer ist ein Triple-Laser-Modell mit mindestens 2.500 ISO-Lumen plus ALR-Leinwand die beste Wahl. Wer vor allem abends schaut, kommt mit einem günstigeren Modell ohne Spezialleinwand aus.",
   "spalten": [
@@ -17,13 +17,33 @@
   ],
   "produkte": [
     {
+      "name": "Hisense PX4 Pro",
+      "badge": "Neuheit 2026",
+      "fuer": "Heimkino-Fans mit großem Budget",
+      "specs": [
+        "ca. 3.500 Lumen",
+        "Triple-Laser (RGB)",
+        "80–200 Zoll"
+      ],
+      "pro": [
+        "Nachfolger des beliebten PX3-Pro",
+        "Bis zu 200 Zoll Bilddiagonale",
+        "Sehr hohe Helligkeit für helle Räume"
+      ],
+      "contra": [
+        "Hoher Preis zum Marktstart",
+        "Für 200 Zoll ist eine sehr breite Wand nötig"
+      ],
+      "suche": "Hisense PX4 Pro Laser TV"
+    },
+    {
       "name": "Hisense PX3-Pro",
       "badge": "Preis-Leistung",
       "fuer": "Wohnzimmer mit Restlicht, Filmfans",
       "specs": [
         "ca. 3.000 Lumen",
         "Triple-Laser (RGB)",
-        "90–130 Zoll"
+        "80–150 Zoll"
       ],
       "pro": [
         "Sehr große Farbraumabdeckung",
@@ -41,9 +61,9 @@
       "badge": "Hellster",
       "fuer": "Helle Räume, Heimkino-Enthusiasten",
       "specs": [
-        "ca. 3.500 Lumen",
+        "ca. 3.300 ANSI-Lumen",
         "Triple-Laser (RGB)",
-        "85–150 Zoll"
+        "80–150 Zoll"
       ],
       "pro": [
         "Sehr hohe Helligkeit",
@@ -61,7 +81,7 @@
       "fuer": "Design-Wohnzimmer, Streaming-Fans",
       "specs": [
         "ca. 2.300 Lumen",
-        "Laser (ALPD)",
+        "Hybrid (Laser + LED)",
         "80–150 Zoll"
       ],
       "pro": [
@@ -74,25 +94,6 @@
         "Groß und schwer"
       ],
       "suche": "XGIMI Aura 2 Laser TV"
-    },
-    {
-      "name": "Samsung The Premiere LSP9T",
-      "fuer": "Samsung-Ökosystem, Tizen-Nutzer",
-      "specs": [
-        "ca. 2.800 Lumen",
-        "Triple-Laser (RGB)",
-        "100–130 Zoll"
-      ],
-      "pro": [
-        "Bekanntes Samsung-Smart-TV",
-        "Gute Ausleuchtung",
-        "HDR10+"
-      ],
-      "contra": [
-        "Kein Dolby Vision",
-        "Älteres Modell, Preise schwanken stark"
-      ],
-      "suche": "Samsung The Premiere LSP9T"
     },
     {
       "name": "Hisense C2 Ultra (kompakter Laser-Beamer)",

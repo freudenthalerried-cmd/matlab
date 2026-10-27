@@ -7,9 +7,9 @@
   "farbe": "#00897b",
   "titel": "3D-Drucker Vergleich 2026: Bambu Lab, Prusa, Creality & Elegoo",
   "h1": "3D-Drucker Vergleich 2026: Welcher Drucker passt für Einsteiger und Profis?",
-  "beschreibung": "3D-Drucker im Vergleich: Bambu Lab A1 & P1S, Prusa Core One, Creality K2 Plus, Elegoo Centauri Carbon. Mit Druckkostenrechner und Checkliste.",
+  "beschreibung": "3D-Drucker im Vergleich: Bambu Lab A1 & P2S, Prusa Core One, Creality K2 Plus, Elegoo Centauri Carbon 2. Mit Druckkostenrechner und Checkliste.",
   "einleitung": "Moderne 3D-Drucker kalibrieren sich selbst, drucken in mehreren Farben und sind in 15 Minuten startklar. Die Unterschiede liegen in Bauraum, Gehäuse und Ökosystem. Wir helfen dir, nicht zu viel – und nicht zu wenig – zu kaufen.",
-  "kurzantwort": "Einsteiger: Bambu Lab A1 mit AMS lite. Wer auch technische Materialien (ABS, ASA) druckt, braucht ein geschlossenes Gehäuse wie beim P1S, Prusa Core One oder Elegoo Centauri Carbon. Für große Teile: Creality K2 Plus.",
+  "kurzantwort": "Einsteiger: Bambu Lab A1 mit AMS lite. Wer auch technische Materialien (ABS, ASA) druckt, braucht ein geschlossenes Gehäuse wie beim P2S, Prusa Core One oder Elegoo Centauri Carbon 2. Für große Teile: Creality K2 Plus.",
   "spalten": [
     "Bauraum",
     "Gehäuse",
@@ -38,24 +38,24 @@
       "cashback_shop": "bambulab"
     },
     {
-      "name": "Bambu Lab P1S",
+      "name": "Bambu Lab P2S",
       "badge": "Preis-Leistung",
       "fuer": "Fortgeschrittene, technische Teile",
       "specs": [
         "256 × 256 × 256 mm",
         "geschlossen",
-        "mit AMS (4–16 Farben)"
+        "mit AMS 2 Pro (4 Farben, erweiterbar)"
       ],
       "pro": [
         "Gehäuse für ABS/ASA",
-        "Sehr schnell",
+        "Nachfolger des beliebten P1S",
         "Riesige Modell-Community"
       ],
       "contra": [
-        "Lauter als A1",
-        "Kamera nur Basisqualität"
+        "Teurer als A1",
+        "Geschlossenes Ökosystem"
       ],
-      "suche": "Bambu Lab P1S Combo",
+      "suche": "Bambu Lab P2S Combo",
       "cashback_shop": "bambulab"
     },
     {
@@ -98,23 +98,23 @@
       "suche": "Creality K2 Plus Combo"
     },
     {
-      "name": "Elegoo Centauri Carbon",
+      "name": "Elegoo Centauri Carbon 2",
       "fuer": "Budget mit Gehäuse",
       "specs": [
         "256 × 256 × 256 mm",
         "geschlossen",
-        "nicht serienmäßig"
+        "mit CANVAS (4 Farben)"
       ],
       "pro": [
         "Sehr günstig für einen CoreXY mit Gehäuse",
-        "Schnell und präzise",
-        "Einfacher Start"
+        "Mehrfarbdruck im Combo-Set",
+        "Schnell und präzise"
       ],
       "contra": [
-        "Mehrfarbdruck eingeschränkt",
-        "Jüngeres Ökosystem"
+        "Maximal 4 Farben",
+        "Jüngeres Ökosystem als Bambu Lab"
       ],
-      "suche": "Elegoo Centauri Carbon"
+      "suche": "Elegoo Centauri Carbon 2 Combo"
     }
   ],
   "rechner": {
