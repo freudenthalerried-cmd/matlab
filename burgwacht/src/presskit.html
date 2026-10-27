@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Burgwacht Press Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Pressemappe: eine Spalte, Faktenblock links, Bilder als Raster */
+:root{--bg:#1c1230;--panel:#2c1d49;--fg:#fff4dc;--muted:#cdbfe8;--gold:#ffc93c;--line:#3d2a66;color-scheme:dark;
+  --display:'Lilita One','Arial Rounded MT Bold',system-ui,sans-serif;--body:'Nunito','Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 var(--body);padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:28px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(48px,9vw,96px);line-height:.9;margin:0;color:var(--gold)}
+h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 8px;color:var(--gold)}
+.lead{font-size:20px;max-width:65ch;margin:8px 0 0}
+.cols{display:grid;grid-template-columns:260px 1fr;gap:28px}
+.facts{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px;align-content:start}
+.facts div{display:grid}.facts small{color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:12px}
+.copy{min-width:0;max-width:65ch}.copy ul{padding-left:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.grid a{display:block;border-radius:10px;overflow:hidden;border:1px solid var(--line)}.grid img{display:block;width:100%;height:auto}
+video{width:100%;max-width:100%;border-radius:12px;border:1px solid var(--line)}
+a{color:var(--gold)}
+@media (max-width:700px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<header><h1>Burgwacht</h1><p class="lead">A colorful 3D tower defense with an economy twist, a hero you can command and five handcrafted maps. Free to play in the browser on desktop and mobile.</p></header>
+<video src="trailer-en-1280x720.mp4" poster="cover-1920x1080.png" controls muted playsinline></video>
+<section class="cols">
+  <aside class="facts">
+    <div><small>Developer</small>{{NAME}}, Austria</div>
+    <div><small>Release</small>{{RELEASE}}</div>
+    <div><small>Platforms</small>Web (desktop, mobile)</div>
+    <div><small>Play</small><a href="{{PLAY}}">{{PLAY_LABEL}}</a></div>
+    <div><small>Languages</small>English, German</div>
+    <div><small>Price</small>Free · optional Royal Pack</div>
+    <div><small>Contact</small>{{EMAIL}}</div>
+  </aside>
+  <div class="copy">
+    <h2>About</h2>
+    <p>Burgwacht puts you in charge of a small medieval realm. Enemies march along the road towards your castle, and you decide what to build on the land around it. Towers stop the enemies, but the economy decides how many you can afford: sawmills earn more next to forests, gold mines next to rocks, and rare crystal veins power tesla towers and spells.</p>
+    <h2>Features</h2>
+    <ul>
+      <li>Five maps with their own look: green vale, autumn woods, desert pass, river valley and a volcanic ash mountain</li>
+      <li>Endless mode for high scores</li>
+      <li>A hero you can move around, with level-ups and a whirlwind attack</li>
+      <li>Barracks whose soldiers block the road, with an adjustable rally point</li>
+      <li>Boss waves with trolls and fire-breathing dragons, plus meteor and blizzard spells</li>
+      <li>Gems, permanent upgrades, daily bonus and 11 achievements</li>
+    </ul>
+    <h2>Use of material</h2>
+    <p>Screenshots, trailer and logo may be used freely for coverage, videos and streams about Burgwacht. Monetized videos are welcome.</p>
+  </div>
+</section>
+<section><h2>Screenshots</h2><div class="grid">{{IMAGES}}</div></section>
+</main></body>
+</html>
