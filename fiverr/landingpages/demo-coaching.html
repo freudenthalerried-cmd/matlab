@@ -27,6 +27,9 @@ h1 i{color:var(--green)}
 .portrait:after{content:"";position:absolute;left:50%;bottom:-10%;width:78%;height:52%;transform:translateX(-50%);border-radius:50% 50% 0 0;background:#e8dccbcc}
 .quote{position:absolute;left:-28px;bottom:40px;background:#fff;padding:18px 22px;border-radius:16px;box-shadow:0 20px 40px #0000001a;font-size:15px;max-width:240px;z-index:2}
 .hero-r{position:relative}
+.portrait canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.portrait.h3d-live{background:radial-gradient(circle at 50% 38%,#f6f0e7 0%,#e4d8c6 70%,#d3c4ad 100%)}
+.portrait.h3d-live:before,.portrait.h3d-live:after{display:none}
 .logos{display:flex;justify-content:space-between;color:#a79f92;font-family:"Segoe UI",system-ui,Arial,sans-serif;font-weight:700;letter-spacing:2px;font-size:14px;border-top:1px solid #ddd2c2;border-bottom:1px solid #ddd2c2;padding:22px 0}
 section{padding:88px 0}
 h2{font-size:38px;font-weight:400;margin-bottom:14px}
@@ -60,7 +63,7 @@ nav .btn{white-space:nowrap}
     <p>Ich begleite Führungskräfte und Selbstständige dabei, wieder Prioritäten zu setzen – ohne Burnout, ohne schlechtes Gewissen.</p>
     <a class="btn" href="#termin">Kostenloses Erstgespräch</a>&nbsp;&nbsp;<a class="btn line" href="#angebot">Programm ansehen</a>
   </div>
-  <div class="hero-r"><div class="portrait"></div><div class="quote">„Nach 8 Wochen hatte ich meine Abende zurück.“<br><small class="sans" style="color:#77736a">— Julia, Geschäftsführerin</small></div></div>
+  <div class="hero-r"><div class="portrait"><canvas class="h3d" data-scene="stones" aria-label="3D-Modell: balancierte Steine mit goldenen Ringen. Ziehen zum Drehen."></canvas></div><div class="quote">„Nach 8 Wochen hatte ich meine Abende zurück.“<br><small class="sans" style="color:#77736a">— Julia, Geschäftsführerin</small></div></div>
 </div>
 
 <div class="logos"><span>500+ KLIENTEN</span><span>ZERTIFIZIERT</span><span>ONLINE & VOR ORT</span><span>SEIT 2014</span><span>4,9 ★ BEWERTUNG</span></div>
@@ -82,6 +85,10 @@ nav .btn{white-space:nowrap}
 
 <section id="termin"><div class="wrap"><div class="center"><h2>Lass uns sprechen.</h2><p>20 Minuten, kostenlos, unverbindlich. Wir finden heraus, ob Coaching dir jetzt hilft.</p><br><a class="btn" href="#">Termin wählen →</a></div></div></section>
 <footer class="sans">Demo-Landingpage · Design: Pixelwerkstatt · fiktive Person</footer>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="hero3d.js"></script>
 <script src="fx.js" defer></script>
 </body>
 </html>
