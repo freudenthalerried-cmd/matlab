@@ -121,8 +121,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
 
 /* Bildschirme */
 .screen{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(30,16,60,.35),rgba(12,6,26,.82));
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px;overflow:auto}
-.box{text-align:center;max-width:560px;width:100%}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px;overflow-x:hidden;overflow-y:auto}
+.box{text-align:center;max-width:560px;width:100%;min-width:0}
 .logo{padding:0 .1em;font-family:var(--f-display);font-size:clamp(54px,13vw,112px);line-height:.9;margin:0;letter-spacing:.01em;
   background:linear-gradient(#fff6c4 10%,#ffc93c 45%,#e8650c 90%);-webkit-background-clip:text;background-clip:text;color:transparent;
   -webkit-text-stroke:3px #3a1606;filter:drop-shadow(0 6px 0 #3a1606) drop-shadow(0 14px 22px rgba(0,0,0,.5));animation:float 3s ease-in-out infinite}
@@ -165,6 +165,21 @@ html,body{height:100%;margin:0;overflow:hidden;background:#1d3a1a;color:var(--cr
   .spell{width:48px;height:48px}.spell svg{width:28px;height:28px}
   #wavebtn{height:54px;min-width:104px;font-size:16px}#dock{padding-top:4px}
   #panel{bottom:calc(var(--dockTop,104px) + 10px)}
+}
+/* Hochformat: alle Baukarten in zwei Reihen statt seitlich scrollen */
+@media (max-width:720px) and (orientation:portrait){
+  #cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px;width:100%;margin:0;overflow:visible;padding:6px 0 4px}
+  .card{width:auto;min-width:0}.card canvas{width:100%;max-width:58px;height:40px}
+}
+/* Querformat am Handy: Zauber und Wellenknopf über der Leiste, Karten nutzen die ganze Breite */
+@media (max-height:500px) and (orientation:landscape){
+  .spells{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(var(--dockTop,104px) + 8px)}
+  .spell{width:46px;height:46px}.spell svg{width:26px;height:26px}
+  #wavebtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--dockTop,104px) + 8px);height:auto;min-height:46px;min-width:104px;max-width:150px;padding:6px 10px;font-size:16px}
+  #wavebtn small{font-size:11px;white-space:normal}
+  #cards{margin:0 auto}
+  .card{width:min(66px,calc((100vw - 74px) / 8));padding:2px 2px 4px}.card canvas{width:100%;max-width:52px;height:30px}.card .nm{font-size:10px;min-height:0;white-space:nowrap}.card .cs{font-size:10px}.card .cs .ic{width:11px;height:11px}.card .lk{bottom:26px;font-size:9px}
+  #dock{padding-top:4px}#panel{bottom:calc(var(--dockTop,104px) + 62px)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 {{THEME_CSS}}

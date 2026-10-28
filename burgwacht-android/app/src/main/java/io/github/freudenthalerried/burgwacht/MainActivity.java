@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        // Systemschriftgröße nicht übernehmen, sonst läuft das Layout über den Bildschirmrand
+        s.setTextZoom(100);
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
 

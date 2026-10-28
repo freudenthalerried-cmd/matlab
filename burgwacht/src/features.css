@@ -29,7 +29,9 @@
 #camp .map.vulkan{background:linear-gradient(#ff6a3a,#5a1a12)}
 #camp .map.endless{background:linear-gradient(#8a6ae8,#3a2280)}
 #camp .map .rec{font-weight:900;font-size:13px}
-#camp .maps{grid-template-columns:repeat(3,1fr)}
+#camp .maps{grid-template-columns:repeat(3,minmax(0,1fr))}
+#camp .map{min-width:0}#camp .map small{overflow-wrap:anywhere}
+@media (max-width:400px){#camp .maps{gap:6px}#camp .map{padding:12px 4px 8px}#camp .map b{font-size:16px}#camp .map small{font-size:10.5px}#camp .map .st{width:16px;height:16px}}
 .mtop{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-bottom:12px}
 .gems{display:flex;align-items:center;gap:6px;height:40px;padding:0 14px 0 8px;border-radius:20px;background:linear-gradient(#3a2862,#251842);border:3px solid #120a22;font-family:var(--f-display);font-size:20px}
 .gems .ic,.big-g .ic,.endg .ic{width:24px;height:24px}
