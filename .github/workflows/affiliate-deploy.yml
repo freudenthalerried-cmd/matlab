@@ -24,4 +24,4 @@ jobs:
           password: ${{ secrets.ALLINKL_FTP_PASS }}
           protocol: ftps
           local-dir: affiliate/dist/
-          server-dir: affiliate/
+          server-dir: ./              # FTP-Benutzer zeigt im KAS direkt auf /affiliate/

@@ -20,7 +20,7 @@ Inhalte stehen in `niches/*.json` → `python3 affiliate/build.py` → `affiliat
 
 1. **`config.json`**: Amazon-Tracking-ID (`xxx-21`) und Impressum-Adresse eintragen.
 2. **All-Inkl**: pikko.at im Members-Bereich bestellen → im KAS unter *Domain → Neue Domain anlegen* auf `/affiliate/` zeigen lassen → SSL (Let's Encrypt) aktivieren.
-3. **FTP-Zugang** im KAS anlegen → in GitHub unter *Settings → Secrets → Actions*: `ALLINKL_FTP_HOST`, `ALLINKL_FTP_USER`, `ALLINKL_FTP_PASS`. Danach wird jeder Merge auf `main` automatisch hochgeladen.
+3. **FTP-Zugang** im KAS anlegen, Verzeichnis **`/affiliate/`** (Zugriff nur auf diesen Ordner) → in GitHub unter *Settings → Secrets → Actions*: `ALLINKL_FTP_HOST`, `ALLINKL_FTP_USER`, `ALLINKL_FTP_PASS`. Danach wird jeder Merge auf `main` automatisch hochgeladen.
 4. **Google Search Console** und **Bing Webmaster Tools**: pikko.at hinzufügen, `https://pikko.at/sitemap.xml` einreichen (enthält alle 51 Seiten). Bing ist wichtig, weil ChatGPT-Suche und Copilot auf den Bing-Index zugreifen (GEO).
 5. pikko.at im **Amazon PartnerNet** eintragen.
 
