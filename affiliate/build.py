@@ -2,7 +2,9 @@
 """Baut alle Vergleichsseiten aus niches/*.json nach dist/<slug>/.
 
 Aufruf:  python3 affiliate/build.py
-Jede Nische wird ein eigenständiger Ordner, der 1:1 auf eine Domain zeigt.
+config.json "modus":
+  "ordner"  – eine Dachdomain (hauptdomain), jede Nische unter /<slug>/, Startseite + Sitemap im Hauptverzeichnis
+  "domains" – jede Nische ist ein eigenständiger Ordner, der 1:1 auf ihre eigene Domain zeigt
 """
 import html
 import json
@@ -17,9 +19,20 @@ DIST = ROOT / "dist"
 CFG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
 TODAY = date.today().isoformat()
 DISCLOSURE = "Als Amazon-Partner verdiene ich an qualifizierten Verkäufen."
+ORDNER = CFG.get("modus", "domains") == "ordner"
+HAUPT = CFG.get("hauptdomain", "")
+HOME = {"slug": "", "marke": CFG.get("marke", HAUPT), "icon": CFG.get("icon", "🧭"), "farbe": CFG.get("farbe", "#6d28d9"),
+        "thema": "Technik, Haus & Garten"}
 CASHBACK = {s["id"]: s for s in json.loads((ROOT / "cashback" / "shops.json").read_text(encoding="utf-8")) if s["aktiv"]}
 
 e = html.escape
+
+
+def base(n):
+    """Absolute Adresse einer Nische (bzw. der Startseite) ohne Schrägstrich am Ende."""
+    if ORDNER:
+        return f"https://{HAUPT}/{n['slug']}" if n["slug"] else f"https://{HAUPT}"
+    return f"https://{n['domain']}"
 
 
 def amazon_link(query):
@@ -34,15 +47,21 @@ def cta(query, label="Aktuellen Preis bei Amazon prüfen*"):
 def cashback_cta(p):
     """Zweiter Button zum Hersteller mit Cashback – nur wenn Portal-Domain gesetzt und Shop freigeschaltet."""
     s = CASHBACK.get(p.get("cashback_shop", ""))
-    if not s or not CFG.get("cashback_domain"):
+    portal = (f"https://{HAUPT}/cashback" if CFG.get("cashback_aktiv") else "") if ORDNER \
+        else (f"https://{CFG['cashback_domain']}" if CFG.get("cashback_domain") else "")
+    if not s or not portal:
         return ""
     pct = round(s["provision_prozent"] * CFG.get("cashback_anteil", 0.5), 1)
-    return (f'<a class="btn alt" href="https://{CFG["cashback_domain"]}/go.php?shop={e(s["id"])}" '
+    return (f'<a class="btn alt" href="{portal}/go.php?shop={e(s["id"])}" '
             f'rel="sponsored nofollow noopener" target="_blank">Beim Hersteller mit {pct:g} % Cashback*</a>')
 
 
-def page(n, title, desc, path, body, schema=None):
-    url = f"https://{n['domain']}/{path}"
+def page(n, title, desc, path, body, schema=None, nav=None):
+    url = f"{base(n)}/{path}"
+    if nav is None:
+        nav = (('<a href="../">Alle Vergleiche</a>' if ORDNER else '')
+               + '<a href="./#vergleich">Vergleich</a><a href="./#rechner">Rechner</a>'
+               + '<a href="./#ratgeber">Ratgeber</a><a href="checkliste.html">Checkliste</a>')
     ld = "".join(f'<script type="application/ld+json">{json.dumps(s, ensure_ascii=False)}</script>'
                  for s in (schema or []))
     return f"""<!DOCTYPE html>
@@ -65,7 +84,7 @@ def page(n, title, desc, path, body, schema=None):
 <body>
 <header class="top"><div class="wrap">
 <a class="logo" href="./">{n['icon']} {e(n['marke'])}</a>
-<nav><a href="./#vergleich">Vergleich</a><a href="./#rechner">Rechner</a><a href="./#ratgeber">Ratgeber</a><a href="checkliste.html">Checkliste</a></nav>
+<nav>{nav}</nav>
 </div></header>
 <p class="disclosure wrap">*Werbung/Affiliate-Links: {DISCLOSURE} Für dich ändert sich der Preis nicht.</p>
 <main class="wrap">
@@ -112,7 +131,7 @@ def index(n):
     guide = "".join(f"<h3>{e(g['h'])}</h3>" + "".join(f"<p>{e(t)}</p>" for t in g["t"].split("\n\n"))
                     for g in n["ratgeber"])
     faq = "".join(f"<details><summary>{e(q['f'])}</summary><p>{e(q['a'])}</p></details>" for q in n["faq"])
-    related = "".join(f"<li><a href='https://{e(d)}/'>{e(t)}</a></li>" for d, t in n.get("_verwandt", []))
+    related = "".join(f"<li><a href='{e(h)}'>{e(t)}</a></li>" for h, t in n.get("_verwandt", []))
 
     body = f"""
 <section class="hero">
@@ -225,11 +244,11 @@ def marketing(niches):
             for k in ADS_NEGATIVE:
                 ads.append([camp, grp, k, "Negative Broad", "", "", "", "", ""])
             ads.append([camp, grp, "", "", " | ".join(ad["headlines"]), " | ".join(ad["descriptions"]),
-                        f"https://{n['domain']}/", "Vergleich", "Rechner"])
+                        f"{base(n)}/", "Vergleich", "Rechner"])
         for a in [{"slug": "", "h1": n["h1"], "beschreibung": n["beschreibung"], "pin": n["titel"]}] + n["_artikel"]:
             name = a["slug"] or "index"
-            pins.append([a.get("pin", a["h1"]), f"https://{n['domain']}/pins/{name}.jpg", n["marke"], "",
-                         a["beschreibung"], f"https://{n['domain']}/{a['slug'] + '.html' if a['slug'] else ''}", "",
+            pins.append([a.get("pin", a["h1"]), f"{base(n)}/pins/{name}.jpg", n["marke"], "",
+                         a["beschreibung"], f"{base(n)}/{a['slug'] + '.html' if a['slug'] else ''}", "",
                          n["thema"]])
     import csv
     with open(out / "google-ads-editor.csv", "w", newline="", encoding="utf-8") as f:
@@ -241,7 +260,7 @@ def marketing(niches):
         w = csv.writer(f)
         w.writerow(["Title", "Media URL", "Pinterest board", "Thumbnail", "Description", "Link", "Publish date", "Keywords"])
         w.writerows(pins)
-    json.dump([{"slug": n["slug"], "domain": n["domain"], "farbe": n["farbe"], "icon": n["icon"],
+    json.dump([{"slug": n["slug"], "domain": base(n).removeprefix("https://"), "farbe": n["farbe"], "icon": n["icon"],
                 "pins": [{"datei": "index", "titel": n["h1"], "sub": n["kurzantwort"][:110]}]
                 + [{"datei": a["slug"], "titel": a["h1"], "sub": a["kurzantwort"][:110]} for a in n["_artikel"]]}
                for n in niches], open(out / "pins.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -258,11 +277,76 @@ def llms(n):
     lines += [f"- {p['name']}: ideal für {p['fuer']}. " + "; ".join(f"{c}: {v}" for c, v in zip(n['spalten'], p['specs']))
               for p in n["produkte"]]
     lines += ["", "## Häufige Fragen"] + [f"- {q['f']} {q['a']}" for q in n["faq"]]
-    lines += ["", "## Seiten", f"- [Vergleich & Rechner](https://{n['domain']}/)"]
-    lines += [f"- [{a['h1']}](https://{n['domain']}/{a['slug']}.html): {a['kurzantwort']}" for a in n["_artikel"]]
-    lines += [
-              f"- [Kaufcheckliste](https://{n['domain']}/checkliste.html)"]
+    lines += ["", "## Seiten", f"- [Vergleich & Rechner]({base(n)}/)"]
+    lines += [f"- [{a['h1']}]({base(n)}/{a['slug']}.html): {a['kurzantwort']}" for a in n["_artikel"]]
+    lines += [f"- [Kaufcheckliste]({base(n)}/checkliste.html)"]
     return "\n".join(lines) + "\n"
+
+
+def seiten(n):
+    return [f"{base(n)}/{p}" for p in ["", "checkliste.html"] + [a["slug"] + ".html" for a in n["_artikel"]]]
+
+
+def sitemap(urls):
+    return ("<?xml version='1.0' encoding='UTF-8'?>\n<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>"
+            + "".join(f"<url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>" for u in urls) + "</urlset>\n")
+
+
+def startseite(niches):
+    """Ordner-Modus: Startseite der Dachdomain mit allen Vergleichen, dazu Sitemap, robots.txt, llms.txt, .htaccess."""
+    m = HOME["marke"]
+    cards = "".join(f"""
+<article class="card hub" style="--accent:{n['farbe']}">
+<h3><span class="ico">{n['icon']}</span> {e(n['thema'])}</h3>
+<p>{e(n['kurzantwort'])}</p>
+<p class="meta">{len(n['produkte'])} Modelle · {e(n['rechner']['titel'])} · Checkliste{f" · {len(n['_artikel'])} Ratgeber" if n['_artikel'] else ''}</p>
+<a class="btn" href="{n['slug']}/">Zum Vergleich</a>
+</article>""" for n in niches)
+    faq = [
+        (f"Wie verdient {m} Geld?", f"Über Partnerlinks: Kaufst du über einen mit * markierten Link, bekommen wir eine kleine Provision. "
+                                    f"{DISCLOSURE} Für dich ändert sich der Preis nicht, und die Reihenfolge im Vergleich ist nicht gekauft."),
+        ("Warum stehen keine Preise dabei?", "Preise ändern sich bei Technik oft täglich. Statt veralteter Zahlen führt jeder Button direkt zum aktuellen Preis."),
+        ("Wie aktuell sind die Vergleiche?", f"Die Modelldaten werden regelmäßig geprüft. Aktueller Stand: {CFG['stand']}."),
+    ]
+    body = f"""
+<section class="hero">
+<h1>Ehrliche Kaufvergleiche für Technik, Haus &amp; Garten</h1>
+<p class="lead">{e(m)} vergleicht Geräte, bei denen ein Fehlkauf richtig ärgert – vom Balkonkraftwerk-Speicher bis zum Mähroboter. Mit Rechnern, Checklisten und klaren Empfehlungen statt Werbesprech.</p>
+<div class="answer"><strong>So arbeiten wir:</strong> Herstellerangaben prüfen, Modelle nach Einsatzzweck sortieren, Vor- und Nachteile offen nennen. Keine gekauften Platzierungen, keine Cookies, keine Tracker.</div>
+<p class="meta">{len(niches)} Vergleiche · Stand: {e(CFG['stand'])}</p>
+</section>
+<section id="vergleiche"><h2>Alle Vergleiche</h2><div class="cards">{cards}</div></section>
+<section id="faq"><h2>Häufige Fragen</h2>{''.join(f"<details><summary>{e(f)}</summary><p>{e(a)}</p></details>" for f, a in faq)}</section>
+"""
+    schema = [
+        {"@context": "https://schema.org", "@type": "WebSite", "name": m, "url": base(HOME) + "/", "inLanguage": "de"},
+        {"@context": "https://schema.org", "@type": "ItemList", "name": f"Vergleiche auf {m}",
+         "itemListElement": [{"@type": "ListItem", "position": i, "name": n["titel"], "url": base(n) + "/"}
+                             for i, n in enumerate(niches, 1)]},
+        {"@context": "https://schema.org", "@type": "FAQPage",
+         "mainEntity": [{"@type": "Question", "name": f, "acceptedAnswer": {"@type": "Answer", "text": a}} for f, a in faq]},
+    ]
+    nav = '<a href="#vergleiche">Vergleiche</a><a href="#faq">Fragen</a>' + ('<a href="cashback/">Cashback</a>' if CFG.get("cashback_aktiv") else '')
+    urls = [base(HOME) + "/"] + [u for n in niches for u in seiten(n)]
+    files = {
+        "index.html": page(HOME, f"{m} – ehrliche Kaufvergleiche für Technik, Haus & Garten",
+                           f"Unabhängige Vergleiche mit Rechnern und Checklisten: {', '.join(n['thema'] for n in niches[:4])} und mehr.",
+                           "", body, schema, nav),
+        "impressum.html": impressum(HOME),
+        "datenschutz.html": datenschutz(HOME),
+        "robots.txt": f"User-agent: *\nAllow: /\nDisallow: /cashback/\nSitemap: {base(HOME)}/sitemap.xml\n",
+        "sitemap.xml": sitemap(urls),
+        "llms.txt": "\n".join([f"# {m}", "", "> Unabhängige Kaufvergleiche mit Rechnern und Checklisten (Österreich/Deutschland).", "",
+                               f"Stand {CFG['stand']}. Partnerlinks sind gekennzeichnet.", "", "## Vergleiche"]
+                              + [f"- [{n['titel']}]({base(n)}/): {n['kurzantwort']} (Details: {base(n)}/llms.txt)" for n in niches]) + "\n",
+        ".htaccess": ("RewriteEngine On\nRewriteCond %{HTTPS} off [OR]\nRewriteCond %{HTTP_HOST} ^www\\. [NC]\n"
+                      f"RewriteRule ^ https://{HAUPT}%{{REQUEST_URI}} [L,R=301]\nOptions -Indexes\n"),
+    }
+    for name, content in files.items():
+        (DIST / name).write_text(content, encoding="utf-8")
+    for a in ("style.css", "app.js"):
+        shutil.copy(ROOT / "assets" / a, DIST / a)
+    print(f"✓ Startseite                 → {base(HOME)}/  ({len(niches)} Vergleiche, Sitemap {len(urls)} URLs)")
 
 
 def build():
@@ -271,7 +355,8 @@ def build():
         shutil.rmtree(DIST)
     warn = "BITTE" in CFG["betreiber"]["adresse"] or CFG["amazon_tag"].startswith("DEIN")
     for n in niches:
-        n["_verwandt"] = [(o["domain"], o["titel"]) for o in niches if o is not n][:4]
+        n["_verwandt"] = [(f"../{o['slug']}/" if ORDNER else f"https://{o['domain']}/", o["titel"])
+                          for o in niches if o is not n][:4]
         extra = ROOT / "artikel" / f"{n['slug']}.json"
         x = json.loads(extra.read_text(encoding="utf-8")) if extra.exists() else {}
         n["_artikel"], n["_ads"] = x.get("artikel", []), x.get("ads")
@@ -283,12 +368,10 @@ def build():
             "impressum.html": impressum(n),
             "datenschutz.html": datenschutz(n),
             "llms.txt": llms(n),
-            "robots.txt": f"User-agent: *\nAllow: /\nSitemap: https://{n['domain']}/sitemap.xml\n",
-            "sitemap.xml": "<?xml version='1.0' encoding='UTF-8'?>\n<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>"
-                           + "".join(f"<url><loc>https://{n['domain']}/{p}</loc><lastmod>{TODAY}</lastmod></url>"
-                                     for p in ["", "checkliste.html"] + [a["slug"] + ".html" for a in n["_artikel"]])
-                           + "</urlset>\n",
         }
+        if not ORDNER:
+            files["robots.txt"] = f"User-agent: *\nAllow: /\nSitemap: {base(n)}/sitemap.xml\n"
+            files["sitemap.xml"] = sitemap(seiten(n))
         files.update({a["slug"] + ".html": artikel(n, a) for a in n["_artikel"]})
         for name, content in files.items():
             (out / name).write_text(content, encoding="utf-8")
@@ -297,7 +380,9 @@ def build():
         pins = ROOT / "pins" / n["slug"]
         if pins.exists():
             shutil.copytree(pins, out / "pins")
-        print(f"✓ {n['slug']:<26} → {n['domain']}  ({len(n['_artikel'])} Artikel)")
+        print(f"✓ {n['slug']:<26} → {base(n)}/  ({len(n['_artikel'])} Artikel)")
+    if ORDNER:
+        startseite(niches)
     marketing(niches)
     out = DIST / "cashback"
     shutil.copytree(ROOT / "cashback", out, ignore=shutil.ignore_patterns("config.php", "extra.css", "*.log", "*.sqlite"))

@@ -1,7 +1,7 @@
 [
  {
   "slug": "laser-tv",
-  "domain": "laser-tv-vergleich.at",
+  "domain": "pikko.at/laser-tv",
   "farbe": "#5b3cc4",
   "icon": "📽️",
   "pins": [
@@ -29,7 +29,7 @@
  },
  {
   "slug": "balkonkraftwerk-speicher",
-  "domain": "balkonkraftwerk-speicher-vergleich.at",
+  "domain": "pikko.at/balkonkraftwerk-speicher",
   "farbe": "#1f8a4c",
   "icon": "🔋",
   "pins": [
@@ -57,7 +57,7 @@
  },
  {
   "slug": "maehroboter-ohne-draht",
-  "domain": "maehroboter-ohne-draht.at",
+  "domain": "pikko.at/maehroboter-ohne-draht",
   "farbe": "#3d8b1f",
   "icon": "🤖",
   "pins": [
@@ -85,7 +85,7 @@
  },
  {
   "slug": "poolroboter",
-  "domain": "poolroboter-vergleich.at",
+  "domain": "pikko.at/poolroboter",
   "farbe": "#0a7fb5",
   "icon": "🏊",
   "pins": [
@@ -113,7 +113,7 @@
  },
  {
   "slug": "infrarotkabine",
-  "domain": "infrarotkabine-vergleich.at",
+  "domain": "pikko.at/infrarotkabine",
   "farbe": "#c4501a",
   "icon": "♨️",
   "pins": [
@@ -141,7 +141,7 @@
  },
  {
   "slug": "pelletgrill",
-  "domain": "pelletgrill-vergleich.at",
+  "domain": "pikko.at/pelletgrill",
   "farbe": "#a3341c",
   "icon": "🔥",
   "pins": [
@@ -169,7 +169,7 @@
  },
  {
   "slug": "powerstation",
-  "domain": "powerstation-vergleich.at",
+  "domain": "pikko.at/powerstation",
   "farbe": "#d08700",
   "icon": "⚡",
   "pins": [
@@ -197,7 +197,7 @@
  },
  {
   "slug": "3d-drucker",
-  "domain": "3d-drucker-vergleich.at",
+  "domain": "pikko.at/3d-drucker",
   "farbe": "#00897b",
   "icon": "🖨️",
   "pins": [
@@ -225,7 +225,7 @@
  },
  {
   "slug": "massagesessel",
-  "domain": "massagesessel-vergleich.at",
+  "domain": "pikko.at/massagesessel",
   "farbe": "#7a4b2a",
   "icon": "💺",
   "pins": [
@@ -253,7 +253,7 @@
  },
  {
   "slug": "klimaanlage",
-  "domain": "klimaanlage-ohne-installateur.at",
+  "domain": "pikko.at/klimaanlage",
   "farbe": "#0f6fa8",
   "icon": "❄️",
   "pins": [

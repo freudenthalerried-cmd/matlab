@@ -28,5 +28,5 @@ head('Anmelden');
   <label>Passwort<input type="password" name="passwort" required autocomplete="current-password"></label>
   <button class="btn">Anmelden</button>
 </form>
-<p><a href="/passwort.php">Passwort vergessen?</a> · <a href="/register.php?next=<?= h(urlencode($next)) ?>">Neues Konto anlegen</a></p>
+<p><a href="<?= url('/passwort.php') ?>">Passwort vergessen?</a> · <a href="<?= url('/register.php?next=') ?><?= h(urlencode($next)) ?>">Neues Konto anlegen</a></p>
 <?php foot();

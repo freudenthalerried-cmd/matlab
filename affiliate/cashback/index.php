@@ -22,7 +22,7 @@ head(cfg('site_name') . ': Geld zurück bei Technik, Garten & Energie',
     <p class="fuer"><?= h($s['kategorie']) ?></p>
     <p><strong>Spartipp:</strong> <?= h($s['spartipp']) ?></p>
     <?php if ($s['vergleich']): ?><p><a href="<?= h($s['vergleich']) ?>">Unabhängigen Vergleich ansehen →</a></p><?php endif ?>
-    <a class="btn" href="/go.php?shop=<?= h(urlencode($s['id'])) ?>" rel="nofollow">Zum Shop mit Cashback</a>
+    <a class="btn" href="<?= url('/go.php?shop=') ?><?= h(urlencode($s['id'])) ?>" rel="nofollow">Zum Shop mit Cashback</a>
   </article>
 <?php endforeach ?>
 </div></section>
@@ -44,5 +44,5 @@ head(cfg('site_name') . ': Geld zurück bei Technik, Garten & Energie',
 <details><summary>Warum wurde mein Einkauf nicht erfasst?</summary><p>Häufige Ursachen: Werbeblocker, abgelehnte Cookies im Shop, ein Gutscheincode von einer anderen Seite oder ein Einkauf in der Shop-App. Starte den Einkauf immer frisch über unseren Link.</p></details>
 <details><summary>Gibt es Cashback auch für Amazon?</summary><p>Nein. Amazon verbietet die Weitergabe von Provisionen. Auf unseren Vergleichsseiten findest du Amazon-Links ohne Cashback und Hersteller-Links mit Cashback.</p></details>
 </section>
-<script src="/app.js" defer></script>
+<script src="<?= url('/app.js') ?>" defer></script>
 <?php foot();

@@ -5,9 +5,10 @@ return [
     'db_user' => 'DBUSER',
     'db_pass' => 'DBPASS',
 
-    'site_url'  => 'https://cashback-domain.at',
-    'site_name' => 'SparKompass Cashback',
-    'mail_from' => 'noreply@cashback-domain.at',
+    'site_url'  => 'https://pikko.at/cashback',   // ohne Schrägstrich am Ende
+    'basis'     => '/cashback',                   // Unterordner auf der Domain; '' bei eigener Domain
+    'site_name' => 'Pikko Cashback',
+    'mail_from' => 'noreply@pikko.at',
     'admin_email' => 'freudenthaler.ried@gmail.com',
     'mail_log'  => '',              // nur zum Testen: Pfad, statt Mails zu senden
 

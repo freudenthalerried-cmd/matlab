@@ -4,7 +4,7 @@ $t = (string)($_GET['t'] ?? '');
 $u = $t ? q('SELECT id FROM users WHERE verify_hash = ?', [hash('sha256', $t)])->fetch() : null;
 if (!$u) {
     head('Link ungültig');
-    echo '<h1>Link ungültig</h1><p>Der Bestätigungslink ist ungültig oder wurde bereits verwendet. <a href="/login.php">Zur Anmeldung</a></p>';
+    echo '<h1>Link ungültig</h1><p>Der Bestätigungslink ist ungültig oder wurde bereits verwendet. <a href="' . url('/login.php') . '">Zur Anmeldung</a></p>';
     foot();
     exit;
 }

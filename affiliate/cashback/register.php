@@ -40,8 +40,8 @@ head('Kostenlos registrieren – Cashback sichern', 'Kostenloses Cashback-Konto 
   <?= csrf_field() ?><input type="hidden" name="next" value="<?= h($next) ?>">
   <label>E-Mail<input type="email" name="email" required autocomplete="email" value="<?= h($_POST['email'] ?? '') ?>"></label>
   <label>Passwort (mind. 10 Zeichen)<input type="password" name="passwort" required minlength="10" autocomplete="new-password"></label>
-  <label class="check"><input type="checkbox" name="agb" value="1" required> Ich akzeptiere die <a href="/teilnahme.php" target="_blank">Teilnahmebedingungen</a> und habe die <a href="/datenschutz.php" target="_blank">Datenschutzerklärung</a> gelesen.</label>
+  <label class="check"><input type="checkbox" name="agb" value="1" required> Ich akzeptiere die <a href="<?= url('/teilnahme.php') ?>" target="_blank">Teilnahmebedingungen</a> und habe die <a href="<?= url('/datenschutz.php') ?>" target="_blank">Datenschutzerklärung</a> gelesen.</label>
   <button class="btn">Konto anlegen</button>
 </form>
-<p>Schon registriert? <a href="/login.php?next=<?= h(urlencode($next)) ?>">Anmelden</a></p>
+<p>Schon registriert? <a href="<?= url('/login.php?next=') ?><?= h(urlencode($next)) ?>">Anmelden</a></p>
 <?php foot();

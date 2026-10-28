@@ -1,4 +1,9 @@
 {
+  "modus": "ordner",
+  "hauptdomain": "pikko.at",
+  "marke": "Pikko",
+  "icon": "🧭",
+  "farbe": "#6d28d9",
   "amazon_tag": "eprotect-21",
   "amazon_domain": "www.amazon.de",
   "stand": "Oktober 2026",
@@ -11,5 +16,6 @@
   },
   "ftp_basis": "/affiliate",
   "cashback_domain": "",
-  "cashback_anteil": 0.5
+  "cashback_anteil": 0.5,
+  "cashback_aktiv": false
 }

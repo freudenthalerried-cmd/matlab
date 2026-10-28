@@ -60,7 +60,7 @@ head('Mein Cashback-Konto');
 
 <h2>Meine Einkäufe</h2>
 <?php if (!$tx): ?>
-<p>Noch keine Einkäufe. Einkäufe erscheinen meist innerhalb von 24–48 Stunden. <a href="/#shops">Zu den Shops</a></p>
+<p>Noch keine Einkäufe. Einkäufe erscheinen meist innerhalb von 24–48 Stunden. <a href="<?= url('/#shops') ?>">Zu den Shops</a></p>
 <?php else: ?>
 <div class="tablewrap"><table><thead><tr><th>Datum</th><th>Shop</th><th>Einkauf</th><th>Cashback</th><th>Status</th></tr></thead><tbody>
 <?php foreach ($tx as $t): ?>

@@ -46,8 +46,18 @@ function euro(int $cents): string
     return number_format($cents / 100, 2, ',', '.') . ' €';
 }
 
+/** Pfad im Portal, z. B. url('/konto.php') → /cashback/konto.php, wenn 'basis' gesetzt ist. */
+function url(string $p): string
+{
+    $b = rtrim((string)cfg('basis'), '/');
+    return ($b === '' || $p === $b || str_starts_with($p, $b . '/')) ? $p : $b . $p;
+}
+
 function redirect(string $to): never
 {
+    if (str_starts_with($to, '/') && !str_starts_with($to, '//')) {
+        $to = url($to);
+    }
     header('Location: ' . $to);
     exit;
 }
@@ -167,20 +177,20 @@ function head(string $title, string $desc = ''): void
     echo '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($title) . '</title><meta name="description" content="' . h($desc) . '">'
-        . '<link rel="stylesheet" href="/style.css"></head><body>'
-        . '<header class="top"><div class="wrap"><a class="logo" href="/">💸 ' . $name . '</a><nav>'
-        . '<a href="/#shops">Shops</a><a href="/#rechner">Rechner</a>'
-        . ($u ? '<a href="/konto.php">Mein Konto</a>' . (is_admin($u) ? '<a href="/admin.php">Admin</a>' : '')
-              . '<a href="/logout.php">Abmelden</a>'
-              : '<a href="/login.php">Anmelden</a><a href="/register.php">Registrieren</a>')
+        . '<link rel="stylesheet" href="' . url('/style.css') . '"></head><body>'
+        . '<header class="top"><div class="wrap"><a class="logo" href="' . url('/') . '">💸 ' . $name . '</a><nav>'
+        . '<a href="' . url('/#shops') . '">Shops</a><a href="' . url('/#rechner') . '">Rechner</a>'
+        . ($u ? '<a href="' . url('/konto.php') . '">Mein Konto</a>' . (is_admin($u) ? '<a href="' . url('/admin.php') . '">Admin</a>' : '')
+              . '<a href="' . url('/logout.php') . '">Abmelden</a>'
+              : '<a href="' . url('/login.php') . '">Anmelden</a><a href="' . url('/register.php') . '">Registrieren</a>')
         . '</nav></div></header><main class="wrap">';
 }
 
 function foot(): void
 {
     echo '</main><footer><div class="wrap"><p>Cashback-Links sind Partnerlinks: Wir erhalten vom Shop eine Provision und geben '
-        . (int)(cfg('anteil') * 100) . ' % davon an dich weiter.</p><p><a href="/teilnahme.php">Teilnahmebedingungen</a> · '
-        . '<a href="/impressum.php">Impressum</a> · <a href="/datenschutz.php">Datenschutz</a></p></div></footer></body></html>';
+        . (int)(cfg('anteil') * 100) . ' % davon an dich weiter.</p><p><a href="' . url('/teilnahme.php') . '">Teilnahmebedingungen</a> · '
+        . '<a href="' . url('/impressum.php') . '">Impressum</a> · <a href="' . url('/datenschutz.php') . '">Datenschutz</a></p></div></footer></body></html>';
 }
 
 function msg(?string $text, string $type = 'ok'): string

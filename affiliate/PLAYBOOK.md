@@ -1,7 +1,9 @@
 # Affiliate-Netzwerk – Playbook
 
-10 Vergleichsportale, ein Generator, Auto-Deploy auf All-Inkl.
-Inhalte stehen in `niches/*.json` → `python3 affiliate/build.py` → `affiliate/dist/<slug>/`.
+10 Vergleiche unter einer Dachdomain (**pikko.at**), ein Generator, Auto-Deploy auf All-Inkl.
+Inhalte stehen in `niches/*.json` → `python3 affiliate/build.py` → `affiliate/dist/` (Startseite + `dist/<slug>/`).
+
+**Modus** in `config.json`: `"ordner"` (Standard seit 28.10.2026) = pikko.at/<slug>/, eine Sitemap, eine Domain. `"domains"` = jede Nische auf ihrer eigenen Domain (Feld `domain` in `niches/*.json`).
 
 ## 1. Ehrliche Einschätzung (bitte lesen)
 
@@ -10,17 +12,17 @@ Inhalte stehen in `niches/*.json` → `python3 affiliate/build.py` → `affiliat
 | 5–10 % Provision | Amazon.de zahlt je Kategorie unterschiedlich, Elektronik oft nur **1–3 %**, Haus & Garten etwas mehr. Aktuelle Gebührentabelle im PartnerNet prüfen. **Mehr Marge:** Hersteller-Programme (z. B. EcoFlow, Anker SOLIX, Bluetti, Zendure, Mähroboter-Marken) über Awin/Impact, dort oft 5–10 %. |
 | Einnahmen in 1 Woche | SEO braucht **3–6 Monate**, bis Google neue Domains rankt. Kurzfristig bringen nur Ads und Social Media Besucher. |
 | 100 € Ads pro Seite | Rechenbeispiel: 1 € pro Klick, 3 % kaufen, 3 % von 800 € = 24 € Provision → **33 € Kosten pro Verkauf = Verlust**. Ads lohnen sich nur bei günstigen Klicks oder Hersteller-Provisionen ab 5 %. |
-| 20 Domains | 10 Hauptdomains reichen. Die restlichen 10 nur als **.de-Variante mit 301-Weiterleitung** nutzen, keine doppelten Inhalte (das schadet dem SEO). |
+| 20 Domains | **Eine Dachdomain** bündelt alle Links und Artikel, statt 10 neue Domains einzeln aufzubauen. Einzelne Nischen-Domains nur später als **301-Weiterleitung** auf pikko.at/<slug>/, keine doppelten Inhalte. |
 
 **Amazon-Pflichten:** Jede Domain und jedes Social-Media-Profil im PartnerNet unter *Konto → Websites und mobile Apps* eintragen. Innerhalb von 180 Tagen 3 qualifizierte Verkäufe, sonst wird das Konto geschlossen. Keine festen Preise und keine Amazon-Produktbilder ohne API anzeigen (ist so umgesetzt). Keine Partnerlinks in E-Mails oder PDFs, daher ist das „E-Book“ als druckbare Checkliste ohne Links gebaut.
 
 ## 2. Deine To-dos (einmalig, ca. 1–2 Stunden)
 
 1. **`config.json`**: Amazon-Tracking-ID (`xxx-21`) und Impressum-Adresse eintragen.
-2. **All-Inkl KAS** → Domains bestellen (Namen in `niches/*.json` → `domain`, frei änderbar) → jede Domain auf den Ordner `/affiliate/<slug>/` zeigen lassen → SSL (Let's Encrypt) aktivieren.
+2. **All-Inkl**: pikko.at im Members-Bereich bestellen → im KAS unter *Domain → Neue Domain anlegen* auf `/affiliate/` zeigen lassen → SSL (Let's Encrypt) aktivieren.
 3. **FTP-Zugang** im KAS anlegen → in GitHub unter *Settings → Secrets → Actions*: `ALLINKL_FTP_HOST`, `ALLINKL_FTP_USER`, `ALLINKL_FTP_PASS`. Danach wird jeder Merge auf `main` automatisch hochgeladen.
-4. **Google Search Console** und **Bing Webmaster Tools**: Domains hinzufügen, `sitemap.xml` einreichen. Bing ist wichtig, weil ChatGPT-Suche und Copilot auf den Bing-Index zugreifen (GEO).
-5. Alle Domains im **Amazon PartnerNet** eintragen.
+4. **Google Search Console** und **Bing Webmaster Tools**: pikko.at hinzufügen, `https://pikko.at/sitemap.xml` einreichen (enthält alle 51 Seiten). Bing ist wichtig, weil ChatGPT-Suche und Copilot auf den Bing-Index zugreifen (GEO).
+5. pikko.at im **Amazon PartnerNet** eintragen.
 
 ## 3. SEO / GEO – bereits eingebaut
 
@@ -53,7 +55,7 @@ Pin-/Post-Vorlage:
 
 ## 6. Fertige Marketing-Dateien (`affiliate/marketing/`)
 
-- **`pinterest-bulk.csv`** – 40 Pins (4 pro Nische), Bilder liegen nach dem Deploy unter `https://<domain>/pins/*.jpg`. Pinterest → *Erstellen → Pins in großen Mengen erstellen* → CSV hochladen. Vorher die 10 Boards (Namen = Spalte „Pinterest board“) anlegen. Erst hochladen, wenn die Domains online sind.
+- **`pinterest-bulk.csv`** – 40 Pins (4 pro Nische), Bilder liegen nach dem Deploy unter `https://pikko.at/<slug>/pins/*.jpg`. Pinterest → *Erstellen → Pins in großen Mengen erstellen* → CSV hochladen. Vorher die 10 Boards (Namen = Spalte „Pinterest board“) anlegen. Erst hochladen, wenn die Domains online sind.
 - **`google-ads-editor.csv`** – Keywords (Phrase), ausschließende Keywords inkl. „amazon“, 8 Anzeigentitel und 3 Beschreibungen pro Nische, Längen geprüft. In Google Ads Editor importieren oder Titel/Beschreibungen in eine responsive Suchanzeige kopieren. Nur die 3 Test-Nischen aus Abschnitt 4 aktivieren.
 - Pins neu erzeugen nach Textänderungen: `python3 affiliate/build.py && node affiliate/pins.js && python3 affiliate/build.py`
 
@@ -68,11 +70,11 @@ Einzige Handarbeit: die Überweisung selbst. Automatische Auszahlungen habe ich 
 **Einrichten (einmalig, ca. 1 Stunde):**
 1. Bei **Awin** als Publisher registrieren (einmalige Kaution von 5 €, wird mit der ersten Auszahlung erstattet). Bei der Anmeldung „Cashback/Loyalty“ als Werbeform angeben und alle Domains eintragen.
 2. Bei den Partnerprogrammen der Hersteller bewerben (Kandidaten stehen in `cashback/shops.json`). **In den Programmbedingungen prüfen, ob „Cashback“ erlaubt ist.** Nur dann in `shops.json` `advertiser_id`, `provision_prozent` und `"aktiv": true` setzen.
-3. Eine der Reserve-Domains als Cashback-Domain nutzen, im KAS auf `/affiliate/cashback/` zeigen lassen und SSL aktivieren.
+3. Das Portal liegt automatisch unter `https://pikko.at/cashback/` (keine eigene Domain nötig).
 4. KAS → Datenbanken → neue MySQL-DB anlegen → in phpMyAdmin `schema.sql` ausführen.
-5. `config.sample.php` als `config.php` ausfüllen (DB-Daten, Awin Publisher-ID + API-Token, langen Zufallswert für `cron_key`, Adresse) und per FTP nach `/affiliate/cashback/` hochladen. Diese Datei liegt nie im Git.
-6. KAS → Tools → Cronjobs: täglich `https://<cashback-domain>/cron.php?key=<cron_key>`.
-7. In `config.json` `cashback_domain` setzen. Danach zeigen die Vergleichsseiten bei passenden Produkten zusätzlich den Button „Beim Hersteller mit X % Cashback“.
+5. `config.sample.php` als `config.php` ausfüllen (`site_url` = `https://pikko.at/cashback`, `basis` = `/cashback`, DB-Daten, Awin Publisher-ID + API-Token, langen Zufallswert für `cron_key`, Adresse) und per FTP nach `/affiliate/cashback/` hochladen. Diese Datei liegt nie im Git.
+6. KAS → Tools → Cronjobs: täglich `https://pikko.at/cashback/cron.php?key=<cron_key>`.
+7. In `config.json` `"cashback_aktiv": true` setzen (im Modus `domains` stattdessen `cashback_domain`). Danach zeigen die Vergleichsseiten bei passenden Produkten zusätzlich den Button „Beim Hersteller mit X % Cashback“.
 8. Mit `admin_email` registrieren: Dann erscheint im Menü „Admin“.
 
 **Ehrlich:**
