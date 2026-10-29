@@ -3767,19 +3767,25 @@ const KEY_ALT = ['apikey', 'fc-apikey'], KEY_BAD = 'wortreise_bad_key';
 function apiKey(){
   try{
     const own = (localStorage.getItem(KEY_STORE) || '').trim(); if(own) return own;
-    const bad = localStorage.getItem(KEY_BAD) || '';
-    for(const n of KEY_ALT){ const v = (localStorage.getItem(n) || '').trim(); if(/^sk-ant-/.test(v) && v.slice(-8)!==bad) return v; }
+    const bad = (localStorage.getItem(KEY_BAD) || '').split(',');
+    for(const n of KEY_ALT){ const v = (localStorage.getItem(n) || '').trim(); if(/^sk-ant-/.test(v) && !bad.includes(v.slice(-8))) return v; }
   }catch(e){}
   return '';
 }
 // abgelehnten Schlüssel vergessen: den eigenen löschen, einen fremden nur überspringen (dort nichts kaputt machen)
-function dropKey(){ try{ const k = apiKey(); localStorage.removeItem(KEY_STORE); if(k) localStorage.setItem(KEY_BAD, k.slice(-8)); }catch(e){} }
-// Schlüssel per Link übernehmen (#claude=… oder #key=…): nur auf diesem Gerät speichern, Adresse sofort bereinigen
+function dropKey(){ try{
+  const k = apiKey(); localStorage.removeItem(KEY_STORE); if(!k) return;
+  const bad = (localStorage.getItem(KEY_BAD) || '').split(',').filter(Boolean);
+  localStorage.setItem(KEY_BAD, [...bad.filter(x=>x!==k.slice(-8)), k.slice(-8)].slice(-10).join(','));
+}catch(e){} }
+// ohne Schlüssel nach ⏭️: einen Tag lang nicht mehr danach fragen
+function keySnoozed(){ return Date.now() - (state.keyLater || 0) < 20*3600e3; }
+// Schlüssel per Link übernehmen (#claude=… oder #key=…), nur wenn noch keiner gespeichert ist; Adresse sofort bereinigen
 (()=>{ try{
   const h = new URLSearchParams(location.hash.slice(1)), k = (h.get('claude') || h.get('key') || '').replace(/\s+/g, '');
   if(!h.has('claude') && !h.has('key')) return;
   history.replaceState(null, '', location.pathname + location.search);
-  if(/^sk-ant-[\w-]{20,}$/.test(k)){ localStorage.setItem(KEY_STORE, k); localStorage.removeItem(KEY_BAD); }
+  if(/^sk-ant-[\w-]{20,}$/.test(k) && !localStorage.getItem(KEY_STORE)) localStorage.setItem(KEY_STORE, k);
 }catch(e){} })();
 async function claudeFetch(rules, turns, opts){
   opts = opts || {};
@@ -4496,7 +4502,7 @@ setTimeout(flushLocalIdeas, 4000);
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
 const APP_VERSION = '7.2';
 const CHANGELOG = [
-  ['7.2', '🔑 Zauberschlüssel im Hintergrund: einmal 📋 tippen (oder per Link) – Flügo nimmt auch den Schlüssel deiner anderen Apps und fragt sonst höchstens einmal am Tag'],
+  ['7.2', '🔑 Zauberschlüssel im Hintergrund: einmal 📋 tippen – Flügo nimmt auch den Schlüssel deiner anderen Apps und fragt sonst höchstens einmal am Tag'],
   ['7.1', '🎭 Flügo spielt seine Stimme mit: als Robo-Drache „beep boop“, als Riese dröhnend, als Baby kichernd …'],
   ['7.0', '🎧 Klang-Feinschliff: alle Stimmen gleich laut und ohne Knacken am Satzanfang/-ende'],
   ['6.9', '🎙️ Die natürliche Stimme ist nach dem Start sofort da: Flügo lädt sie gleich vom Gerät und spricht nicht mehr erst mit der Roboterstimme'],
@@ -8082,13 +8088,19 @@ function hubKeySetup(pending, msg){
     const v = clean();
     if(!ok(v)){ toast('🔑 Der Schlüssel beginnt mit „sk-ant-“'); inp.focus(); return; }
     if(f.dataset.saved) return; f.dataset.saved = '1';
-    try{ localStorage.setItem(KEY_STORE, v); localStorage.removeItem(KEY_BAD); }catch(err){}
+    try{ localStorage.setItem(KEY_STORE, v); }catch(err){}
     sndCorrect(); hubDlg.list = []; hubDlg.i = 0;
     if(pending) hubChat(pending); else hubOffer(true);
   };
   f.querySelector('[data-a=save]').onclick = save;
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); });
   hubFit();
+}
+// Kein Schlüssel: kurz nachfragen – oder (nach ⏭️ heute) einfach weiterspielen statt zu drängeln
+function hubNoKey(text){
+  if(!keySnoozed()) return hubKeySetup(text);
+  hubStopLive(); hubDlg.mode = 'offer';
+  hubSayHTML('🐉 Ohne Zauberschlüssel kann ich noch nicht frei plaudern – komm, wir spielen was!', '', [['👍', ()=>hubNext(true), 'yes'], ['🔑', ()=>hubKeySetup(text), 'no']]);
 }
 // Nach einem Fehler dieselbe Frage nochmal (ohne sie doppelt ins Gespräch zu schreiben)
 function hubRetry(text){ const l = buddy.turns[buddy.turns.length - 1]; if(l && l.role==='user' && l.content===text) buddy.turns.pop(); hubChat(text); }
@@ -8157,7 +8169,7 @@ function hubOfferList(){
   const head = [];
   if(state.settings.neural===undefined && nvSupported()) head.push('voice');
   // ohne Schlüssel: höchstens einmal am Tag danach fragen – sonst spielt der Drache einfach mit dir
-  if(hubHasAI()) head.push('chat'); else if(Date.now() - (state.keyLater || 0) > 20*3600e3) head.push('key');
+  if(hubHasAI()) head.push('chat'); else if(!keySnoozed()) head.push('key');
   if(!state.topics && state.lastPlayDate) head.push('topics');
   first.unshift(...head);
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'vfx', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
@@ -8444,7 +8456,7 @@ function hubHeard(heard){
 // Freies Gespräch direkt am großen Drachen (KI), Antwort in der Sprechblase + vorlesen
 async function hubChat(text){
   hubDlg.mode = 'chat'; hubDlg.chatAt = Date.now();
-  if(!hubHasAI()){ hubKeySetup(text); return; }
+  if(!hubHasAI()){ hubNoKey(text); return; }
   const L = currentLang();
   hubSayHTML('🤔 …', '„' + text + '“', null);
   buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
@@ -8462,7 +8474,8 @@ async function hubChat(text){
     hubStopLive();
     if(!hubOnHub()) return;
     const code = e && e.code;
-    if(code==='bad_key' || code==='no_backend'){ buddy.turns.pop(); if(code==='bad_key') dropKey(); hubKeySetup(text, code==='bad_key' ? '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.' : null); return; }
+    if(code==='bad_key'){ buddy.turns.pop(); dropKey(); if(hubHasAI()) hubRetry(text); else hubKeySetup(text, '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.'); return; }
+    if(code==='no_backend'){ buddy.turns.pop(); hubNoKey(text); return; }
     const why = code==='rate_limited' ? '⏳ Kurz zu viele Fragen auf einmal.' : code==='network' || code==='offline' ? '📶 Keine Internetverbindung.' : code==='session_expired' ? '🔐 Anmeldung abgelaufen.' : '😕 Da ist etwas schiefgegangen.';
     hubSayHTML(why, '', [['🔁', ()=>hubRetry(text), 'yes'], ['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true); }, 'no']]);
     return;
