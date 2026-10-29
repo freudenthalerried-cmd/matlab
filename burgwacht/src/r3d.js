@@ -253,7 +253,7 @@ function fx(n,d){switch(n){
 }}
 
 // ---------- Szene ----------
-let TILETEX=null,beam=null,decorG,bldG,enG,projG,staticG,ghostG,gridIM=null,castleP=null,castleKey=0,selRing,rangeG,hoverTile,meteorRing,snow=null,clouds=[];
+let TILETEX=null,beam=null,decorG,bldG,enG,projG,staticG,ghostG,gridIM=null,castleP=null,castleKey=0,selRing,rangeG,rangeN,hoverTile,meteorRing,snow=null,clouds=[];
 const BM=new Map(),EM=new Map(),PM=new Map();
 function initScene(){
   renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -275,8 +275,16 @@ function initScene(){
   rallyFlag=new THREE.Group();rallyFlag.add(M3(CYL(.02,.02,.7,5),mat(0x3a2a1a),0,.35,0));rallyFlag.add(M3(BOX(.3,.18,.02),mat(0xc9303f),.15,.6,0));rallyFlag.visible=false;scene.add(rallyFlag);
   const ringM=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.9,depthWrite:false});
   selRing=new THREE.Mesh(new THREE.RingGeometry(.5,.6,32),ringM);selRing.rotation.x=-Math.PI/2;selRing.visible=false;scene.add(selRing);
-  rangeG=new THREE.Group();const rr=new THREE.Mesh(new THREE.RingGeometry(.97,1,64),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,depthWrite:false}));
-  const rd=new THREE.Mesh(new THREE.CircleGeometry(1,64),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.1,depthWrite:false}));rangeG.add(rr,rd);rangeG.rotation.x=-Math.PI/2;rangeG.position.y=.04;rangeG.visible=false;scene.add(rangeG);
+  // Reichweite: immer obenauf gezeichnet, damit Bäume und Gelände sie nicht verdecken
+  const RM=(o)=>new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,depthTest:false,...o});
+  const RTEX=canvasTex(128,128,(g)=>{const gr=g.createRadialGradient(64,64,8,64,64,64);gr.addColorStop(0,'rgba(255,255,255,.12)');gr.addColorStop(.8,'rgba(255,255,255,.4)');gr.addColorStop(1,'rgba(255,255,255,.8)');g.fillStyle=gr;g.fillRect(0,0,128,128)});
+  rangeG=new THREE.Group();const rd=new THREE.Mesh(new THREE.CircleGeometry(1,64),RM({map:RTEX,color:0xffd640,opacity:.45}));
+  const ro=new THREE.Mesh(new THREE.RingGeometry(.9,1.03,72),RM({color:0x1e0f00,opacity:.55}));ro.userData.keep=1;
+  const rr=new THREE.Mesh(new THREE.RingGeometry(.925,1,72),RM({color:0xffd640,opacity:1}));
+  const rw=new THREE.Mesh(new THREE.RingGeometry(.94,1,64),RM({color:0xffd640,opacity:.5}));rangeG.userData.wave=rw;
+  rangeN=new THREE.Mesh(new THREE.RingGeometry(.93,1,72),RM({color:0x8cf56a,opacity:.95}));
+  rangeG.add(rd,ro,rr,rw);rangeG.children.forEach((m,i)=>m.renderOrder=20+i);rangeN.renderOrder=25;
+  rangeG.rotation.x=rangeN.rotation.x=-Math.PI/2;rangeG.position.y=.04;rangeG.visible=rangeN.visible=false;scene.add(rangeG,rangeN);
   TILETEX=canvasTex(64,64,(g)=>{g.fillStyle='rgba(255,255,255,.35)';g.strokeStyle='#fff';g.lineWidth=6;g.beginPath();g.roundRect(5,5,54,54,10);g.fill();g.stroke()});
   hoverTile=new THREE.Mesh(new THREE.PlaneGeometry(.96,.96),new THREE.MeshBasicMaterial({map:TILETEX,color:0x6ee04a,transparent:true,opacity:1,depthWrite:false}));
   beam=new THREE.Mesh(new THREE.CylinderGeometry(.42,.46,3,16,1,true),new THREE.MeshBasicMaterial({color:0x6ee04a,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));beam.visible=false;scene.add(beam);hoverTile.rotation.x=-Math.PI/2;hoverTile.position.y=.035;hoverTile.visible=false;scene.add(hoverTile);
@@ -364,18 +372,20 @@ function syncGhost(){
       gridIM=new THREE.InstancedMesh(G3('tile',()=>new THREE.PlaneGeometry(.9,.9)),new THREE.MeshBasicMaterial({map:TILETEX,color:DEF[bs].on?0x7ae8ff:0xffffff,transparent:true,opacity:DEF[bs].on?.9:.5,depthWrite:false}),Math.max(1,tiles.length));
       tiles.forEach(([x,y],i)=>{_m4.makeRotationX(-Math.PI/2).setPosition(x+.5,.03,y+.5);gridIM.setMatrixAt(i,_m4)});gridIM.count=tiles.length;scene.add(gridIM)}
     ghostG.clear();ghostG.userData.t=null}
-  const h=S.hover;hoverTile.visible=false;ghostG.visible=false;rangeG.visible=false;beam.visible=false;
+  const h=S.hover;hoverTile.visible=false;ghostG.visible=false;rangeG.visible=false;rangeN.visible=false;beam.visible=false;
   if(bs&&h&&inG(h.x,h.y)){const ok=canPlace(bs,h.x,h.y)&&afford(DEF[bs].cost[0]);
     if(ghostG.userData.t!==bs+ok){ghostG.clear();const P=makeB(bs,1),gm=new THREE.MeshBasicMaterial({color:ok?0x8cff6a:0xff5a5a,transparent:true,opacity:.72,depthWrite:false});P.g.traverse(o=>{if(o.isMesh){o.material=gm;o.castShadow=false}if(o.isSprite)o.visible=false});ghostG.add(P.g);ghostG.userData.t=bs+ok}
     ghostG.visible=true;ghostG.position.set(h.x+.5,0,h.y+.5);hoverTile.visible=true;hoverTile.position.set(h.x+.5,.035,h.y+.5);hoverTile.material.color.set(ok?0x6ee04a:0xff4a4a);const pu=1+Math.sin(TIME*6)*.06;hoverTile.scale.set(pu,pu,1);
     beam.visible=true;beam.position.set(h.x+.5,1.5,h.y+.5);beam.material.color.set(ok?0x6ee04a:0xff4a4a);beam.material.opacity=.18+Math.sin(TIME*6)*.06;ghostG.position.y=.05+Math.sin(TIME*4)*.04;
     if(DEF[bs].k==='t')showRange(h.x+.5,h.y+.5,DEF[bs].lv[0].rng,ok)}
   const sb=S.sel&&S.sel.b;selRing.visible=!!(sb||(S.sel&&S.sel.castle));
-  if(sb){selRing.position.set(sb.x+.5,.04,sb.y+.5);selRing.scale.setScalar(1);if(DEF[sb.t].k==='t')showRange(sb.x+.5,sb.y+.5,DEF[sb.t].lv[sb.l-1].rng,true)}
+  if(sb){selRing.position.set(sb.x+.5,.04,sb.y+.5);selRing.scale.setScalar(1);if(DEF[sb.t].k==='t'){const lv=DEF[sb.t].lv;showRange(sb.x+.5,sb.y+.5,lv[sb.l-1].rng,true,sb.l<3?lv[sb.l].rng:0)}}
   else if(S.sel&&S.sel.castle){selRing.position.set(CASTLE_C[0],.04,CASTLE_C[1]);selRing.scale.setScalar(3.2);if(S.castleLvl>=3)showRange(CASTLE_C[0],CASTLE_C[1],4.6,true)}
   meteorRing.visible=!!(S.spellSel&&h);if(meteorRing.visible)meteorRing.position.set(h.fx,.05,h.fy);
 }
-function showRange(x,z,r,ok){rangeG.visible=true;rangeG.position.set(x,.04,z);rangeG.scale.set(r,r,1);rangeG.children.forEach(m=>m.material.color.set(ok?0xffffff:0xff5a5a))}
+function showRange(x,z,r,ok,rn){rangeG.visible=true;rangeG.position.set(x,.04,z);rangeG.scale.set(r,r,1);rangeG.children.forEach(m=>{if(!m.userData.keep)m.material.color.set(ok?0xffd640:0xff5050)});
+  const w=rangeG.userData.wave,p=(TIME*.55)%1;w.scale.set(p,p,1);w.material.opacity=.6*(1-p);
+  rangeN.visible=!!rn;if(rn){rangeN.position.set(x,.045,z);const q=1+Math.sin(TIME*4)*.01;rangeN.scale.set(rn*q,rn*q,1)}}
 
 // ---------- Kamera ----------
 const _ndc=new THREE.Vector2();
@@ -418,8 +428,9 @@ function proj2(x,h,z){_a.set(x,h,z).project(camera);return[(_a.x+1)/2*W,(1-_a.y)
 const ICON3={};
 function drawOverlay(){
   const g=og;g.setTransform(DPR,0,0,DPR,0,0);g.clearRect(0,0,W,H);
-  for(const e of S.enemies)if(e.hp<e.max||e.boss){const P=EM.get(e);const hh=(e.fly?R.flyH(e):0)+(e.type==='dragon'?.7:e.type==='bat'?.4:1.0)*(P?P.s:1);const[x,y]=proj2(e.x,hh,e.y);
-    const bw=e.boss?54:30,p=clamp(e.hp/e.max,0,1);g.fillStyle='#1a0e1e';g.beginPath();g.roundRect(x-bw/2-2,y-2,bw+4,8,4);g.fill();
+  for(const e of S.enemies)if(e.hp<e.max||e.boss||e.elite){const P=EM.get(e);const hh=(e.fly?R.flyH(e):0)+(e.type==='dragon'?.7:e.type==='bat'?.4:1.0)*(P?P.s:1);const[x,y]=proj2(e.x,hh,e.y);
+    const bw=e.boss?54:30,p=clamp(e.hp/e.max,0,1);g.fillStyle=e.elite?'#ffc93c':'#1a0e1e';g.beginPath();g.roundRect(x-bw/2-2,y-2,bw+4,8,4);g.fill();
+    if(e.elite){const cx=x-bw/2-9,cy=y+2,s=7;g.beginPath();g.moveTo(cx-s,cy+s*.6);g.lineTo(cx-s,cy-s*.4);g.lineTo(cx-s*.5,cy);g.lineTo(cx,cy-s*.7);g.lineTo(cx+s*.5,cy);g.lineTo(cx+s,cy-s*.4);g.lineTo(cx+s,cy+s*.6);g.closePath();g.fillStyle='#ffd23f';g.fill();g.lineWidth=2;g.strokeStyle='#3a1a06';g.stroke()}
     if(p>0){g.fillStyle=p>.5?'#6ee04a':p>.25?'#ffc93c':'#ff4a4a';g.beginPath();g.roundRect(x-bw/2,y,bw*p,4,2);g.fill()}}
   for(const u of S.units)if(!u.dead&&(u.hp<u.max||u.k==='hero')){const[x,y]=proj2(u.x,u.k==='hero'?1.35:.9,u.y),bw=u.k==='hero'?40:24,p=clamp(u.hp/u.max,0,1);
     g.fillStyle='#0e1430';g.beginPath();g.roundRect(x-bw/2-2,y-2,bw+4,8,4);g.fill();g.fillStyle=p>.35?'#5fd0ff':'#ff7a4a';g.beginPath();g.roundRect(x-bw/2,y,bw*p,4,2);g.fill();
@@ -431,6 +442,7 @@ function drawOverlay(){
     const tx=x+(t.k?sz*.45:0);g.strokeText(t.txt,tx,y);g.fillStyle=t.k==='g'?'#ffd23f':t.k==='w'?'#ffb070':t.k==='c'?'#7ae8ff':'#ff5a6a';g.fillText(t.txt,tx,y);
     const ic=ICON3[t.k];if(ic&&ic.complete&&ic.naturalWidth)g.drawImage(ic,tx-g.measureText(t.txt).width/2-sz*.95,y-sz*.45,sz*.9,sz*.9)}
   g.globalAlpha=1;
+  if(S.running&&!S.over){const sb=S.sel&&S.sel.b,s=Math.max(16,cam.tilePx*cam.zoom/cam.base*.42);for(const b of S.buildings)if(b!==sb&&canUp(b)){const[x,y]=proj2(b.x+.5,(TH[b.t]&&TH[b.t][b.l]||1.3)+.6,b.y+.5);upArrow(g,x,y,s)}}
   if(S.buildSel&&S.hover&&!confirmAt&&inG(S.hover.x,S.hover.y)){const d=DEF[S.buildSel];if(d.adj&&canPlace(S.buildSel,S.hover.x,S.hover.y)){const n=countAdj(S.hover.x,S.hover.y,d.adj),[x,y]=proj2(S.hover.x+.5,1.8,S.hover.y+.5);
     g.font=`16px ${FONT3}`;g.lineWidth=4;g.strokeStyle='#1c1230';const s=trx(n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus');g.strokeText(s,x,y);g.fillStyle=n?'#b9f58d':'#ffd0d0';g.fillText(s,x,y)}}
   if(S.castleHit>0){g.fillStyle=`rgba(255,40,60,${S.castleHit*.35})`;g.fillRect(0,0,W,H)}
@@ -441,10 +453,10 @@ function drawOverlay(){
 
 // ---------- Vorschaubilder ----------
 let thumbScene=null,thumbCam=null,thumbRT=null;
-function thumb(t,c){
+function thumb(t,c,l=1){
   if(!thumbScene){thumbScene=new THREE.Scene();thumbScene.add(new THREE.HemisphereLight(0xffffff,0x667744,.8));const dl=new THREE.DirectionalLight(0xffffff,.9);dl.position.set(2,4,3);thumbScene.add(dl);
     thumbCam=new THREE.PerspectiveCamera(30,144/116,.1,30);thumbCam.position.set(1.9,2.1,2.9);thumbCam.lookAt(0,.72,0);thumbRT=new THREE.WebGLRenderTarget(288,232)}
-  const P=makeB(t,1);P.g.traverse(o=>{if(o.isSprite)o.visible=false});thumbScene.add(P.g);
+  const P=makeB(t,l);P.g.traverse(o=>{if(o.isSprite)o.visible=false});thumbScene.add(P.g);
   renderer.setRenderTarget(thumbRT);renderer.setClearColor(0x000000,0);renderer.clear();renderer.render(thumbScene,thumbCam);
   const buf=new Uint8Array(288*232*4);renderer.readRenderTargetPixels(thumbRT,0,0,288,232,buf);renderer.setRenderTarget(null);thumbScene.remove(P.g);
   const tmp=document.createElement('canvas');tmp.width=288;tmp.height=232;const tg=tmp.getContext('2d'),id=tg.createImageData(288,232);

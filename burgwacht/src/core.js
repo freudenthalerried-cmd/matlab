@@ -30,13 +30,13 @@ const CASTLE_C=[20.5,6.5];
 
 // ---------- Definitionen ----------
 const DEF={
-  archer:{n:'Bogenturm',k:'t',d:'Schnell. Trifft Boden und Luft.',air:1,
+  archer:{n:'Bogenturm',good:'Stark gegen Fledermäuse, Drachen und Goblins',bad:'Schwach gegen Rüstung (Ritter, Orks)',k:'t',d:'Schnell. Trifft Boden und Luft.',air:1,
     cost:[{g:60,w:20},{g:80,w:30},{g:150,w:50}],lv:[{dmg:11,rate:.65,rng:3},{dmg:19,rate:.5,rng:3.4},{dmg:32,rate:.38,rng:3.9}]},
-  cannon:{n:'Kanone',k:'t',d:'Flächenschaden. Nur Bodenziele.',air:0,
+  cannon:{n:'Kanone',good:'Stark gegen Gruppen von Goblins und Wölfen',bad:'Trifft keine Flieger',k:'t',d:'Flächenschaden. Nur Bodenziele.',air:0,
     cost:[{g:110,w:40},{g:140,w:50},{g:240,w:80}],lv:[{dmg:32,rate:2,rng:2.8,spl:1},{dmg:58,rate:1.8,rng:3.1,spl:1.15},{dmg:105,rate:1.6,rng:3.4,spl:1.35}]},
-  frost:{n:'Frostmagier',k:'t',d:'Magie verlangsamt Gegner.',air:1,
+  frost:{n:'Frostmagier',good:'Bremst schnelle Gegner, Magie ignoriert Rüstung',bad:'Wenig Schaden',k:'t',d:'Magie verlangsamt Gegner.',air:1,
     cost:[{g:90,w:20},{g:120,w:30},{g:200,w:40,c:10}],lv:[{dmg:9,rate:1,rng:2.8,slow:.45,st:1.6},{dmg:16,rate:.9,rng:3.1,slow:.55,st:2},{dmg:28,rate:.8,rng:3.5,slow:.65,st:2.4,spl:.9}]},
-  tesla:{n:'Blitzturm',k:'t',d:'Kettenblitz, ignoriert Rüstung.',air:1,req:2,
+  tesla:{n:'Blitzturm',good:'Stark gegen Ritter, Orks und Elite: ignoriert Rüstung',bad:'Teuer, braucht Kristalle',k:'t',d:'Kettenblitz, ignoriert Rüstung.',air:1,req:2,
     cost:[{g:160,w:30,c:15},{g:200,w:40,c:20},{g:320,w:60,c:35}],lv:[{dmg:30,rate:1.4,rng:3,ch:3},{dmg:48,rate:1.25,rng:3.3,ch:4},{dmg:80,rate:1.1,rng:3.6,ch:6}]},
   saw:{n:'Sägewerk',k:'e',d:'Holz alle 6 s. +1 pro Nachbarbaum.',adj:TREE,adjB:'w',
     cost:[{g:45},{g:80,w:20},{g:140,w:40}],lv:[{p:{w:4}},{p:{w:7}},{p:{w:12}}]},
@@ -45,9 +45,9 @@ const DEF={
   cmine:{n:'Kristallmine',k:'e',d:'Nur auf leuchtenden Kristalladern.',on:CRY,
     cost:[{g:100,w:50},{g:150,w:70},{g:240,w:100}],lv:[{p:{c:3}},{p:{c:5}},{p:{c:8}}]},
 };
-if(FEAT.barracks)DEF.barracks={n:'Kaserne',k:'b',d:'3 Soldaten blockieren den Weg.',rng:2.3,
+if(FEAT.barracks)DEF.barracks={n:'Kaserne',k:'b',good:'Hält Wölfe, Goblins und Orks auf',bad:'Flieger fliegen einfach drüber',d:'3 Soldaten blockieren den Weg.',rng:2.3,
   cost:[{g:90,w:40},{g:120,w:60},{g:200,w:90}],lv:[{hp:90,atk:7},{hp:150,atk:12},{hp:240,atk:20}]};
-const ORDER=['archer','cannon','frost','tesla',...(FEAT.barracks?['barracks']:[]),'saw','mine','cmine'];
+const ORDER=['archer','cannon','frost',...(FEAT.barracks?['barracks']:[]),'tesla','saw','mine','cmine'];
 const CASTLE_UP=[null,null,{g:300,w:150},{g:600,w:300,c:40}];
 const EN={
   goblin:{n:'Goblin',hp:38,spd:1.55,arm:0,g:5,dmg:1,sz:1,atk:4},
@@ -70,7 +70,8 @@ const WAVES=[
   [['orc',10,1],['bat',12,.6]],
   [['wolf',12,.45],['knight',4,1.6],['dragon',1,0]],
 ];
-function getWave(n){
+function getWave(n){const f=1+Math.max(0,n-4)*.07;return rawWave(n).map(w=>EN[w[0]].boss?w:[w[0],Math.round(w[1]*f),w[2]/Math.sqrt(f)])}
+function rawWave(n){
   if(S&&S.endless&&n%5===0){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([n%10?'troll':'dragon',Math.ceil(n/10),4]);return g}
   if(FEAT.campaign&&S&&!S.endless&&n===S.maxWave){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([MAP.bossT,n>=15?2:1,5]);return g}
   return baseWave(n);
@@ -85,7 +86,7 @@ function baseWave(n){
   if(n===20){g.push(['troll',2,3]);g.push(['dragon',2,6])}
   return g;
 }
-const hpMul=n=>1+(n-1)*.14+Math.max(0,n-8)*.08;
+const hpMul=n=>1+(n-1)*.15+Math.max(0,n-6)*.1;
 
 // ---------- Karte ----------
 let grid,occ,decor,S;
@@ -125,7 +126,7 @@ const inG=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS;
 function countAdj(x,y,t){let n=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)if((i||j)&&inG(x+i,y+j)&&grid[y+j][x+i]===t)n++;return n}
 
 // ---------- Ton ----------
-let AC=null,muted=false,NIGHT=false;const lastS={};
+let AC=null,muted=false;const NIGHT=false;const lastS={};
 function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
 function tone(f,d,type='sine',v=.08,slide=0,delay=0){const a=AC;if(!a||muted)return;const t=a.currentTime+delay,o=a.createOscillator(),gn=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);gn.gain.setValueAtTime(v,t);gn.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(gn).connect(a.destination);o.start(t);o.stop(t+d+.02)}
 let NB=null;function noise(d,v,f=1200,type='lowpass'){const a=AC;if(!a||muted)return;if(!NB){NB=a.createBuffer(1,a.sampleRate,a.sampleRate);const c=NB.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1}
@@ -229,6 +230,9 @@ function spawn(type){
   const e={type,d:0,P,hp:d.hp*m,max:d.hp*m,spd:d.spd*rand(.95,1.05),arm:d.arm,fly:!!d.fly,g:Math.round(d.g*(1+(S.wave-1)*.04)),dmg:d.dmg,sz:d.sz,boss:!!d.boss,
     slow:0,slowT:0,hit:0,ph:Math.random()*10,dir:1,dx:1,dy:0,x:0,y:0,lane:(Math.random()-.5)*.36,id:Math.random()};
   const p=pathPos(P,0);e.x=p[0];e.y=p[1];S.enemies.push(e);
+  // Elite: ab Welle 5, mehr Leben und Rüstung, doppelte Beute
+  if(!e.boss&&S.wave>=5&&Math.random()<Math.min(.35,(S.wave-4)*.045)){e.elite=1;e.hp*=1.8;e.max=e.hp;e.arm=Math.min(.7,e.arm+.2);e.sz*=1.18;e.g*=2;
+    if(!S.eliteSeen){S.eliteSeen=1;banner('Elite-Gegner!','Mehr Leben und Rüstung: Blitzturm und Frostmagier helfen')}}
   if(e.boss)S.shake=8;
 }
 
@@ -375,8 +379,12 @@ function makeCards(){
     el.onclick=()=>selectBuild(t);trDOM(el);wrap.appendChild(el);R.thumb(t,el.querySelector('canvas'))});
 }
 function selectBuild(t){ac();sfx('click');S.spellSel=null;S.sel=null;hidePanel();S.buildSel=S.buildSel===t?null:t;
-  if(S.buildSel){const d=DEF[t];if(d.req&&S.castleLvl<d.req){toast(`${d.n}: erst ab Burg Stufe ${d.req}`);S.buildSel=null}else toast(`${d.n}: ${d.d}`)}}
-let lastUI='';
+  if(S.buildSel){const d=DEF[t];if(d.req&&S.castleLvl<d.req){toast(`${d.n}: erst ab Burg Stufe ${d.req}`);S.buildSel=null}else toast(`${d.n}: ${d.good||d.d}`)}}
+let lastUI='',lastPK='';
+// Zustand der Knöpfe im offenen Panel: ändert er sich (z. B. genug Gold), wird das Panel neu gezeichnet
+function panelKey(){const s=S.sel;if(!s||$('#panel').hidden||s.hero)return'';let c=null;
+  if(s.b)c=s.b.l<3?DEF[s.b.t].cost[s.b.l]:{};else if(s.castle)c=CASTLE_UP[S.castleLvl+1]||{};else if(s.tile)c=grid[s.tile.y][s.tile.x]===CRY?DEF.cmine.cost[0]:{w:10};
+  return c?['g','w','c'].map(k=>S.res[k]>=(c[k]||0)?1:0).join('')+maxLvl()+(s.b?s.b.l:''):''}
 function updUI(){
   for(const k of['g','w','c'])RES[k].querySelector('b').textContent=fmt(S.res[k]);
   const pr={g:0,w:0,c:0};for(const b of S.buildings)if(DEF[b.t].k==='e'){const p=prodOf(b);for(const k in p)pr[k]+=p[k]}
@@ -391,33 +399,61 @@ function updUI(){
     else{wb.disabled=!!S.over;wb.classList.toggle('pulse',S.wave===0);wb.innerHTML=S.countdown>0?`Welle ${S.wave+1}<small>in ${Math.ceil(S.countdown)} s · jetzt +${Math.ceil(S.countdown*2)} Gold</small>`:`Welle ${S.wave+1}<small>${S.wave===0?'Zuerst bauen, dann los!':'Starten'}</small>`}trDOM(wb)}
   for(const[k,c,cd]of[['meteor',20,30],['frost',12,25]]){const el=$('#sp-'+k);el.querySelector('.cd').style.setProperty('--p',(S.cd[k]/(cd*S.cdMul)*100)+'%');el.classList.toggle('off',S.res.c<c||S.cd[k]>0);el.classList.toggle('sel',S.spellSel===k)}
   if(FEAT.hero){const h=heroU(),el=$('#sp-hero');if(h&&el){el.querySelector('.cd').style.setProperty('--p',h.dead?(h.rt/15*100)+'%':'0%');el.classList.toggle('sel',S.heroSel);$('#hlv').textContent=h.dead?Math.ceil(h.rt)+' s':trx('Stufe '+h.lvl)}}
+  const pk=panelKey();if(pk!==lastPK){lastPK=pk;if(pk)showPanel(true)}
   if(FEAT.campaign)metaUI();
   document.body.classList.toggle('menu',!$('#start').hidden||!$('#end').hidden);
   $('#pauseov').hidden=!(S.paused&&S.running&&!S.over&&!ADS.busy&&$('#start').hidden&&$('#end').hidden);
-  $('#bspeed').textContent=S.speed+'×';$('#bpause').textContent=S.paused?'▶':'II';$('#bmute').textContent=muted?'×':'♪';$('#bnight').textContent=NIGHT?'☾':'☀';
+  $('#bspeed').textContent=S.speed+'×';$('#bpause').textContent=S.paused?'▶':'II';$('#bmute').textContent=muted?'×':'♪';
 }
 function dockVar(){const r=$('#cards').getBoundingClientRect();if(r.height)document.documentElement.style.setProperty('--dockTop',Math.round(innerHeight-r.top+2)+'px')}
 function stars(l){return`<div class="lv">${[1,2,3].map(i=>`<i class="${i<=l?'on':''}"></i>`).join('')}</div>`}
-function showPanel(){
+// Symbole und Balken für das Info-Panel
+const PSV=p=>`<svg viewBox="0 0 20 20" aria-hidden="true">${p}</svg>`,OLs='stroke="#2a1a0e" stroke-width="1.3" stroke-linejoin="round"';
+const SIC={
+  dmg:PSV(`<path d="M16 1.5h2.5V4L9.5 13 7 10.5z" fill="#e8eef5" ${OLs}/><path d="M4 10.5l5.5 5.5" stroke="#2a1a0e" stroke-width="3" stroke-linecap="round"/><path d="M4 10.5l5.5 5.5" stroke="#d9a03a" stroke-width="1.4" stroke-linecap="round"/><path d="M3 18.5l3.2-3.2" stroke="#2a1a0e" stroke-width="2.6" stroke-linecap="round"/>`),
+  rate:PSV(`<path d="M3 4l6 6-6 6M10 4l6 6-6 6" fill="none" stroke="#2a1a0e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 4l6 6-6 6M10 4l6 6-6 6" fill="none" stroke="#7ee05a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`),
+  rng:PSV(`<circle cx="10" cy="10" r="8" fill="rgba(255,210,60,.35)" stroke="#2a1a0e" stroke-width="1.6"/><circle cx="10" cy="10" r="4.5" fill="none" stroke="#c9303f" stroke-width="1.6"/><circle cx="10" cy="10" r="1.8" fill="#c9303f"/>`),
+  slow:PSV(`<g stroke="#2a1a0e" stroke-width="3.4" stroke-linecap="round"><path d="M10 2v16M3 6l14 8M3 14l14-8"/></g><g stroke="#8fe0ff" stroke-width="1.6" stroke-linecap="round"><path d="M10 2v16M3 6l14 8M3 14l14-8"/></g>`),
+  ch:PSV(`<path d="M12 1L4 11.5h5L7 19l9-11h-5.5z" fill="#ffd23f" ${OLs}/>`),
+  spl:PSV(`<path d="M10 1l2 5 5-2-2 5 4 2-4 2 2 5-5-2-2 5-2-5-5 2 2-5-4-2 4-2-2-5 5 2z" fill="#ff8a2a" ${OLs}/><circle cx="10" cy="10" r="2.6" fill="#ffe08a"/>`),
+  hp:PSV(`<path d="M10 17.5s-7.5-4.6-7.5-9.4A4 4 0 0 1 10 6a4 4 0 0 1 7.5 2.1c0 4.8-7.5 9.4-7.5 9.4z" fill="#e8475a" ${OLs}/>`),
+  sol:PSV(`<path d="M10 1.5l7 3v5.2c0 4.2-3 7.3-7 8.8-4-1.5-7-4.6-7-8.8V4.5z" fill="#6a8fd8" ${OLs}/><path d="M10 4v12" stroke="#fff" stroke-width="1.6" opacity=".6"/>`),
+  prod:PSV(`<path d="M3 15h14M5 15V9l3-2v8M10 15V6l3-2v11M15 15V8" fill="none" stroke="#2a1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`),
+  adj:PSV(`<path d="M10 2l4 6h-2.5l3.5 5H11v5H9v-5H5l3.5-5H6z" fill="#3a8a2e" ${OLs}/>`),
+};
+const UPI=PSV(`<path d="M10 1.5l7.5 8.5h-4.3v8.5H6.8V10H2.5z" fill="#fff" stroke="#1b5e22" stroke-width="1.5" stroke-linejoin="round"/>`);
+const SELLI=PSV(`<path d="M2.5 7.5l5-5 4 4-2 2 7.5 7.5-2 2-7.5-7.5-2 2z" fill="#fff" stroke="#7a1420" stroke-width="1.4" stroke-linejoin="round"/>`);
+// eine Zeile: Symbol | Text | Balken (jetzt + Zuwachs) | Wert → nächster Wert
+function srow(ic,lab,a,b,max,f=x=>x){const pa=clamp(a/max,0,1)*100,pb=b!=null?clamp(b/max,0,1)*100:pa;
+  return`<i class="si">${SIC[ic]}</i><span class="sl">${lab}</span><span class="sbar"><i style="width:${pa}%"></i>${pb>pa?`<u style="left:${pa}%;width:${pb-pa}%"></u>`:''}</span><span class="sv">${f(a)}${b!=null&&b!==a?`<b>➜ ${f(b)}</b>`:''}</span>`}
+function thumbURL(t,l){const k=t+l;R._th=R._th||{};if(!R._th[k]){try{const c=document.createElement('canvas');c.width=144;c.height=116;R.thumb(t,c,l);R._th[k]=c.toDataURL()}catch(e){R._th[k]=''}}return R._th[k]}
+function canUp(b){const d=DEF[b.t];return b.l<3&&b.l<maxLvl()&&afford(d.cost[b.l])}
+// grüner Pfeil über ausbaubaren Gebäuden (Bildschirmkoordinaten)
+function upArrow(g,x,y,s){const bob=Math.sin(performance.now()/260)*s*.12;y+=bob;g.save();
+  g.beginPath();g.arc(x,y,s*.62,0,Math.PI*2);g.fillStyle='#2f9e3a';g.fill();g.lineWidth=Math.max(2,s*.1);g.strokeStyle='#123a12';g.stroke();
+  g.beginPath();g.moveTo(x,y-s*.42);g.lineTo(x+s*.36,y);g.lineTo(x+s*.15,y);g.lineTo(x+s*.15,y+s*.38);g.lineTo(x-s*.15,y+s*.38);g.lineTo(x-s*.15,y);g.lineTo(x-s*.36,y);g.closePath();g.fillStyle='#fff';g.fill();g.restore()}
+function showPanel(refresh){
   const p=$('#panel'),s=S.sel;if(!s){hidePanel();return}let h='<button class="x" data-a="close" aria-label="Schließen">×</button>';
   if(s.hero){const u=s.hero;h+=`<h3>Held Eckbert</h3>${stars(Math.min(3,Math.ceil(u.lvl*3/5)))}<p>Kämpft im Nahkampf und hält Gegner auf. Sammelt Erfahrung durch Siege in seiner Nähe.</p>
       <div class="stats"><span>Stufe</span><span>${u.lvl} / 5</span><span>Leben</span><span>${Math.ceil(u.hp)} / ${u.max}</span><span>Schaden</span><span>${u.atk}</span><span>Erfahrung</span><span>${u.lvl<5?u.xp+' / '+HERO_XP[u.lvl]:'max.'}</span></div>
       <div class="row"><button class="up" data-a="hmove">Bewegen<div class="pcost">dann auf Karte tippen</div></button><button class="up" data-a="whirl" ${u.wcd>0||u.dead?'disabled':''}>Wirbelschlag<div class="pcost">${u.wcd>0?Math.ceil(u.wcd)+' s':(60+30*(u.lvl-1))+' Flächenschaden'}</div></button></div>`;p.innerHTML=h;trDOM(p);p.hidden=false;return}
   if(s.b){const b=s.b,d=DEF[b.t],L=d.lv[b.l-1],N=b.l<3?d.lv[b.l]:null,c=b.l<3?d.cost[b.l]:null;
-    h+=`<h3>${d.n}</h3>${stars(b.l)}<p>${d.d}</p><div class="stats">`;
-    if(d.k==='b'){const st=(lab,a,bb)=>`<span>${lab}</span><span>${a}${bb!=null&&bb!==a?` <b>→ ${bb}</b>`:''}</span>`;h+=st('Soldaten',3)+st('Leben je Soldat',L.hp,N&&N.hp)+st('Schaden',L.atk,N&&N.atk)}
-    else if(d.k==='t'){const st=(lab,a,bb,f=x=>x)=>`<span>${lab}</span><span>${f(a)}${bb!=null&&bb!==a?` <b>→ ${f(bb)}</b>`:''}</span>`;
-      h+=st('Schaden',L.dmg,N&&N.dmg)+st('Schüsse/s',+(1/L.rate).toFixed(2),N&&+(1/N.rate).toFixed(2))+st('Reichweite',L.rng,N&&N.rng);
-      if(L.slow)h+=st('Verlangsamung',Math.round(L.slow*100)+'%',N&&Math.round(N.slow*100)+'%');if(L.ch)h+=st('Ketten',L.ch,N&&N.ch);if(L.spl)h+=st('Radius',L.spl,N&&N.spl)}
-    else{const pp=prodOf(b);let nx='';if(N){const tmp={...b,l:b.l+1};nx=` <b>→ ${Object.values(prodOf(tmp))[0]}</b>`}
-      h+=`<span>Ertrag / 6 s</span><span>${Object.entries(pp).map(([k,v])=>`<i class="ic ${k}"></i> ${v}`).join(' ')}${nx}</span>`;
-      if(d.adj)h+=`<span>Nachbarbonus</span><span>${countAdj(b.x,b.y,d.adj)} ${d.adj===TREE?'Bäume':'Felsen'}</span>`}
+    const im=thumbURL(b.t,b.l),imN=N?thumbURL(b.t,b.l+1):'';
+    h+=`<div class="phead"><div><h3>${d.n}</h3>${stars(b.l)}</div>${im?`<div class="pimg"><img src="${im}" alt="">${imN?`<span>➜</span><img class="nx" src="${imN}" alt="">`:''}</div>`:''}</div><p>${d.d}</p>${d.good?`<div class="vs"><span class="gd"><i>✔</i><span>${d.good}</span></span><span class="bd"><i>✖</i><span>${d.bad}</span></span></div>`:''}<div class="stats st4">`;
+    const X=k=>Math.max(...d.lv.map(v=>v[k]||0));
+    if(d.k==='b'){h+=srow('sol','Soldaten',3,null,3)+srow('hp','Leben je Soldat',L.hp,N&&N.hp,X('hp'))+srow('dmg','Schaden',L.atk,N&&N.atk,X('atk'))}
+    else if(d.k==='t'){const sps=v=>+(1/v.rate).toFixed(2),pc=x=>Math.round(x*100)+'%';
+      h+=srow('dmg','Schaden',L.dmg,N&&N.dmg,X('dmg'))+srow('rate','Schüsse/s',sps(L),N&&sps(N),Math.max(...d.lv.map(sps)))+srow('rng','Reichweite',L.rng,N&&N.rng,X('rng'));
+      if(L.slow)h+=srow('slow','Verlangsamung',L.slow,N&&N.slow,X('slow'),pc);if(L.ch)h+=srow('ch','Ketten',L.ch,N&&N.ch,X('ch'));if(L.spl)h+=srow('spl','Radius',L.spl,N&&N.spl,X('spl'))}
+    else{const pp=prodOf(b),[rk,rv]=Object.entries(pp)[0],nv=N?prodOf({...b,l:b.l+1})[rk]:null;
+      h+=srow('prod','Ertrag / 6 s',rv,nv,Math.max(rv,nv||0,prodOf({...b,l:3})[rk]),v=>`<i class="ic ${rk}"></i> ${v}`);
+      if(d.adj)h+=`<i class="si">${SIC.adj}</i><span class="sl">Nachbarbonus</span><span class="sw">${countAdj(b.x,b.y,d.adj)} ${d.adj===TREE?'Bäume':'Felsen'}</span>`}
     h+='</div><div class="row">';
     if(!c)h+=`<button class="up" disabled>Max. Stufe<div class="pcost">voll ausgebaut</div></button>`;
-    if(c){const lock=b.l>=maxLvl();h+=`<button class="up" data-a="up" ${lock||!afford(c)?'disabled':''}>${lock?'Burg ausbauen':'Ausbauen'}<div class="pcost">${lock?`Stufe ${b.l+1} braucht Burg ${b.l}`:costHTML(c)}</div></button>`}
+    if(c){const lock=b.l>=maxLvl(),ok=!lock&&afford(c);h+=`<button class="up${ok?' go':''}" data-a="up" ${ok?'':'disabled'}><span class="bt">${lock?'':UPI}<span>${lock?'Burg ausbauen':'Ausbauen'}</span></span><div class="pcost">${lock?`Stufe ${b.l+1} braucht Burg ${b.l}`:costHTML(c)}</div></button>`}
     const r={};for(const k in b.spent)r[k]=Math.floor(b.spent[k]*.5);
     if(d.k==='b')h+=`<button class="up" data-a="rally" style="flex:.8">Sammelpunkt<div class="pcost">auf Weg tippen</div></button>`;
-    h+=`<button class="sell" data-a="sell">${sellArm===b?'Wirklich?':'Abreißen'}<div class="pcost">${costHTML(r).replace(/class="no"/g,'')}</div></button></div>`}
+    h+=`<button class="sell" data-a="sell"><span class="bt">${SELLI}<span>${sellArm===b?'Wirklich?':'Abreißen'}</span></span><div class="pcost">${costHTML(r).replace(/class="no"/g,'')}</div></button></div>`}
   else if(s.castle){const n=S.castleLvl+1,c=CASTLE_UP[n];
     h+=`<h3>Burg</h3>${stars(S.castleLvl)}<p>${n===2?'Stufe 2: +10 Leben, Blitzturm und Stufe-3-Ausbau für alle Gebäude.':n===3?'Stufe 3: +10 Leben und eine Balliste auf dem Bergfried.':'Voll ausgebaut. Die Balliste wacht über das Tor.'}</p>`;
     h+=`<div class="stats"><span>Leben</span><span>${S.lives} / ${S.maxLives}</span><span>Max. Gebäudestufe</span><span>${maxLvl()}</span></div>`;
@@ -426,7 +462,7 @@ function showPanel(){
     if(t===TREE)h+=`<h3>Wald</h3><p>Bäume geben Sägewerken Bonus. Fällen bringt sofort Holz und macht Platz.</p><div class="row"><button class="up" data-a="clear">Fällen<div class="pcost"><span><i class="ic w"></i>+10</span></div></button></div>`;
     else if(t===ROCK)h+=`<h3>Fels</h3><p>Felsen geben Goldminen Bonus. Abbauen bringt Gold und macht Platz.</p><div class="row"><button class="up" data-a="clear" ${S.res.w<10?'disabled':''}>Abbauen<div class="pcost"><span class="${S.res.w<10?'no':''}"><i class="ic w"></i>-10</span><span><i class="ic g"></i>+25</span></div></button></div>`;
     else if(t===CRY)h+=`<h3>Kristallader</h3><p>Hier kann eine Kristallmine gebaut werden. Kristalle brauchst du für Blitztürme und Zauber.</p><div class="row"><button class="up" data-a="bcm">Kristallmine bauen<div class="pcost">${costHTML(DEF.cmine.cost[0])}</div></button></div>`}
-  p.innerHTML=h;trDOM(p);p.hidden=false;panelT=performance.now();
+  p.innerHTML=h;trDOM(p);p.hidden=false;if(!refresh)panelT=performance.now();
 }
 let sellArm=null,sellT=0,panelT=0;
 function hidePanel(){$('#panel').hidden=true}
@@ -489,7 +525,6 @@ $('#bspeed').onclick=()=>{S.speed=S.speed===1?2:S.speed===2?3:1;sfx('click')};
 function setPause(on){S.paused=on;if(on)ADS.stop();else{ac();ADS.play()}sfx('click')}
 $('#bpause').onclick=()=>setPause(!S.paused);
 $('#resume').onclick=()=>setPause(false);
-$('#bnight').onclick=()=>{NIGHT=!NIGHT;try{localStorage.setItem('bw_night',NIGHT?'1':'0')}catch(e){}toast(NIGHT?'Tag-Nacht-Wechsel an':'Immer Tag');sfx('click')};
 $('#bmute').onclick=()=>{muted=!muted;try{localStorage.setItem('bw_mute',muted?'1':'0')}catch(e){}};
 addEventListener('keydown',ev=>{if(ev.repeat)return;const k=ev.key.toLowerCase();
   if(k>='1'&&k<='9'&&ORDER[+k-1])selectBuild(ORDER[+k-1]);else if(k==='h'&&FEAT.hero)selectHero();else if(k==='r'&&FEAT.hero)heroWhirl();else if(k==='escape')cancel();else if(k===' '){ev.preventDefault();if(!S.waveActive&&$('#start').hidden)startWave()}
@@ -518,7 +553,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;TIME+=dt;
   R.render(dt);updUI();updConfirm();requestAnimationFrame(frame)}
 function boot(){
   if(LANG==='en'){for(const k in DEF){DEF[k].n=tr(DEF[k].n);DEF[k].d=tr(DEF[k].d)}for(const k in EN)EN[k].n=tr(EN[k].n);document.documentElement.lang='en';trDOM(document.body)}
-  try{muted=localStorage.getItem('bw_mute')==='1';NIGHT=localStorage.getItem('bw_night')==='1';const b=+localStorage.getItem('bw_best');if(b)$('#best').textContent=trx(`Bestleistung: Welle ${b}`)}catch(e){}
+  try{muted=localStorage.getItem('bw_mute')==='1';const b=+localStorage.getItem('bw_best');if(b)$('#best').textContent=trx(`Bestleistung: Welle ${b}`)}catch(e){}
   if(FEAT.campaign)metaBoot();
   if(FEAT.hero){const b=document.createElement('button');b.className='spell hero';b.id='sp-hero';b.title='Held (H), Wirbelschlag (R)';
     b.innerHTML='<svg viewBox="0 0 40 40"><path d="M20 4l12 5v9c0 8-5 14-12 18C13 32 8 26 8 18V9z" fill="#3d6ae8" stroke="#120a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 10v20M13 17h14" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round"/></svg><span class="sc" id="hlv">1</span><span class="cd"></span>';

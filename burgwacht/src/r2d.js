@@ -274,8 +274,9 @@ function drawEnemy(e){
       break}
   }
   FL=false;g.restore();
-  if(e.hp<e.max||e.boss){const bw=e.boss?.9:.5,y=e.y-lift-(e.boss?.85:.55)*e.sz-.04;
-    RR(g,e.x-bw/2-.02,y-.02,bw+.04,.1,.05,'#1a0e1e',null);
+  if(e.hp<e.max||e.boss||e.elite){const bw=e.boss?.9:.5,y=e.y-lift-(e.boss?.85:.55)*e.sz-.04;
+    RR(g,e.x-bw/2-.02,y-.02,bw+.04,.1,.05,e.elite?'#ffc93c':'#1a0e1e',null);
+    if(e.elite)crown(g,e.x-bw/2-.1,y+.03,.11);
     const p=clamp(e.hp/e.max,0,1);if(p>0)RR(g,e.x-bw/2,y,bw*p,.06,.03,p>.5?'#6ee04a':p>.25?'#ffc93c':'#ff4a4a',null);}
 }
 
@@ -350,7 +351,7 @@ function render(){
     ctx.globalAlpha=.7;const s=bSpr(S.buildSel,1);ctx.drawImage(s.c,x-.2,y-1,s.w,s.h);ctx.globalAlpha=1;
     RR(ctx,x+.04,y+.04,.92,.92,.14,ok?'rgba(110,230,80,.25)':'rgba(255,70,70,.3)',ok?'#6ee04a':'#ff4a4a',.05);
     if(d.adj&&ok&&!confirmAt){const n=countAdj(x,y,d.adj);ftextStatic(x+.5,y-1.15,trx(n?`+${n*(d.adjB==='g'?2:1)} Bonus`:'kein Bonus'),n?'#b9f58d':'#ffd0d0')}}}
-  if(selB&&DEF[selB.t].k==='t')rangeCircle(selB.x+.5,selB.y+.5,DEF[selB.t].lv[selB.l-1].rng,true);
+  if(selB&&DEF[selB.t].k==='t'){const lv=DEF[selB.t].lv;rangeCircle(selB.x+.5,selB.y+.5,lv[selB.l-1].rng,true);if(selB.l<3)rangeNext(selB.x+.5,selB.y+.5,lv[selB.l].rng)}
   if(S.sel&&S.sel.castle&&S.castleLvl>=3)rangeCircle(20.5,6.5,4.6,true);
   // Flieger
   for(const e of S.enemies)if(e.fly)drawEnemy(e);
@@ -390,6 +391,7 @@ function render(){
     ctx.fillStyle=t.k==='g'?'#ffd23f':t.k==='w'?'#ffb070':t.k==='c'?'#7ae8ff':'#ff5a6a';ctx.fillText(t.txt,px+(t.k?sz*.45:0),py);
     if(t.k&&ICONS[t.k]&&ICONS[t.k].complete&&ICONS[t.k].naturalWidth)ctx.drawImage(ICONS[t.k],px-sz*.9-ctx.measureText(t.txt).width*.5+sz*.45,py-sz*.45,sz*.9,sz*.9)}
   ctx.globalAlpha=1;
+  if(S.running&&!S.over){const s=Math.max(16,T*.42);for(const b of S.buildings)if(b!==selB&&canUp(b))upArrow(ctx,OX+sx+(b.x+.5)*T,OY+sy+(b.y-.75)*T,s)}
   for(const t of STATIC){ctx.font=`${Math.max(12,T*.34)}px ${FONT}`;ctx.lineWidth=4;ctx.strokeStyle='#1c1230';ctx.strokeText(t.txt,OX+t.x*T,OY+t.y*T);ctx.fillStyle=t.c;ctx.fillText(t.txt,OX+t.x*T,OY+t.y*T)}
   STATIC.length=0;
   if(S.castleHit>0){ctx.fillStyle=`rgba(255,40,60,${S.castleHit*.35})`;ctx.fillRect(0,0,W,H)}
@@ -398,7 +400,14 @@ function render(){
 }
 const STATIC=[];function ftextStatic(x,y,txt,c){STATIC.push({x,y,txt,c})}
 const FONT="'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif";
-function rangeCircle(x,y,r,ok){ctx.save();ctx.setLineDash([.15,.12]);E(ctx,x,y,r,r,ok?'rgba(255,255,255,.1)':'rgba(255,70,70,.12)',ok?'rgba(255,255,255,.75)':'rgba(255,90,90,.8)',.04);ctx.restore()}
+// Reichweite: kräftiger Ring mit dunklem Rand, Füllung zum Rand hin dichter, laufende Welle
+function crown(g,x,y,s){g.beginPath();g.moveTo(x-s,y+s*.6);g.lineTo(x-s,y-s*.4);g.lineTo(x-s*.5,y);g.lineTo(x,y-s*.7);g.lineTo(x+s*.5,y);g.lineTo(x+s,y-s*.4);g.lineTo(x+s,y+s*.6);g.closePath();g.fillStyle='#ffd23f';g.fill();g.lineWidth=s*.25;g.strokeStyle='#3a1a06';g.stroke()}
+function rangeCircle(x,y,r,ok){const c=ok?'255,214,64':'255,80,80';ctx.save();
+  const gr=ctx.createRadialGradient(x,y,r*.15,x,y,r);gr.addColorStop(0,`rgba(${c},.05)`);gr.addColorStop(.8,`rgba(${c},.16)`);gr.addColorStop(1,`rgba(${c},.32)`);
+  E(ctx,x,y,r,r,gr,'rgba(30,15,0,.6)',.15);E(ctx,x,y,r,r,null,`rgb(${c})`,.08);
+  const w=(TIME*.55)%1;E(ctx,x,y,r*w,r*w,null,`rgba(${c},${.55*(1-w)})`,.06);ctx.restore()}
+// Reichweite nach dem Ausbau: grün gestrichelt
+function rangeNext(x,y,r){ctx.save();ctx.setLineDash([.22,.14]);ctx.lineDashOffset=-TIME*.4;E(ctx,x,y,r,r,null,'rgba(20,60,10,.7)',.11);E(ctx,x,y,r,r,null,'#8cf56a',.06);ctx.restore()}
 function drawCastle(){
   const s=castleSpr(S.castleLvl);ctx.drawImage(s.c,20.5-1.9,8.05-4.1,s.w,s.h);
   const fl=(x,y,c)=>{ctx.strokeStyle=OL;ctx.lineWidth=.035;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-.55);ctx.stroke();
@@ -536,7 +545,7 @@ const R={
   flyH(e){return .62*e.sz},
   castleH(){return 1.9},
   fx,
-  thumb(t,c){const g=c.getContext('2d'),s=bSpr(t,1);const h=116*1.02,w=h*s.w/s.h;g.drawImage(s.c,(144-w)/2,116-h+4,w,h)},
+  thumb(t,c,l=1){const g=c.getContext('2d'),s=bSpr(t,l);const h=116*1.02,w=h*s.w/s.h;g.drawImage(s.c,(144-w)/2,116-h+4,w,h)},
   canPan(){return PAN},
   pan(dx){OX=clamp(OX+dx,OXmin,OXmax)},
 };
