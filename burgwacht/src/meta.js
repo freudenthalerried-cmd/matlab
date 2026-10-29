@@ -23,7 +23,9 @@ const ST={get(k){try{if(ADS.sdk&&ADS.sdk.data)return ADS.sdk.data.getItem(k);ret
 function freshSave(){return{name:'',gems:0,stars:[0,0,0,0,0],up:{dmg:0,gold:0,wall:0,spell:0,hero:0,barr:0},daily:{last:'',streak:0},ach:{},stats:{kills:0,wins:0},endless:0,premium:false,boost:{},adGems:{day:'',n:0},seenDaily:''}}
 function loadSave(){let o=null;try{o=JSON.parse(ST.get(SAVE_KEY)||'null')}catch(e){}const d=freshSave();if(!o)o={};
   const s=Object.assign(d,o);s.up=Object.assign(freshSave().up,o.up||{});s.stats=Object.assign(freshSave().stats,o.stats||{});s.daily=Object.assign(freshSave().daily,o.daily||{});
-  while(s.stars.length<5)s.stars.push(0);return s}
+  while(s.stars.length<MAPS.length)s.stars.push(0);
+  // Levelstand; alte Spielstände: gewonnene Karten zählen als die ersten Level
+  s.lv=Array.isArray(o.lv)?o.lv:(o.stars||[]).slice(0,5).filter(x=>x>0);while(s.lv.length<LEVELS.length)s.lv.push(0);return s}
 let SV=loadSave();
 function persist(){ST.set(SAVE_KEY,JSON.stringify(SV))}
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
@@ -72,7 +74,7 @@ function applyBoosts(){const b=chosenBoosts;chosenBoosts={};
 const ACH=[['win1','Erster Sieg','Gewinne eine Karte',10],['stars3','Makellos','Hol 3 Sterne auf einer Karte',15],['kill500','Schlächter','Besiege insgesamt 500 Gegner',20],
   ['dragon','Drachentöter','Besiege einen Drachen',20],['castle3','Festung','Baue die Burg auf Stufe 3',15],['hero5','Legende','Bringe den Helden auf Stufe 5',20],
   ['build12','Baumeister','Habe 12 Gebäude gleichzeitig',10],['nolife','Unberührt','Gewinne ohne ein Leben zu verlieren',25],['endless15','Unaufhaltsam','Erreiche Welle 15 im Endlos-Modus',30],
-  ['streak7','Treue','Hol 7 Tage in Folge den Tagesbonus',30],['allmaps','Eroberer','Gewinne alle fünf Karten',50]];
+  ['streak7','Treue','Hol 7 Tage in Folge den Tagesbonus',30],['allmaps','Eroberer','Schaffe alle 50 Level',150]];
 function ach(id){if(!FEAT.campaign||SV.ach[id])return;const a=ACH.find(a=>a[0]===id);if(!a)return;SV.ach[id]=1;persist();addGems(a[3]);banner(tr('Erfolg!'),`${tr(a[1])} · +${a[3]} ${tr('Edelsteine')}`);sfx('win')}
 function metaEv(ev,d){if(!FEAT.campaign)return;
   if(ev==='kill'){SV.stats.kills++;if(SV.stats.kills>=500)ach('kill500');if(d.type==='dragon')ach('dragon');if(SV.stats.kills%25===0)persist()}
@@ -84,14 +86,20 @@ function metaEv(ev,d){if(!FEAT.campaign)return;
 
 // ---------- Kampagne ----------
 const starStr=n=>[1,2,3].map(i=>`<i class="st${i<=n?' on':''}"></i>`).join('');
-const unlocked=i=>SV.premium||i===0||SV.stars[i-1]>0;
-const endlessOpen=()=>SV.premium||SV.stars[2]>0;
+const unlocked=i=>SV.premium||i===0||SV.lv[i-1]>0;
+const endlessOpen=()=>SV.premium||SV.lv[9]>0;
 function renderCamp(){
   const el=$('#camp');if(!el)return;const dailyOn=SV.daily.last!==dayKey();
   el.innerHTML=`<div class="mtop"><span class="gems">${gemIc}<b class="gemn">${fmt(SV.gems)}</b></span>
       <button class="mb${dailyOn?' hot':''}" data-m="daily">${tr('Tagesbonus')}</button><button class="mb" data-m="perks">${tr('Upgrades')}</button><button class="mb" data-m="ach">${tr('Erfolge')}</button><button class="mb" data-m="shop">${tr('Shop')}</button>${BOARD.on()?`<button class="mb" data-m="board">${tr('Bestenliste')}</button>`:''}${CONFIG.legal?`<button class="mb" data-m="info">${tr('Info')}</button>`:''}</div>
-    <div class="maps">${MAPS.map((m,i)=>{const lock=!unlocked(i);return`<button class="map ${m.theme}${lock?' locked':''}" data-map="${i}" ${lock?'disabled':''}><b>${tr(m.n)}</b><span class="stars">${starStr(SV.stars[i])}</span><small>${lock?tr('Erst Karte {n} gewinnen',{n:i}):tr('{n} Wellen',{n:m.waves})}</small></button>`}).join('')}
-      <button class="map endless${endlessOpen()?'':' locked'}" data-map="endless" ${endlessOpen()?'':'disabled'}><b>${tr('Endlos')}</b><span class="rec">${tr('Rekord')}: ${SV.endless}</span><small>${endlessOpen()?tr('So lange du kannst'):tr('Erst Karte {n} gewinnen',{n:3})}</small></button></div>`;
+    <div class="lvpath">${CHAP.map(([cn,th],c)=>{const open=unlocked(c*10),st=SV.lv.slice(c*10,c*10+10).reduce((a,b)=>a+b,0);
+      if(!open)return`<div class="chap locked"><b>${tr('Kapitel')} ${c+1}</b><span>???</span><small>${tr('Erst Level {n} schaffen',{n:c*10})}</small></div>`;
+      let h=`<div class="chap ${th}"><b>${tr('Kapitel')} ${c+1}</b><span>${tr(cn)}</span><small><i class="st on"></i> ${st}/30</small></div>`;
+      for(let r=0;r<2;r++){h+=`<div class="lrow${r?' rev':''}">`;for(let k=0;k<5;k++){const i=c*10+r*5+k,L=LEVELS[i],lock=!unlocked(i),done=SV.lv[i]>0;
+        h+=`<button class="lvn ${th}${lock?' locked':done?' done':' next'}" data-map="${i}" ${lock?'disabled':''}><b>${lock?'🔒':i+1}</b>${lock?'':`<span class="stars">${starStr(SV.lv[i])}</span>`}${L.mod&&!lock?`<em>${MODI[L.mod]}</em>`:''}</button>`}h+='</div>'}
+      return h}).join('')}</div>
+    <div class="maps one"><button class="map endless${endlessOpen()?'':' locked'}" data-map="endless" ${endlessOpen()?'':'disabled'}><b>${tr('Endlos')}</b><span class="rec">${tr('Rekord')}: ${SV.endless}</span><small>${endlessOpen()?tr('So lange du kannst'):tr('Erst Level {n} schaffen',{n:10})}</small></button></div>`;
+  if(!$('#start').hidden){const nx=el.querySelector('.lvn.next');if(nx)setTimeout(()=>nx.scrollIntoView({block:'center'}),50)}
 }
 function modal(html,cls=''){const m=$('#modal');m.className='screen '+cls;m.innerHTML=`<div class="box mbox"><button class="x mx" aria-label="${tr('Schließen')}">×</button>${html}</div>`;m.hidden=false}
 function closeModal(){$('#modal').hidden=true}
@@ -130,8 +138,9 @@ function openInfo(){modal(`<h2>${tr('Info')}</h2><div class="achs">
 async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s.trim().toUpperCase()));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function tryCode(c){if(!CONFIG.premiumCode||!c)return false;if(await hashStr(c)===CONFIG.premiumCode){SV.premium=true;SV.gems+=300;persist();updGems();banner(tr('Königspaket'),tr('Danke für deine Unterstützung!'));renderCamp();return true}return false}
 function openPrep(i){
-  const m=i==='endless'?null:MAPS[i];const boosts=BOOSTS.filter(b=>b[0]!=='hero3'||FEAT.hero);chosenBoosts={};
-  modal(`<h2>${m?tr(m.n):tr('Endlos-Modus')}</h2><p class="sub">${m?`${starStr(SV.stars[i])} · ${tr('{n} Wellen',{n:m.waves})}`:tr('Rekord')+': '+SV.endless}</p>
+  const m=i==='endless'?null:LEVELS[i];const boosts=BOOSTS.filter(b=>b[0]!=='hero3'||FEAT.hero);chosenBoosts={};
+  modal(`<h2>${m?`${tr('Level')} ${i+1}`:tr('Endlos-Modus')}</h2><p class="sub">${m?`${tr(CHAP[m.chap][0])} · ${starStr(SV.lv[i])} · ${tr('{n} Wellen',{n:m.waves})}`:tr('Rekord')+': '+SV.endless}</p>
+    ${m&&m.mod?`<p class="sub lvmod">${MODI[m.mod]} ${tr(MODN[m.mod])}</p>`:''}
     <div class="boosts"><div class="bh">${tr('Boosts für diese Runde')} · ${gemIc}<b class="gemn">${fmt(SV.gems)}</b></div>${boosts.map(([k,n,c])=>`<label class="boost"><input type="checkbox" data-boost="${k}" data-c="${c}"><span>${tr(n)}</span><b>${gemIc}${c}</b></label>`).join('')}</div>
     <div class="mrow"><button class="okb big2" data-go="${i}">${tr('Los!')}</button></div>`);
 }
@@ -140,8 +149,8 @@ async function goMap(i){
   if(cost>SV.gems){toast(tr('Nicht genug Edelsteine'));sfx('err');return}
   if(cost){SV.gems-=cost;persist();updGems()}chosenBoosts={};for(const e of sel)chosenBoosts[e.dataset.boost]=1;
   closeModal();ac();sfx('click');
-  if(i==='endless')newGame(Math.floor(Math.random()*MAPS.length),{endless:true});else newGame(+i);
-  applyBoosts();$('#start').hidden=true;S.running=true;ADS.play();toast(S.endless?tr('Endlos-Modus: Wie weit kommst du?'):`${tr(MAP.n)}: ${tr('{n} Wellen',{n:S.maxWave})}`);
+  if(i==='endless')newGame(Math.floor(Math.random()*MAPS.length),{endless:true});else newGame(LEVELS[+i].map,{lv:+i});
+  applyBoosts();$('#start').hidden=true;S.running=true;ADS.play();toast(S.endless?tr('Endlos-Modus: Wie weit kommst du?'):`${tr('Level')} ${S.lv+1}: ${tr('{n} Wellen',{n:S.maxWave})}`);
 }
 
 // ---------- Rundenende ----------
@@ -149,8 +158,8 @@ let endReward=0,revived=false;
 function metaEnd(win){
   ADS.stop();let st=0,g=0,newSt=0;
   if(S.endless){g=Math.max(1,Math.floor(S.wave/2));if(S.wave>SV.endless)SV.endless=S.wave}
-  else if(win){st=S.lives>=S.maxLives*.9?3:S.lives>=S.maxLives*.5?2:1;newSt=Math.max(0,st-SV.stars[MAPI]);SV.stars[MAPI]=Math.max(SV.stars[MAPI],st);SV.stats.wins++;
-    g=5+newSt*10;ach('win1');if(st===3)ach('stars3');if(S.lives>=S.maxLives)ach('nolife');if(SV.stars.every(s=>s>0))ach('allmaps');ADS.happy()}
+  else if(win){st=S.lives>=S.maxLives*.9?3:S.lives>=S.maxLives*.5?2:1;const li=S.lv!=null?S.lv:0;newSt=Math.max(0,st-SV.lv[li]);SV.lv[li]=Math.max(SV.lv[li],st);SV.stars[MAPI]=Math.max(SV.stars[MAPI],st);SV.stats.wins++;
+    g=5+newSt*10;ach('win1');if(st===3)ach('stars3');if(S.lives>=S.maxLives)ach('nolife');if(SV.lv.every(s=>s>0))ach('allmaps');ADS.happy()}
   else g=Math.max(1,Math.floor(S.wave/3));
   if(SV.premium)g*=2;endReward=g;SV.gems+=g;persist();
   setTimeout(()=>{
@@ -159,9 +168,10 @@ function metaEnd(win){
       +(win&&!S.endless?`<div class="endstars">${starStr(st)}</div>`:'')+`<div class="endg">${gemIc}+<b id="endg">${g}</b></div>`;
     $('#endst').innerHTML=`<div><b>${S.wave}</b>${tr('Wellen')}</div><div><b>${fmt(S.kills)}</b>${tr('Besiegte')}</div><div><b>${fmt(S.earned)}</b>${tr('Gold verdient')}</div>`;
     $('#endads').innerHTML=(!win&&!revived&&!S.endless?adBtn(tr('Weiterkämpfen: +10 Leben'),'revive','wide'):'')+(g>0&&!SV.premium?adBtn(tr('Edelsteine verdoppeln'),'double','wide'):'');
-    trDOM($('#end'));$('#retry').hidden=false;$('#end').hidden=false;updGems();if(S.endless&&S.wave>=3&&BOARD.on())setTimeout(()=>askName(S.wave),600)},win?700:1200);
+    trDOM($('#end'));$('#retry').hidden=false;$('#nextlv').hidden=!(win&&!S.endless&&S.lv!=null&&S.lv<LEVELS.length-1);$('#end').hidden=false;updGems();if(S.endless&&S.wave>=3&&BOARD.on())setTimeout(()=>askName(S.wave),600)},win?700:1200);
 }
-function metaBack(){ADS.midgame().then(()=>{$('#end').hidden=true;newGame(MAPI);renderCamp();$('#start').hidden=false})}
+const restart=()=>S.lv!=null?newGame(LEVELS[S.lv].map,{lv:S.lv}):newGame(MAPI);
+function metaBack(){ADS.midgame().then(()=>{$('#end').hidden=true;restart();$('#start').hidden=false;renderCamp()})}
 
 // ---------- Ereignisse ----------
 document.addEventListener('click',async ev=>{
@@ -194,10 +204,12 @@ window.bwBack=function(){if(!$('#modal').hidden){closeModal();return true}if(!$(
   if(S.buildSel||S.spellSel||S.heroSel){cancel();return true}if(!$('#end').hidden){metaBack();return true}
   if($('#start').hidden&&S.running&&!S.over){if(!S.paused)setPause(true);else{$('#start').hidden=false;S.running=false;ADS.stop();renderCamp()}return true}return false};
 function metaBoot(){
-  const tag=$('.tag');tag.textContent=tr('Erobere fünf Karten. Sammle Sterne und Edelsteine für dauerhafte Upgrades.');
-  const c=document.createElement('div');c.id='camp';$('.how').replaceWith(c);$('#play').hidden=true;$('#again').textContent=tr('Zur Kartenwahl');
+  const tag=$('.tag');tag.textContent=tr('Erobere 50 Level in fünf Kapiteln. Sammle Sterne und Edelsteine für dauerhafte Upgrades.');
+  const c=document.createElement('div');c.id='camp';$('.how').replaceWith(c);$('#play').hidden=true;$('#again').textContent=tr('Zur Levelkarte');
   const r=document.createElement('button');r.className='big alt';r.id='retry';r.textContent=tr('Nochmal');r.onclick=()=>{ac();ADS.midgame().then(()=>{$('#end').hidden=true;revived=false;
-    if(S.endless)goMap('endless');else{newGame(MAPI);applyBoosts();S.running=true;ADS.play()}})};$('#again').after(r);
+    if(S.endless)goMap('endless');else{restart();applyBoosts();S.running=true;ADS.play()}})};$('#again').after(r);
+  const nx=document.createElement('button');nx.className='big';nx.id='nextlv';nx.hidden=true;nx.textContent=tr('Nächstes Level');
+  nx.onclick=()=>{ac();const n=S.lv+1;ADS.midgame().then(()=>{$('#end').hidden=true;newGame(LEVELS[n].map,{lv:n});$('#start').hidden=false;renderCamp();openPrep(n)})};r.after(nx);
   const ea=document.createElement('div');ea.id='endads';$('#endst').after(ea);
   for(const[id,cls]of[['modal','screen'],['adov','adov']]){const d=document.createElement('div');d.id=id;d.className=cls;d.hidden=true;document.body.appendChild(d)}
   const ag=document.createElement('button');ag.id='adgold';ag.dataset.ad='gold';ag.hidden=true;ag.innerHTML=`<i class="play"></i>+80 <i class="ic g"></i>`;$('#wavebtn').before(ag);

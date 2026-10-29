@@ -22,9 +22,26 @@ const MAPS=[
     rocks:[[2,1],[9,2],[14,11],[20,12],[7,12]],forest:(x,y)=>(x<=3&&y>=9)||(x>=17&&y<=3)||(y<=2&&x>=5&&x<=9),theme:'gruen',waves:12,bossT:'troll',boost:1.22},
   {n:'Ascheberg',wp:[[-4,8],[2,8],[2,2],[6,2],[6,9],[10,9],[10,2],[14,2],[14,11],[17,11],[17,10],[20,10],[20,8]],cry:[[4,5],[12,6],[19,12]],pond:[8.5,5.5,1.2,1.6],
     rocks:[[0,0],[4,10],[8,11],[12,0],[16,6],[19,2],[1,5]],forest:(x,y)=>(y>=11&&x<=5)||(x>=17&&y<=2)||(x>=15&&y>=12),theme:'vulkan',waves:15,bossT:'dragon',boost:1.3},
+  {n:'Nebelsumpf',wp:[[-4,6],[4,6],[4,1],[9,1],[9,11],[14,11],[14,3],[17,3],[17,10],[20,10],[20,8]],cry:[[2,9],[12,6],[16,1]],pond:[6.5,9.5,1.8,1.3],
+    rocks:[[1,1],[11,4],[19,12],[6,4],[12,12]],forest:(x,y)=>(x<=2&&y>=10)||(x>=18&&y<=2)||(y>=12&&x>=15&&x<=18),theme:'gruen',waves:10,bossT:'troll',boost:1},
+  {n:'Goldhain',wp:[[-4,11],[5,11],[5,6],[1,6],[1,1],[10,1],[10,8],[14,8],[14,3],[17,3],[17,10],[20,10],[20,8]],cry:[[3,3],[12,5],[19,12]],pond:[7.5,4,1.5,1.2],
+    rocks:[[8,10],[13,11],[19,0],[3,9],[16,6]],forest:(x,y)=>(x>=6&&x<=9&&y>=10)||(x>=19&&y<=3)||(x>=11&&x<=13&&y>=11),theme:'herbst',waves:10,bossT:'dragon',boost:1},
+  {n:'Dünenmeer',wp:[[-4,1],[4,1],[4,11],[8,11],[8,3],[12,3],[12,10],[20,10],[20,8]],cry:[[2,6],[10,7],[16,4]],pond:[16.5,7,1.6,1.1],
+    rocks:[[6,1],[10,0],[14,12],[1,9],[17,1],[6,7]],forest:(x,y)=>(y>=12&&x<=6)||(x>=18&&y<=1)||(x>=14&&x<=16&&y<=1),theme:'wueste',waves:10,bossT:'dragon',boost:1},
+  {n:'Glutschlucht',wp:[[-4,5],[2,5],[2,11],[6,11],[6,1],[10,1],[10,11],[14,11],[14,2],[17,2],[17,10],[20,10],[20,8]],cry:[[4,3],[12,5],[19,12]],pond:[8,5.5,1,1.6],
+    rocks:[[0,0],[4,8],[8,12],[12,0],[16,6],[19,1]],forest:(x,y)=>(x<=1&&y<=3)||(x>=18&&y<=1)||(y>=12&&x>=11&&x<=16),theme:'vulkan',waves:10,bossT:'troll',boost:1},
+  {n:'Königsweg',wp:[[-4,7],[6,7],[6,2],[12,2],[12,10],[20,10],[20,8]],cry:[[3,3],[9,6],[16,6]],pond:[4,11,1.8,1.2],
+    rocks:[[9,11],[14,4],[1,10],[17,1],[9,0]],forest:(x,y)=>(x<=4&&y<=4)||(x>=15&&y<=3)||(y>=12&&x>=8&&x<=12),theme:'gruen',waves:10,bossT:'troll',boost:1},
 ];
+// Kampagne: 50 Level in 5 Kapiteln. Jedes Kapitel nutzt alle 10 Wegkarten in seiner Landschaft.
+const CHAP=[['Grüne Marken','gruen'],['Herbstlande','herbst'],['Wüstenreich','wueste'],['Flussland','gruen'],['Feuerberge','vulkan']];
+const LAYO=[0,8,6,5,1,2,4,3,7,9],LMODS=['','fast','air','','armor','poor','air','boss','fast','armor'];
+const LEVELS=[...Array(50)].map((_,i)=>{const c=Math.floor(i/10),j=i%10;return{map:LAYO[(j+c*3)%10],theme:CHAP[c][1],chap:c,seed:i*37,
+  waves:6+Math.round(i*14/49),boost:+(1+i*.03).toFixed(2),bossT:i%2?'dragon':'troll',mod:i<3?'':i<10&&/armor|boss/.test(LMODS[(j+c)%10])?(i%2?'air':'fast'):LMODS[(j+c)%10]}});
+const MODN={fast:'Wolfsrudel',air:'Fledermausschwärme',armor:'Gepanzerte Horden',poor:'Knappe Kasse: weniger Startgold',boss:'Doppelter Boss'};
+const MODI={fast:'🐺',air:'🦇',armor:'🛡️',poor:'💰',boss:'👑'};
 let MAP=MAPS[0],PATH,MAPI=0;
-function setMap(i){MAPI=i;MAP=MAPS[i];const w=MAP.wp;PATH=mkPath(w.map(([x,y],k)=>[x+.5,k===w.length-1?8.15:y+.5]));CRYS=MAP.cry}
+function setMap(i,L){MAPI=i;MAP={...MAPS[i]};if(L){MAP.theme=L.theme;MAP.seed=L.seed}const w=MAP.wp;PATH=mkPath(w.map(([x,y],k)=>[x+.5,k===w.length-1?8.15:y+.5]));CRYS=MAP.cry}
 const AIR=mkPath([[-2.5,-.8],[5,1.4],[10.5,6.6],[16,3.6],[20.5,6.6]]);
 const CASTLE_C=[20.5,6.5];
 
@@ -70,10 +87,12 @@ const WAVES=[
   [['orc',10,1],['bat',12,.6]],
   [['wolf',12,.45],['knight',4,1.6],['dragon',1,0]],
 ];
-function getWave(n){const f=1+Math.max(0,n-4)*.07;return rawWave(n).map(w=>EN[w[0]].boss?w:[w[0],Math.round(w[1]*f),w[2]/Math.sqrt(f)])}
+function getWave(n){const f=1+Math.max(0,n-4)*.07,g=rawWave(n).map(w=>EN[w[0]].boss?w:[w[0],Math.round(w[1]*f),w[2]/Math.sqrt(f)]),m=S&&S.mod;
+  if(m==='fast'&&n>=2)g.push(['wolf',3+n,.35]);if(m==='air'&&n>=2)g.push(['bat',3+n,.5]);if(m==='armor'&&n>=4)g.push(['knight',1+Math.floor(n/4),1.6]);
+  if(m==='boss'&&S&&n===Math.ceil(S.maxWave/2))g.push([S.bossT==='troll'?'dragon':'troll',1,0]);return g}
 function rawWave(n){
   if(S&&S.endless&&n%5===0){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([n%10?'troll':'dragon',Math.ceil(n/10),4]);return g}
-  if(FEAT.campaign&&S&&!S.endless&&n===S.maxWave){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([MAP.bossT,n>=15?2:1,5]);return g}
+  if(FEAT.campaign&&S&&!S.endless&&n===S.maxWave){const g=baseWave(n).filter(w=>!EN[w[0]].boss);g.push([S.bossT,n>=15?2:1,5]);return g}
   return baseWave(n);
 }
 function baseWave(n){
@@ -92,7 +111,7 @@ const hpMul=n=>1+(n-1)*.15+Math.max(0,n-6)*.1;
 let grid,occ,decor,S;
 let CRYS=MAPS[0].cry;setMap(0);
 function genMap(){
-  const r=RNG(4242);
+  const r=RNG(4242+(MAP.seed||0));
   grid=[...Array(ROWS)].map(()=>Array(COLS).fill(G));
   occ=[...Array(ROWS)].map(()=>Array(COLS).fill(null));
   const WPI=MAP.wp,[pcx,pcy,prx,pry]=MAP.pond;
@@ -151,12 +170,13 @@ function sfx(k){if(!AC||muted||ADMUTE)return;const n=performance.now();if(lastS[
 
 // ---------- Spielzustand ----------
 function newGame(mi=MAPI,opt={}){
-  setMap(mi);genMap();const pk=perks();if(typeof revived!=='undefined')revived=false;
-  S={res:{g:200+pk.gold*40,w:90,c:0},lives:20+pk.wall*4,maxLives:20+pk.wall*4,maxWave:opt.endless?9999:FEAT.campaign?MAP.waves:20,hpBoost:opt.endless?1:FEAT.campaign?MAP.boost:1,endless:!!opt.endless,adGold:0,pk,
+  const L=opt.lv!=null?LEVELS[opt.lv]:null;setMap(mi,L);genMap();const pk=perks();if(typeof revived!=='undefined')revived=false;
+  S={res:{g:200+pk.gold*40,w:90,c:0},lives:20+pk.wall*4,maxLives:20+pk.wall*4,maxWave:opt.endless?9999:L?L.waves:FEAT.campaign?MAP.waves:20,hpBoost:opt.endless?1:L?L.boost:FEAT.campaign?MAP.boost:1,lv:L?opt.lv:null,mod:L?L.mod:'',bossT:L?L.bossT:MAP.bossT,endless:!!opt.endless,adGold:0,pk,
     dmgMul:1+pk.dmg*.08,cdMul:1-pk.spell*.12,units:[],heroSel:false,rallyFor:null,wave:0,waveActive:false,countdown:-1,waveTime:0,spawnQ:[],
     time:0,dayT:.08,buildings:[],enemies:[],proj:[],meteors:[],
     castleLvl:1,castleCd:0,castleHit:0,castleAng:Math.PI/2,sel:null,buildSel:null,spellSel:null,hover:null,cd:{meteor:0,frost:0},
     speed:1,paused:false,running:false,over:false,kills:0,shake:0,frostFlash:0,earned:0};
+  if(S.mod==='poor')S.res.g=Math.round(S.res.g*.7);
   if(FEAT.hero)S.units.push(newHero());
   R.rebuild('all');makeCards();hidePanel();$('#wave').textContent=`0/${S.maxWave}`;
 }
@@ -231,7 +251,7 @@ function spawn(type){
     slow:0,slowT:0,hit:0,ph:Math.random()*10,dir:1,dx:1,dy:0,x:0,y:0,lane:(Math.random()-.5)*.36,id:Math.random()};
   const p=pathPos(P,0);e.x=p[0];e.y=p[1];S.enemies.push(e);
   // Elite: ab Welle 5, mehr Leben und Rüstung, doppelte Beute
-  if(!e.boss&&S.wave>=5&&Math.random()<Math.min(.35,(S.wave-4)*.045)){e.elite=1;e.hp*=1.8;e.max=e.hp;e.arm=Math.min(.7,e.arm+.2);e.sz*=1.18;e.g*=2;
+  if(!e.boss&&S.wave>=5&&Math.random()<Math.min(.35,(S.wave-4)*.045)+(S.mod==='armor'?.1:0)){e.elite=1;e.hp*=1.8;e.max=e.hp;e.arm=Math.min(.7,e.arm+.2);e.sz*=1.18;e.g*=2;
     if(!S.eliteSeen){S.eliteSeen=1;banner('Elite-Gegner!','Mehr Leben und Rüstung: Blitzturm und Frostmagier helfen')}}
   if(e.boss)S.shake=8;
 }
