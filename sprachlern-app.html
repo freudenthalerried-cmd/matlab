@@ -7999,8 +7999,8 @@ const SCHOOL_EN = {
     words:[{t:'vet', de:'Tierarzt / Tierärztin'},{t:'engineer', de:'Ingenieur / Ingenieurin'},{t:'build', de:'bauen'},{t:'interesting', de:'interessant'},{t:'Have you ever …?', de:'Hast du schon einmal …?'}],
     talk:[{q:'What are you going to be when you’re older?', m:'I’m going to be a mechanic because I like cars.'},{q:'Which job would be boring for you?', m:'Working in an office all day would be boring for me.'},{q:'What does someone in your family do?', m:'My dad is a builder. He works on building sites.'}]},
   ms4:{title:'Future plans', de:'Pläne für die Zukunft',
-    listen:[{who:'Jonas', t:'Have you decided what to do after this school year?'},{who:'Sophie', t:'Yes, I have. I’m going to start an apprenticeship.'},{who:'Jonas', t:'Really? What kind?'},{who:'Sophie', t:'As an electrician. If I work hard, I’ll have my own company one day.'},{who:'Jonas', t:'That sounds great. I think I’ll go to a higher school.'},{who:'Sophie', t:'Good luck! I’m sure you’ll do well.'}],
-    qs:[{q:'What is Sophie going to start?', o:['An apprenticeship','A higher school','A holiday job'], a:0},{q:'What job does Sophie want to learn?', o:['Electrician','Teacher','Cook'], a:0},{q:'What does Jonas think he will do?', o:['Go to a higher school','Start a company','Leave school'], a:0}],
+    listen:[{who:'Jonas', t:'Have you decided what to do after this school year?'},{who:'Sophie', t:'Yes, I have. I’m going to start an apprenticeship.'},{who:'Jonas', t:'Really? What kind?'},{who:'Sophie', t:'As an electrician. If I work hard, I’ll have my own company one day.'},{who:'Jonas', t:'That sounds great. I think I’ll stay at school and do my Matura.'},{who:'Sophie', t:'Good luck! I’m sure you’ll do well.'}],
+    qs:[{q:'What is Sophie going to start?', o:['An apprenticeship','A language course','A holiday job'], a:0},{q:'What job does Sophie want to learn?', o:['Electrician','Teacher','Cook'], a:0},{q:'What does Jonas think he will do?', o:['Stay at school and do his Matura','Start a company','Leave school'], a:0}],
     words:[{t:'apprenticeship', de:'die Lehre'},{t:'electrician', de:'Elektriker / Elektrikerin'},{t:'decide', de:'sich entscheiden'},{t:'company', de:'die Firma'},{t:'I’m sure …', de:'Ich bin sicher …'}],
     talk:[{q:'What are your plans after school?', m:'I’m going to do an apprenticeship as a carpenter.'},{q:'What will you do if you have free time this weekend?', m:'If I have free time, I’ll go swimming with my friends.'},{q:'What job would you like to have one day, and why?', m:'I’d like to be a programmer because I love computers.'}]},
 };
@@ -8012,7 +8012,7 @@ const SCHOOL_TXT = {
 };
 function schoolGrade(){ const s = state.school || {}; return SCHOOL_GRADES.find(g=>g.id===s.grade) || null; }
 function schoolPickGrade(){
-  hubStopLive(); hubDlg.mode = 'school';
+  hubStopLive(); hubDlg.mode = 'school'; hubDlg.schoolAnswer = ()=>{};
   hubSayHTML('🏫 🎒 ?', 'In welche Klasse gehst du?', SCHOOL_GRADES.map(g=>[g.de, ()=>{
     sndTap(); state.school = Object.assign({}, state.school, {grade:g.id, unit:0}); saveState(); schoolLesson();
   }, 'word']));
@@ -8024,28 +8024,56 @@ function schoolValid(x){
   const listen = (x.listen||[]).filter(l=>l && s(l.t)).map(l=>({who:s(l.who) ? l.who.trim() : '', t:l.t.trim()})).slice(0, 8);
   const qs = (x.qs||[]).filter(q=>q && s(q.q) && Array.isArray(q.o) && q.o.length >= 2 && q.o.every(s) && new Set(q.o).size===q.o.length
     && Number.isInteger(q.a) && q.a >= 0 && q.a < q.o.length).slice(0, 4);
-  const words = (x.words||[]).filter(w=>w && s(w.t) && s(w.de)).slice(0, 6);
+  const seen = new Set(), words = (x.words||[]).filter(w=>{
+    if(!w || !s(w.t) || !s(w.de)) return false;
+    const a = 't:' + w.t.trim().toLowerCase(), b = 'de:' + w.de.trim().toLowerCase();
+    if(seen.has(a) || seen.has(b)) return false; seen.add(a); seen.add(b); return true;
+  }).slice(0, 6);
   const talk = (x.talk||[]).filter(t=>t && s(t.q) && s(t.m)).slice(0, 3);
   if(listen.length < 3 || qs.length < 2 || words.length < 3 || !talk.length) return null;
   return {title:x.title.trim(), de:s(x.de) ? x.de.trim() : '', listen, qs, words, talk};
 }
 async function schoolLesson(){
   const G = schoolGrade(); if(!G) return schoolPickGrade();
-  hubStopLive(); hubDlg.mode = 'school';
+  hubStopLive(); hubDlg.mode = 'school'; hubDlg.schoolAnswer = ()=>{};
   try{ speechSynthesis.cancel(); }catch(e){}
   const L = currentLang(), lang = DRIVE_LANG[L], ui = (state.school.unit || 0) % G.units.length, unit = G.units[ui];
-  hubSayHTML('🏫 📖 …', G.de + ' · ' + unit, null); const seq = hubDlg.seq;
-  let les = null;
+  // Schulstufe & Grammatik gelten fürs Englische; andere Sprachen beginnen meist später als 2. Fremdsprache
+  const lvl = L==='en' ? `CEFR ${G.cefr}. Grammar to use: ${G.gram}.`
+    : `a beginner in ${lang} (CEFR ${/^vs/.test(G.id) ? 'pre-A1' : 'A1'}), often as a second foreign language. Use only simple grammar that fits ${lang}.`;
+  hubSayHTML('🏫 📖 …', G.de, null); const seq = hubDlg.seq;
+  let les = null, tried = false;
   try{
-    if(hubHasAI()) les = schoolValid(await askClaude([{role:'user', content:`Write one short school lesson like a textbook "Listen and talk" page for a pupil in Austria (${G.de}, CEFR ${G.cefr}) who learns ${lang}. Unit topic: "${unit}". Grammar to use: ${G.gram}.
-JSON only: {"title":"<unit title in ${lang}>","de":"<title in German>","listen":[{"who":"<first name>","t":"<line in ${lang}>"}],"qs":[{"q":"<question in ${lang}>","o":["<answer>","<answer>","<answer>"],"a":<index of the right answer>}],"words":[{"t":"<word or phrase in ${lang}>","de":"<German>"}],"talk":[{"q":"<personal question to the pupil in ${lang}>","m":"<short model answer in ${lang}>"}]}
-listen: a natural dialogue of 5-7 short lines between two children, using the grammar. qs: 3 listening questions answered by the dialogue, only one right answer each. words: 5 key words or phrases from the dialogue. talk: 3 personal questions about the topic. Keep every sentence short and right for the level.`}],
-      'You write short, friendly school lessons for a children’s language-learning app. Reply with JSON only, no other text.', true, {effort:'low', maxTokens:2048}));
+    if(hubHasAI()){ tried = true; les = schoolValid(await askClaude([{role:'user', content:`Write one short school lesson like a textbook "Listen and talk" page for a pupil in Austria (${G.de}) who learns ${lang}. Level: ${lvl} Unit topic: "${unit}".
+JSON only: {"title":"<unit title in ${lang}>","de":"<title in German>","listen":[{"who":"<first name>","t":"<line in ${lang}>"}],"qs":[{"q":"<question in ${lang}>","o":["<right answer>","<wrong answer>","<wrong answer>"],"a":0}],"words":[{"t":"<word or phrase in ${lang}>","de":"<German>"}],"talk":[{"q":"<personal question to the pupil in ${lang}>","m":"<short model answer in ${lang}>"}]}
+listen: a natural dialogue of 5-7 short lines between two children, fitting the level. qs: 3 listening questions answered by the dialogue; the right answer is always the first option and "a" is 0; the wrong answers are clearly wrong. words: 5 different key words or phrases from the dialogue. talk: 3 personal questions about the topic. Keep every sentence short and right for the level.`}],
+      'You write short, friendly school lessons for a children’s language-learning app. Reply with JSON only, no other text.', true, {effort:'low', maxTokens:2048})); }
   }catch(e){}
+  const ai = !!les;
   if(!les && L==='en') les = SCHOOL_EN[G.id];
   if(!hubOnHub() || hubDlg.seq!==seq) return;
-  if(!les){ hubDlg.mode = 'offer'; hubSayHTML('🏫 🔑', 'Für Schulstunden in dieser Sprache brauche ich den Zauberschlüssel.', [['🔑', ()=>hubKeySetup(), 'no'], ['👍', ()=>hubNext(true), 'yes']]); return; }
-  schoolListen({les, G, ui, L, code:LANGS[L].code, ok:0, n:0, talked:0});
+  if(!les){
+    hubDlg.mode = 'offer';
+    if(tried) hubSayHTML('😕 Die Schulstunde hat gerade nicht geklappt.', '', [['🔁', schoolLesson, 'yes'], ['👍', ()=>hubNext(true), 'no']]);
+    else hubSayHTML('🏫 🔑', 'Für Schulstunden in dieser Sprache brauche ich den Zauberschlüssel.', [['🔑', ()=>hubKeySetup(), 'no'], ['👍', ()=>hubNext(true), 'yes']]);
+    return;
+  }
+  schoolListen({les, G, ui, L, code:LANGS[L].code, ok:0, n:0, talked:0, ai});
+}
+// wie hubContinue: erst nach dem Sprechen (und Nachhall) zuhören, damit Flügo sich nicht selbst hört
+function schoolAfterSpeech(seq){
+  return new Promise(res=>{ let n = 0; const go = ()=>setTimeout(()=>{
+    if(hubDlg.seq!==seq || !hubOnHub()) return res(false);
+    if(document.body.classList.contains('speaking') && ++n < 60) return go();
+    res(true);
+  }, vfx().cave ? 1800 : 500); go(); });
+}
+const schoolNorm = s=>String(s||'').toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+// gesagte/getippte Antwort → passende Auswahl (längste zuerst, damit „Yes“ nicht „Yes, I can“ schlägt)
+function schoolMatch(heard, opts, key){
+  const h = schoolNorm(heard); if(!h) return null;
+  return [...opts].sort((a, b)=>String(key ? key(b) : b).length - String(key ? key(a) : a).length)
+    .find(o=>{ const v = schoolNorm(key ? key(o) : o); return v && (h===v || h.includes(v) || (h.length >= 3 && v.includes(h))); }) || null;
 }
 function schoolSay(S, text){ return state.settings.sound!==false ? speakAsync(text, S.code) : Promise.resolve(); }
 function schoolListen(S, showText){
@@ -8053,6 +8081,7 @@ function schoolListen(S, showText){
   const chips = [['🔁', ()=>schoolListen(S, showText), 'no'], ...(showText ? [] : [['👀', ()=>schoolListen(S, true), 'no']]), ['➡️', ()=>schoolQs(S, 0), 'yes']];
   if(showText) hubSayHTML('🎧 ' + S.les.listen.map(l=>(l.who ? l.who + ': ' : '') + l.t).join(' – '), S.les.de, chips, false, true);
   else hubSayHTML('🎧 ' + (SCHOOL_TXT.listen[S.L] || 'Listen!') + ' · ' + S.les.title, 'Hör gut zu – danach kommen Fragen. 👀 zeigt den Text.', chips);
+  hubDlg.schoolAnswer = t=>{ if(/nochmal|again|repeat|wieder|otra vez|encore|ancora/i.test(t)) schoolListen(S, showText); else if(/weiter|next|okay|\bok\b|\bja\b|yes|\blos\b|fertig|done|\bs[ií]\b|oui/i.test(t)) schoolQs(S, 0); };
   const seq = hubDlg.seq;
   (async()=>{ for(const l of S.les.listen){ if(hubDlg.seq!==seq || !hubOnHub()) return; await schoolSay(S, l.t); await new Promise(r=>setTimeout(r, 300)); } })();
 }
@@ -8060,34 +8089,41 @@ function schoolQs(S, i){
   try{ speechSynthesis.cancel(); }catch(e){}
   if(i >= S.les.qs.length) return schoolWords(S, 0);
   const Q = S.les.qs[i], right = Q.o[Q.a];
-  hubSayHTML('❓ ' + Q.q, '', shuffle(Q.o).map(o=>[o, ()=>{
+  const choose = o=>{
+    hubDlg.schoolAnswer = ()=>{};
     const ok = o===right; S.n++; if(ok){ S.ok++; sndCorrect(); } else sndWrong();
     hubSayHTML((ok ? '✅ ' : '❌ ') + right, '', null, false, true); const seq = hubDlg.seq;
     schoolSay(S, right).then(()=>setTimeout(()=>{ if(hubDlg.seq===seq && hubOnHub()) schoolQs(S, i + 1); }, 500));
-  }, 'word']), false, true);
+  };
+  hubSayHTML('❓ ' + Q.q, '', shuffle(Q.o).map(o=>[o, ()=>choose(o), 'word']), false, true);
+  hubDlg.schoolAnswer = t=>{ const o = schoolMatch(t, Q.o); if(o) choose(o); else toast('🤔 „' + t + '“'); };
   schoolSay(S, Q.q);
 }
 function schoolWords(S, i){
   const W = S.les.words;
   if(i >= W.length) return hubHasAI() ? schoolDone(S) : schoolTalk(S, 0);
   const w = W[i], opts = shuffle([w, ...shuffle(W.filter(x=>x!==w)).slice(0, 2)]);
-  hubSayHTML('📝 „' + w.de + '“ = ?', '', opts.map(o=>[o.t, ()=>{
+  const choose = o=>{
+    hubDlg.schoolAnswer = ()=>{};
     const ok = o===w; S.n++; if(ok){ S.ok++; sndCorrect(); } else sndWrong();
     hubSayHTML((ok ? '✅ ' : '❌ ') + w.t, w.de, null, false, true); const seq = hubDlg.seq;
     schoolSay(S, w.t).then(()=>setTimeout(()=>{ if(hubDlg.seq===seq && hubOnHub()) schoolWords(S, i + 1); }, 400));
-  }, 'word']));
+  };
+  hubSayHTML('📝 „' + w.de + '“ = ?', '', opts.map(o=>[o.t, ()=>choose(o), 'word']));
+  hubDlg.schoolAnswer = t=>{ const o = schoolMatch(t, opts, x=>x.t); if(o) choose(o); else toast('🤔 „' + t + '“'); };
 }
 // Talk ohne Schlüssel: Flügo fragt, du antwortest laut – dann ein Beispiel, wie man es auch sagen kann
 function schoolTalk(S, i){
   if(i >= S.les.talk.length) return schoolDone(S);
   const T = S.les.talk[i], mic = hubMicOk();
   hubSayHTML('🗣️ ' + T.q, mic ? 'Antworte laut! 💡 zeigt ein Beispiel.' : '💡 zeigt ein Beispiel zum Nachsprechen.', [...(mic ? [['🎤', ()=>schoolHear(S, i), 'yes']] : []), ['💡', ()=>schoolModel(S, i), 'no'], ['➡️', ()=>schoolTalk(S, i + 1), 'no']], false, true);
-  const seq = hubDlg.seq;
-  schoolSay(S, T.q).then(()=>{ if(mic && hubDlg.seq===seq && hubOnHub()) schoolHear(S, i); });
+  const seq = hubDlg.seq; hubDlg.schoolAnswer = t=>schoolGot(S, i, t);
+  schoolSay(S, T.q).then(()=>mic && schoolAfterSpeech(seq)).then(go=>{ if(go && hubDlg.seq===seq && hubOnHub()) schoolHear(S, i); });
 }
 function schoolModel(S, i){
   const T = S.les.talk[i];
   hubSayHTML('💡 ' + T.m, 'Sprich es nach!', [...(hubMicOk() ? [['🎤', ()=>schoolHear(S, i), 'yes']] : []), ['➡️', ()=>schoolTalk(S, i + 1), 'no']], false, true);
+  hubDlg.schoolAnswer = t=>schoolGot(S, i, t);
   schoolSay(S, T.m);
 }
 async function schoolHear(S, i){
@@ -8102,6 +8138,10 @@ async function schoolHear(S, i){
   if(!hubOnHub() || hubDlg.seq!==seq) return;
   if(['not-allowed','service-not-allowed'].includes(err)){ hubDlg.micBlocked = true; hubDlg.micOk = false; }
   if(!said) return schoolModel(S, i);
+  schoolGot(S, i, said);
+}
+function schoolGot(S, i, said){
+  const T = S.les.talk[i]; hubDlg.schoolAnswer = ()=>{};
   S.talked++; sndCorrect();
   const msg = pick(SCHOOL_TXT.praise[S.L] || SCHOOL_TXT.praise.en) + ' ' + (SCHOOL_TXT.also[S.L] || SCHOOL_TXT.also.en) + ' ' + T.m;
   hubSayHTML('👏 ' + msg, '„' + said + '“', [['➡️', ()=>schoolTalk(S, i + 1), 'yes']], false, true); const seq2 = hubDlg.seq;
@@ -8110,7 +8150,8 @@ async function schoolHear(S, i){
 function schoolDone(S){
   try{ speechSynthesis.cancel(); }catch(e){}
   const xp = S.ok*2 + S.talked*3 + 5;
-  addXP(xp); state.coins += S.ok; state.school = Object.assign({}, state.school, {unit:S.ui + 1, lessons:((state.school||{}).lessons || 0) + 1}); saveState(); updateTopbar();
+  hubDlg.schoolAnswer = null;
+  addXP(xp); state.coins += S.ok; state.school = Object.assign({}, state.school, {unit:S.ai ? S.ui + 1 : S.ui, lessons:((state.school||{}).lessons || 0) + 1}); saveState(); updateTopbar();
   runDragonAction(S.ok >= S.n - 1 ? 'jump' : 'heart');
   hubDlg.mode = 'offer';
   const chat = hubHasAI() && [['🗣️', ()=>{ hubDlg.mode = 'chat'; hubChat((SCHOOL_TXT.talk[S.L] || SCHOOL_TXT.talk.en).replace('{t}', S.les.title)); }, 'yes']];
@@ -8329,7 +8370,7 @@ function hubOfferList(){
   // ohne Schlüssel: höchstens einmal am Tag danach fragen – sonst spielt der Drache einfach mit dir
   if(hubHasAI()) head.push('chat'); else if(!keySnoozed()) head.push('key');
   if(!state.topics && state.lastPlayDate) head.push('topics');
-  first.unshift(...head, 'school');
+  first.unshift(...head, ...(hubHasAI() || currentLang()==='en' ? ['school'] : []));
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'vfx', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
@@ -8434,7 +8475,7 @@ const HUB_INTENTS = [
   [/gute ?nacht|schlaf|bett|good ?night|sleep|bed|buenas noches|dormir|bonne nuit|buonanotte|dormire/i, 'night'],
   [/abenteuer|adventure|aventura|aventure|avventura|kampagne/i, 'campaign'],
   [/spiel|game|play|juego|jeu|gioco/i, 'games'],
-  [/schul|school|unterricht|listen and talk|hausübung|hausaufgabe|homework|clase|escuela|école|classe|scuola/i, 'school'],
+  [/\b(schul(e|stunde|stunden|aufgabe|aufgaben|lektion)|unterricht|hausübung(en)?|hausaufgaben?|school ?lesson|homework|listen and talk)\b|lecci[oó]n de clase|le[cç]on de classe|lezione di scuola/i, 'school'],
   [/lern|lesson|learn|lektion|aprender|apprendre|imparare/i, 'learn'],
   [/quest|aufgabe|mission/i, 'quests'],
   [/training|trainier|üben|practi/i, 'train'],
@@ -8593,6 +8634,7 @@ function hubLang(m){
 }
 function hubHeard(heard){
   const t = heard.toLowerCase().trim(), words = t.split(/\s+/).length, L = currentLang();
+  if(hubDlg.mode==='school' && hubDlg.schoolAnswer && !(words <= 3 && /^(stopp?|halt|ende|schluss|fertig|pause|tsch[üu]ss|bye)\b/.test(t))){ hubDlg.schoolAnswer(heard); return; }
   if(words <= 3 && /^(stopp?|halt|ende|schluss|tsch[üu]ss|servus|baba|ciao|bye|goodbye|good ?bye|adi[óo]s|au revoir|basta|fertig|pause|that'?s all)\b/.test(t)){
     hubStopLive(); hubDlg.mode = 'offer';
     const w = hubDlg.words || 0; hubDlg.words = 0;
@@ -8609,7 +8651,7 @@ function hubHeard(heard){
   let cmd = !chatting || words <= 3 || cmdLike ? dragonCommand(heard, true) : null; if(cmd==='random') cmd = pick(DRAGON_RANDOM);
   if(cmd){ hubTrick(cmd); return; }
   const offer = !chatting;
-  if(offer || cmdLike){ const hit = HUB_INTENTS.find(([re])=>re.test(heard)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
+  if(offer || cmdLike){ const hit = HUB_INTENTS.find(([re, k])=>re.test(heard) && !(k==='school' && chatting)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
   if(offer && /^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ if(hubDlg.mode==='hint'){ hubNext(true).then(hubContinue); return; } hubStopLive(); hubAccept(); return; }
   if(offer && /^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true).then(hubContinue); return; }
   hubChat(heard);
