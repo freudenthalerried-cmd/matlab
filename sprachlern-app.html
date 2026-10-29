@@ -3761,8 +3761,26 @@ const drive = {on:false, paused:false, mode:'story', turns:[], userLines:[], cor
 let sampleFn = null;
 (async()=>{ try{ if(window.claude) sampleFn = await window.claude.use('sample'); }catch(e){} })();
 
-// eigener Schlüssel – sonst der aus der Haushalt-App (gleiche Website htmlpreview.github.io, gleicher Gerätespeicher)
-function apiKey(){ try{ return (localStorage.getItem(KEY_STORE) || localStorage.getItem('apikey') || '').trim(); }catch(e){ return ''; } }
+// eigener Schlüssel – sonst einer aus deinen anderen Apps auf derselben Website (gleicher Gerätespeicher):
+// Haushalt-App „apikey“, Fakten-Checker „fc-apikey“. Ein abgelehnter fremder Schlüssel wird übersprungen.
+const KEY_ALT = ['apikey', 'fc-apikey'], KEY_BAD = 'wortreise_bad_key';
+function apiKey(){
+  try{
+    const own = (localStorage.getItem(KEY_STORE) || '').trim(); if(own) return own;
+    const bad = localStorage.getItem(KEY_BAD) || '';
+    for(const n of KEY_ALT){ const v = (localStorage.getItem(n) || '').trim(); if(/^sk-ant-/.test(v) && v.slice(-8)!==bad) return v; }
+  }catch(e){}
+  return '';
+}
+// abgelehnten Schlüssel vergessen: den eigenen löschen, einen fremden nur überspringen (dort nichts kaputt machen)
+function dropKey(){ try{ const k = apiKey(); localStorage.removeItem(KEY_STORE); if(k) localStorage.setItem(KEY_BAD, k.slice(-8)); }catch(e){} }
+// Schlüssel per Link übernehmen (#claude=… oder #key=…): nur auf diesem Gerät speichern, Adresse sofort bereinigen
+(()=>{ try{
+  const h = new URLSearchParams(location.hash.slice(1)), k = (h.get('claude') || h.get('key') || '').replace(/\s+/g, '');
+  if(!h.has('claude') && !h.has('key')) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if(/^sk-ant-[\w-]{20,}$/.test(k)){ localStorage.setItem(KEY_STORE, k); localStorage.removeItem(KEY_BAD); }
+}catch(e){} })();
 async function claudeFetch(rules, turns, opts){
   opts = opts || {};
   const key = apiKey(); if(!key) throw {code:'no_backend'};
@@ -4476,8 +4494,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '7.1';
+const APP_VERSION = '7.2';
 const CHANGELOG = [
+  ['7.2', '🔑 Zauberschlüssel im Hintergrund: einmal 📋 tippen (oder per Link) – Flügo nimmt auch den Schlüssel deiner anderen Apps und fragt sonst höchstens einmal am Tag'],
   ['7.1', '🎭 Flügo spielt seine Stimme mit: als Robo-Drache „beep boop“, als Riese dröhnend, als Baby kichernd …'],
   ['7.0', '🎧 Klang-Feinschliff: alle Stimmen gleich laut und ohne Knacken am Satzanfang/-ende'],
   ['6.9', '🎙️ Die natürliche Stimme ist nach dem Start sofort da: Flügo lädt sie gleich vom Gerät und spricht nicht mehr erst mit der Roboterstimme'],
@@ -8047,19 +8066,23 @@ function hubBargeIn(){                                 // du fällst ihm ins Wor
 function hubHasAI(){ return !!(sampleFn || apiKey() || window.claude); }
 function hubKeySetup(pending, msg){
   hubStopLive(); clearTimeout(hubDlg.t); hubDlg.mode = 'key';
-  hubSayHTML(msg || '🔑 Damit wir lange reden können, brauche ich einmal deinen Claude-Schlüssel.', 'Er bleibt nur auf diesem Gerät. Einen Schlüssel bekommst du auf console.anthropic.com → API Keys (beginnt mit „sk-ant-“).', null);
+  hubSayHTML(msg || '🔑 Gib mir meinen Zauberschlüssel – dann reden wir, so lange du willst!', 'Claude-Schlüssel (sk-ant-…) kopieren und auf 📋 tippen. Er bleibt nur auf diesem Gerät.', null);
   const s = document.getElementById('hubSay'), f = document.createElement('div'); f.className = 'hs-key';
   f.innerHTML = '<input type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">'
     + '<div class="hs-chips"><button class="hs-chip no" data-a="paste" aria-label="Einfügen">📋</button><button class="hs-chip yes" data-a="save" aria-label="Speichern">💾</button>'
     + '<a class="hs-chip no" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" aria-label="Schlüssel holen">🔗</a><button class="hs-chip no" data-a="later" aria-label="Später">⏭️</button></div>';
   s.appendChild(f); f.addEventListener('click', e=>e.stopPropagation());
   const inp = f.querySelector('input');
-  f.querySelector('[data-a=paste]').onclick = async ()=>{ try{ inp.value = (await navigator.clipboard.readText()).trim(); }catch(err){ inp.focus(); toast('📋 Lang drücken → Einfügen'); } };
-  f.querySelector('[data-a=later]').onclick = ()=>{ sndTap(); hubDlg.list = hubOfferList().filter(k=>k!=='key'); hubDlg.i = 0; hubOffer(true); };
+  const ok = v=>/^sk-ant-[\w-]{20,}$/.test(v), clean = ()=>inp.value.trim().replace(/\s+/g, '');
+  // ein Tipp genügt: einfügen und – wenn es ein Schlüssel ist – gleich merken
+  f.querySelector('[data-a=paste]').onclick = async ()=>{ try{ inp.value = (await navigator.clipboard.readText()).trim(); if(ok(clean())) save(); }catch(err){ inp.focus(); toast('📋 Lang drücken → Einfügen'); } };
+  inp.addEventListener('paste', ()=>setTimeout(()=>{ if(ok(clean())) save(); }, 0));
+  f.querySelector('[data-a=later]').onclick = ()=>{ sndTap(); state.keyLater = Date.now(); saveState(); hubDlg.list = hubOfferList().filter(k=>k!=='key'); hubDlg.i = 0; hubOffer(true); };
   const save = ()=>{
-    const v = inp.value.trim().replace(/\s+/g, '');
-    if(!/^sk-ant-[\w-]{20,}$/.test(v)){ toast('🔑 Der Schlüssel beginnt mit „sk-ant-“'); inp.focus(); return; }
-    try{ localStorage.setItem(KEY_STORE, v); }catch(err){}
+    const v = clean();
+    if(!ok(v)){ toast('🔑 Der Schlüssel beginnt mit „sk-ant-“'); inp.focus(); return; }
+    if(f.dataset.saved) return; f.dataset.saved = '1';
+    try{ localStorage.setItem(KEY_STORE, v); localStorage.removeItem(KEY_BAD); }catch(err){}
     sndCorrect(); hubDlg.list = []; hubDlg.i = 0;
     if(pending) hubChat(pending); else hubOffer(true);
   };
@@ -8133,7 +8156,8 @@ function hubOfferList(){
   // Ganz vorne, was echtes Reden möglich macht: schöne Stimme, KI-Zugang – dann gleich ein Gespräch
   const head = [];
   if(state.settings.neural===undefined && nvSupported()) head.push('voice');
-  head.push(hubHasAI() ? 'chat' : 'key');
+  // ohne Schlüssel: höchstens einmal am Tag danach fragen – sonst spielt der Drache einfach mit dir
+  if(hubHasAI()) head.push('chat'); else if(Date.now() - (state.keyLater || 0) > 20*3600e3) head.push('key');
   if(!state.topics && state.lastPlayDate) head.push('topics');
   first.unshift(...head);
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'vfx', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
@@ -8438,7 +8462,7 @@ async function hubChat(text){
     hubStopLive();
     if(!hubOnHub()) return;
     const code = e && e.code;
-    if(code==='bad_key' || code==='no_backend'){ buddy.turns.pop(); if(code==='bad_key') try{ localStorage.removeItem(KEY_STORE); }catch(err){} hubKeySetup(text, code==='bad_key' ? '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.' : null); return; }
+    if(code==='bad_key' || code==='no_backend'){ buddy.turns.pop(); if(code==='bad_key') dropKey(); hubKeySetup(text, code==='bad_key' ? '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.' : null); return; }
     const why = code==='rate_limited' ? '⏳ Kurz zu viele Fragen auf einmal.' : code==='network' || code==='offline' ? '📶 Keine Internetverbindung.' : code==='session_expired' ? '🔐 Anmeldung abgelaufen.' : '😕 Da ist etwas schiefgegangen.';
     hubSayHTML(why, '', [['🔁', ()=>hubRetry(text), 'yes'], ['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true); }, 'no']]);
     return;
