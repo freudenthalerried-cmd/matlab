@@ -4500,8 +4500,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '7.2';
+const APP_VERSION = '7.3';
 const CHANGELOG = [
+  ['7.3', '🏫 Schulstunde mit Flügo: 🎧 Listen, ❓ Fragen, 📝 Wörter, 🗣️ Talk – passend zu deiner Klasse (VS 3 bis 4. Klasse), mit Schlüssel jede Einheit neu'],
   ['7.2', '🔑 Zauberschlüssel im Hintergrund: einmal 📋 tippen – Flügo nimmt auch den Schlüssel deiner anderen Apps und fragt sonst höchstens einmal am Tag'],
   ['7.1', '🎭 Flügo spielt seine Stimme mit: als Robo-Drache „beep boop“, als Riese dröhnend, als Baby kichernd …'],
   ['7.0', '🎧 Klang-Feinschliff: alle Stimmen gleich laut und ohne Knacken am Satzanfang/-ende'],
@@ -7961,6 +7962,162 @@ document.addEventListener('click', e=>{
   sndTap(); const id = b.dataset.persona; wearPersona(state.persona===id ? null : id); try{ renderDen(); }catch(err){}
 });
 
+/* ---------- 🏫 Schulstunde: Listen → Fragen → Wörter → Talk (wie im Schulbuch) ---------- */
+const SCHOOL_GRADES = [
+  {id:'vs3', de:'VS 3', cefr:'pre-A1', gram:'colours, numbers, I like, I have got', units:['Colours and toys','My family','Animals','Food I like','My body','The weather']},
+  {id:'vs4', de:'VS 4', cefr:'A1', gram:'I can, there is / there are, present simple', units:['My day','My school bag','Pets','Clothes','At the zoo','My birthday']},
+  {id:'ms1', de:'1. Klasse', cefr:'A1', gram:'to be, have got, can, present simple', units:['Hello, I am new!','Family and friends','My school','My home','Hobbies','Food and drinks']},
+  {id:'ms2', de:'2. Klasse', cefr:'A2', gram:'present progressive, past simple, comparatives', units:['Shopping','In town','Holidays','Sports','Last weekend','Animals and nature']},
+  {id:'ms3', de:'3. Klasse', cefr:'A2', gram:'past progressive, going to, will, present perfect', units:['Jobs','Travelling','Phones and media','Health','Adventure','Our planet']},
+  {id:'ms4', de:'4. Klasse', cefr:'B1', gram:'present perfect vs past simple, if-clauses, passive', units:['Future plans','The environment','Technology','Friendship','Work and school','Countries and cultures']},
+];
+// je Klasse eine fertige Englisch-Stunde (ohne Schlüssel); mit Schlüssel schreibt Claude jede Einheit neu
+const SCHOOL_EN = {
+  vs3:{title:'Colours and toys', de:'Farben und Spielsachen',
+    listen:[{who:'Mia', t:'Look, I have got a new ball!'},{who:'Ben', t:'Wow! What colour is it?'},{who:'Mia', t:'It is red and yellow.'},{who:'Ben', t:'I have got a blue car.'},{who:'Mia', t:'Let’s play together!'}],
+    qs:[{q:'What has Mia got?', o:['A ball','A car','A doll'], a:0},{q:'What colour is Mia’s ball?', o:['Red and yellow','Blue','Green'], a:0},{q:'What has Ben got?', o:['A blue car','A red ball','A teddy'], a:0}],
+    words:[{t:'ball', de:'der Ball'},{t:'car', de:'das Auto'},{t:'red', de:'rot'},{t:'yellow', de:'gelb'},{t:'blue', de:'blau'}],
+    talk:[{q:'What is your favourite colour?', m:'My favourite colour is green.'},{q:'What toys have you got?', m:'I have got a ball and a teddy.'},{q:'What colour is your bag?', m:'My bag is blue.'}]},
+  vs4:{title:'My day', de:'Mein Tag',
+    listen:[{who:'Leo', t:'I get up at seven o’clock.'},{who:'Anna', t:'Me too! I have breakfast at half past seven.'},{who:'Leo', t:'I go to school by bus.'},{who:'Anna', t:'I walk to school with my brother.'},{who:'Leo', t:'After school I play football.'}],
+    qs:[{q:'When does Leo get up?', o:['At seven o’clock','At eight o’clock','At six o’clock'], a:0},{q:'How does Leo go to school?', o:['By bus','By bike','On foot'], a:0},{q:'What does Leo do after school?', o:['He plays football','He reads a book','He sleeps'], a:0}],
+    words:[{t:'get up', de:'aufstehen'},{t:'breakfast', de:'das Frühstück'},{t:'by bus', de:'mit dem Bus'},{t:'walk', de:'zu Fuß gehen'},{t:'after school', de:'nach der Schule'}],
+    talk:[{q:'When do you get up?', m:'I get up at half past six.'},{q:'How do you go to school?', m:'I go to school by car.'},{q:'What do you do after school?', m:'After school I play with my friends.'}]},
+  ms1:{title:'Hello, I am new!', de:'Hallo, ich bin neu!',
+    listen:[{who:'Sam', t:'Hi! I’m Sam. Are you new here?'},{who:'Lara', t:'Yes, I am. My name is Lara. I’m eleven.'},{who:'Sam', t:'Where are you from?'},{who:'Lara', t:'I’m from Linz. And you?'},{who:'Sam', t:'I’m from Ried. Can you play basketball?'},{who:'Lara', t:'Yes, I can! I love basketball.'}],
+    qs:[{q:'How old is Lara?', o:['Eleven','Ten','Twelve'], a:0},{q:'Where is Lara from?', o:['From Linz','From Ried','From Vienna'], a:0},{q:'What can Lara play?', o:['Basketball','Tennis','The piano'], a:0}],
+    words:[{t:'new', de:'neu'},{t:'Where are you from?', de:'Woher kommst du?'},{t:'I’m eleven.', de:'Ich bin elf.'},{t:'can', de:'können'},{t:'love', de:'lieben'}],
+    talk:[{q:'What’s your name and how old are you?', m:'My name is Max and I’m eleven.'},{q:'Where are you from?', m:'I’m from Austria. I live in Ried.'},{q:'What can you do well?', m:'I can swim and I can play the guitar.'}]},
+  ms2:{title:'Shopping', de:'Einkaufen',
+    listen:[{who:'Assistant', t:'Hello! Can I help you?'},{who:'Tim', t:'Yes, please. I’m looking for a T-shirt.'},{who:'Assistant', t:'What size are you?'},{who:'Tim', t:'Medium, please. Have you got it in black?'},{who:'Assistant', t:'Yes, here you are. It’s twelve euros.'},{who:'Tim', t:'Great, I’ll take it!'}],
+    qs:[{q:'What is Tim looking for?', o:['A T-shirt','Shoes','A cap'], a:0},{q:'What colour does Tim want?', o:['Black','White','Red'], a:0},{q:'How much is the T-shirt?', o:['Twelve euros','Twenty euros','Two euros'], a:0}],
+    words:[{t:'Can I help you?', de:'Kann ich dir helfen?'},{t:'I’m looking for …', de:'Ich suche …'},{t:'size', de:'die Größe'},{t:'How much is it?', de:'Wie viel kostet es?'},{t:'I’ll take it.', de:'Ich nehme es.'}],
+    talk:[{q:'What do you like shopping for?', m:'I like shopping for clothes and games.'},{q:'What did you buy last time?', m:'Last time I bought new trainers.'},{q:'Where do you usually go shopping?', m:'I usually go shopping in town with my mum.'}]},
+  ms3:{title:'Jobs', de:'Berufe',
+    listen:[{who:'Emma', t:'What are you going to be when you’re older?'},{who:'Noah', t:'I’m going to be a vet. I love animals.'},{who:'Emma', t:'Cool! I want to be an engineer.'},{who:'Noah', t:'Why?'},{who:'Emma', t:'I like building things. My mum is an engineer too.'},{who:'Noah', t:'Have you ever visited her at work?'},{who:'Emma', t:'Yes, I have. It was really interesting!'}],
+    qs:[{q:'What is Noah going to be?', o:['A vet','An engineer','A teacher'], a:0},{q:'Why does Emma want to be an engineer?', o:['She likes building things','She loves animals','She likes cooking'], a:0},{q:'Who is an engineer too?', o:['Emma’s mum','Noah’s dad','Emma’s brother'], a:0}],
+    words:[{t:'vet', de:'Tierarzt / Tierärztin'},{t:'engineer', de:'Ingenieur / Ingenieurin'},{t:'build', de:'bauen'},{t:'interesting', de:'interessant'},{t:'Have you ever …?', de:'Hast du schon einmal …?'}],
+    talk:[{q:'What are you going to be when you’re older?', m:'I’m going to be a mechanic because I like cars.'},{q:'Which job would be boring for you?', m:'Working in an office all day would be boring for me.'},{q:'What does someone in your family do?', m:'My dad is a builder. He works on building sites.'}]},
+  ms4:{title:'Future plans', de:'Pläne für die Zukunft',
+    listen:[{who:'Jonas', t:'Have you decided what to do after this school year?'},{who:'Sophie', t:'Yes, I have. I’m going to start an apprenticeship.'},{who:'Jonas', t:'Really? What kind?'},{who:'Sophie', t:'As an electrician. If I work hard, I’ll have my own company one day.'},{who:'Jonas', t:'That sounds great. I think I’ll go to a higher school.'},{who:'Sophie', t:'Good luck! I’m sure you’ll do well.'}],
+    qs:[{q:'What is Sophie going to start?', o:['An apprenticeship','A higher school','A holiday job'], a:0},{q:'What job does Sophie want to learn?', o:['Electrician','Teacher','Cook'], a:0},{q:'What does Jonas think he will do?', o:['Go to a higher school','Start a company','Leave school'], a:0}],
+    words:[{t:'apprenticeship', de:'die Lehre'},{t:'electrician', de:'Elektriker / Elektrikerin'},{t:'decide', de:'sich entscheiden'},{t:'company', de:'die Firma'},{t:'I’m sure …', de:'Ich bin sicher …'}],
+    talk:[{q:'What are your plans after school?', m:'I’m going to do an apprenticeship as a carpenter.'},{q:'What will you do if you have free time this weekend?', m:'If I have free time, I’ll go swimming with my friends.'},{q:'What job would you like to have one day, and why?', m:'I’d like to be a programmer because I love computers.'}]},
+};
+const SCHOOL_TXT = {
+  praise:{en:['Great!','Well done!','Super!'], es:['¡Genial!','¡Muy bien!','¡Súper!'], fr:['Super !','Bravo !','Très bien !'], it:['Bravissimo!','Ottimo!','Super!']},
+  also:{en:'You could also say:', es:'También puedes decir:', fr:'Tu peux aussi dire :', it:'Puoi anche dire:'},
+  listen:{en:'Listen!', es:'¡Escucha!', fr:'Écoute !', it:'Ascolta!'},
+  talk:{en:'Let’s talk about our school topic “{t}”! Ask me a question about it.', es:'¡Hablemos de nuestro tema de clase «{t}»! Hazme una pregunta.', fr:'Parlons de notre thème de classe « {t} » ! Pose-moi une question.', it:'Parliamo del nostro tema di scuola “{t}”! Fammi una domanda.'},
+};
+function schoolGrade(){ const s = state.school || {}; return SCHOOL_GRADES.find(g=>g.id===s.grade) || null; }
+function schoolPickGrade(){
+  hubStopLive(); hubDlg.mode = 'school';
+  hubSayHTML('🏫 🎒 ?', 'In welche Klasse gehst du?', SCHOOL_GRADES.map(g=>[g.de, ()=>{
+    sndTap(); state.school = Object.assign({}, state.school, {grade:g.id, unit:0}); saveState(); schoolLesson();
+  }, 'word']));
+}
+// Stunde von Claude prüfen – nur vollständige, saubere Stunden verwenden
+function schoolValid(x){
+  const s = v=>typeof v==='string' && v.trim();
+  if(!x || !s(x.title)) return null;
+  const listen = (x.listen||[]).filter(l=>l && s(l.t)).map(l=>({who:s(l.who) ? l.who.trim() : '', t:l.t.trim()})).slice(0, 8);
+  const qs = (x.qs||[]).filter(q=>q && s(q.q) && Array.isArray(q.o) && q.o.length >= 2 && q.o.every(s) && new Set(q.o).size===q.o.length
+    && Number.isInteger(q.a) && q.a >= 0 && q.a < q.o.length).slice(0, 4);
+  const words = (x.words||[]).filter(w=>w && s(w.t) && s(w.de)).slice(0, 6);
+  const talk = (x.talk||[]).filter(t=>t && s(t.q) && s(t.m)).slice(0, 3);
+  if(listen.length < 3 || qs.length < 2 || words.length < 3 || !talk.length) return null;
+  return {title:x.title.trim(), de:s(x.de) ? x.de.trim() : '', listen, qs, words, talk};
+}
+async function schoolLesson(){
+  const G = schoolGrade(); if(!G) return schoolPickGrade();
+  hubStopLive(); hubDlg.mode = 'school';
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const L = currentLang(), lang = DRIVE_LANG[L], ui = (state.school.unit || 0) % G.units.length, unit = G.units[ui];
+  hubSayHTML('🏫 📖 …', G.de + ' · ' + unit, null); const seq = hubDlg.seq;
+  let les = null;
+  try{
+    if(hubHasAI()) les = schoolValid(await askClaude([{role:'user', content:`Write one short school lesson like a textbook "Listen and talk" page for a pupil in Austria (${G.de}, CEFR ${G.cefr}) who learns ${lang}. Unit topic: "${unit}". Grammar to use: ${G.gram}.
+JSON only: {"title":"<unit title in ${lang}>","de":"<title in German>","listen":[{"who":"<first name>","t":"<line in ${lang}>"}],"qs":[{"q":"<question in ${lang}>","o":["<answer>","<answer>","<answer>"],"a":<index of the right answer>}],"words":[{"t":"<word or phrase in ${lang}>","de":"<German>"}],"talk":[{"q":"<personal question to the pupil in ${lang}>","m":"<short model answer in ${lang}>"}]}
+listen: a natural dialogue of 5-7 short lines between two children, using the grammar. qs: 3 listening questions answered by the dialogue, only one right answer each. words: 5 key words or phrases from the dialogue. talk: 3 personal questions about the topic. Keep every sentence short and right for the level.`}],
+      'You write short, friendly school lessons for a children’s language-learning app. Reply with JSON only, no other text.', true, {effort:'low', maxTokens:2048}));
+  }catch(e){}
+  if(!les && L==='en') les = SCHOOL_EN[G.id];
+  if(!hubOnHub() || hubDlg.seq!==seq) return;
+  if(!les){ hubDlg.mode = 'offer'; hubSayHTML('🏫 🔑', 'Für Schulstunden in dieser Sprache brauche ich den Zauberschlüssel.', [['🔑', ()=>hubKeySetup(), 'no'], ['👍', ()=>hubNext(true), 'yes']]); return; }
+  schoolListen({les, G, ui, L, code:LANGS[L].code, ok:0, n:0, talked:0});
+}
+function schoolSay(S, text){ return state.settings.sound!==false ? speakAsync(text, S.code) : Promise.resolve(); }
+function schoolListen(S, showText){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const chips = [['🔁', ()=>schoolListen(S, showText), 'no'], ...(showText ? [] : [['👀', ()=>schoolListen(S, true), 'no']]), ['➡️', ()=>schoolQs(S, 0), 'yes']];
+  if(showText) hubSayHTML('🎧 ' + S.les.listen.map(l=>(l.who ? l.who + ': ' : '') + l.t).join(' – '), S.les.de, chips, false, true);
+  else hubSayHTML('🎧 ' + (SCHOOL_TXT.listen[S.L] || 'Listen!') + ' · ' + S.les.title, 'Hör gut zu – danach kommen Fragen. 👀 zeigt den Text.', chips);
+  const seq = hubDlg.seq;
+  (async()=>{ for(const l of S.les.listen){ if(hubDlg.seq!==seq || !hubOnHub()) return; await schoolSay(S, l.t); await new Promise(r=>setTimeout(r, 300)); } })();
+}
+function schoolQs(S, i){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(i >= S.les.qs.length) return schoolWords(S, 0);
+  const Q = S.les.qs[i], right = Q.o[Q.a];
+  hubSayHTML('❓ ' + Q.q, '', shuffle(Q.o).map(o=>[o, ()=>{
+    const ok = o===right; S.n++; if(ok){ S.ok++; sndCorrect(); } else sndWrong();
+    hubSayHTML((ok ? '✅ ' : '❌ ') + right, '', null, false, true); const seq = hubDlg.seq;
+    schoolSay(S, right).then(()=>setTimeout(()=>{ if(hubDlg.seq===seq && hubOnHub()) schoolQs(S, i + 1); }, 500));
+  }, 'word']), false, true);
+  schoolSay(S, Q.q);
+}
+function schoolWords(S, i){
+  const W = S.les.words;
+  if(i >= W.length) return hubHasAI() ? schoolDone(S) : schoolTalk(S, 0);
+  const w = W[i], opts = shuffle([w, ...shuffle(W.filter(x=>x!==w)).slice(0, 2)]);
+  hubSayHTML('📝 „' + w.de + '“ = ?', '', opts.map(o=>[o.t, ()=>{
+    const ok = o===w; S.n++; if(ok){ S.ok++; sndCorrect(); } else sndWrong();
+    hubSayHTML((ok ? '✅ ' : '❌ ') + w.t, w.de, null, false, true); const seq = hubDlg.seq;
+    schoolSay(S, w.t).then(()=>setTimeout(()=>{ if(hubDlg.seq===seq && hubOnHub()) schoolWords(S, i + 1); }, 400));
+  }, 'word']));
+}
+// Talk ohne Schlüssel: Flügo fragt, du antwortest laut – dann ein Beispiel, wie man es auch sagen kann
+function schoolTalk(S, i){
+  if(i >= S.les.talk.length) return schoolDone(S);
+  const T = S.les.talk[i], mic = hubMicOk();
+  hubSayHTML('🗣️ ' + T.q, mic ? 'Antworte laut! 💡 zeigt ein Beispiel.' : '💡 zeigt ein Beispiel zum Nachsprechen.', [...(mic ? [['🎤', ()=>schoolHear(S, i), 'yes']] : []), ['💡', ()=>schoolModel(S, i), 'no'], ['➡️', ()=>schoolTalk(S, i + 1), 'no']], false, true);
+  const seq = hubDlg.seq;
+  schoolSay(S, T.q).then(()=>{ if(mic && hubDlg.seq===seq && hubOnHub()) schoolHear(S, i); });
+}
+function schoolModel(S, i){
+  const T = S.les.talk[i];
+  hubSayHTML('💡 ' + T.m, 'Sprich es nach!', [...(hubMicOk() ? [['🎤', ()=>schoolHear(S, i), 'yes']] : []), ['➡️', ()=>schoolTalk(S, i + 1), 'no']], false, true);
+  schoolSay(S, T.m);
+}
+async function schoolHear(S, i){
+  if(hubListening) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const T = S.les.talk[i];
+  hubSayHTML('🎧 …', T.q, [['💡', ()=>{ try{ buddy.rec && buddy.rec.abort(); }catch(e){} schoolModel(S, i); }, 'no']]); const seq = hubDlg.seq;
+  hubListening = true; hubTalkUI(); document.body.classList.add('listening');
+  let said = '', err = '';
+  try{ said = await hubHear(S.code, t=>{ const q = document.querySelector('#hubSay .hs-q'); if(q && hubDlg.seq===seq){ q.textContent = '🎧 „' + t + ' …“'; hubFit(); } }); }catch(e){ err = String(e||''); }
+  hubListening = false; hubTalkUI(); document.body.classList.remove('listening');
+  if(!hubOnHub() || hubDlg.seq!==seq) return;
+  if(['not-allowed','service-not-allowed'].includes(err)){ hubDlg.micBlocked = true; hubDlg.micOk = false; }
+  if(!said) return schoolModel(S, i);
+  S.talked++; sndCorrect();
+  const msg = pick(SCHOOL_TXT.praise[S.L] || SCHOOL_TXT.praise.en) + ' ' + (SCHOOL_TXT.also[S.L] || SCHOOL_TXT.also.en) + ' ' + T.m;
+  hubSayHTML('👏 ' + msg, '„' + said + '“', [['➡️', ()=>schoolTalk(S, i + 1), 'yes']], false, true); const seq2 = hubDlg.seq;
+  schoolSay(S, msg).then(()=>setTimeout(()=>{ if(hubDlg.seq===seq2 && hubOnHub()) schoolTalk(S, i + 1); }, 600));
+}
+function schoolDone(S){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const xp = S.ok*2 + S.talked*3 + 5;
+  addXP(xp); state.coins += S.ok; state.school = Object.assign({}, state.school, {unit:S.ui + 1, lessons:((state.school||{}).lessons || 0) + 1}); saveState(); updateTopbar();
+  runDragonAction(S.ok >= S.n - 1 ? 'jump' : 'heart');
+  hubDlg.mode = 'offer';
+  const chat = hubHasAI() && [['🗣️', ()=>{ hubDlg.mode = 'chat'; hubChat((SCHOOL_TXT.talk[S.L] || SCHOOL_TXT.talk.en).replace('{t}', S.les.title)); }, 'yes']];
+  hubSayHTML('🏆 ' + S.ok + ' / ' + S.n + ' · ' + S.les.title, '+' + xp + ' XP' + (S.ok ? ' · +' + S.ok + ' 🪙' : '') + (chat ? ' – 🗣️ jetzt reden wir darüber!' : ''),
+    [...(chat || []), ['🏫', schoolLesson, chat ? 'no' : 'yes'], ['🎒', schoolPickGrade, 'no'], ['👍', ()=>hubNext(true), 'no']]);
+}
+
 /* ---------- 🔤 Wort oder Satz in der Sprechblase erklären ---------- */
 const hubXCache = {};
 let hubDict = null;
@@ -8136,6 +8293,7 @@ const HUB_OFFERS = {
   learn:   {e:'📖', de:'Sollen wir neue Wörter lernen?', en:'Shall we learn some new words?', es:'¿Aprendemos palabras nuevas?', fr:'On apprend de nouveaux mots ?', it:'Impariamo parole nuove?'},
   games:   {e:'🎮', de:'Willst du ein Spiel spielen?', en:'Do you want to play a game?', es:'¿Quieres jugar a un juego?', fr:'Tu veux jouer à un jeu ?', it:'Vuoi fare un gioco?'},
   quiz:    {e:'❓', de:'Darf ich dir eine kleine Frage stellen?', en:'May I ask you a little question?', es:'¿Te puedo hacer una preguntita?', fr:'Je peux te poser une petite question ?', it:'Posso farti una domandina?'},
+  school:  {e:'🏫', de:'Machen wir eine Schulstunde? Zuhören, Fragen, Reden!', en:'Shall we do a school lesson? Listen and talk!', es:'¿Hacemos una clase? ¡Escuchar y hablar!', fr:'On fait une leçon ? Écouter et parler !', it:'Facciamo una lezione? Ascoltare e parlare!'},
   tales:   {e:'📚', de:'Soll ich dir ein Märchen vorlesen?', en:'Shall I read you a fairy tale?', es:'¿Te leo un cuento?', fr:'Je te lis un conte ?', it:'Ti leggo una fiaba?'},
   talk:    {e:'🗣️', de:'Willst du mit mir plaudern?', en:'Do you want to chat with me?', es:'¿Quieres charlar conmigo?', fr:'Tu veux discuter avec moi ?', it:'Vuoi chiacchierare con me?'},
   train:   {e:'💪', de:'Wiederholen wir ein paar Wörter? Ganz ohne Herzen!', en:'Shall we repeat some words? No hearts needed!', es:'¿Repasamos palabras? ¡Sin corazones!', fr:'On révise des mots ? Sans cœurs !', it:'Ripassiamo qualche parola? Senza cuori!'},
@@ -8171,7 +8329,7 @@ function hubOfferList(){
   // ohne Schlüssel: höchstens einmal am Tag danach fragen – sonst spielt der Drache einfach mit dir
   if(hubHasAI()) head.push('chat'); else if(!keySnoozed()) head.push('key');
   if(!state.topics && state.lastPlayDate) head.push('topics');
-  first.unshift(...head);
+  first.unshift(...head, 'school');
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'vfx', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
@@ -8228,6 +8386,7 @@ function hubAccept(){
   if(k.startsWith('p:')) return wearPersona(k.slice(2));
   if(k==='poff') return wearPersona(null);
   if(k==='pquiz') return topicQuiz();
+  if(k==='school') return schoolLesson();
   if(k==='prole'){ hubDlg.mode = 'chat'; return hubChat(({en:'Let’s do a little role-play!', es:'¡Hagamos un juego de rol!', fr:'Faisons un jeu de rôle !', it:'Facciamo un gioco di ruolo!'})[currentLang()] || 'Role-play!'); }
   if(k==='quiz'){ if(!fqShow()) { toast('🐉 Spiel erst ein paar Wörter, dann frag ich dich ab!'); hubOffer(false); } return; }
   hubGo(k);
@@ -8246,6 +8405,7 @@ function hubGo(go){
     case 'games': return tab('arcade');
     case 'talk': return openBuddy();
     case 'tales': return openStoryShelf();
+    case 'school': return schoolLesson();
     case 'night': return openNight();
     case 'quests': renderQuests(); showScreen('screen-quests'); return;
     case 'train': return startReview();
@@ -8274,6 +8434,7 @@ const HUB_INTENTS = [
   [/gute ?nacht|schlaf|bett|good ?night|sleep|bed|buenas noches|dormir|bonne nuit|buonanotte|dormire/i, 'night'],
   [/abenteuer|adventure|aventura|aventure|avventura|kampagne/i, 'campaign'],
   [/spiel|game|play|juego|jeu|gioco/i, 'games'],
+  [/schul|school|unterricht|listen and talk|hausübung|hausaufgabe|homework|clase|escuela|école|classe|scuola/i, 'school'],
   [/lern|lesson|learn|lektion|aprender|apprendre|imparare/i, 'learn'],
   [/quest|aufgabe|mission/i, 'quests'],
   [/training|trainier|üben|practi/i, 'train'],
