@@ -47,11 +47,13 @@ function parseJson(text) {
 export function createEngine(client, model) {
   // Server-side refusal fallback exists only for these model families
   const fallback = /^claude-(opus|sonnet|fable)/.test(model);
+  // Websuche mit dynamischer Filterung gibt es nur für Opus/Sonnet; Haiku nutzt die Basisversion
+  const searchType = /^claude-haiku/.test(model) ? "web_search_20250305" : "web_search_20260209";
 
   async function ask(prompt, { effort, webUses = 0, maxTokens }) {
     const messages = [{ role: "user", content: prompt }];
     const tools = webUses
-      ? [{ type: "web_search_20260209", name: "web_search", max_uses: webUses, allowed_domains: TRUSTED,
+      ? [{ type: searchType, name: "web_search", max_uses: webUses, allowed_domains: TRUSTED,
            user_location: { type: "approximate", country: "AT" } }]
       : undefined;
     for (let round = 0; round < 4; round++) {
