@@ -1,0 +1,28 @@
+[
+  {
+    "id": "basis",
+    "name": "Basis",
+    "price": "9,90 € / Monat",
+    "hours": 5,
+    "usdLimit": 8,
+    "url": "",
+    "paymentLinkId": ""
+  },
+  {
+    "id": "pro",
+    "name": "Pro",
+    "price": "24,90 € / Monat",
+    "hours": 20,
+    "usdLimit": 30,
+    "url": "",
+    "paymentLinkId": ""
+  },
+  {
+    "id": "test",
+    "name": "Test",
+    "price": "gratis",
+    "hours": 1,
+    "usdLimit": 2,
+    "hidden": true
+  }
+]
