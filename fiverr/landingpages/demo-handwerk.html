@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voltwerk Elektrotechnik – Demo</title>
+<style>
+:root{--fx-accent:#e0a800;--ink:#0f1b2d;--muted:#5b6778;--blue:#123a6b;--accent:#ffc928;--bg:#f5f7fa;--card:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+header{background:var(--blue);color:#fff}
+nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{font-weight:800;font-size:22px;letter-spacing:.5px}
+.logo span{color:var(--accent)}
+nav ul{display:flex;gap:28px;list-style:none;font-size:15px;opacity:.9}
+.tel{background:var(--accent);color:var(--ink);font-weight:700;padding:10px 18px;border-radius:8px}
+.hero{background:linear-gradient(135deg,#123a6b 0%,#0b2547 100%);color:#fff;padding:72px 0 96px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-120px;top:-80px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,#ffc92833,transparent 70%)}
+.hero .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:48px;align-items:center}
+.badge{display:inline-block;background:#ffffff1a;border:1px solid #ffffff33;padding:6px 12px;border-radius:99px;font-size:13px;margin-bottom:18px}
+h1{font-size:48px;line-height:1.1;margin-bottom:18px}
+h1 em{font-style:normal;color:var(--accent)}
+.hero p{font-size:18px;opacity:.85;margin-bottom:28px;max-width:520px}
+.btns{display:flex;gap:14px;flex-wrap:wrap}
+.btn{padding:15px 26px;border-radius:10px;font-weight:700;font-size:16px}
+.btn.primary{background:var(--accent);color:var(--ink)}
+.btn.ghost{border:2px solid #ffffff55}
+.trust{display:flex;gap:28px;margin-top:34px;font-size:14px;opacity:.85}
+.trust b{display:block;font-size:24px;color:var(--accent)}
+.form{background:#fff;color:var(--ink);border-radius:16px;padding:28px;box-shadow:0 30px 60px #0006;position:relative;z-index:1}
+.form h3{font-size:20px;margin-bottom:4px}
+.form small{color:var(--muted)}
+.form input,.form select{width:100%;padding:13px 14px;border:1px solid #d6dce4;border-radius:8px;margin-top:12px;font-size:15px;background:#fafbfc}
+.form .btn{display:block;text-align:center;margin-top:16px;width:100%}
+section{padding:80px 0}
+.h2{text-align:center;margin-bottom:48px}
+.h2 h2{font-size:34px;margin-bottom:8px}
+.h2 p{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:var(--card);border-radius:14px;padding:28px;box-shadow:0 4px 20px #0f1b2d0d}
+.ico{width:48px;height:48px;border-radius:12px;background:#123a6b12;display:grid;place-items:center;margin-bottom:16px;font-size:24px}
+.card h3{margin-bottom:8px}
+.card p{color:var(--muted);font-size:15px}
+.steps{counter-reset:s}
+.steps .card:before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--accent);font-weight:800;margin-bottom:14px}
+.reviews .card p{color:var(--ink);font-size:16px}
+.stars{color:#f5a623;margin-bottom:10px;letter-spacing:2px}
+.who{margin-top:14px;font-size:14px;color:var(--muted)}
+.cta{background:var(--accent);text-align:center;padding:64px 0}
+.cta h2{font-size:32px;margin-bottom:10px}
+.cta .btn{background:var(--ink);color:#fff;display:inline-block;margin-top:18px}
+footer{background:var(--ink);color:#ffffffaa;font-size:14px;padding:28px 0;text-align:center}
+.hero-r{position:relative;min-width:0}
+.hero-r canvas{display:block;width:100%;height:440px}
+.hero-r .form{margin:-70px 0 0 auto;width:80%}
+@media(max-width:860px){.hero-r canvas{height:300px}.hero-r .form{width:100%;margin-top:-60px}}
+@media(max-width:860px){.hero .wrap,.grid{grid-template-columns:1fr}h1{font-size:34px}nav ul{display:none}.trust{gap:18px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><nav>
+  <div class="logo">VOLT<span>WERK</span></div>
+  <ul><li>Leistungen</li><li>Ablauf</li><li>Referenzen</li><li>Kontakt</li></ul>
+  <a class="tel" href="#kontakt">☎ 0732 123 456</a>
+</nav></div></header>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <span class="badge">⚡ Meisterbetrieb im Raum Linz</span>
+    <h1>Ihr Elektriker – <em>schnell, sauber,</em> zum Fixpreis.</h1>
+    <p>Neubau, Sanierung, Photovoltaik und E-Ladestationen. Angebot innerhalb von 24 Stunden, Termin meist in derselben Woche.</p>
+    <div class="btns"><a class="btn primary" href="#kontakt">Kostenloses Angebot</a><a class="btn ghost" href="#leistungen">Leistungen ansehen</a></div>
+    <div class="trust"><div><b>15+</b>Jahre Erfahrung</div><div><b>1.200</b>Projekte</div><div><b>4,9 ★</b>Google</div></div>
+  </div>
+  <div class="hero-r"><canvas class="h3d" data-scene="wallbox" aria-label="3D-Modell: Wallbox mit Ladekabel und Solarmodul. Ziehen zum Drehen."></canvas>
+  <form class="form" id="kontakt" onsubmit="return false">
+    <h3>Rückruf in 24 h</h3><small>Unverbindlich & kostenlos</small>
+    <input placeholder="Name"><input placeholder="Telefonnummer">
+    <select><option>Worum geht's?</option><option>Sanierung</option><option>Photovoltaik</option><option>Wallbox</option></select>
+    <a class="btn primary" href="#">Jetzt anfragen →</a>
+  </form></div>
+</div></div>
+
+<section id="leistungen"><div class="wrap">
+  <div class="h2"><h2>Unsere Leistungen</h2><p>Alles aus einer Hand – vom ersten Kabel bis zur Abnahme.</p></div>
+  <div class="grid">
+    <div class="card"><div class="ico">🏠</div><h3>Elektroinstallation</h3><p>Neubau und Sanierung nach aktueller ÖVE-Norm, inkl. Befund.</p></div>
+    <div class="card"><div class="ico">☀️</div><h3>Photovoltaik</h3><p>Planung, Montage und Förderabwicklung für Ihre PV-Anlage.</p></div>
+    <div class="card"><div class="ico">🔌</div><h3>E-Ladestation</h3><p>Wallbox-Installation fürs E-Auto – schnell und förderfähig.</p></div>
+  </div>
+</div></section>
+
+<section style="background:#fff"><div class="wrap">
+  <div class="h2"><h2>So einfach geht's</h2><p>In drei Schritten zu Ihrer Lösung.</p></div>
+  <div class="grid steps">
+    <div class="card"><h3>Anfrage senden</h3><p>Formular ausfüllen oder anrufen – dauert 1 Minute.</p></div>
+    <div class="card"><h3>Fixpreis-Angebot</h3><p>Sie erhalten binnen 24 h ein transparentes Angebot.</p></div>
+    <div class="card"><h3>Umsetzung</h3><p>Pünktlich, sauber und mit Garantie auf alle Arbeiten.</p></div>
+  </div>
+</div></section>
+
+<section class="reviews"><div class="wrap">
+  <div class="h2"><h2>Das sagen unsere Kunden</h2></div>
+  <div class="grid">
+    <div class="card"><div class="stars">★★★★★</div><p>„Super schnell, pünktlich und alles sauber hinterlassen. Klare Empfehlung!“</p><div class="who">Familie M., Leonding</div></div>
+    <div class="card"><div class="stars">★★★★★</div><p>„PV-Anlage inklusive Förderung – wir mussten uns um nichts kümmern.“</p><div class="who">Thomas K., Linz</div></div>
+    <div class="card"><div class="stars">★★★★★</div><p>„Fixpreis wurde exakt eingehalten. So muss das sein.“</p><div class="who">Sandra P., Traun</div></div>
+  </div>
+</div></section>
+
+<div class="cta"><div class="wrap"><h2>Bereit für Ihr Projekt?</h2><p>Jetzt unverbindlich anfragen – wir melden uns innerhalb von 24 Stunden.</p><a class="btn" href="#kontakt">Kostenloses Angebot anfordern</a></div></div>
+<footer>Demo-Landingpage · Design: Pixelwerkstatt · fiktives Unternehmen</footer>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="hero3d.js"></script>
+<script src="fx.js" defer></script>
+</body>
+</html>

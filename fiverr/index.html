@@ -1,0 +1,552 @@
+<meta charset="utf-8">
+<title>Pixelwerkstatt</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Pixelwerkstatt – Landingpages und 3D-Webdesign aus Österreich.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: "Werkbank" – asymmetric hero with the 3D render as the workpiece; a pixel grid is the one bold motif, mono captions carry real px/KB values. */
+:root{
+  --paper:#eef1f3; --card:#ffffff; --ink:#131b24; --muted:#56626e; --line:#d5dbe1;
+  --signal:#ff5a1f; --teal:#12857e; --signal-ink:#ffffff;
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151b; --card:#161e26; --ink:#e7ecf0; --muted:#9aa6b2; --line:#26313b;
+  --signal:#ff6a33; --teal:#36b7ad; --signal-ink:#140a05; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --card:#161e26; --ink:#e7ecf0; --muted:#9aa6b2; --line:#26313b;
+  --signal:#ff6a33; --teal:#36b7ad; --signal-ink:#140a05; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--body);overflow-x:clip}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.04;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h2{font-size:clamp(32px,4.2vw,48px);font-weight:800}
+h3{font-size:22px;font-weight:600}
+p{margin:0}
+.mono{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--signal);outline-offset:3px;border-radius:6px}
+
+/* nav */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font:800 21px/1 var(--display);text-decoration:none;letter-spacing:-.02em}
+.mark{display:grid;grid-template-columns:repeat(3,7px);gap:2px}
+.mark i{width:7px;height:7px;background:var(--ink)}
+.mark i:nth-child(3),.mark i:nth-child(5){background:var(--signal)}
+.mark i:nth-child(7){background:transparent}
+nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0;font-size:15px}
+nav ul a{text-decoration:none;color:var(--muted)}
+nav ul a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:999px;font:600 16px/1 var(--body);text-decoration:none;border:0;cursor:pointer;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.go{background:var(--signal);color:var(--signal-ink)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+nav .btn{padding:10px 18px;font-size:14px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:40px;align-items:center;padding-block:56px 72px}
+.hero-text{display:grid;gap:24px;min-width:0}
+.hero h1{font-size:clamp(44px,6.4vw,84px);font-weight:800}
+.hero h1 .px{color:var(--signal);position:relative;white-space:nowrap}
+.hero h1 .px::after{content:"";position:absolute;right:-.26em;bottom:.14em;width:.16em;height:.16em;background:var(--teal)}
+.hero .lead{font-size:19px;color:var(--muted);max-width:30em}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:28px;padding-top:8px;border-top:1px solid var(--line)}
+.facts div{display:grid;gap:2px}
+.facts b{font:800 26px/1.1 var(--display)}
+.stage{position:relative;min-width:0}
+.stage .grid{position:absolute;inset:6% 4% 10% 10%;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:32px 32px;border-radius:var(--r);opacity:.7;
+  -webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent);mask-image:radial-gradient(closest-side,#000 55%,transparent)}
+.stage img{position:relative;width:100%;height:auto;-webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 7%,#000 93%,transparent);mask-composite:intersect;animation:hover 7s ease-in-out infinite}
+.stage figcaption{position:relative;margin-top:8px;text-align:center}
+@keyframes hover{0%,100%{translate:0 0}50%{translate:0 -12px}}
+
+/* sections */
+section{padding-block:72px}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px 40px;margin-bottom:36px}
+.head p{color:var(--muted);max-width:34em}
+
+/* work */
+.work{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+.tile{grid-column:span 2;display:grid;gap:12px;text-decoration:none;min-width:0}
+.tile.big{grid-column:span 3}
+.shot{border-radius:var(--r);overflow:hidden;background:var(--card);border:1px solid var(--line);aspect-ratio:16/10;max-width:100%}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .5s}
+.tile:hover .shot img{transform:scale(1.03)}
+.tile .meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tile h3{font-size:19px}
+.tag{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--teal) 14%,transparent);color:var(--teal);white-space:nowrap}
+.tag.d3{background:color-mix(in srgb,var(--signal) 14%,transparent);color:var(--signal)}
+
+/* services */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.svc article{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:32px;display:grid;gap:16px;align-content:start}
+.svc article.hot{border-color:var(--signal)}
+.svc ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.svc li{display:grid;grid-template-columns:14px 1fr;gap:12px;align-items:baseline}
+.svc li::before{content:"";width:8px;height:8px;background:var(--teal);translate:0 -2px}
+.svc .hot li::before{background:var(--signal)}
+
+/* process: a real sequence, so it is numbered */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:s;border-top:1px solid var(--line)}
+.steps li{list-style:none;padding:24px 24px 0 0;display:grid;gap:8px;counter-increment:s;min-width:0}
+.steps li::before{content:"Schritt " counter(s);font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--signal)}
+.steps p{color:var(--muted);font-size:16px}
+.steps ol{margin:0;padding:0}
+
+/* prices */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:640px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:16px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+thead th{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.p{font:800 22px/1 var(--display);white-space:nowrap}
+td small{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.note{margin-top:14px;color:var(--muted);font-size:15px}
+
+/* faq */
+.faq{display:grid;gap:0;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line);padding-block:18px}
+summary{cursor:pointer;font:600 19px/1.3 var(--display);list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--signal);font-weight:800}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);margin-top:10px;max-width:42em}
+
+/* contact */
+.contact{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;background:var(--ink);color:var(--paper);border-radius:22px;padding:48px}
+.contact .mono{color:color-mix(in srgb,var(--paper) 65%,transparent)}
+.contact p{color:color-mix(in srgb,var(--paper) 78%,transparent)}
+.contact-info{display:grid;gap:18px;align-content:start;min-width:0}
+.mail{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.mail code{font:500 16px/1 var(--mono);padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--paper) 10%,transparent);user-select:all}
+.mail button{font:600 14px/1 var(--body);padding:12px 14px;border-radius:10px;border:0;background:var(--signal);color:var(--signal-ink);cursor:pointer}
+form{display:grid;gap:12px;min-width:0}
+label{display:grid;gap:6px;font-size:14px;color:color-mix(in srgb,var(--paper) 78%,transparent)}
+input,select,textarea{font:400 16px/1.4 var(--body);padding:12px 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--paper) 20%,transparent);background:color-mix(in srgb,var(--paper) 6%,transparent);color:var(--paper);width:100%}
+select option{color:#131b24}
+textarea{min-height:110px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-msg{font-size:15px;color:var(--paper);background:color-mix(in srgb,var(--teal) 35%,transparent);padding:12px 14px;border-radius:10px}
+footer{padding-block:36px 48px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--muted);font-size:14px}
+
+/* ---- motion layer: 3D hero, ring carousel, cursor, magnetic buttons, tilt + glare ---- */
+.stage canvas{position:absolute;inset:-8% -8% -4% -8%;width:116%;height:112%;display:block;touch-action:pan-y;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.stage.live img,.stage.live .grid{opacity:0;transition:opacity .8s}
+.stage.live{aspect-ratio:1/1;max-width:100%}
+.stage .drag-hint{position:absolute;right:6%;bottom:2%;opacity:0;transition:opacity .6s}
+.stage.live .drag-hint{opacity:1}
+.stage.live figcaption{display:none}
+.hero h1 .ch{display:inline-block;transform-origin:50% 100%;animation:flipin .9s cubic-bezier(.2,.75,.2,1) both;animation-delay:calc(var(--i) * 28ms + 150ms)}
+@keyframes flipin{from{opacity:0;transform:perspective(500px) rotateX(-95deg) translateY(.25em)}}
+.ring-wrap{position:relative;overflow-x:clip;perspective:1700px;height:430px;margin-top:8px;touch-action:pan-y;user-select:none;cursor:grab}
+.ring-wrap:active{cursor:grabbing}
+.ring{position:absolute;left:50%;top:10px;width:var(--cw,420px);transform-style:preserve-3d;will-change:transform}
+.ring .tile{position:absolute;inset:0 auto auto 0;width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:filter .4s,opacity .4s;-webkit-user-drag:none}
+.ring .tile img{-webkit-user-drag:none;pointer-events:none}
+.ring .tile.back{filter:saturate(.4) brightness(.8);opacity:.55}
+.ring-ctl{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:6px}
+.ring-ctl button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 18px/1 var(--body);cursor:pointer}
+.ring-ctl .mono{min-width:13ch;text-align:center}
+.work.flat{display:grid}
+.tag.rt{background:var(--ink);color:var(--paper)}
+.glare{position:relative;transform-style:preserve-3d;transition:transform .3s ease-out;overflow:hidden}
+.glare::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(420px circle at var(--gx,50%) var(--gy,50%),color-mix(in srgb,var(--signal) 22%,transparent),transparent 60%)}
+.glare:hover::after{opacity:1}
+.cur{position:fixed;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border:1.5px solid var(--signal);border-radius:50%;pointer-events:none;z-index:50;
+  transition:width .25s,height .25s,margin .25s,background .25s,opacity .3s;opacity:0}
+.cur.on{opacity:1}
+.cur.big{width:74px;height:74px;margin:-37px 0 0 -37px;background:color-mix(in srgb,var(--signal) 14%,transparent)}
+.cur-dot{position:fixed;left:0;top:0;width:6px;height:6px;margin:-3px 0 0 -3px;background:var(--signal);border-radius:50%;pointer-events:none;z-index:51;opacity:0}
+.cur-dot.on{opacity:1}
+@media (pointer:coarse){.cur,.cur-dot{display:none}}
+
+@media (max-width:900px){
+  nav ul{display:none}
+  .hero,.svc,.contact{grid-template-columns:1fr}
+  .stage{order:-1;max-width:520px;margin:0 auto;width:100%}
+  .stage canvas{inset:0;width:100%;height:100%}
+  .work{grid-template-columns:1fr 1fr}
+  .tile,.tile.big{grid-column:span 1}
+  .steps{grid-template-columns:1fr 1fr;row-gap:24px}
+  .contact{padding:28px 20px}
+}
+@media (max-width:560px){
+  .work,.two,.steps{grid-template-columns:1fr}
+  nav .btn{display:none}
+  section{padding-block:52px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header><div class="wrap"><nav>
+  <a class="brand" href="#top"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>Pixelwerkstatt</a>
+  <ul><li><a href="#arbeiten">Arbeiten</a></li><li><a href="#leistungen">Leistungen</a></li><li><a href="#ablauf">Ablauf</a></li><li><a href="#preise">Preise</a></li><li><a href="#faq">FAQ</a></li></ul>
+  <a class="btn go" href="#kontakt">Projekt anfragen</a>
+</nav></div></header>
+
+<main id="top">
+<div class="wrap hero">
+  <div class="hero-text">
+    <span class="mono">Webdesign · 3D · aus Österreich</span>
+    <h1>Landingpages, die <span class="px">Anfragen</span> bringen.</h1>
+    <p class="lead">Ich baue schnelle, mobil optimierte Landingpages für Betriebe im deutschsprachigen Raum – auf Wunsch mit eigens gerenderten 3D-Grafiken, die sonst niemand hat.</p>
+    <div class="cta-row"><a class="btn go" href="#kontakt">Kostenloses Erstgespräch</a><a class="btn ghost" href="#arbeiten">Arbeiten ansehen</a></div>
+    <div class="facts">
+      <div><b>ab 4 Tagen</b><span class="mono">Lieferzeit</span></div>
+      <div><b>≈ 100 KB</b><span class="mono">pro 3D-Grafik</span></div>
+      <div><b>Deutsch</b><span class="mono">persönlich, direkt</span></div>
+    </div>
+  </div>
+  <figure class="stage" style="margin:0">
+    <div class="grid" aria-hidden="true"></div>
+    <img src="pw/studio.webp" width="948" height="778" alt="3D-Illustration: Arbeitsplatz mit Monitor, auf dem eine Landingpage zu sehen ist, daneben schweben farbige Pixel-Würfel">
+    <canvas id="cubes" aria-label="Interaktives 3D-Logo aus Pixel-Würfeln. Ziehen zum Drehen."></canvas>
+    <figcaption class="mono">Blender-Render · 948 × 778 px · 75 KB</figcaption>
+    <span class="mono drag-hint">Echtzeit-3D · ziehen &amp; drehen</span>
+  </figure>
+</div>
+
+<section id="arbeiten"><div class="wrap">
+  <div class="head"><h2>Arbeiten</h2><p>Demo-Projekte für fiktive Betriebe, damit du Stil und Qualität vorab siehst. Ein Klick öffnet die echte Seite.</p></div>
+  <div class="ring-wrap" id="ringwrap" hidden><div class="ring" id="ring"></div></div>
+  <div class="ring-ctl" id="ringctl" hidden><button type="button" id="prev" aria-label="Vorheriges Projekt">←</button><span class="mono" id="ringlabel">1 / 8</span><button type="button" id="next" aria-label="Nächstes Projekt">→</button></div>
+  <div class="work flat" id="work">
+    <a class="tile big" href="landingpages/premium-immo.html"><div class="shot"><img src="pw/work-villa.webp" width="960" height="570" alt="Luxusvilla als interaktives Echtzeit-3D-Modell am See" loading="lazy"></div><div class="meta"><h3>Villa Lumen</h3><span class="tag rt">Echtzeit-3D</span></div><span class="mono">Luxusimmobilie · Premium-Demo</span></a>
+    <a class="tile big" href="landingpages/3d-bau.html"><div class="shot"><img src="pw/work-3d-bau.webp" width="960" height="600" alt="Landingpage Baumeister mit 3D-Baustelle" loading="lazy"></div><div class="meta"><h3>Hollerer Bau</h3><span class="tag d3">3D</span></div><span class="mono">Baumeister · Demo</span></a>
+    <a class="tile big" href="landingpages/3d-immo.html"><div class="shot"><img src="pw/work-3d-immo.webp" width="960" height="600" alt="Landingpage Immobilienmakler mit 3D-Villa" loading="lazy"></div><div class="meta"><h3>Weitblick Immobilien</h3><span class="tag d3">3D</span></div><span class="mono">Makler · Demo</span></a>
+    <a class="tile" href="landingpages/3d-gastro.html"><div class="shot"><img src="pw/work-3d-gastro.webp" width="960" height="600" alt="Landingpage Café mit 3D-Frühstückstisch" loading="lazy"></div><div class="meta"><h3>Café Morgenrot</h3><span class="tag d3">3D</span></div><span class="mono">Gastro · Demo</span></a>
+    <a class="tile" href="landingpages/3d-tech.html"><div class="shot"><img src="pw/work-3d-tech.webp" width="960" height="600" alt="Landingpage App mit 3D-Smartphone" loading="lazy"></div><div class="meta"><h3>Flowbase</h3><span class="tag d3">3D</span></div><span class="mono">App / SaaS · Demo</span></a>
+    <a class="tile" href="landingpages/demo-handwerk.html"><div class="shot"><img src="pw/work-handwerk.webp" width="960" height="600" alt="Landingpage Elektriker" loading="lazy"></div><div class="meta"><h3>Voltwerk</h3><span class="tag rt">Echtzeit-3D</span></div><span class="mono">Elektriker · Demo</span></a>
+    <a class="tile big" href="landingpages/demo-coaching.html"><div class="shot"><img src="pw/work-coaching.webp" width="960" height="600" alt="Landingpage Coaching" loading="lazy"></div><div class="meta"><h3>Klarsicht Coaching</h3><span class="tag rt">Echtzeit-3D</span></div><span class="mono">Coaching · Demo</span></a>
+    <a class="tile big" href="landingpages/demo-app.html"><div class="shot"><img src="pw/work-app.webp" width="960" height="600" alt="Landingpage Projekt-App" loading="lazy"></div><div class="meta"><h3>Planbar</h3><span class="tag rt">Echtzeit-3D</span></div><span class="mono">Software · Demo</span></a>
+  </div>
+</div></section>
+
+<section id="leistungen"><div class="wrap">
+  <div class="head"><h2>Leistungen</h2><p>Zwei Pakete, ein Ziel: Besucher sollen anrufen, schreiben oder buchen.</p></div>
+  <div class="svc">
+    <article class="glare">
+      <span class="mono">Klassisch</span>
+      <h3>Landingpage</h3>
+      <p>Eine Seite mit klarer Struktur, starkem Call-to-Action und allem, was Vertrauen schafft.</p>
+      <ul><li>Design passend zu Logo und Farben</li><li>Optimiert für Handy, Tablet und Desktop</li><li>Kontaktformular oder WhatsApp-Button</li><li>SEO-Grundlagen und schnelle Ladezeit</li></ul>
+    </article>
+    <article class="hot glare">
+      <span class="mono">Mit 3D</span>
+      <h3>3D-Landingpage</h3>
+      <p>Alles aus der klassischen Landingpage, dazu eigene 3D-Szenen aus deiner Branche – in deinen Farben gerendert.</p>
+      <ul><li>Individuelle 3D-Grafiken, keine Stockbilder</li><li>Dezente Bewegung, die Blicke lenkt</li><li>Grafiken auch als PNG für Social Media</li><li>Trotzdem schnell: optimierte Bildformate</li></ul>
+    </article>
+  </div>
+</div></section>
+
+<section id="ablauf"><div class="wrap">
+  <div class="head"><h2>Ablauf</h2><p>Vom ersten Gespräch bis zur fertigen Seite in rund einer Woche.</p></div>
+  <ol class="steps">
+    <li><h3>Gespräch</h3><p>20 Minuten am Telefon oder per Nachricht: Angebot, Zielgruppe, Wunschtermin.</p></li>
+    <li><h3>Entwurf</h3><p>Du bekommst einen Entwurf der Seite, bei 3D auch eine Skizze der Szene.</p></li>
+    <li><h3>Feinschliff</h3><p>Wir überarbeiten, bis Texte, Bilder und Farben passen.</p></li>
+    <li><h3>Livegang</h3><p>Ich richte die Seite auf deiner Domain ein oder liefere alle Dateien.</p></li>
+  </ol>
+</div></section>
+
+<section id="preise"><div class="wrap">
+  <div class="head"><h2>Preise</h2><p>Fixpreise, keine Stundenabrechnung. Alle Preise inklusive Korrekturrunden.</p></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">Paket</th><th scope="col">Landingpage</th><th scope="col">3D-Landingpage</th><th scope="col">Lieferzeit</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Start</th><td><span class="p">120 €</span><small>bis 4 Abschnitte</small></td><td><span class="p">160 €</span><small>+ 1 3D-Grafik</small></td><td>4–5 Tage</td></tr>
+      <tr><th scope="row">Business</th><td><span class="p">240 €</span><small>bis 8 Abschnitte, Formular, SEO-Basis</small></td><td><span class="p">320 €</span><small>+ 2 3D-Grafiken mit Bewegung</small></td><td>5–6 Tage</td></tr>
+      <tr><th scope="row">Komplett</th><td><span class="p">450 €</span><small>+ Texte, Impressum, Einrichtung</small></td><td><span class="p">590 €</span><small>+ 4 3D-Grafiken</small></td><td>7–8 Tage</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Auch über Fiverr buchbar.</p>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="head"><h2>Häufige Fragen</h2></div>
+  <div class="faq">
+    <details><summary>Brauche ich eigenes Hosting und eine Domain?</summary><p>Ja, beides läuft auf deinen Namen. Im Paket „Komplett“ richte ich die Seite dort für dich ein.</p></details>
+    <details><summary>Sind die 3D-Grafiken wirklich individuell?</summary><p>Ja. Jede Szene wird für dein Projekt neu in Blender gebaut und in deinen Farben gerendert.</p></details>
+    <details><summary>Macht 3D die Seite langsam?</summary><p>Nein. Die Grafiken werden als optimierte Bilder eingebunden, eine Szene hat rund 100 KB.</p></details>
+    <details><summary>Kann ich die Seite später selbst ändern?</summary><p>Ja. Ich zeige dir bei der Übergabe, wie du Texte und Bilder austauschst.</p></details>
+  </div>
+</div></section>
+
+<section id="kontakt"><div class="wrap">
+  <div class="contact">
+    <div class="contact-info">
+      <span class="mono">Kontakt</span>
+      <h2>Erzähl mir von deinem Projekt.</h2>
+      <p>Antwort innerhalb von 24 Stunden, unverbindlich und kostenlos.</p>
+      <div class="mail"><code id="mail">hallo@pixel-werkstatt.at</code><button type="button" id="copy">Adresse kopieren</button></div>
+    </div>
+    <form id="anfrage" novalidate>
+      <div class="two">
+        <label for="f-name">Name<input id="f-name" name="name" autocomplete="name" required></label>
+        <label for="f-mail">E-Mail<input id="f-mail" name="email" type="email" autocomplete="email" required></label>
+      </div>
+      <label for="f-art">Was brauchst du?<select id="f-art" name="art"><option>Landingpage</option><option selected>3D-Landingpage</option><option>Noch unklar</option></select></label>
+      <label for="f-text">Kurz zu deinem Betrieb<textarea id="f-text" name="text" placeholder="Branche, Angebot, Wunschtermin"></textarea></label>
+      <p style="font-size:14px">Deine Angaben werden nur zur Bearbeitung der Anfrage verwendet. Details in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+      <button class="btn go" type="submit">Anfrage absenden</button>
+      <p class="form-msg" id="form-msg" hidden></p>
+    </form>
+  </div>
+</div></section>
+</main>
+
+<footer class="wrap"><span>© 2026 Pixelwerkstatt · Stefan Freudenthaler</span><span><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span></footer>
+
+<script>
+document.getElementById('copy').addEventListener('click', e => {
+  const t = document.getElementById('mail').textContent;
+  const done = () => { e.target.textContent = 'Kopiert'; };
+  const select = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById('mail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = 'Markiert – Strg+C'; };
+  try { navigator.clipboard.writeText(t).then(done, select); } catch (_) { select(); }
+});
+document.getElementById('anfrage').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, msg = document.getElementById('form-msg');
+  if (!f.name.value.trim() || !f.email.checkValidity() || !f.email.value) {
+    msg.textContent = 'Bitte Name und eine gültige E-Mail-Adresse angeben.';
+  } else {
+    msg.textContent = 'Danke, ' + f.name.value.trim() + '! Der Formularversand wird beim Livegang angebunden – bis dahin bitte direkt an die E-Mail-Adresse links schreiben.';
+  }
+  msg.hidden = false;
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script>
+(() => {
+'use strict';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine = matchMedia('(pointer: fine)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+
+// ---------- headline: letters flip in once ----------
+if (!reduce) {
+  const h1 = document.querySelector('.hero h1');
+  let i = 0;
+  const walk = node => [...node.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(word => {
+        if (!word) return;
+        if (/^\s+$/.test(word)) { frag.append(word); return; }
+        const w = document.createElement('span'); w.style.whiteSpace = 'nowrap';
+        [...word].forEach(c => { const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', i++); s.textContent = c; w.append(s); });
+        frag.append(w);
+      });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1) walk(n);
+  });
+  h1.setAttribute('aria-label', h1.textContent);
+  walk(h1);
+}
+
+// ---------- cursor ring + magnetic buttons + glare cards ----------
+if (fine && !reduce) {
+  const ring = document.createElement('div'), dot = document.createElement('div');
+  ring.className = 'cur'; dot.className = 'cur-dot'; document.body.append(ring, dot);
+  let x = -100, y = -100, rx = x, ry = y;
+  addEventListener('pointermove', e => { x = e.clientX; y = e.clientY; ring.classList.add('on'); dot.classList.add('on'); }, {passive: true});
+  document.addEventListener('pointerleave', () => { ring.classList.remove('on'); dot.classList.remove('on'); });
+  document.addEventListener('pointerover', e => ring.classList.toggle('big', !!e.target.closest('a,button,summary,canvas,.ring-wrap')));
+  (function follow() { rx += (x - rx) * .18; ry += (y - ry) * .18; ring.style.transform = `translate(${rx}px,${ry}px)`; dot.style.transform = `translate(${x}px,${y}px)`; requestAnimationFrame(follow); })();
+
+  document.querySelectorAll('.btn').forEach(b => {
+    b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect(); b.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * .25}px,${(e.clientY - r.top - r.height / 2) * .35}px)`; });
+    b.addEventListener('pointerleave', () => { b.style.transform = ''; });
+  });
+  document.querySelectorAll('.glare').forEach(el => {
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      el.style.setProperty('--gx', px * 100 + '%'); el.style.setProperty('--gy', py * 100 + '%');
+      el.style.transform = `perspective(1000px) rotateY(${(px - .5) * 9}deg) rotateX(${(.5 - py) * 9}deg)`;
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+
+// ---------- portfolio ring carousel ----------
+(() => {
+  const work = document.getElementById('work'), wrap = document.getElementById('ringwrap'), ringEl = document.getElementById('ring');
+  const ctl = document.getElementById('ringctl'), label = document.getElementById('ringlabel');
+  const tiles = [...work.querySelectorAll('.tile')], n = tiles.length, step = 360 / n;
+  tiles.forEach(t => ringEl.append(t));
+  work.remove(); wrap.hidden = false; ctl.hidden = false;
+  let rot = 0, target = 0, radius = 0, vel = 0, dragging = false, moved = 0, lastX = 0, idle = 0, tiltX = 0, tiltGoal = 0;
+  const layout = () => {
+    const cw = Math.min(420, wrap.clientWidth * .72);
+    ringEl.style.setProperty('--cw', cw + 'px');
+    ringEl.style.marginLeft = -cw / 2 + 'px';
+    radius = (cw / 2 + 26) / Math.tan(Math.PI / n);
+    tiles.forEach((t, i) => { t.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`; });
+    wrap.style.height = cw * .625 + 110 + 'px';
+  };
+  layout(); addEventListener('resize', layout);
+  const front = () => ((Math.round(-target / step) % n) + n) % n;
+  const go = d => { target = Math.round(target / step) * step - d * step; idle = 0; };
+  document.getElementById('prev').addEventListener('click', () => go(-1));
+  document.getElementById('next').addEventListener('click', () => go(1));
+  wrap.addEventListener('pointerdown', e => { dragging = true; moved = 0; lastX = e.clientX; vel = 0; });
+  wrap.addEventListener('pointermove', e => {
+    if (fine) { const r = wrap.getBoundingClientRect(); tiltGoal = ((e.clientY - r.top) / r.height - .5) * -8; }
+    if (!dragging) return;
+    const dx = e.clientX - lastX; lastX = e.clientX; moved += Math.abs(dx);
+    if (moved > 6 && !wrap.hasPointerCapture(e.pointerId)) wrap.setPointerCapture(e.pointerId);   // capture only real drags, so taps still open links
+    target += dx * .25; vel = dx * .25; idle = 0;
+  });
+  const end = () => { if (!dragging) return; dragging = false; target = Math.round((target + vel * 8) / step) * step; };
+  wrap.addEventListener('pointerup', end); wrap.addEventListener('pointercancel', end);
+  wrap.addEventListener('pointerleave', () => { tiltGoal = 0; });
+  wrap.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } }, true);
+  wrap.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') go(-1); if (e.key === 'ArrowRight') go(1); });
+  tiles.forEach((t, i) => t.addEventListener('focus', () => { target = -i * step; }));
+  let last = performance.now();
+  (function spin(now) {
+    const dt = Math.min((now - last) / 1000, .05); last = now;
+    idle += dt;
+    if (!dragging && !reduce && idle > 4) target -= dt * 6;           // slow drift when nobody touches it
+    rot += (target - rot) * (reduce ? 1 : Math.min(dt * 6, 1));
+    tiltX += (tiltGoal - tiltX) * Math.min(dt * 5, 1);
+    ringEl.style.transform = `translateZ(${-radius}px) rotateX(${tiltX}deg) rotateY(${rot}deg)`;
+    const f = front();
+    tiles.forEach((t, i) => {
+      const a = ((i * step + rot) % 360 + 540) % 360 - 180;           // -180..180, 0 = facing the viewer
+      t.classList.toggle('back', Math.abs(a) > step * .75);
+      t.tabIndex = i === f ? 0 : -1;
+    });
+    label.textContent = `${f + 1} / ${n} · ${tiles[f].querySelector('h3').textContent}`;
+    requestAnimationFrame(spin);
+  })(last);
+})();
+
+// ---------- hero: real-time 3D pixel logo ----------
+const canvas = document.getElementById('cubes'), stage = canvas.closest('.stage');
+if (!window.THREE || !THREE.RoundedBoxGeometry) return;
+let renderer;
+try { renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true, powerPreference: 'high-performance'}); } catch (_) { return; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.setClearColor(0x000000, 0);
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new THREE.RoomEnvironment(), .04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
+camera.position.set(0, 0, 34);
+const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(6, 10, 12); scene.add(key);
+const group = new THREE.Group(); scene.add(group);
+
+// the "P" from the brand mark, two voxels deep, plus a ring of satellite pixels
+const P = ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X....', 'X....', 'X....'];
+const cubes = [];
+P.forEach((row, r) => [...row].forEach((c, col) => { if (c === 'X') for (let z = 0; z < 2; z++) cubes.push({home: new THREE.Vector3((col - 2) * 1.08, (3 - r) * 1.08, (z - .5) * 1.08), s: 1, kind: 'p'}); }));
+const accents = new Set([3, 7, 18, 25]);
+const SAT = reduce ? 0 : 64;
+for (let i = 0; i < SAT; i++) cubes.push({orbit: {a: Math.random() * Math.PI * 2, r: 6.2 + Math.random() * 2.6, y: (Math.random() - .5) * 2.4, sp: (.12 + Math.random() * .22) * (Math.random() < .5 ? 1 : -1)}, s: .22 + Math.random() * .32, kind: 's', home: new THREE.Vector3()});
+const geo = new THREE.RoundedBoxGeometry(1, 1, 1, 3, .14);
+const matl = new THREE.MeshPhysicalMaterial({roughness: .28, metalness: .05, clearcoat: 1, clearcoatRoughness: .12});
+const mesh = new THREE.InstancedMesh(geo, matl, cubes.length);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+group.add(mesh);
+const paint = () => {
+  const ink = new THREE.Color(css('--ink')), sig = new THREE.Color(css('--signal')), teal = new THREE.Color(css('--teal')), gold = new THREE.Color('#ffc928'), paper = new THREE.Color(css('--paper'));
+  const satCols = [sig, teal, gold, paper.clone().lerp(ink, .15)];
+  cubes.forEach((c, i) => {
+    const col = c.kind === 'p' ? (accents.has(i) ? (i % 2 ? teal : sig) : ink) : satCols[i % satCols.length];
+    mesh.setColorAt(i, col.clone().convertSRGBToLinear());
+  });
+  mesh.instanceColor.needsUpdate = true;
+};
+paint();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paint);
+new MutationObserver(paint).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+
+cubes.forEach((c, i) => {
+  c.from = new THREE.Vector3().randomDirection().multiplyScalar(22 + Math.random() * 10);
+  c.dir = (c.kind === 'p' ? c.home.clone().add(new THREE.Vector3(0, -.5, 0)).normalize() : new THREE.Vector3().randomDirection()).multiplyScalar(6 + Math.random() * 8);
+  c.spin = new THREE.Vector3(Math.random() - .5, Math.random() - .5, Math.random() - .5).multiplyScalar(6);
+  c.delay = c.kind === 'p' ? .15 + i * .035 : .6 + Math.random() * .8;
+  c.push = new THREE.Vector3(); c.pos = new THREE.Vector3(); c.phase = Math.random() * 6.28;
+});
+
+// pointer: look-at tilt, drag to spin with inertia, cubes dodge the cursor
+let mx = 0, my = 0, spinY = 0, spinV = 0, drag = false, lastX = 0;
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(9, 9), hit = new THREE.Vector3(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), local = new THREE.Vector3(9e9, 0, 0);
+addEventListener('pointermove', e => {
+  mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5;
+  const r = canvas.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  if (drag) { spinV = (e.clientX - lastX) * .01; spinY += spinV; lastX = e.clientX; }
+}, {passive: true});
+canvas.addEventListener('pointerdown', e => { if (!fine) return; drag = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+const up = () => { drag = false; };
+canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+canvas.addEventListener('pointerleave', () => ndc.set(9, 9));
+
+const resize = () => { const r = canvas.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); };
+stage.classList.add('live');
+resize(); addEventListener('resize', resize);
+
+let visible = true;
+new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(canvas);
+const dm = new THREE.Object3D(), q = new THREE.Quaternion(), e3 = new THREE.Euler();
+const t0 = performance.now(); let last = t0;
+const easeOut = t => 1 - Math.pow(1 - t, 4);
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!visible) return;
+  const dt = Math.min((now - last) / 1000, .05), t = (now - t0) / 1000; last = now;
+  const heroH = stage.getBoundingClientRect().height || 1;
+  const burst = reduce ? 0 : clamp(scrollY / (heroH * .9), 0, 1);       // scroll pulls the logo apart
+  if (!drag) { spinV *= .95; spinY += spinV; }
+  group.rotation.y += ((reduce ? 0 : Math.sin(t * .35) * .35) + mx * .9 + spinY - group.rotation.y) * .08;
+  group.rotation.x += (my * .5 + burst * .6 - group.rotation.x) * .08;
+  group.updateMatrixWorld();
+  // cursor in the group's local space
+  if (Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1) {
+    ray.setFromCamera(ndc, camera);
+    plane.normal.set(0, 0, 1).applyQuaternion(group.quaternion); plane.constant = 0;
+    if (ray.ray.intersectPlane(plane, hit)) local.copy(hit).applyMatrix4(new THREE.Matrix4().copy(group.matrixWorld).invert());
+  } else local.set(9e9, 0, 0);
+
+  cubes.forEach((c, i) => {
+    if (c.orbit) { c.orbit.a += c.orbit.sp * dt; c.home.set(Math.cos(c.orbit.a) * c.orbit.r, c.orbit.y + Math.sin(c.orbit.a * 2) * .5, Math.sin(c.orbit.a) * c.orbit.r * .55); }
+    const k = reduce ? 1 : easeOut(clamp((t - c.delay) / 1.1, 0, 1));
+    c.pos.copy(c.from).lerp(c.home, k);
+    c.pos.y += Math.sin(t * 1.3 + c.phase) * .06;
+    // dodge the cursor
+    const dx = c.pos.x - local.x, dy = c.pos.y - local.y, d = Math.hypot(dx, dy), R = 2.6;
+    const goal = d < R ? new THREE.Vector3(dx / (d || 1), dy / (d || 1), 1.4).multiplyScalar((R - d) * .9) : new THREE.Vector3();
+    c.push.lerp(goal, .14);
+    c.pos.add(c.push).addScaledVector(c.dir, burst);
+    const spin = (1 - k) * 3 + burst * 2;
+    e3.set(c.spin.x * spin + (c.orbit ? t * .8 : 0), c.spin.y * spin + (c.orbit ? t * .6 : 0), c.spin.z * spin);
+    dm.position.copy(c.pos); dm.quaternion.setFromEuler(e3); dm.scale.setScalar(c.s * (1 - burst * .4));
+    dm.updateMatrix(); mesh.setMatrixAt(i, dm.matrix);
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(frame);
+})();
+</script>
