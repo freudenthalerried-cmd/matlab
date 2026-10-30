@@ -63,6 +63,13 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
 .meter span{display:block;height:100%;width:0;background:var(--ok);transition:width .1s}
 .diagtext{white-space:pre-wrap;font:.75rem/1.4 var(--f-num);margin:0;max-height:30vh;overflow:auto;overflow-wrap:anywhere}
 .claude{display:block;text-align:center;background:var(--accent);color:var(--panel);border-radius:12px;padding:14px;font:800 1.1rem var(--f-ui);text-decoration:none}
+.coach{background:var(--panel);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chead h2{font-size:1rem;margin:0}
+.cblock{display:flex;flex-direction:column;gap:4px}
+.cblock ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.cblock p{margin:0;font-size:1rem}
+.say{font-weight:600}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
@@ -105,7 +112,20 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
   <div class="opts">
     <label><input type="checkbox" id="consent"> Alle Gesprächspartner wissen, dass mitgehört wird</label>
     <label><input type="checkbox" id="audio"> Audio zusätzlich aufnehmen (bleibt auf diesem Gerät)</label>
+    <label><input type="checkbox" id="sparring" checked> Sparring-Partner: Tipps für mich während des Gesprächs</label>
+    <label>Ich bin
+      <select id="me">
+        <option value="">egal / unklar</option>
+        <option>Person 1</option><option>Person 2</option><option>Person 3</option><option>Person 4</option>
+      </select>
+      <span class="hint">(mit Deepgram werden Sprecher getrennt)</span>
+    </label>
   </div>
+  <section class="coach" id="coach" hidden>
+    <div class="chead"><h2>Sparring-Partner</h2><button class="ghost" id="coachNow" type="button">Tipp jetzt</button></div>
+    <p class="hint" id="coachStatus"></p>
+    <div id="coachBody"></div>
+  </section>
   <details class="settings" id="diag">
     <summary>Diagnose (bei Problemen öffnen)</summary>
     <div class="row">
@@ -176,6 +196,7 @@ async function api(path, body){
     try{
       if(path.endsWith("check")) return { claims: await e.check(body.text, body.context) };
       if(path.endsWith("verify")) return await e.verify(body.claim);
+      if(path.endsWith("coach")) return await e.coach(body.text, body.me);
       return await e.detail(body.claim);
     }catch(err){ throw new Error(browserError(err)); }
   }
@@ -273,7 +294,7 @@ function endConv(){
 const conv = () => active || beginConv();
 const hhmm = iso => new Date(iso).toLocaleTimeString("de-AT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
 const when = iso => new Date(iso).toLocaleString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
-function addLine(text){ conv().lines.push({t:new Date().toISOString(), text:text.trim()}); saveConvs(); renderConvs(); }
+function addLine(text){ conv().lines.push({t:new Date().toISOString(), text:text.trim()}); saveConvs(); renderConvs(); if(listening) setTimeout(() => coachTick(false), 1500); }
 
 function transcript(c, withChecks){
   const out = ["FAKTEN-CHECKER – Gespräch vom " + when(c.start), "", "TRANSKRIPT"];
@@ -286,6 +307,16 @@ function transcript(c, withChecks){
       if(k.definition) out.push(`   Kennzahl: ${k.definition}`);
       if(k.source) out.push(`   Quelle: ${k.source}${k.asOf ? ", Stand " + k.asOf : ""}`);
       (k.sources || []).forEach(s => out.push(`   ${s.url}`));
+    });
+  }
+  if(withChecks && c.coach?.length){
+    out.push("", "SPARRING-TIPPS");
+    c.coach.forEach(k => {
+      out.push(`[${hhmm(k.t)}]`);
+      if(k.check) out.push(`   Meine Aussage: ${LABEL[k.checkVerdict] || "Unklar"} – ${k.check}`);
+      (k.add || []).forEach(a => out.push(`   + ${a}`));
+      if(k.say) out.push(`   Nächster Satz: ${k.say}`);
+      if(k.ask) out.push(`   Rückfrage: ${k.ask}`);
     });
   }
   return out.join("\n");
@@ -377,19 +408,62 @@ function setMic(on){
 }
 function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8 && !claudeMode()) check(t); }
 
+// Sparring-Partner: denkt alle paar Sekunden mit, sobald neue Sätze da sind
+const SPAR_STORE = "fc-sparring", ME_STORE = "fc-me";
+$("#sparring").checked = getPref(SPAR_STORE) !== "aus";
+$("#me").value = getPref(ME_STORE);
+$("#sparring").onchange = () => { try{ localStorage.setItem(SPAR_STORE, $("#sparring").checked ? "an" : "aus"); }catch{} if(!$("#sparring").checked) $("#coach").hidden = true; };
+$("#me").onchange = () => { try{ localStorage.setItem(ME_STORE, $("#me").value); }catch{} };
+let coaching = false, lastCoachAt = 0;
+function coachTick(force){
+  const c = active;
+  if(!c || !$("#sparring").checked || claudeMode() || coaching) return;
+  const fresh = c.lines.length - (c.coachedUpTo || 0);
+  if(!force && (fresh < 1 || Date.now() - lastCoachAt < 15000)) return;
+  runCoach(c);
+}
+async function runCoach(c){
+  coaching = true; lastCoachAt = Date.now();
+  $("#coach").hidden = false; $("#coachStatus").textContent = "Denke mit …";
+  const upTo = c.lines.length;
+  try{
+    const r = await api("api/coach", { text: c.lines.slice(-25).map(l => l.text).join("\n"), me: $("#me").value });
+    c.coachedUpTo = upTo; (c.coach ||= []).push({ ...r, t:new Date().toISOString() }); saveConvs();
+    renderCoach(r); $("#coachStatus").textContent = "Stand " + hhmm(new Date().toISOString());
+  }catch(e){ $("#coachStatus").textContent = e.message; }
+  finally{ coaching = false; }
+}
+function renderCoach(r){
+  const blocks = [];
+  const block = (label, ...nodes) => { const b = el("div","cblock"); b.append(el("span","clabel",label), ...nodes); blocks.push(b); };
+  if(r.check){
+    const v = LABEL[r.checkVerdict] ? r.checkVerdict : "unklar";
+    const p = el("p"); p.append(el("span","pill " + v, LABEL[v]), document.createTextNode(" " + r.check));
+    block("Deine letzte Aussage", p);
+  }
+  if(Array.isArray(r.add) && r.add.length){ const ul = el("ul"); r.add.forEach(a => ul.append(el("li", null, String(a)))); block("Das kannst du ergänzen", ul); }
+  if(r.say) block("Nächster Satz", el("p","say","„" + r.say + "“"));
+  if(r.ask) block("Rückfrage", el("p", null, r.ask));
+  $("#coachBody").replaceChildren(...blocks);
+}
+$("#coachNow").onclick = () => coachTick(true);
+setInterval(() => { if(listening) coachTick(false); }, 5000);
+
 // Ohne API-Schlüssel: Mitschrift mit einem Tipp an die Claude-App übergeben (nutzt das Claude-Abo)
 const claudeMode = () => mode === "browser" && !getPref(KEY_STORE);
 const ASK = `Du bist mein Faktenchecker. Unten steht die Live-Mitschrift eines Gesprächs (Spracherkennung, kann Fehler enthalten). Prüfe jede Tatsachenbehauptung (Zahlen, Statistiken, Fakten), Standardregion Österreich. Pro Behauptung, kurz und fürs Handy:
 ✅/⚠️/❌ Aussage → richtige Zahl (Quelle, Stand)
 Gegenargument: 1–2 Sätze, die ich sofort sagen kann.
 Nutze nur zuverlässige Quellen (Statistik Austria, Eurostat, OECD, WHO …), suche im Web, wenn du kannst, und erfinde keine Zahlen.
+Sei außerdem mein Sparring-Partner__ME__: Stimmt, was ich gesagt habe? Was kann ich mit Zahlen ergänzen? Ein guter nächster Satz und eine kluge Rückfrage.
 
 Mitschrift:
 `;
 function claudeLink(){
   const c = active || convs[0];
   const text = (c?.lines || []).map(l => l.text).join(" ").slice(-1800);
-  return "https://claude.ai/new?q=" + encodeURIComponent(ASK + (text || "(noch leer)"));
+  const ask = ASK.replace("__ME__", $("#me").value ? ` (ich bin „${$("#me").value}“)` : "");
+  return "https://claude.ai/new?q=" + encodeURIComponent(ask + (text || "(noch leer)"));
 }
 $("#askClaude").addEventListener("click", () => { $("#askClaude").href = claudeLink(); dlog("An Claude übergeben"); });
 // Diagnose: zeigt, was Browser und Spracherkennung tun
