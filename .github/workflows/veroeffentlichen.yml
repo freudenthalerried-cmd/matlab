@@ -7,11 +7,16 @@
 # Netzausgang weist all-inkl.com und kasserver.com ab. Dieser Lauf hier
 # findet auf GitHubs Rechnern statt, und denen ist dieses Tor gleichgueltig.
 #
-# WARUM NUR VON HAND
-# Es gibt keinen push-Ausloeser. Eine Seite, die draussen steht, nimmt man
-# nicht zurueck — die Suchmaschine hat sie dann schon gelesen. Wann der Shop
-# hinausgeht, entscheidet der Auftraggeber und nicht ein Merge. Soll das
-# spaeter automatisch laufen, gehoert dieser Absatz mit geaendert.
+# WANN SIE LAEUFT
+# Von Hand, und bei einem Push auf `main` — dieselbe Hausordnung wie bei
+# `affiliate-deploy.yml`.
+#
+# Dass ein Merge ausliefern darf, haengt an genau einer Sache: Vor dem
+# Hochladen steht `shop/bin/freigabepruefung.mjs`, und solange das Impressum
+# eine sichtbare Luecke traegt, laedt dieser Lauf nichts hoch. Ohne diese
+# Sperre waere ein push-Ausloeser unverantwortlich; mit ihr ist er der
+# bequemere von zwei sicheren Wegen. Eine Seite, die draussen steht, nimmt
+# man nicht zurueck — die Suchmaschine hat sie dann schon gelesen.
 #
 # WAS HOCHGELADEN WIRD
 # `shop/ausgabe/site`, so wie es im Repository liegt — NICHT neu gebaut.
@@ -23,6 +28,15 @@
 name: Seite veröffentlichen
 
 on:
+  push:
+    branches: [main]
+    # Nur wenn sich am Shop etwas geaendert hat. Ein Commit an einem anderen
+    # Projekt dieses Repositories loest keine Auslieferung aus.
+    paths:
+      - 'shop/ausgabe/site/**'
+      - 'shop/bin/freigabepruefung.mjs'
+      - 'shop/src/freigabe.js'
+      - '.github/workflows/veroeffentlichen.yml'
   workflow_dispatch:
     inputs:
       vorschau:
@@ -65,10 +79,10 @@ jobs:
 
       - name: Zugangsdaten vorhanden?
         env:
-          SERVER: ${{ secrets.FTP_SERVER }}
-          BENUTZER: ${{ secrets.FTP_BENUTZER }}
-          PASSWORT: ${{ secrets.FTP_PASSWORT }}
-          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+          SERVER: ${{ secrets.BAUVERSAND_FTP_HOST || secrets.ALLINKL_FTP_HOST }}
+          BENUTZER: ${{ secrets.BAUVERSAND_FTP_USER || secrets.ALLINKL_FTP_USER }}
+          PASSWORT: ${{ secrets.BAUVERSAND_FTP_PASS || secrets.ALLINKL_FTP_PASS }}
+          ZIEL: ${{ secrets.BAUVERSAND_FTP_DIR }}
         run: |
           fehlt=""
           [ -n "$SERVER" ]   || fehlt="$fehlt FTP_SERVER"
@@ -78,13 +92,16 @@ jobs:
           if [ -n "$fehlt" ]; then
             echo "Abbruch: es fehlen Secrets:$fehlt"
             echo ""
-            echo "Einzutragen unter Settings → Secrets and variables → Actions:"
-            echo "  FTP_SERVER     z. B. wXXXXXXX.kasserver.com"
-            echo "  FTP_BENUTZER   der FTP-Benutzername von All-Inkl"
-            echo "  FTP_PASSWORT   das zugehörige Passwort"
-            echo "  FTP_ZIELPFAD   der Ordner am Server, z. B. /bauversand.com"
+            echo "Einzutragen unter Settings -> Secrets and variables -> Actions."
+            echo "Dieses Repository fuehrt bereits ALLINKL_FTP_HOST/USER/PASS fuer die"
+            echo "Affiliate-Seiten. Zeigt dieser FTP-Benutzer im KAS auch auf"
+            echo "bauversand.com, reicht ein einziges neues Secret:"
+            echo "  BAUVERSAND_FTP_DIR    Ordner am Server, z. B. /bauversand.com"
             echo ""
-            echo "Ein Passwort gehört in ein Secret und nicht in diese Datei."
+            echo "Hat bauversand.com im KAS einen eigenen FTP-Benutzer, dann zusaetzlich"
+            echo "BAUVERSAND_FTP_HOST, BAUVERSAND_FTP_USER und BAUVERSAND_FTP_PASS."
+            echo ""
+            echo "Ein Passwort gehoert in ein Secret und nicht in diese Datei."
             exit 1
           fi
           echo "Alle vier Secrets sind gesetzt."
@@ -115,10 +132,10 @@ jobs:
       # und nicht nach dem halben Hochladen.
       - name: Verbindung prüfen
         env:
-          SERVER: ${{ secrets.FTP_SERVER }}
-          BENUTZER: ${{ secrets.FTP_BENUTZER }}
-          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORT }}
-          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+          SERVER: ${{ secrets.BAUVERSAND_FTP_HOST || secrets.ALLINKL_FTP_HOST }}
+          BENUTZER: ${{ secrets.BAUVERSAND_FTP_USER || secrets.ALLINKL_FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.BAUVERSAND_FTP_PASS || secrets.ALLINKL_FTP_PASS }}
+          ZIEL: ${{ secrets.BAUVERSAND_FTP_DIR }}
         run: |
           set -o pipefail
           lftp --env-password -u "$BENUTZER" "$SERVER" -e "
@@ -143,10 +160,10 @@ jobs:
 
       - name: Hochladen
         env:
-          SERVER: ${{ secrets.FTP_SERVER }}
-          BENUTZER: ${{ secrets.FTP_BENUTZER }}
-          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORT }}
-          ZIEL: ${{ secrets.FTP_ZIELPFAD }}
+          SERVER: ${{ secrets.BAUVERSAND_FTP_HOST || secrets.ALLINKL_FTP_HOST }}
+          BENUTZER: ${{ secrets.BAUVERSAND_FTP_USER || secrets.ALLINKL_FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.BAUVERSAND_FTP_PASS || secrets.ALLINKL_FTP_PASS }}
+          ZIEL: ${{ secrets.BAUVERSAND_FTP_DIR }}
         run: |
           set -o pipefail
           if [ "${{ inputs.entfernte_dateien_loeschen }}" = "true" ]; then

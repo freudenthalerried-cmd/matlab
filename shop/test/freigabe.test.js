@@ -119,11 +119,34 @@ test('die Action ruft genau den Prüfer, auf den die Weisung zeigt', () => {
   assert.match(action, /node shop\/bin\/freigabepruefung\.mjs/,
     'die Action lädt hoch, ohne vorher zu fragen, ob sie darf');
   assert.match(action, /--ohne-impressum/, 'der Vorschauweg fehlt');
-  // Kein push-Auslöser: Wann der Shop hinausgeht, entscheidet der Auftraggeber.
-  assert.doesNotMatch(action, /^\s{2}push:/m, 'ein push-Auslöser würde ungefragt veröffentlichen');
+
+  // **Die Reihenfolge ist die Zusicherung, nicht der Auslöser.**
+  //
+  // Hier stand bis zum 30. Oktober `assert.doesNotMatch(action, /^\s{2}push:/m)`
+  // — kein push-Auslöser, weil ein Merge nicht ungefragt veröffentlichen soll.
+  // Der Satz stimmt, und er sichert die falsche Sache: Was einen Merge
+  // ungefährlich macht, ist nicht das Fehlen des Auslösers, sondern dass vor
+  // jedem Hochladen die Freigabeprüfung steht. Mit ihr darf die Action laufen,
+  // wann sie will; ohne sie wäre auch der Knopf von Hand zu scharf.
+  //
+  // Geprüft wird deshalb die **Reihenfolge**: Der Prüfer steht vor dem
+  // Hochladen, in beiden Schritten, die eine Verbindung aufbauen.
+  const vorPruefer = action.indexOf('freigabepruefung.mjs');
+  const ersterUpload = action.search(/lftp --env-password/);
+  assert.ok(vorPruefer >= 0 && ersterUpload >= 0, 'Prüfer oder Hochladen fehlt');
+  assert.ok(vorPruefer < ersterUpload,
+    'die Freigabeprüfung steht hinter dem Hochladen — dann prüft sie die Vergangenheit');
+
   // Und kein Löschen ohne ausdrückliches Ankreuzen.
   assert.doesNotMatch(action, /mirror -R[^"]*--delete\b/,
     '--delete darf nur aus der Eingabe kommen, nicht fest in der Zeile stehen');
+
+  // Ein Push-Auslöser darf nur auf den Shop hören: Ein Commit an einem
+  // anderen Projekt dieses Repositories liefert sonst den Shop aus.
+  if (/^\s{2}push:/m.test(action)) {
+    assert.match(action, /paths:\s*\n\s*- 'shop\/ausgabe\/site/,
+      'der push-Auslöser hört auf das ganze Repository statt auf den Shop');
+  }
 });
 
 test('der Prüfer nennt die Action, die ihn ruft', () => {
