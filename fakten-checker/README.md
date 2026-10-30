@@ -1,57 +1,64 @@
 # Fakten-Checker
 
-Hört bei Gesprächen mit, erkennt prüfbare Behauptungen und zeigt in Sekunden, was stimmt: mit Zahl, Quelle und Datenstand.
+Schreibt Gespräche live mit, prüft Behauptungen in Echtzeit mit Zahl, Quelle und Gegenargument und gibt als Sparring-Partner Tipps für die eigenen Aussagen.
 
 ## Ablauf
 
-1. **Spracherkennung:** Mit Deepgram-Schlüssel (Einstellungen) läuft eine genaue, durchgehende Live-Mitschrift mit Sprechererkennung (Deepgram Streaming, Deutsch). Ohne Schlüssel nutzt die App die Spracherkennung des Browsers (Web Speech API, Chrome/Edge, ungenauer).
-2. **Schnellcheck** (`/api/check`): Claude findet Behauptungen im Gesprächsausschnitt und bewertet sie aus dem Modellwissen. Das dauert etwa 2–4 s.
-3. **Live-Prüfung** (`/api/verify`): Startet automatisch danach. Die Websuche ist auf offizielle Quellen beschränkt (Statistik Austria, Eurostat, OECD, WHO, gv.at …), die Karte wird mit Links aktualisiert.
-4. **Genauer ansehen** (`/api/detail`): Ausführliche Recherche mit Entwicklung, Vergleichen und Fallstricken bei Definitionen.
+1. **Mitschrift:** Deepgram (genau, durchgehend, mit Sprechertrennung) oder ersatzweise die Spracherkennung des Browsers.
+2. **Schnellcheck:** erkennt Behauptungen und bewertet sie aus dem Modellwissen (2–4 s).
+3. **Live-Prüfung:** prüft die Behauptung mit Websuche auf offiziellen Quellen (Statistik Austria, Eurostat, OECD, WHO, gv.at …).
+4. **Sparring-Partner:** prüft die eigenen Aussagen, schlägt Ergänzungen, einen nächsten Satz und eine Rückfrage vor.
+5. **Gespräche:** werden lokal im Browser als Transkript gespeichert und lassen sich exportieren.
 
-**Aufzeichnung:** „Gespräch beginnen“ öffnet das Mikrofon und schreibt alles mit Uhrzeit mit. Jedes Gespräch wird einzeln im Browser gespeichert und erscheint unter „Gespräche“: ansehen, als Textdatei exportieren (mit Prüfergebnissen und Quellen), kopieren, nachträglich komplett prüfen oder löschen. Optional wird zusätzlich das Audio aufgenommen und beim Stoppen als `.webm` gespeichert. Start ist erst möglich, wenn bestätigt wurde, dass alle Gesprächspartner Bescheid wissen.
+## Modi und Kosten
 
-Gleiche Behauptungen werden 24 h zwischengespeichert. Das ist der Grundstock der späteren Wissensdatenbank.
+| Modus | Schnellcheck/Sparring | Live-Prüfung/Details | Geschätzte Kosten pro Gesprächsstunde* |
+|---|---|---|---|
+| **Sparmodus** (Standard) | Haiku 5.5 | Sonnet 5.5, 2 Suchen | ca. 1 € |
+| Genau | Opus 5.5 | Opus 5.5, 3 Suchen | ca. 6–9 € |
+| Am günstigsten | Haiku 5.5 | Haiku 5.5, 2 Suchen | ca. 0,60 € |
 
-## Direkt im Browser (ohne Server)
+\* inkl. Deepgram (ca. 0,45 €/h). Im Sparmodus werden nur Sätze geprüft, die nach einer Behauptung klingen (Zahlen, „Prozent“, „mehr als“ …), sichere Treffer nicht noch einmal im Web gesucht und der Sparring-Partner meldet sich höchstens alle 30 s. Die App zählt die Kosten mit (Einstellungen) und stoppt bei einem selbst gesetzten Monatslimit.
 
-Die Seite läuft auch als reine Webseite, z. B. über GitHub Pages:
-**https://freudenthalerried-cmd.github.io/matlab/fakten-checker/**
+## Drei Betriebsarten
 
-Beim ersten Öffnen unter „Einstellungen“ den eigenen Claude-API-Schlüssel eintragen. Er wird nur im Browser dieses Geräts gespeichert und direkt an die Claude-API geschickt. Diese Variante ist für die eigene Nutzung gedacht; für eine öffentliche App gehört der Schlüssel auf einen Server (siehe unten).
+**1. Ohne Server (eigene Schlüssel im Browser)** – z. B. über GitHub Pages oder raw.githack.com. Claude- und Deepgram-Schlüssel unter „Einstellungen“ eintragen; sie bleiben nur auf dem Gerät. Ohne Claude-Schlüssel prüft der Knopf „Mit Claude prüfen“ über das Claude-Abo.
 
-Nach einem SDK-Update das Browser-Bundle neu bauen: `npm run build:sdk`.
-
-## Mit eigenem Server
-
+**2. Eigener Server für dich** – Schlüssel liegen am Server, nicht im Handy:
 ```bash
 cd fakten-checker
-cp .env.example .env      # API-Schlüssel eintragen (console.anthropic.com)
+cp .env.example .env      # ANTHROPIC_API_KEY und DEEPGRAM_API_KEY eintragen
 npm install
 npm start                 # http://localhost:3000
 ```
 
-Am Handy funktioniert das Mikrofon nur über HTTPS. Dafür die App hosten (z. B. Render, Railway, Fly.io) oder lokal einen Tunnel nutzen.
+**3. Verkauf an Kunden** – `REQUIRE_LICENSE=true`: Jede Anfrage braucht einen Lizenzschlüssel, Verbrauch wird pro Lizenz und Monat gezählt und begrenzt (`plans.json`).
+
+## Veröffentlichen und Geld verdienen – Schritt für Schritt
+
+1. **Hosting (Render.com, ca. 7 $/Monat inkl. Speicher):** Repo verbinden, `render.yaml` wird erkannt. Schlüssel `ANTHROPIC_API_KEY`, `DEEPGRAM_API_KEY`, `STRIPE_SECRET_KEY` im Dashboard eintragen. Der Speicher unter `/data` hält Lizenzen und Verbrauch.
+2. **Pakete festlegen:** `plans.json` – Name, Preis, Stunden pro Monat, Kostenobergrenze (`usdLimit`). Voreinstellung: Basis 9,90 €/5 Std., Pro 24,90 €/20 Std. – mit Sparmodus bleibt so ein deutlicher Überschuss.
+3. **Stripe:** Pro Paket einen *Payment Link* für ein Monatsabo anlegen. Als Weiterleitung nach dem Kauf `https://DEINE-DOMAIN/?session_id={CHECKOUT_SESSION_ID}` eintragen. Link-URL als `url` und die Link-ID (`plink_…`) als `paymentLinkId` in `plans.json` eintragen. Nach dem Kauf holt sich die App ihren Lizenzschlüssel automatisch; gekündigte Abos werden alle 6 Stunden erkannt.
+4. **Test- oder Barverkauf-Lizenzen:** `curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" -d '{"plan":"pro"}' https://DEINE-DOMAIN/api/admin/license`
+5. **Rechtstexte:** `public/impressum.html`, `datenschutz.html`, `agb.html` ausfüllen (Platzhalter in [eckigen Klammern]) und prüfen lassen. Mit Anthropic, Deepgram und Stripe Auftragsverarbeitungsverträge abschließen.
+6. **App installieren:** Die Seite ist eine installierbare Web-App (Manifest, Symbol, Offline-Hülle). Für den Google Play Store mit [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap) als Trusted Web Activity verpacken (`bubblewrap init --manifest https://DEINE-DOMAIN/manifest.webmanifest`).
 
 ## Konfiguration
 
-| Variable | Standard | Zweck |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | – | Pflicht, bleibt am Server |
-| `MODEL` | `claude-opus-5-5` | `claude-haiku-5-5` ist schneller und deutlich billiger, aber ungenauer |
-| `PORT` | `3000` | |
+| Variable | Zweck |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude-Zugang |
+| `DEEPGRAM_API_KEY` | Mitschrift über den Server (der Schlüssel verlässt den Server nie) |
+| `MODE` | `spar` (Standard), `genau`, `guenstig` |
+| `REQUIRE_LICENSE` | `true` für den Verkauf |
+| `STRIPE_SECRET_KEY` | Kaufbestätigung und Abo-Status |
+| `ADMIN_TOKEN` | Lizenzen von Hand anlegen |
+| `DATA_DIR` | Ablage für Lizenzen und Verbrauch |
 
-Die vertrauenswürdigen Domains stehen in `server.js` (`TRUSTED`).
+Nach einem SDK-Update das Browser-Bundle neu bauen: `npm run build:sdk`.
 
-## Vor einer Veröffentlichung
+## Grenzen
 
-- **Recht:** Aufnahmen weiterzugeben oder zu veröffentlichen, ohne dass die Sprechenden zugestimmt haben, ist strafbar (§ 120 Abs. 2 StGB); dazu kommt die DSGVO. Mitschrift und Audio bleiben deshalb auf dem Gerät. Vor einer Veröffentlichung trotzdem Rechtsberatung und eine Datenschutzerklärung einholen.
-- **Kosten:** Jeder Gesprächsabschnitt löst einen Aufruf aus, jede Live-Prüfung eine Websuche. Vor dem öffentlichen Betrieb Login, Rate-Limit pro Nutzer und ein Abo-Modell einbauen.
-- **Qualität:** KI kann irren. Quelle und Sicherheit werden deshalb immer angezeigt.
-
-## Nächste Schritte
-
-1. Wissensdatenbank: Postgres + pgvector, automatischer Import offizieller Datensätze (Statistik Austria Open Data, Eurostat API) mit Quelle und Stand. Der Schnellcheck schaut dort zuerst nach.
-2. Bessere Spracherkennung mit Sprechertrennung (z. B. Deepgram oder AssemblyAI per Streaming).
-3. Native App (React Native/Expo) für Android und iOS, mit Login und Abo.
-4. Öffentliche API für Drittanbieter.
+- Lizenzen liegen in einer JSON-Datei: gut für den Start mit einem Server, ab einigen hundert Kunden auf eine Datenbank umstellen.
+- Mitschrift und Gespräche liegen nur im Browser des Geräts.
+- Recht: Gespräche nur nach Information aller Beteiligten mitschreiben; Weitergabe ohne Zustimmung ist strafbar (§ 120 Abs. 2 StGB).

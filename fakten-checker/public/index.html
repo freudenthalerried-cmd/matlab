@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Fakten-Checker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f5fbf">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 :root{
@@ -70,6 +74,11 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
 .cblock ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
 .cblock p{margin:0;font-size:1rem}
 .say{font-weight:600}
+.plans{display:flex;flex-direction:column;gap:8px}
+.plan{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.plan a{background:var(--accent);color:var(--panel);border-radius:8px;padding:8px 12px;text-decoration:none;font-weight:700}
+.legal{font-size:.75rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.legal a{color:var(--muted)}
 .opts{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .opts label{display:flex;gap:8px;align-items:center}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem}
@@ -90,20 +99,33 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
   </header>
   <details class="settings" id="settings" hidden>
     <summary>Einstellungen</summary>
+    <div id="licBox" hidden>
+      <label for="lic">Lizenzschlüssel</label>
+      <input id="lic" type="text" autocomplete="off" placeholder="FC-…">
+      <div class="row"><button type="button" class="ghost" id="licSave">Lizenz speichern</button></div>
+      <p class="hint" id="licStatus"></p>
+      <div class="plans" id="plans"></div>
+    </div>
+    <div id="ownKeys">
     <p class="hint">Ohne Schlüssel prüft die Claude-App mit deinem Abo: Knopf „Mit Claude prüfen“. Mit Schlüssel prüft die App automatisch nach jedem Satz.</p>
     <label for="key">Claude-API-Schlüssel, optional (bleibt nur auf diesem Gerät)</label>
     <input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…">
-    <label for="model">Modell</label>
+    <label for="model">Modus</label>
     <select id="model">
-      <option value="claude-opus-5-5">Opus 5.5 – genauer</option>
-      <option value="claude-haiku-5-5">Haiku 5.5 – schneller und günstiger</option>
+      <option value="spar">Sparmodus – Haiku prüft schnell, Sonnet sucht nach (empfohlen)</option>
+      <option value="genau">Genau – Opus für alles (teurer)</option>
+      <option value="guenstig">Am günstigsten – Haiku für alles</option>
     </select>
+    <label for="limit">Kostenlimit pro Monat in € (0 = kein Limit)</label>
+    <input id="limit" type="number" min="0" step="1" inputmode="numeric" placeholder="z. B. 20">
+    <p class="hint" id="costs"></p>
     <label for="dgkey">Deepgram-Schlüssel für gute, automatische Mitschrift (optional, bleibt nur auf diesem Gerät)</label>
     <input id="dgkey" type="password" autocomplete="off" placeholder="Deepgram API Key">
     <p class="hint">Ohne Deepgram schreibt die Spracherkennung des Handys mit (Google, ungenauer). Mit Deepgram: deutlich genauer, durchgehend und mit Sprechern.</p>
     <div class="row">
       <button type="button" class="ghost" id="keySave">Speichern und testen</button>
       <button type="button" class="ghost" id="keyDel">Alle Schlüssel entfernen</button>
+    </div>
     </div>
     <p class="hint" id="keyStatus"></p>
   </details>
@@ -145,7 +167,8 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
   </form>
   <div class="status" id="status" aria-live="polite"></div>
   <div class="cards" id="cards"></div>
-  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über den Browser (bei Chrome über Google).</p>
+  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über Deepgram oder den Browser (bei Chrome über Google).</p>
+  <nav class="legal"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">Nutzungsbedingungen</a></nav>
 </div>
 <script>
 const $ = s => document.querySelector(s);
@@ -160,25 +183,69 @@ const SDK_URL = "./vendor/anthropic.js"; // npm run build:sdk
 const KEY_STORE = "fc-apikey", MODEL_STORE = "fc-model";
 const getPref = k => { try{ return localStorage.getItem(k) || ""; }catch{ return ""; } };
 let mode = null, engine = null;
+let server = null; // Antwort von /api/ping, wenn ein eigener Server läuft
+const LIC_STORE = "fc-license";
 async function detectMode(){
   if(mode) return mode;
-  try{ const r = await fetch("api/ping"); mode = r.ok && (await r.json()).ok ? "server" : "browser"; }
+  try{ const r = await fetch("api/ping"); const j = r.ok ? await r.json() : null; if(j?.ok){ server = j; mode = "server"; } else mode = "browser"; }
   catch{ mode = "browser"; }
   $("#settings").hidden = false;
-  if(mode === "server") $("#key").closest("details").querySelectorAll("#key, label[for=key], #model, label[for=model]").forEach(e => e.hidden = true);
+  if(mode === "server"){
+    $("#ownKeys").hidden = true;
+    $("#licBox").hidden = !server.license;
+    $("#plans").replaceChildren(...(server.plans || []).filter(p => p.url).map(p => {
+      const d = el("div","plan"), a = el("a", null, "Kaufen");
+      a.href = p.url; a.target = "_blank"; a.rel = "noopener";
+      d.append(el("span", null, `${p.name}: ${p.price} · ${p.hours} Std. Gespräch/Monat`), a); return d;
+    }));
+    if(server.license && !getPref(LIC_STORE)) $("#settings").open = true;
+    showUsage();
+  }
   $("#askClaude").hidden = !claudeMode();
   return mode;
+}
+async function showUsage(){
+  if(mode !== "server") return showCosts();
+  try{
+    const r = await fetch("api/usage", { headers:{ "x-license": getPref(LIC_STORE) } }); const u = await r.json();
+    if(!r.ok){ $("#licStatus").textContent = u.error || ""; return; }
+    $("#licStatus").textContent = u.personal ? "" : `${u.plan}: ${u.minutes} von ${u.minutesLimit} Minuten Mitschrift, Prüfungen ${Math.round(100 * u.usd / u.usdLimit)} % des Monatskontingents verbraucht.`;
+  }catch{}
 }
 async function newClient(key){
   const { default: Anthropic } = await import(SDK_URL);
   return new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
 }
+const engineMod = import("./engine.js");
+const COST_STORE = "fc-costs", LIMIT_STORE = "fc-limit", EUR_PER_USD = 0.93, DG_USD_PER_MIN = 0.0077;
+function costs(){
+  const m = new Date().toISOString().slice(0, 7);
+  let c = {}; try{ c = JSON.parse(getPref(COST_STORE) || "{}"); }catch{}
+  return c.month === m ? c : { month:m, claude:0, dgMin:0 };
+}
+function addCost(part, amount){
+  const c = costs(); c[part] += amount;
+  try{ localStorage.setItem(COST_STORE, JSON.stringify(c)); }catch{}
+  showCosts();
+}
+const monthEur = c => (c.claude + c.dgMin * DG_USD_PER_MIN) * EUR_PER_USD;
+function showCosts(){
+  const c = costs(), lim = Number(getPref(LIMIT_STORE)) || 0;
+  $("#costs").textContent = `Diesen Monat geschätzt ≈ ${monthEur(c).toFixed(2)} € (Prüfungen ${(c.claude * EUR_PER_USD).toFixed(2)} €, Mitschrift ${Math.round(c.dgMin)} Min.)` + (lim ? ` · Limit ${lim} €` : "");
+}
+function overLimit(){
+  const lim = Number(getPref(LIMIT_STORE)) || 0;
+  return mode === "browser" && lim > 0 && monthEur(costs()) >= lim;
+}
+const modeName = () => (mode === "server" ? server?.mode : getPref(MODEL_STORE)) || "spar";
+async function currentMode(){ return (await engineMod).modeOf(modeName()); }
 async function getEngine(){
   if(engine) return engine;
   const key = getPref(KEY_STORE);
   if(!key){ $("#settings").open = true; throw new Error("Bitte zuerst unter Einstellungen deinen API-Schlüssel eintragen."); }
-  const [client, { createEngine }] = await Promise.all([newClient(key), import("./engine.js")]);
-  engine = createEngine(client, getPref(MODEL_STORE) || "claude-opus-5-5");
+  if(overLimit()) throw new Error("Monatliches Kostenlimit erreicht. Limit unter Einstellungen anpassen.");
+  const [client, { createEngine }] = await Promise.all([newClient(key), engineMod]);
+  engine = createEngine(client, modeName(), { onUsage: u => addCost("claude", u.usd) });
   return engine;
 }
 function browserError(err){
@@ -192,6 +259,7 @@ function browserError(err){
 }
 async function api(path, body){
   if(await detectMode() === "browser"){
+    if(overLimit()) throw new Error("Monatliches Kostenlimit erreicht. Limit unter Einstellungen anpassen.");
     const e = await getEngine();
     try{
       if(path.endsWith("check")) return { claims: await e.check(body.text, body.context) };
@@ -200,7 +268,7 @@ async function api(path, body){
       return await e.detail(body.claim);
     }catch(err){ throw new Error(browserError(err)); }
   }
-  const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json", "x-license": getPref(LIC_STORE)}, body:JSON.stringify(body)});
   const data = await r.json().catch(()=>({}));
   if(!r.ok) throw new Error(data.error || "Fehler " + r.status);
   return data;
@@ -260,7 +328,9 @@ async function check(text, target = conv()){
     fresh.forEach(r => {
       seen.add(r.claim.toLowerCase());
       const entry = {...r, stage:"Schnellcheck", t:new Date().toISOString()}; target.checks.push(entry); saveConvs(); renderConvs();
-      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c); verify(c, r.claim, entry);
+      const c = el("article","card"); fill(c, r, "Schnellcheck"); cards.prepend(c);
+      // Sparmodus: sichere Treffer nicht noch einmal im Web nachprüfen
+      currentMode().then(m => { if(!(m.filter && r.verdict === "stimmt" && r.confidence === "hoch")) verify(c, r.claim, entry); });
     });
     statusEl.textContent = fresh.length ? `${fresh.length} Behauptung(en) in ${((performance.now()-t0)/1000).toFixed(1)} s` : "Nichts Prüfbares erkannt.";
   }catch(e){ statusEl.textContent = e.message; }
@@ -406,7 +476,13 @@ function setMic(on){
   } else { wake?.release().catch(() => {}); wake = null; }
   $("#micLabel").textContent = on ? "Stoppen · 0:00" : "Gespräch beginnen";
 }
-function flush(){ const t = pending.trim(); pending = ""; if(t.length > 8 && !claudeMode()) check(t); }
+async function flush(){
+  const t = pending.trim(); pending = "";
+  if(t.length <= 8 || claudeMode()) return;
+  const [m, { looksLikeClaim }] = [await currentMode(), await engineMod];
+  if(m.filter && !looksLikeClaim(t)){ dlog("Sparmodus: übersprungen (keine Behauptung erkannt)"); return; }
+  check(t);
+}
 
 // Sparring-Partner: denkt alle paar Sekunden mit, sobald neue Sätze da sind
 const SPAR_STORE = "fc-sparring", ME_STORE = "fc-me";
@@ -419,8 +495,8 @@ function coachTick(force){
   const c = active;
   if(!c || !$("#sparring").checked || claudeMode() || coaching) return;
   const fresh = c.lines.length - (c.coachedUpTo || 0);
-  if(!force && (fresh < 1 || Date.now() - lastCoachAt < 15000)) return;
-  runCoach(c);
+  if(fresh < 1 && !force) return;
+  currentMode().then(m => { if(force || Date.now() - lastCoachAt >= m.coachEvery) runCoach(c); });
 }
 async function runCoach(c){
   coaching = true; lastCoachAt = Date.now();
@@ -502,7 +578,7 @@ $("#micTest").onclick = async () => {
 
 $("#mic").onclick = () => {
   if(listening && dg){ setMic(false); stopDeepgram(); flush(); endConv(); return; }
-  if(!listening && getPref(DG_STORE)){
+  if(!listening && (getPref(DG_STORE) || server?.deepgram)){
     if(!$("#consent").checked){ say("Bitte zuerst das Häkchen „Alle Gesprächspartner wissen …“ setzen."); $("#consent").focus(); return; }
     endConv(); beginConv();
     setMic(true); live.textContent = "Verbinde mit Deepgram …"; statusEl.textContent = "";
@@ -544,7 +620,10 @@ async function startDeepgram(model = "nova-3"){
   try{ stream = dg?.stream || await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } }); }
   catch(err){ setMic(false); endConv(); say("Mikrofon ist blockiert (" + err.name + "). Im Browser beim Schloss-Symbol Mikrofon erlauben."); return; }
   dlog("Deepgram: verbinde (" + model + ")");
-  const ws = new WebSocket(dgUrl(model), ["token", getPref(DG_STORE)]);
+  const viaServer = server?.deepgram && !getPref(DG_STORE);
+  const ws = viaServer
+    ? new WebSocket(dgUrl(model).replace("wss://api.deepgram.com/v1/listen", (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/listen") + "&license=" + encodeURIComponent(getPref(LIC_STORE)))
+    : new WebSocket(dgUrl(model), ["token", getPref(DG_STORE)]);
   const keepChunks = $("#audio").checked;
   dg = { ws, stream, recorder:null, chunks: dg?.chunks || [], model, speakers: dg?.speakers || new Set(), opened:false, keepChunks };
   const me = dg;
@@ -558,6 +637,7 @@ async function startDeepgram(model = "nova-3"){
       if(ws.readyState === 1) ws.send(e.data);
     };
     me.recorder.start(250);
+    me.minTimer = setInterval(() => { if(!viaServer) addCost("dgMin", 0.25); }, 15000);
   };
   ws.onmessage = ev => {
     let m; try{ m = JSON.parse(ev.data); }catch{ return; }
@@ -577,6 +657,8 @@ async function startDeepgram(model = "nova-3"){
   ws.onclose = ev => {
     dlog(`Deepgram: getrennt (Code ${ev.code}${ev.reason ? ", " + ev.reason : ""})`);
     try{ me.recorder?.state === "recording" && me.recorder.stop(); }catch{}
+    clearInterval(me.minTimer);
+    if(ev.code === 4402){ setMic(false); endConv(); dg = null; me.stream.getTracks().forEach(t => t.stop()); say("Monatskontingent für Mitschrift aufgebraucht."); return; }
     if(dg !== me || !listening) return;
     if(!me.opened && model === "nova-3"){ startDeepgram("nova-2"); return; } // älteres Modell, falls nova-3 kein Deutsch kann
     if(!me.opened){ setMic(false); endConv(); stopDeepgram(); say("Deepgram lehnt die Verbindung ab. Schlüssel unter Einstellungen prüfen."); return; }
@@ -585,6 +667,7 @@ async function startDeepgram(model = "nova-3"){
 }
 function stopDeepgram(){
   const d = dg; dg = null; if(!d) return;
+  clearInterval(d.minTimer);
   try{ d.recorder?.state === "recording" && d.recorder.stop(); }catch{}
   try{ d.ws.readyState === 1 && d.ws.send(JSON.stringify({ type:"CloseStream" })); }catch{}
   setTimeout(() => { try{ d.ws.close(); }catch{} }, 1500);
@@ -637,7 +720,25 @@ function startRec(){
 }
 
 // Einstellungen für die Browser-Version
-$("#model").value = getPref(MODEL_STORE) || "claude-opus-5-5";
+$("#model").value = MODEL_STORE && ["spar","genau","guenstig"].includes(getPref(MODEL_STORE)) ? getPref(MODEL_STORE) : "spar";
+$("#limit").value = getPref(LIMIT_STORE);
+$("#model").onchange = () => { try{ localStorage.setItem(MODEL_STORE, $("#model").value); }catch{} engine = null; };
+$("#limit").onchange = () => { try{ localStorage.setItem(LIMIT_STORE, String(Math.max(0, Number($("#limit").value) || 0))); }catch{} showCosts(); };
+$("#lic").value = getPref(LIC_STORE);
+$("#licSave").onclick = () => { try{ localStorage.setItem(LIC_STORE, $("#lic").value.trim()); }catch{} showUsage(); };
+// Rückkehr vom Kauf: Lizenz abholen und speichern
+(async () => {
+  const id = new URLSearchParams(location.search).get("session_id");
+  if(!id) return;
+  try{
+    const r = await fetch("api/license/claim?session_id=" + encodeURIComponent(id)); const j = await r.json();
+    if(!r.ok) throw new Error(j.error);
+    localStorage.setItem(LIC_STORE, j.key); $("#lic").value = j.key; $("#settings").open = true;
+    $("#licStatus").textContent = "Danke für den Kauf! Dein Lizenzschlüssel: " + j.key + " – bitte notieren, damit du ihn auf anderen Geräten eingeben kannst.";
+    history.replaceState(null, "", location.pathname);
+  }catch(e){ $("#licStatus").textContent = "Lizenz konnte nicht abgeholt werden: " + e.message; }
+})();
+showCosts();
 $("#keySave").onclick = async () => {
   const dgk = $("#dgkey").value.trim();
   if(dgk){ try{ localStorage.setItem(DG_STORE, dgk); }catch{} $("#dgkey").value = ""; }
@@ -645,7 +746,7 @@ $("#keySave").onclick = async () => {
   if(!key){ $("#keyStatus").textContent = getPref(DG_STORE) ? "Deepgram-Schlüssel gespeichert. Er wird beim ersten Gespräch geprüft." : "Bitte Schlüssel eingeben."; return; }
   $("#keyStatus").textContent = "Teste Schlüssel …";
   try{
-    await (await newClient(key)).models.retrieve($("#model").value);
+    await (await newClient(key)).models.retrieve("claude-haiku-5-5");
     try{ localStorage.setItem(KEY_STORE, key); localStorage.setItem(MODEL_STORE, $("#model").value); }catch{}
     engine = null; $("#key").value = "";
     $("#keyStatus").textContent = "Schlüssel funktioniert und ist gespeichert."; $("#settings").open = false;
@@ -668,6 +769,9 @@ detectMode().then(m => { if(m === "browser" && getPref(KEY_STORE)) $("#keyStatus
   $("#keyStatus").textContent = "Schlüssel aus dem Link gespeichert.";
   dlog("Schlüssel aus Link übernommen" + (dgk ? " (Deepgram)" : "") + (ck ? " (Claude)" : ""));
 })();
+
+// App installierbar machen (Startbildschirm, Play Store über Trusted Web Activity)
+if("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>
 </html>

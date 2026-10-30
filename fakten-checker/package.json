@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.137.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "esbuild": "^0.25.10"
