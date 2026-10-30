@@ -17,6 +17,9 @@ app.post("/api/check", async (req, res, next) => {
 app.post("/api/verify", async (req, res, next) => {
   try { res.json(await engine.verify(req.body?.claim)); } catch (e) { next(e); }
 });
+app.post("/api/coach", async (req, res, next) => {
+  try { res.json(await engine.coach(req.body?.text, req.body?.me)); } catch (e) { next(e); }
+});
 app.post("/api/detail", async (req, res, next) => {
   try { res.json(await engine.detail(req.body?.claim)); } catch (e) { next(e); }
 });

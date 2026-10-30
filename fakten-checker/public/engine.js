@@ -134,5 +134,24 @@ Erfinde nichts und markiere Unsicheres deutlich.`, { effort: "high", webUses: 6,
     });
   }
 
-  return { check, verify, detail };
+  // Sparring-Partner: prüft meine eigenen Aussagen und schlägt vor, was ich noch sagen kann
+  async function coach(rawText, rawMe) {
+    const text = clean(rawText, 5000), me = clean(rawMe, 40);
+    if (!text) throw Object.assign(new Error("Kein Text übergeben."), { status: 400 });
+    const r = await ask(`Du bist mein persönlicher Sparring-Partner in einem laufenden Gespräch (Standardregion Österreich). Ziel: Ich soll sachlich richtig, kompetent und hilfreich wirken.
+${me ? `Ich bin „${me}“ in der Mitschrift.` : "Wer ich in der Mitschrift bin, ist unklar; bezieh dich auf das Gespräch insgesamt."}
+Unten steht der neueste Teil der Mitschrift (Spracherkennung, kann Fehler enthalten). Antworte nur mit EINEM JSON-Objekt:
+{"check": "Stimmt, was ich zuletzt gesagt habe? Ein Satz, bei Fehlern mit Korrektur und richtiger Zahl; leer, wenn ich nichts Prüfbares gesagt habe",
+ "checkVerdict": "stimmt" | "teilweise" | "falsch" | "",
+ "add": ["1–3 kurze, nützliche Fakten oder Argumente zum aktuellen Thema, mit Zahl, Quelle und Jahr, die ich jetzt einbringen kann"],
+ "say": "ein natürlicher Satz, den ich als Nächstes sagen könnte",
+ "ask": "eine kluge Rückfrage an mein Gegenüber"}
+Regeln: nur zuverlässige Zahlen (Statistik Austria, Eurostat, OECD, WHO, Ministerien), nichts erfinden, Unsicheres weglassen. Kurz, Alltagssprache, fürs Handy. Bleib sachlich und respektvoll, keine rhetorischen Tricks.
+
+Mitschrift:
+${text}`, { effort: "low", maxTokens: 1500 });
+    return parseJson(textOf(r));
+  }
+
+  return { check, verify, detail, coach };
 }
