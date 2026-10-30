@@ -8320,21 +8320,22 @@ const OFF_TXT = {
     es:[['¡Qué bien!','Wie schön!'],['¡Genial!','Super!'],['¡Qué interesante!','Wie interessant!']],
     fr:[['Super !','Super!'],['Génial !','Toll!'],['Intéressant !','Interessant!']],
     it:[['Bello!','Schön!'],['Fantastico!','Toll!'],['Interessante!','Interessant!']]},
-  yes:{en:/(^|[^a-z])(yes|yeah|yep|yup|sure|of course|definitely|totally|ok|okay|i do|i have|i did|i can|i am|i'm|i like|i love)(?=$|[^a-z])/,
-    es:/(^|[^\p{L}])(sí|si|claro|vale|por supuesto|tengo|me gusta|me encanta)(?=$|[^\p{L}])/u,
-    fr:/(^|[^\p{L}])(oui|ouais|bien sûr|d'accord|j'ai|j'aime|j'adore)(?=$|[^\p{L}])/u,
-    it:/(^|[^\p{L}])(sì|si|certo|certamente|ho|mi piace|adoro)(?=$|[^\p{L}])/u},
-  no:{en:/(^|[^a-z])(no|nope|not|don't|dont|haven't|didn't|can't|never|nothing|none)(?=$|[^a-z])/,
-    es:/(^|[^\p{L}])(no|nunca|nada|ninguno|ninguna)(?=$|[^\p{L}])/u,
-    fr:/(^|[^\p{L}])(non|pas|jamais|rien)(?=$|[^\p{L}])/u,
-    it:/(^|[^\p{L}])(no|non|mai|niente|nessuno)(?=$|[^\p{L}])/u},
+  yes:{en:/(^|[^\p{L}])(yes|yeah|yep|yup|sure|of course|definitely|totally|ok|okay|i do|i have|i did|i can|i am|i'm|i like|i love|ja|jo|genau)(?=$|[^\p{L}])/u,
+    es:/(^|[^\p{L}])(sí|si|claro|vale|por supuesto|tengo|me gusta|me encanta|ja|jo|genau)(?=$|[^\p{L}])/u,
+    fr:/(^|[^\p{L}])(oui|ouais|bien sûr|d'accord|j'ai|j'aime|j'adore|ja|jo|genau)(?=$|[^\p{L}])/u,
+    it:/(^|[^\p{L}])(sì|si|certo|certamente|ho|mi piace|adoro|ja|jo|genau)(?=$|[^\p{L}])/u},
+  no:{en:/(^|[^\p{L}])(no|nope|not|don't|dont|haven't|didn't|can't|never|nothing|none|nein|nee|nö)(?=$|[^\p{L}])/u,
+    es:/(^|[^\p{L}])(no|nunca|nada|ninguno|ninguna|nein|nee|nö)(?=$|[^\p{L}])/u,
+    fr:/(^|[^\p{L}])(non|pas|jamais|rien|nein|nee|nö)(?=$|[^\p{L}])/u,
+    it:/(^|[^\p{L}])(no|non|mai|niente|nessuno|nein|nee|nö)(?=$|[^\p{L}])/u},
+  ok:{en:['That’s okay!','Das macht nichts!'], es:['¡No pasa nada!','Macht nichts!'], fr:['Pas grave !','Macht nichts!'], it:['Non fa niente!','Macht nichts!']},
   name:{en:/(?:my name is|my name's|i'm|i am|call me)\s+([\p{L}-]+)/u, es:/(?:me llamo|soy|mi nombre es)\s+([\p{L}-]+)/u, fr:/(?:je m'appelle|je suis|moi c'est)\s+([\p{L}-]+)/u, it:/(?:mi chiamo|sono|il mio nome è)\s+([\p{L}-]+)/u},
-  notName:'a an the secret sorry not no yes from very really here there de del di da du des la le el il from okay ok fine good happy tired',
+  notName:'a an the secret sorry not no yes from very really here there de del di da du des la le el il okay ok fine good happy tired hi hello hey hallo hola ciao salut servus bonjour buongiorno know dunno sé so sais nicht weiß weiss ich keine nothing nobody one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen uno dos tres due tre quattro cinque un deux trois quatre cinq',
   topic:/(let'?s talk about|talk about|tell me about|über .* (reden|sprechen)|hablemos de|hablar de|parlons (de|du|des|d')|parler (de|du|des|d')|parliamo (di|del|della|delle|dei|degli|dello|dell')|parlare (di|del|della|delle|dei|degli|dello|dell'))/,
-  stop:{en:"the a an i you he she it we they my your his her our their is am are was were be been do does did don't doesn't have has had got like love want go play and or but so very really much many some any this that these those to of in on at for with from yes no not too also just about because what when where who why how can could will would there here me him them us one",
-    es:'el la los las un una unos unas yo tú él ella mi mis tu tus su es soy eres son está estoy tengo tiene me te gusta gustan y o pero muy mucho mucha de del en con para por que sí no también',
-    fr:'le la les un une des je tu il elle mon ma mes ton ta tes son sa ses est suis es sont ai as a j\'ai aime j\'aime adore et ou mais très beaucoup de du en avec pour que oui non aussi c\'est',
-    it:'il lo la i gli le un uno una io tu lui lei mio mia miei mie tuo tua suo sua è sono sei ho hai ha mi ti piace piacciono e o ma molto molta di del della in con per che sì no anche'},
+  stop:{en:"brother brothers sister sisters mum mom dad mother father family friend friends day days morning evening night week weekend time today yesterday tomorrow every the a an i you he she it we they my your his her our their is am are was were be been do does did don't doesn't have has had got like love want go play and or but so very really much many some any this that these those to of in on at for with from yes no not too also just about because what when where who why how can could will would there here me him them us one",
+    es:'hermano hermana hermanos madre padre mamá papá familia amigo amiga amigos día días mañana tarde noche semana el la los las un una unos unas yo tú él ella mi mis tu tus su es soy eres son está estoy tengo tiene me te gusta gustan y o pero muy mucho mucha de del en con para por que sí no también',
+    fr:'frère sœur frères mère père maman papa famille ami amie amis jour jours matin soir nuit semaine le la les un une des je tu il elle mon ma mes ton ta tes son sa ses est suis es sont ai as a j\'ai aime j\'aime adore et ou mais très beaucoup de du en avec pour que oui non aussi c\'est',
+    it:'fratello sorella fratelli madre padre mamma papà famiglia amico amica amici giorno giorni mattina sera notte settimana il lo la i gli le un uno una io tu lui lei mio mia miei mie tuo tua suo sua è sono sei ho hai ha mi ti piace piacciono e o ma molto molta di del della in con per che sì no anche'},
 };
 // kleine, sichere Grammatik-Hinweise (eine Regel pro Antwort) – wie ein Freund, der es richtig wiederholt
 const OFF_FIX = {
@@ -8345,11 +8346,11 @@ const OFF_FIX = {
     [/\b(he|she|it) (?:are|am)\b/, m=>m[1] + ' is', 'he / she / it → „is“'],
     [/\b(you|we|they) (?:is|am)\b/, m=>m[1] + ' are', 'you / we / they → „are“'],
     [/\b(he|she|it) (?:don't|dont)\b/, m=>m[1] + ' doesn’t', 'he / she / it → „doesn’t“'],
-    [/\b(he|she|it|my (?:mum|mom|dad|brother|sister|friend|cat|dog)) (like|love|play|want|live|eat|read|swim|ride|run|come|work|need|have|go|watch|do)(?=$|[^a-z])/,
+    [/(?<!\b(?:and|does|did|do|can|could|will|would|should|must|might|let|lets|make|makes|watch|watches|see|sees|help|helps|to) )\b(he|she|my (?:mum|mom|dad|brother|sister|friend|cat|dog))(?! and\b) (like|love|play|want|live|eat|read|swim|ride|run|come|work|need|have|go|watch|do)(?=$|[^a-z])/,
       m=>m[1] + ' ' + ({have:'has', go:'goes', watch:'watches', do:'does'}[m[2]] || m[2] + 's'), 'he / she / it: Verb mit -s'],
     [/\bi (like|love) (play|swim|read|dance|run|ride|draw|sing|cook|watch|eat|write|paint)(?=$|[^a-z])/,
       m=>`I ${m[1]} ` + ({swim:'swimming', run:'running', dance:'dancing', ride:'riding', write:'writing'}[m[2]] || m[2] + 'ing'), 'nach „like / love“: Verb mit -ing'],
-    [/\bmy favou?rite (\w+) are\b/, m=>`my favourite ${m[1]} is`, 'ein Lieblings-Ding → „is“'],
+    [/\bmy favou?rite (\w*[^\Ws]) are\b/, m=>`my favourite ${m[1]} is`, 'ein Lieblings-Ding → „is“'],
     [/\ba (apple|orange|elephant|egg|ice cream|umbrella|owl|eagle|octopus|uncle|aunt|idea|hour|insect|igloo)\b/, m=>'an ' + m[1], 'vor Vokal: „an“ statt „a“'],
     [/\bpeoples\b/, ()=>'people', '„people“ ist schon Mehrzahl'],
     [/\bchildrens\b/, ()=>'children', '„children“ ist schon Mehrzahl'],
@@ -8423,6 +8424,11 @@ function offFix(text, L){
 // Gespräch starten oder fortsetzen (ohne KI)
 function offStart(speakIt, T, pre){
   const L = currentLang();
+  if(!T && !pre && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq && off.topic && (OFF_TALK[L]||[]).includes(off.topic)){   // steht schon da → nur vorlesen und zuhören
+    const q0 = hubDlg.lastStarter; hubDlg.mode = 'chat'; off.at = Date.now();
+    if(!speakIt) return Promise.resolve();
+    return state.settings.sound!==false ? speakAsync(q0, LANGS[L].code).then(()=>hubAwait(q0, true)) : Promise.resolve(hubAwait(q0, true));
+  }
   if(!T && off.topic && Date.now() - off.at < 20*60*1000 && (OFF_TALK[L]||[]).includes(off.topic) && off.step < off.topic.steps.length) T = off.topic;
   else { T = T || offPick(); if(T){ off.topic = T; off.step = offFirst(T, 0); } }
   hubDlg.mode = 'chat'; off.at = Date.now();
@@ -8447,25 +8453,38 @@ function offChat(text){
     if(want){ const p = pick(OFF_TXT.praise[L] || OFF_TXT.praise.en); off.topic = want; off.step = offFirst(want, 0); return offStart(true, want, {a:p[0], de:p[1]}); }
   }
   let T = off.topic;
-  if(!T || off.step >= T.steps.length) return offStart(true);
-  const st = T.steps[off.step];
+  if(!T || !(OFF_TALK[L] || []).includes(T) || off.step >= T.steps.length){ hubDlg.lastStarter = null; return offStart(true); }   // z. B. Lernsprache gewechselt
+  let st = T.steps[off.step];
+  const payKey = T.id + ':' + off.step;
+  // ja/nein: was zuerst gesagt wird, zählt („Yes, but no brother“ = ja)
+  const yi = low.search(OFF_TXT.yes[L] || OFF_TXT.yes.en), ni = low.search(OFF_TXT.no[L] || OFF_TXT.no.en);
+  const saysYes = yi >= 0 && (ni < 0 || yi <= ni), saysNo = ni >= 0 && !saysYes;
+  // Treffer in den Reaktionen eines Schritts → Einzahl-Form des Schlüsselworts merken („cats“ → „cat“)
+  const hitIn = s=>{ const h = (s.r||[]).find(r=>r.k.some(k=>offHas(low, k))); if(!h) return null;
+    const m = h.k.find(k=>offHas(low, k)), one = [m.replace(/ies$/, 'y'), m.replace(/es$/, ''), m.replace(/s$/, '')].find(v=>v!==m && h.k.includes(v)) || m; return {h, x:one}; };
   let react = null, skip = 0, x = null;
   if(st.yn){
-    const no = (OFF_TXT.no[L] || OFF_TXT.no.en).test(low), yes = (OFF_TXT.yes[L] || OFF_TXT.yes.en).test(low);
-    if(no){ react = st.no; skip = (st.no && st.no.skip) || 0; } else if(yes || low.split(' ').length > 2) react = st.yes;
+    if(saysNo){ react = st.no; skip = (st.no && st.no.skip) || 0; }
+    else if(saysYes || low.split(' ').length > 2){
+      react = st.yes;
+      const nx = T.steps[off.step + 1], h = nx && !nx.yn ? hitIn(nx) : null;   // „Yes, I have got a dog.“ beantwortet gleich die nächste Frage mit
+      if(h){ react = {a:st.yes.a + ' ' + h.h.a, de:st.yes.de + ' ' + h.h.de}; skip = 1; x = h.x; if(nx.slot) offFact(nx.slot, h.x); }
+    }
   } else {
-    const hit = (st.r||[]).find(r=>r.k.some(k=>offHas(low, k)));
-    if(hit){ react = hit; x = hit.k.find(k=>offHas(low, k)); }
-    else if(st.any){ x = offNoun(low, L); if(x) react = {a:st.any.replace('{x}', x), de:st.anyDe.replace('{x}', x)}; }
+    const h = hitIn(st);
+    if(h){ react = h.h; x = h.x; }
+    else if(saysNo){ const o = OFF_TXT.ok[L] || OFF_TXT.ok.en; react = {a:o[0], de:o[1]}; }
+    else if(st.any){ x = offNoun(low, L); if(x){ const cap = /^[¡¿]?\{x\}/.test(st.any), X = cap ? x.charAt(0).toUpperCase() + x.slice(1) : x;
+      react = {a:st.any.replace('{x}', X), de:st.anyDe.replace('{x}', /^[¡¿]?\{x\}/.test(st.anyDe) ? x.charAt(0).toUpperCase() + x.slice(1) : x)}; } }
   }
-  if(st.slot){
+  if(st.slot && !st.yn){
     if(st.slot==='name'){
-      const m = low.match(OFF_TXT.name[L] || OFF_TXT.name.en) || (low.split(' ').length <= 2 ? [0, low.split(' ').pop()] : null);
+      const m = low.match(OFF_TXT.name[L] || OFF_TXT.name.en) || (low.split(' ').length <= 2 && !saysNo ? [0, low.split(' ').pop()] : null);
       const nm = m && m[1] ? m[1].replace(/[^\p{L}-]/gu, '') : '', bad = new Set((OFF_TXT.notName + ' ' + (OFF_TXT.stop[L] || '')).split(' '));
-      if(nm.length >= 2 && !bad.has(nm)) offFact('name', nm.charAt(0).toUpperCase() + nm.slice(1));
+      if(nm.length >= 2 && !bad.has(nm) && !/\d/.test(nm)) offFact('name', nm.charAt(0).toUpperCase() + nm.slice(1));
     }
     else if(st.slot==='age'){ const m = low.match(/\b(\d{1,2})\b/); if(m) offFact('age', m[1]); }
-    else { const v = x || offNoun(low, L); if(v) offFact(st.slot, v); }
+    else offFact(st.slot, saysNo && !x ? '' : (x || offNoun(low, L) || ''));   // nichts Neues erkannt → alte Antwort vergessen (keine Fragen zu Dingen, die nie gesagt wurden)
   }
   if(!react){ const p = pick(OFF_TXT.praise[L] || OFF_TXT.praise.en); react = {a:p[0], de:p[1]}; }
   const fix = offFix(text, L), n = String(text).trim().split(/\s+/).length;
@@ -8483,24 +8502,24 @@ function offChat(text){
   const say = offFill(react.a) + ' ' + tail + (nq ? offFill(nq.q) : ''), de = offFill(react.de) + ' ' + tailDe + (nq ? offFill(nq.de) : '');
   // wie im KI-Gespräch: Wörter zählen, XP für längere Antworten
   hubDlg.words = (hubDlg.words||0) + n; track('talk', 1); discover('talk');
-  if(n >= 3){ const xp = n >= 12 ? 4 : n >= 6 ? 3 : 2; addXP(xp); saveState(); updateTopbar(); try{ hubBar(); }catch(e){} }
+  if(n >= 3 && off.paid!==payKey && buddy.micLang==='target'){ off.paid = payKey; const xp = n >= 12 ? 4 : n >= 6 ? 3 : 2; addXP(xp); saveState(); updateTopbar(); try{ hubBar(); }catch(e){} }   // XP einmal pro Frage
   hubSayHTML(say.trim(), de.trim(), [['💡', ()=>{ hubStopLive(); hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no']], true, true);
   hubDlg.lastStarter = say.trim(); hubDlg.starterSeq = hubDlg.seq;
   if(fix){ discover('grammar'); const b = hubXBox(); b.textContent = '✏️ „' + fix.good + '“ – ' + fix.why; }
-  else if(n < 3 && st.m){ const b = hubXBox(); b.textContent = '💡 Ganzer Satz: ' + offFill(st.m); }
+  else if(n < 3 && st.m){ const nm = offFact('name'), m = st.slot==='name' && nm ? st.m.replace(/\p{Lu}\p{Ll}+(?=\P{L}*$)/u, nm) : st.m; const b = hubXBox(); b.textContent = '💡 Ganzer Satz: ' + offFill(m); }
   hubFit();
   const q = say.trim();
   if(state.settings.sound!==false) return speakAsync(q, LANGS[L].code).then(()=>hubAwait(q, true));
   hubAwait(q, true); return Promise.resolve();
 }
 function hubChatStart(speakIt){
+  if(!hubHasAI()){ buddy.micLang = 'target'; return offStart(speakIt); }   // ohne Schlüssel: Gesprächsfäden ohne KI (immer in der Lernsprache)
   const L = currentLang(), de = buddy.micLang!=='target', SP = PERSONA_STARTERS[state.persona];
   if(!speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq) return Promise.resolve();   // steht schon da – nicht neu würfeln
   if(speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq){   // steht schon da (z. B. beim Öffnen) → nur vorlesen und zuhören
     const q0 = hubDlg.lastStarter;
     return state.settings.sound!==false ? speakAsync(q0, de ? 'de-DE' : LANGS[L].code).then(()=>hubAwait(q0)) : Promise.resolve(hubAwait(q0));
   }
-  if(!hubHasAI()) return offStart(speakIt);                      // ohne Schlüssel: Gesprächsfäden ohne KI
   const last = buddy.turns[buddy.turns.length - 1];
   if(last && last.role==='assistant' && Date.now() - (hubDlg.chatAt||0) < 20*60*1000){   // laufendes Gespräch: dort weitermachen
     const q1 = buddyParse(last.content).reply || '';
@@ -8554,7 +8573,7 @@ function hubOfferList(){
   if(questReady()) first.push('quests');
   first.push(...(!played ? ['campaign','learn'] : left > 0 ? ['learn','games'] : ['games','tales']));
   if(quiz) first.push('quiz');
-  if(state.persona) first.unshift('pquiz', 'prole');
+  if(state.persona) first.unshift('pquiz', ...(hubHasAI() ? ['prole'] : []));
   else (state.topics||[]).forEach(t=>{ if(PERSONAS[t]) first.push('p:' + t); });
   // Ganz vorne, was echtes Reden möglich macht: schöne Stimme, KI-Zugang – dann gleich ein Gespräch
   const head = [];
@@ -8636,7 +8655,7 @@ function hubGo(go){
     case 'campaign': return openCampaign();
     case 'learn': pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); return;
     case 'games': return tab('arcade');
-    case 'talk': if(hubHasAI()) return openBuddy(); hubDlg.list = []; return offStart(true);
+    case 'talk': if(hubHasAI()) return openBuddy(); hubDlg.list = hubOfferList(); hubDlg.i = Math.max(0, hubDlg.list.indexOf('chat')); hubDlg.lastStarter = null; return offStart(true);
     case 'tales': return openStoryShelf();
     case 'school': return schoolLesson();
     case 'night': return openNight();
@@ -8819,6 +8838,10 @@ function hubContinue(){                                 // nach dem Sprechen (un
   go();
 }
 function hubLang(m){
+  if(m==='de' && !hubHasAI()){   // ohne KI plaudert Flügo nur in der Lernsprache
+    const line = 'Ohne KI plaudere ich nur in der Lernsprache – du schaffst das!'; hubSayHTML('🗣️ ' + line, '', null);
+    return speakAsync(line, 'de-DE').then(()=>hubChatStart(true));
+  }
   buddy.micLang = m; buddy.turns = [];
   const line = m==='de' ? 'Okay, ab jetzt reden wir Deutsch!' : (({en:'Great, let’s speak English!', es:'¡Genial, hablemos español!', fr:'Super, parlons français !', it:'Perfetto, parliamo italiano!'})[currentLang()] || 'OK!');
   hubSayHTML('🗣️ ' + line, '', null);
@@ -8843,7 +8866,7 @@ function hubHeard(heard){
   let cmd = !chatting || words <= 3 || cmdLike ? dragonCommand(heard, true) : null; if(cmd==='random') cmd = pick(DRAGON_RANDOM);
   if(cmd){ hubTrick(cmd); return; }
   const offer = !chatting;
-  if(offer || cmdLike){ const hit = HUB_INTENTS.find(([re, k])=>re.test(heard) && !(k==='school' && chatting)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
+  if(offer || cmdLike){ const hit = !(chatting && OFF_TXT.topic.test(offNorm(heard))) && HUB_INTENTS.find(([re, k])=>re.test(heard) && !(k==='school' && chatting)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
   if(offer && /^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ if(hubDlg.mode==='hint'){ hubNext(true).then(hubContinue); return; } hubStopLive(); hubAccept(); return; }
   if(offer && /^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true).then(hubContinue); return; }
   hubChat(heard);
@@ -8869,7 +8892,7 @@ async function hubChat(text){
     hubStopLive();
     if(!hubOnHub()) return;
     const code = e && e.code;
-    if(code==='bad_key'){ buddy.turns.pop(); dropKey(); if(hubHasAI()) hubRetry(text); else hubKeySetup(text, '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.'); return; }
+    if(code==='bad_key'){ buddy.turns.pop(); dropKey(); if(hubHasAI()) hubRetry(text); else { toast('🔑 Schlüssel abgelehnt – ich plaudere ohne KI weiter'); offChat(text); } return; }
     if(code==='no_backend'){ buddy.turns.pop(); offChat(text); return; }
     const why = code==='rate_limited' ? '⏳ Kurz zu viele Fragen auf einmal.' : code==='network' || code==='offline' ? '📶 Keine Internetverbindung.' : code==='session_expired' ? '🔐 Anmeldung abgelaufen.' : '😕 Da ist etwas schiefgegangen.';
     hubSayHTML(why, '', [['🔁', ()=>hubRetry(text), 'yes'], ['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true); }, 'no']]);
