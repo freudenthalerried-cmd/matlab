@@ -461,7 +461,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'wert', wert: 33,
-    warum: 'Eine **abgeloeste** Leitzahl: 33 Keywords vor dem 1. September, mit einem `weil` '
+    warum: 'Eine **abgeloeste** Leitzahl: 33 Keywords vor dem 01.09., mit einem `weil` '
       + 'daneben. Ein historischer Stand ist keine geltende Groesse — er soll gerade nicht '
       + 'mitwandern, wenn die heutige Zahl wandert. Die Kollision ist Gate 33.',
   }),

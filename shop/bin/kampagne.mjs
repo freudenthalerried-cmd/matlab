@@ -44,6 +44,7 @@ import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
 import { GRENZE_TAGE, preisalterTage } from '../src/preisalter.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { preisdeckungsbefund } from '../src/preisdeckung.js';
 import { abholungslage } from '../src/abholung.js';
 import { HERSTELLER } from '../src/hersteller.js';
@@ -1525,9 +1526,96 @@ function main() {
    * Schwelle gebührt der Vorrang vor meiner Vorabfestlegung.
    */
   const kostenJeVerkauf = MARKT_CPC.oben / kaufquote;
-  const ersterAnlauf = gruppen.filter((g) => g.deckungsbeitragNetto >= kostenJeVerkauf);
-  const spaeter = gruppen.filter((g) => g.deckungsbeitragNetto < kostenJeVerkauf);
+
+  /*
+   * **Und ein zweites Kriterium, das nichts mit dem Deckungsbeitrag zu tun hat
+   * — 30. Oktober 2026.**
+   *
+   * Eine Gruppe, in deren Referenzwarenkorb ein Einkaufspreis älter ist als
+   * unsere eigene Grenze, geht nicht in den ersten Anlauf. `pruefe-preisalter`
+   * hat diesen Zustand bis heute **nach** dem Bau gemeldet, und die Antwort
+   * darauf war zweimal dieselbe Handarbeit: Positionen aus dem Korb nehmen
+   * (6. September, 15. Oktober). Beim dritten Mal war in der Gruppe Kamin kein
+   * Artikel mehr unter der Grenze — der jüngste 95 Tage —, und derselbe Griff
+   * hätte den Korb geleert und damit die Preisauskunft der Systemliste
+   * mitgenommen.
+   *
+   * > **Der Korb beantwortet eine Frage; das Gebot gibt Geld aus. Nur das
+   * > zweite darf an einem alten Preis scheitern.**
+   *
+   * Deshalb steht die Zurückstellung jetzt hier statt im Korb: Der Korb bleibt
+   * vollständig und die Systemliste nennt weiter ihre Summe — geboten wird auf
+   * die Gruppe nicht. Und sie kommt von selbst zurück, sobald eine neue
+   * Preisliste da ist; eine herausgenommene Position käme das nicht.
+   *
+   * Dieselbe Entscheidung wie bei Gate 29 eine Ebene tiefer, wo ein einzelnes
+   * Keyword zurückgestellt wird, dessen Trefferliste einen überalterten Preis
+   * enthält.
+   */
+  // **`geschaeftstag()` und nicht `new Date()`.** Dieselbe Uhr wie überall:
+  // Eine Probe, die den Kalender des Rechners liest, misst an einem anderen
+  // Tag etwas anderes — der Befund vom 15. Oktober.
+  const stichtag = geschaeftstag();
+  const altpreisJeGruppe = new Map();
+  for (const g of gruppen) {
+    const alt = (WARENKOERBE[g.gruppe]?.positionen ?? [])
+      .map((pos) => {
+        const a = katalog.artikel.find((x) => x.sku === pos.sku);
+        return a ? { sku: a.sku, tage: preisalterTage(a.preisStand, stichtag) } : null;
+      })
+      .filter((x) => x && x.tage !== null && x.tage > GRENZE_TAGE)
+      .sort((x, y) => y.tage - x.tage);
+    if (alt.length) altpreisJeGruppe.set(g.gruppe, alt);
+  }
+
+  /*
+   * **Zwei Gründe nebeneinander, nicht übereinander.** Der erste Anlauf dieser
+   * Änderung zog die Altpreisgruppen auch aus `spaeter` heraus — damit war die
+   * Datei der zurückgestellten Gruppen leer, und drei Testfälle fielen um, die
+   * genau das halten. `spaeter` bedeutet unverändert „trägt die Werbekosten
+   * nicht"; die Altpreissperre ist ein zweiter, unabhängiger Grund und nennt
+   * nur die Gruppen, die sonst gelaufen wären.
+   */
+  const traegt = (g) => g.deckungsbeitragNetto >= kostenJeVerkauf;
+  const ersterAnlauf = gruppen.filter((g) => traegt(g) && !altpreisJeGruppe.has(g.gruppe));
+  const spaeter = gruppen.filter((g) => !traegt(g));
+  const altpreisZurueck = gruppen.filter((g) => traegt(g) && altpreisJeGruppe.has(g.gruppe));
+
+  if (altpreisZurueck.length) {
+    console.log(`\nGate 29 auf Gruppenebene: ${altpreisZurueck.length} Anzeigengruppe(n) `
+      + `zurückgestellt, weil ihr Referenzwarenkorb einen Einkaufspreis über `
+      + `${GRENZE_TAGE} Tagen trägt:`);
+    for (const g of altpreisZurueck) {
+      const alt = altpreisJeGruppe.get(g.gruppe);
+      console.log(`  · ${g.gruppe} — ${alt.length} Position(en), älteste ${alt[0].tage} Tage `
+        + `(${alt.map((a) => a.sku).join(' ')})`);
+    }
+    console.log('  Der Korb bleibt stehen: Die Systemliste nennt weiter ihre Summe.');
+    console.log('  Zurück kommt die Gruppe mit der nächsten Preisliste, nicht von Hand.');
+  }
   if (ersterAnlauf.length === 0) {
+    /*
+     * **Zwei Gründe für dieselbe Leere, und sie sagen Verschiedenes.** Bis zum
+     * 30. Oktober konnte dieser Punkt nur eines heißen: Die Rechnung geht
+     * nicht auf, keine Gruppe trägt die Werbekosten. Seit die Altpreissperre
+     * darüber steht, kann er auch heißen: Sie trägt sehr wohl, aber auf ihrem
+     * Korb liegt ein Preis, der älter ist als unsere eigene Grenze.
+     *
+     * > **Das eine ist ein Urteil über das Geschäft, das andere über das Alter
+     * > einer Datei.** Dieselbe Meldung für beide hätte die zweite Lage wie die
+     * > erste aussehen lassen — und niemand hätte eine Preisliste geholt.
+     */
+    if (altpreisZurueck.length) {
+      console.error(`Abbruch: Jede Gruppe, die ${kostenJeVerkauf.toFixed(0)} € Werbekosten je `
+        + 'Verkauf trägt, ist wegen überalteter Einkaufspreise zurückgestellt:');
+      for (const g of altpreisZurueck) {
+        const a = altpreisJeGruppe.get(g.gruppe);
+        console.error(`  · ${g.gruppe} — ältester Preis ${a[0].tage} Tage (Grenze ${GRENZE_TAGE})`);
+      }
+      console.error('Das ist keine Aussage über das Geschäft, sondern über das Alter einer');
+      console.error('Datei: Es fehlt eine aktuelle Preisliste des Lieferanten.');
+      process.exit(3);
+    }
     console.error(`Abbruch: Keine Gruppe trägt ${kostenJeVerkauf.toFixed(0)} € Werbekosten je Verkauf.`);
     console.error('Ein Budget auf alle zu verteilen hieße, es gleichmäßig zu verlieren.');
     process.exit(2);
@@ -1858,6 +1946,29 @@ function main() {
   console.log(`Geschrieben nach ${AUSGABE.replace(`${REPO}/`, '')}/:`);
   schreibe('kampagnen.csv', csv(Object.keys(kampagnen[0]), kampagnen));
   schreibe('anzeigengruppen.csv', csv(Object.keys(anzeigengruppen[0]), anzeigengruppen));
+
+  /*
+   * **Die wegen Altpreisen zurückgestellten Gruppen bekommen eine eigene
+   * Datei — 30. Oktober 2026.** Dieselbe Entscheidung wie bei
+   * `spaeter-pruefen.csv` und `keywords-alter-preis.csv`: Was zurückgestellt
+   * ist, steht mit Grund da und nicht nur im Protokoll eines Laufs. Ohne die
+   * Datei könnte niemand die Zahl messen — und eine Zahl, die nur im
+   * Protokoll steht, hat morgen niemand mehr.
+   */
+  const altpreisZeilen = altpreisZurueck.map((g) => {
+    const a = altpreisJeGruppe.get(g.gruppe);
+    return {
+      Anzeigengruppe: g.gruppe,
+      Positionen: String(a.length),
+      'Ältester Preis (Tage)': String(a[0].tage),
+      'Grenze (Tage)': String(GRENZE_TAGE),
+      Artikel: a.map((x) => x.sku).join(' '),
+      Grund: 'Einkaufspreis über der Grenze — der Korb bleibt, das Gebot nicht',
+    };
+  });
+  if (altpreisZeilen.length) {
+    schreibe('gruppen-alter-preis.csv', csv(Object.keys(altpreisZeilen[0]), altpreisZeilen));
+  }
   // Auch die Keywords folgen dem ersten Anlauf: Ein Keyword ohne Anzeigengruppe
   // lädt nicht, und eines für eine Gruppe ohne Budget wirbt nicht.
   const imAnlauf = new Set(ersterAnlauf.map((g) => g.gruppe));

@@ -5,88 +5,88 @@
   "grenzeTage": 14,
   "proben": {
     "korbflaeche-ohne-grenze": {
-      "am": "2026-10-15",
-      "sekunden": 52
+      "am": "2026-10-30",
+      "sekunden": 53
     },
     "auskunft-nur-im-leeren-fall": {
-      "am": "2026-10-15",
-      "sekunden": 74
+      "am": "2026-10-30",
+      "sekunden": 46
     },
     "formular-erhebt-zu-wenig": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 6
     },
     "ablage-im-webverzeichnis": {
-      "am": "2026-10-15",
-      "sekunden": 6
+      "am": "2026-10-30",
+      "sekunden": 7
     },
     "absage-ohne-naechsten-schritt": {
-      "am": "2026-10-15",
-      "sekunden": 54
+      "am": "2026-10-30",
+      "sekunden": 48
     },
     "stiller-wegfall-im-korb": {
-      "am": "2026-10-15",
-      "sekunden": 43
+      "am": "2026-10-30",
+      "sekunden": 47
     },
     "einzahl-im-korbkopf": {
-      "am": "2026-10-15",
-      "sekunden": 44
+      "am": "2026-10-30",
+      "sekunden": 45
     },
     "knopf-nennt-die-eingabe": {
-      "am": "2026-10-15",
-      "sekunden": 71
+      "am": "2026-10-30",
+      "sekunden": 45
     },
     "grenze-ohne-wort": {
-      "am": "2026-10-15",
-      "sekunden": 42
+      "am": "2026-10-30",
+      "sekunden": 44
     },
     "anfragetext-ohne-namen": {
-      "am": "2026-10-15",
-      "sekunden": 76
+      "am": "2026-10-30",
+      "sekunden": 43
     },
     "meldung-die-niemand-hoert": {
-      "am": "2026-10-15",
-      "sekunden": 69
+      "am": "2026-10-30",
+      "sekunden": 44
     },
     "referenzwert-schon-bei-gleichstand": {
-      "am": "2026-10-15",
-      "sekunden": 21
+      "am": "2026-10-30",
+      "sekunden": 20
     },
     "suchfeld-sprengt-den-rahmen": {
-      "am": "2026-10-15",
-      "sekunden": 28
+      "am": "2026-10-30",
+      "sekunden": 29
     },
     "warenkorb-ohne-kleinmengensatz": {
-      "am": "2026-10-15",
-      "sekunden": 15
+      "am": "2026-10-30",
+      "sekunden": 14
     },
     "weg-zahlweg-nicht-vorbelegt": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 15
     },
     "kasse-ohne-mindestbestellwert": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 15
     },
     "zwei-staende-desselben-betriebs": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 8
     },
     "die-probeakte-bleibt-ungeprueft": {
-      "am": "2026-10-15",
-      "sekunden": 8
+      "am": "2026-10-30",
+      "sekunden": 7
     },
     "die-probe-ueberspringt-den-vertrag": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 8
     },
     "die-absage-schluckt-den-grund": {
-      "am": "2026-10-15",
+      "am": "2026-10-30",
       "sekunden": 8
     },
     "preisgrenze-ohne-wort": {
-      "am": "2026-10-15",
-      "sekunden": 40
+      "am": "2026-10-30",
+      "sekunden": 47
     }
   }
 }

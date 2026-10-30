@@ -5444,6 +5444,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Feld wieder ein und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'das-gebot-ruht-wieder-auf-einem-alten-preis',
+    pruefer: 'pruefe-preisalter',
+    was: 'Eine Anzeigengruppe, deren Korb einen überalterten Einkaufspreis trägt, geht wieder in den ersten Anlauf',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: '  const ersterAnlauf = gruppen.filter((g) => traegt(g) && !altpreisJeGruppe.has(g.gruppe));',
+    ersetzen: '  const ersterAnlauf = gruppen.filter((g) => traegt(g));',
+    erwartet: /auf diesen Preis ruht ein Gebot/,
+    warum: 'Am 30. Oktober 2026 war in der Gruppe Kamin kein einziger der neun Artikel mehr '
+      + 'unter der Preisgrenze — der jüngste 95 Tage. Der zweimal geübte Griff (Positionen aus '
+      + 'dem Korb nehmen, 6. September und 15. Oktober) hätte den Korb geleert und damit die '
+      + 'Preisauskunft der Systemliste mitgenommen. Seither steht die Zurückstellung eine Ebene '
+      + 'höher: Der Korb bleibt vollständig, geboten wird auf die Gruppe nicht. Diese Mutation '
+      + 'nimmt genau diese Bedingung zurück — dann liegt wieder ein Gebot auf einem Preis von '
+      + 'vorgestern, und das ist die Lage, gegen die `pruefe-preisalter` gebaut ist.',
+  }),
+  Object.freeze({
     id: 'der-lieferantenname-reist-im-datensatz-mit',
     pruefer: 'website',
     was: 'Der Lieferantenname im ausgelieferten Datensatz, den jeder Besucher lädt',

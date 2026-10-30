@@ -161,6 +161,13 @@ if (!leitzahl.tragfaehig) throw new Error(`Die Zielgrößen tragen sich nicht: $
 
 const plan = rolloutplan(HAUPTFALL);
 
+// Die wegen überalterter Preise zurückgestellten Anzeigengruppen. Die Datei
+// entsteht nur, wenn es welche gibt — keine Datei heißt: keine zurückgestellt.
+const altpreisDatei = join(kampagne, 'gruppen-alter-preis.csv');
+const altpreisZeilen = existsSync(altpreisDatei)
+  ? readFileSync(altpreisDatei, 'utf8').trim().split('\n').slice(1).map((z) => z.split(','))
+  : [];
+
 const messwerte = {
   artikel: katalog.artikel.length,
   seiten: zaehleHtml(site, true),
@@ -210,9 +217,15 @@ const messwerte = {
     + (existsSync(join(kampagne, 'spaeter-pruefen.csv'))
       ? readFileSync(join(kampagne, 'spaeter-pruefen.csv'), 'utf8').trim().split('\n').length - 1
       : 0),
-  cpcKamin: cpc('Kamin'),
-  cpcDaemmung: cpc('Dämmung'),
   cpcWdvs: cpc('WDVS'),
+  // **Statt der Geboten für Kamin und Dämmung — 30. Oktober 2026.** Die beiden
+  // Gruppen sind wegen überalterter Einkaufspreise zurückgestellt und stehen
+  // nicht mehr in `anzeigengruppen.csv`; ihre Höchstgebote waren damit
+  // ungemessen. Gelöscht ist die Prüfung deshalb nicht — sie misst jetzt den
+  // Zustand, der an ihre Stelle getreten ist.
+  gruppenAltpreis: altpreisZeilen.length,
+  altpreisTage: altpreisZeilen.length
+    ? Math.max(...altpreisZeilen.map((z) => Number(z[2]))) : null,
   rekonstruierbar: geheimTreffer ? Number(geheimTreffer[1]) : null,
   // Auf ganze Euro, weil die Beschreibung ganze Euro nennt. Dieselbe Lehre wie
   // beim Medianabstand: Gemessen wird so, wie die Aussage gemacht wird —

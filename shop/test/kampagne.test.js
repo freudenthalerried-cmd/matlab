@@ -1018,7 +1018,16 @@ test('Die Kaufquote der Gebote kommt aus dem Annahmenregister', async () => {
     pfad('../bin/kampagne.mjs'), '--kaufquote', String(basis / 2),
     '--nach', wegwerfordner('kampagne-probe-'),
   ], { encoding: 'utf8' });
-  assert.equal(halb.status, 0, halb.stderr);
+  //
+  // **Seit dem 30. Oktober endet dieser zweite Lauf rot, und zwar zu Recht.**
+  // Bei halber Kaufquote verdoppeln sich die Werbekosten je Verkauf auf 250 €,
+  // und die einzige Gruppe, die so viel trägt, ist Dämmung — die wegen eines
+  // 95 Tage alten Einkaufspreises zurückgestellt ist. Der Lauf bricht mit
+  // Ziffer 3 ab (Altpreis) statt mit 2 (Rechnung geht nicht auf). Geprüft wird
+  // hier der Schalter, nicht die Lage: Die Kaufquote steht in beiden Fällen im
+  // Protokoll, bevor der Abbruch kommt.
+  assert.ok([0, 3].includes(halb.status),
+    `unerwarteter Ausgang ${halb.status}: ${halb.stderr}`);
   const zweiter = /Kaufquote ([\d.,]+) %/.exec(halb.stdout);
   assert.ok(zweiter && Number(zweiter[1].replace(',', '.')) / 100 < basis,
     'der Schalter --kaufquote wirkt nicht mehr');

@@ -165,9 +165,14 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > `die-drei-groessten-risiken.md`.
 >
 > **Und die Zahl, mit der gemessen wird:** Die Messliste führt
-> **29 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
+> **11 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
 > Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen je Monat tragen, sonst
-> bindet der Markt und nicht das Budget. Bis zum 01.09. waren es 33; dann
+> bindet der Markt und nicht das Budget. **Von 29 auf 12 gefallen ist die Zahl
+> nicht durch eine Streichung, sondern durch die Zeit:** Die Liste entsteht aus
+> den Positionen der Referenzwarenkörbe, und aus denen sind Artikel
+> herausgefallen, deren Preis über die Neunzig-Tage-Grenze gelaufen ist. *Eine
+> Liste, die kleiner wird, ohne dass jemand etwas gestrichen hat, misst die Zeit
+> und nicht den Markt.* Bis zum 01.09. waren es 33; dann
 > fiel „Kaminkopf Regenhaube“ weg, weil der Shop die Kaminkopfverkleidung
 > nicht führt und ein Suchwort kein Werbeversprechen ist. **Am 06.09. fielen
 > zwei weitere weg, aus genau demselben Grund:** „EPS Fassadenplatten“ und

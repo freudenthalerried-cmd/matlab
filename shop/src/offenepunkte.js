@@ -292,7 +292,7 @@ export const OHNE_WERKZEUG = Object.freeze([
      * Die Zahl geht gegen `npm run messliste` und wandert damit von selbst
      * weiter — sie gehört nicht festgeschrieben, sondern nachgezogen.
      */
-    titel: 'Suchvolumen der 14 Keywords im Liefergebiet messen',
+    titel: 'Suchvolumen der 11 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     warumKeinWerkzeug: 'Die Zahlen liegen bei Google. Der Keyword-Planer ist kostenlos, ein Ads-Konto '
       + 'ohne geschaltete Kampagne kostet nichts.',
@@ -316,7 +316,7 @@ export const OHNE_WERKZEUG = Object.freeze([
      * 10., vierundzwanzig heute.
      */
     id: 'angebote-abgelaufen',
-    titel: '24 von 46 Angeboten gelten für eine Maschine als abgelaufen',
+    titel: '32 von 46 Angeboten gelten für eine Maschine als abgelaufen',
     // **`anfrage` und nicht `entscheidung`.** Der erste Anlauf schrieb
     // `auftraggeber` — eine Zuständigkeit, die dieses Register nicht kennt,
     // und der Lauf brach ab. Richtig ist `anfrage`: Die Liste liegt beim

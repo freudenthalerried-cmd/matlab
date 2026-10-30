@@ -140,8 +140,16 @@ export function kennzahlen(messwerte) {
     { name: 'Median unter Liste', wie: 'katalogbefund().medianAbstandZurListe',
       muster: /im Median ([\d,]+) % darunter/, soll: m.medianVorteil },
     { name: 'Kampagnen im ersten Anlauf', wie: 'ausgabe/kampagne/kampagnen.csv', muster: /\*\*(\d+) im ersten Anlauf\*\*/, soll: m.anlauf },
-    { name: 'Höchstgebot Kamin', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /Kamin ([\d,]+) €, Dämmung/, soll: m.cpcKamin },
-    { name: 'Höchstgebot Dämmung', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /Dämmung ([\d,]+) €, WDVS/, soll: m.cpcDaemmung },
+    // **An die Stelle der Gebote für Kamin und Dämmung getreten — 30.10.2026.**
+    // Beide Gruppen sind wegen überalterter Einkaufspreise zurückgestellt und
+    // haben kein Höchstgebot mehr. Eine Kennzahl zu streichen, weil ihr Wert
+    // verschwunden ist, hieße aufzuhören hinzusehen; diese beiden messen den
+    // Zustand, der an ihre Stelle getreten ist.
+    { name: 'Zurückgestellte Anzeigengruppen', wie: 'ausgabe/kampagne/gruppen-alter-preis.csv',
+      muster: /(\d+) Anzeigengruppen sind wegen überalterter Einkaufspreise zurückgestellt/,
+      soll: m.gruppenAltpreis },
+    { name: 'Ältester Preis einer zurückgestellten Gruppe', wie: 'ausgabe/kampagne/gruppen-alter-preis.csv',
+      muster: /zurückgestellt — ältester Einkaufspreis (\d+) Tage/, soll: m.altpreisTage },
     { name: 'Höchstgebot WDVS', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /WDVS ([\d,]+) € gegen einen Markt/, soll: m.cpcWdvs },
     { name: 'Rekonstruierbare Einkaufspreise', wie: 'npm run pruefe-geheimnis', muster: /\*\*(\d+) von \d+ Einkaufspreisen\*\*/, soll: m.rekonstruierbar },
     // **Aufgenommen am 1. September.** Die vierundzwanzig Kennzahlen davor

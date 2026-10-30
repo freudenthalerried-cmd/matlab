@@ -92,29 +92,6 @@
           "kd": null
         }
       ]
-    },
-    {
-      "gruppe": "Kamin",
-      "keywords": [
-        {
-          "begriff": "Kaminrohr gedämmt",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Kaminsystem einzügig",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "SIKM Rohr 133cm gedämmt",
-          "herkunft": "Marke",
-          "volumen": null,
-          "kd": null
-        }
-      ]
     }
   ]
 }
