@@ -167,7 +167,7 @@ select{font:1rem var(--f-ui);color:var(--fg);background:var(--panel);border:1px 
   </form>
   <div class="status" id="status" aria-live="polite"></div>
   <div class="cards" id="cards"></div>
-  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über Deepgram oder den Browser (bei Chrome über Google).</p>
+  <p class="foot">Schnellcheck aus dem Modellwissen, danach automatisch Live-Prüfung in offiziellen Quellen. Mitschrift und Audio bleiben auf diesem Gerät; an den Server geht nur Text zur Prüfung. Die Spracherkennung läuft über Deepgram oder den Browser (bei Chrome über Google). Version 2026-10-30b.</p>
   <nav class="legal"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">Nutzungsbedingungen</a></nav>
 </div>
 <script>
@@ -464,9 +464,21 @@ document.addEventListener("visibilitychange", () => {
   else statusEl.textContent = "Im Hintergrund kann der Browser das Mikrofon pausieren. App bitte offen lassen.";
 });
 window.addEventListener("beforeunload", e => { if(listening) e.preventDefault(); });
+// Wächter: kommt nach 12 s kein Text, Diagnose automatisch zeigen
+let watchdog = null;
 function setMic(on){
   listening = on; $("#mic").setAttribute("aria-pressed", on);
-  clearInterval(clock);
+  clearInterval(clock); clearTimeout(watchdog);
+  if(on){
+    const before = (active || convs[0])?.lines.length || 0;
+    watchdog = setTimeout(() => {
+      if(!listening || ((active?.lines.length || 0) > before)) return;
+      dlog("Wächter: 12 s kein Text. Verfahren: " + (dg ? "Deepgram" + (dg.opened ? " (verbunden)" : " (NICHT verbunden)") : SR ? "Browser-Spracherkennung" : "keine"));
+      $("#diag").open = true;
+      say("Seit 12 Sekunden kommt kein Text an. Bitte die Diagnose unten kopieren oder einen Screenshot schicken.");
+      $("#diag").scrollIntoView({ behavior:"smooth", block:"start" });
+    }, 12000);
+  }
   if(on){
     started = Date.now(); keepAwake();
     clock = setInterval(() => {
@@ -549,7 +561,9 @@ function dlog(msg){
   $("#diagText").textContent = diag.slice(-40).join("\n");
 }
 function say(msg){ statusEl.textContent = msg; live.textContent = msg; dlog("Hinweis: " + msg); }
+dlog("App-Version: 2026-10-30b");
 dlog("Browser: " + navigator.userAgent);
+dlog("Deepgram-Schlüssel gespeichert: " + (getPref("fc-dgkey") ? "ja" : "nein") + " · Claude-Schlüssel: " + (getPref(KEY_STORE) ? "ja" : "nein"));
 dlog("Spracherkennung: " + (SR ? "vorhanden" : "FEHLT – bitte Google Chrome verwenden"));
 dlog("Sichere Verbindung (HTTPS): " + (window.isSecureContext ? "ja" : "NEIN – Mikrofon geht nur über https"));
 navigator.permissions?.query({name:"microphone"}).then(r => { dlog("Mikrofon-Berechtigung: " + r.state); r.onchange = () => dlog("Mikrofon-Berechtigung: " + r.state); }).catch(() => dlog("Mikrofon-Berechtigung: unbekannt"));
