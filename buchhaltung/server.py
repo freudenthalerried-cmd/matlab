@@ -19,7 +19,8 @@ import threading
 import time
 import uuid
 import webbrowser
-from datetime import date, datetime
+import zipfile
+from datetime import date, datetime, timedelta
 from email.parser import BytesParser
 from email.policy import HTTP
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -40,6 +41,10 @@ KATEGORIEN = {
     "sonstiges": "Sonstiges",
     "bank": "Bank",
 }
+# Ausgabenkonten (angelehnt an die E1a-Gliederung) – für Auswertung & Steuerberater
+KONTEN = ["Waren/Material", "Fremdleistungen", "Fahrzeug/Treibstoff", "Reise/Verpflegung", "Miete/Pacht",
+          "Energie", "Telefon/Internet", "Büro/Software", "Versicherung", "Werbung", "Bank/Gebühren",
+          "Instandhaltung", "Anlagen/GWG", "Privat", "Sonstiges"]
 ERLAUBT = {".pdf", ".jpg", ".jpeg", ".png", ".heic", ".webp"}
 STATISCH = {"/manifest.webmanifest": "application/manifest+json", "/sw.js": "text/javascript",
             "/icon-192.png": "image/png", "/icon-512.png": "image/png"}
@@ -56,6 +61,7 @@ STANDARD_KONFIG = {
         "auto": "eingang_ordner/automatisch",
     },
     "scan_intervall_sekunden": 10,
+    "zahlungsziel_tage": 14,
     # Optional: automatische Belegerkennung (Betrag, Datum, Firma, Rubrik) per Claude.
     # Benötigt: pip install anthropic  +  API-Key von https://console.anthropic.com
     "anthropic_api_key": "",
@@ -104,6 +110,10 @@ def init_db():
                 erstellt TEXT
             )"""
         )
+        vorhanden = {z[1] for z in c.execute("PRAGMA table_info(belege)")}
+        for spalte, typ in (("konto", "TEXT DEFAULT ''"), ("zuordnung", "INTEGER")):
+            if spalte not in vorhanden:
+                c.execute(f"ALTER TABLE belege ADD COLUMN {spalte} {typ}")
 
 
 def zeile_zu_dict(z):
@@ -111,6 +121,12 @@ def zeile_zu_dict(z):
     ust = d.get("ust_satz") or 0
     d["netto"] = round(d["brutto"] / (1 + ust / 100), 2) if d["brutto"] else 0
     d["ust"] = round(d["brutto"] - d["netto"], 2)
+    if d["kategorie"] == "ausgang" and d["datum"]:
+        try:
+            d["faellig"] = (date.fromisoformat(d["datum"]) + timedelta(KONFIG["zahlungsziel_tage"])).isoformat()
+            d["ueberfaellig"] = not d["bezahlt"] and d["faellig"] < date.today().isoformat()
+        except ValueError:
+            pass
     return d
 
 
@@ -195,8 +211,9 @@ KI_SCHEMA = {
         "brutto": {"type": "number", "description": "Gesamtbetrag inkl. USt in EUR"},
         "ust_satz": {"type": "number", "enum": [20, 13, 10, 0]},
         "bezahlt": {"type": "boolean"},
+        "konto": {"type": "string", "enum": KONTEN, "description": "Ausgabenart (bei Ausgangsrechnungen 'Sonstiges')"},
     },
-    "required": ["kategorie", "datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "bezahlt"],
+    "required": ["kategorie", "datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "bezahlt", "konto"],
     "additionalProperties": False,
 }
 KI_TYPEN = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
@@ -272,6 +289,7 @@ def beleg_verarbeiten(rel, kategorie, quelle, beschreibung=""):
         brutto=erkannt.get("brutto", 0),
         ust_satz=erkannt.get("ust_satz", standard_ust),
         bezahlt=erkannt.get("bezahlt", 1 if kategorie == "bar" else 0),
+        konto="" if kategorie in ("ausgang", "bank") else erkannt.get("konto", ""),
         datei=rel,
         quelle=quelle,
     )
@@ -357,8 +375,47 @@ def bank_csv_import(roh):
     return anzahl
 
 
+def export_csv(jahr):
+    sql, par = "SELECT * FROM belege", []
+    if jahr:
+        sql += " WHERE substr(datum,1,4)=?"
+        par.append(jahr)
+    sql += " ORDER BY kategorie, datum"
+    puffer = io.StringIO()
+    w = csv.writer(puffer, delimiter=";")
+    w.writerow(["Kategorie", "Datum", "Partner", "Nummer", "Beschreibung", "Konto", "Netto", "USt %", "USt", "Brutto",
+                "Bezahlt", "Datei"])
+    zahl = lambda x: f"{x:.2f}".replace(".", ",")
+    with db() as c:
+        for z in map(zeile_zu_dict, c.execute(sql, par)):
+            w.writerow([KATEGORIEN.get(z["kategorie"], z["kategorie"]), z["datum"], z["partner"], z["nummer"],
+                        z["beschreibung"], z["konto"], zahl(z["netto"]), zahl(z["ust_satz"]), zahl(z["ust"]),
+                        zahl(z["brutto"]), "ja" if z["bezahlt"] else "nein", z["datei"]])
+    return puffer.getvalue().encode("utf-8-sig")
+
+
 # ---------------------------------------------------------------- HTTP
-FELDER = ("kategorie", "datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "bezahlt")
+FELDER = ("kategorie", "datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "bezahlt", "konto")
+
+
+def bank_abgleich():
+    """Bankbuchungen offenen Rechnungen zuordnen (Betrag gleich, Rechnungsnr. im Text bevorzugt)."""
+    anzahl = 0
+    with db_lock, db() as c:
+        bank = c.execute("SELECT * FROM belege WHERE kategorie='bank' AND zuordnung IS NULL").fetchall()
+        for b in bank:
+            arten = ("ausgang", "ausgang") if b["brutto"] > 0 else ("eingang", "bar")
+            offen = c.execute(
+                "SELECT * FROM belege WHERE kategorie IN (?, ?) AND bezahlt=0 AND zuordnung IS NULL "
+                "AND abs(brutto - ?) < 0.01", (*arten, abs(b["brutto"]))).fetchall()
+            text = f"{b['beschreibung']} {b['partner']}".lower()
+            mit_nr = [o for o in offen if o["nummer"] and o["nummer"].lower() in text]
+            treffer = mit_nr[0] if len(mit_nr) == 1 else offen[0] if len(offen) == 1 else None
+            if treffer:
+                c.execute("UPDATE belege SET bezahlt=1, zuordnung=? WHERE id=?", (b["id"], treffer["id"]))
+                c.execute("UPDATE belege SET zuordnung=? WHERE id=?", (treffer["id"], b["id"]))
+                anzahl += 1
+    return anzahl
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -400,9 +457,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self.antwort(200, [zeile_zu_dict(z) for z in c.execute(sql, par)])
         if url.path == "/api/info":
             ki = bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
-            return self.antwort(200, {"kategorien": KATEGORIEN, "ust_standard": KONFIG["ust_standard"], "ki": ki})
+            return self.antwort(200, {"kategorien": KATEGORIEN, "konten": KONTEN,
+                                      "ust_standard": KONFIG["ust_standard"], "ki": ki})
         if url.path == "/api/export.csv":
-            return self.export(q.get("jahr"))
+            return self.antwort(200, export_csv(q.get("jahr")), "text/csv; charset=utf-8",
+                                {"Content-Disposition": f'attachment; filename="buchhaltung_{q.get("jahr") or "alle"}.csv"'})
+        if url.path == "/api/export.zip":
+            return self.export_zip(q.get("jahr"))
         m = re.fullmatch(r"/datei/(\d+)", url.path)
         if m:
             with db() as c:
@@ -416,24 +477,17 @@ class Handler(BaseHTTPRequestHandler):
             return self.antwort(200, pfad.read_bytes(), typ)
         self.antwort(404, {"fehler": "unbekannt"})
 
-    def export(self, jahr):
-        sql, par = "SELECT * FROM belege", []
-        if jahr:
-            sql += " WHERE substr(datum,1,4)=?"
-            par.append(jahr)
-        sql += " ORDER BY kategorie, datum"
-        puffer = io.StringIO()
-        w = csv.writer(puffer, delimiter=";")
-        w.writerow(["Kategorie", "Datum", "Partner", "Nummer", "Beschreibung", "Netto", "USt %", "USt", "Brutto", "Bezahlt", "Datei"])
-        with db() as c:
-            for z in map(zeile_zu_dict, c.execute(sql, par)):
-                zahl = lambda x: f"{x:.2f}".replace(".", ",")
-                w.writerow([KATEGORIEN.get(z["kategorie"], z["kategorie"]), z["datum"], z["partner"], z["nummer"],
-                            z["beschreibung"], zahl(z["netto"]), zahl(z["ust_satz"]), zahl(z["ust"]),
-                            zahl(z["brutto"]), "ja" if z["bezahlt"] else "nein", z["datei"]])
-        name = f"buchhaltung_{jahr or 'alle'}.csv"
-        self.antwort(200, puffer.getvalue().encode("utf-8-sig"), "text/csv; charset=utf-8",
-                     {"Content-Disposition": f'attachment; filename="{name}"'})
+    def export_zip(self, jahr):
+        """Paket für den Steuerberater: Liste (CSV) + alle Belegdateien nach Rubrik."""
+        puffer = io.BytesIO()
+        with zipfile.ZipFile(puffer, "w", zipfile.ZIP_DEFLATED) as z, db() as c:
+            z.writestr("belegliste.csv", export_csv(jahr))
+            sql = "SELECT datei FROM belege WHERE datei != ''" + (" AND substr(datum,1,4)=?" if jahr else "")
+            for zeile in c.execute(sql, [jahr] if jahr else []):
+                if (DATEN / zeile["datei"]).exists():
+                    z.write(DATEN / zeile["datei"], zeile["datei"])
+        self.antwort(200, puffer.getvalue(), "application/zip",
+                     {"Content-Disposition": f'attachment; filename="buchhaltung_{jahr or "alle"}.zip"'})
 
     # ---- POST
     def do_POST(self):
@@ -461,7 +515,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.antwort(400, {"fehler": "Kategorie ungültig"})
             return self.antwort(200, {"id": beleg_anlegen(quelle="manuell", **felder)})
         if url.path == "/api/bank-import":
-            return self.antwort(200, {"importiert": bank_csv_import(self.body())})
+            importiert = bank_csv_import(self.body())
+            return self.antwort(200, {"importiert": importiert, "zugeordnet": bank_abgleich()})
+        if url.path == "/api/abgleich":
+            return self.antwort(200, {"zugeordnet": bank_abgleich()})
         self.antwort(404, {"fehler": "unbekannt"})
 
     def ablegen(self, daten, name, kategorie):
@@ -499,6 +556,7 @@ class Handler(BaseHTTPRequestHandler):
                 # nicht löschen, sondern in den Papierkorb verschieben (Aufbewahrungspflicht!)
                 shutil.move(str(DATEN / z["datei"]), PAPIERKORB / Path(z["datei"]).name)
             c.execute("DELETE FROM belege WHERE id=?", (m.group(1),))
+            c.execute("UPDATE belege SET zuordnung=NULL WHERE zuordnung=?", (m.group(1),))
         self.antwort(200, {"ok": True})
 
 

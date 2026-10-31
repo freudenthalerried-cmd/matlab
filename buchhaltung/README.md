@@ -59,12 +59,21 @@ OneDrive-/Google-Drive-Ordner speichert, der am PC synchronisiert wird.
 
 Optional: `pip install pypdf` → Rechnungsnummer, Datum und Gesamtbetrag werden aus PDF-Rechnungen automatisch ausgelesen.
 
+## Weitere Funktionen
+- **Suche** über Firma, Rechnungsnr., Text und Betrag.
+- **Ausgabenart** (Material, Fahrzeug, Energie …) je Beleg – wird mit KI automatisch gesetzt.
+- **Überfällige Rechnungen**: Ausgangsrechnungen nach `zahlungsziel_tage` (Standard 14) rot markiert.
+- **Bankabgleich**: beim Bank-Import werden Zahlungen automatisch offenen Rechnungen zugeordnet
+  (gleicher Betrag, Rechnungsnr. im Buchungstext) und als bezahlt markiert. Button „Zahlungen zuordnen“ im Tab Bank.
+- **Auswertung**: Monatsübersicht mit Einnahmen, Ausgaben, USt, Vorsteuer, Zahllast (Basis für die UVA) und Ausgaben nach Art.
+- **Duplikat-Warnung** bei gleicher Rechnungsnr. vom gleichen Partner.
+- **Export für Steuerberater**: ZIP mit Belegliste (CSV) und allen Belegdateien des Jahres.
+
 ## Bank
 Tab **Bank** → „Bank-CSV importieren“ (z. B. George-Export). Spalten Datum/Betrag/Text werden automatisch erkannt.
 
 ## Daten & Sicherung
 - Alles liegt in `daten/` (Datenbank + Belegdateien nach Rubrik/Jahr). **Diesen Ordner regelmäßig sichern** (7 Jahre Aufbewahrungspflicht).
 - Gelöschte Belege landen in `daten/papierkorb/`.
-- **CSV-Export** pro Jahr für Steuerberater/Excel.
 
 Hinweis: kein Passwortschutz – nur im eigenen Heim-WLAN betreiben, nicht ins Internet freigeben.

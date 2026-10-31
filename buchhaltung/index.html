@@ -10,6 +10,7 @@
 <style>
   :root { --p:#1f5f8b; --bg:#f4f6f8; --rot:#c0392b; --gruen:#1e8449; }
   * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
   body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:#222; }
   header { background:var(--p); color:#fff; padding:12px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   header h1 { font-size:1.2rem; margin:0; flex:1; }
@@ -34,6 +35,10 @@
   .offen { color:var(--rot); font-weight:600; }
   .neg { color:var(--rot); } .pos { color:var(--gruen); }
   .warn { background:#fff4d6 !important; }
+  #suche { width:100%; margin-bottom:8px; }
+  #auswertung h3 { margin:16px 0 6px; font-size:1rem; }
+  #auswertung tr { cursor:default; } #auswertung tfoot td { font-weight:700; }
+  .hinweis { font-size:.85rem; padding:6px 8px; border-radius:6px; background:#fff4d6; }
   dialog { width:min(950px,96vw); border:none; border-radius:10px; padding:0; }
   .dlg { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; }
   .dlg .vorschau { min-height:300px; background:#eee; border-radius:6px; display:flex; align-items:center; justify-content:center; }
@@ -53,7 +58,7 @@
 <header>
   <h1>📒 Buchhaltung <small id="kiInfo" style="font-size:.7rem;opacity:.8"></small></h1>
   <select id="jahr"></select>
-  <button class="hell" id="export">CSV-Export</button>
+  <button class="hell" id="export" title="ZIP mit Belegliste (CSV) und allen Belegdateien">⬇ Export für Steuerberater</button>
 </header>
 <main>
   <div class="kacheln" id="kacheln"></div>
@@ -63,14 +68,19 @@
     <button id="btnDatei">📄 Datei / Scan</button>
     <button class="hell" id="btnManuell">＋ Manuell</button>
     <button class="hell" id="btnBank" hidden>🏦 Bank-CSV importieren</button>
+    <button class="hell" id="btnAbgleich" hidden>🔗 Zahlungen zuordnen</button>
   </div>
   <input type="file" id="inFoto" accept="image/*" capture="environment" hidden>
   <input type="file" id="inDatei" accept="image/*,application/pdf" multiple hidden>
   <input type="file" id="inBank" accept=".csv,text/csv" hidden>
+  <div id="listenAnsicht">
+  <input id="suche" type="search" placeholder="🔍 Suchen (Firma, Nr., Text, Betrag) …">
   <table>
     <thead><tr><th>Datum</th><th class="nur-gross">Kategorie</th><th>Partner / Text</th><th class="nur-gross">Nr.</th><th class="b">Brutto</th><th class="nur-gross">Status</th></tr></thead>
     <tbody id="liste"></tbody>
   </table>
+  </div>
+  <div id="auswertung" hidden></div>
 </main>
 
 <dialog id="dlg">
@@ -82,13 +92,16 @@
         <label>Datum <input type="date" name="datum" required></label>
         <label>Rechnungsnr. <input name="nummer"></label>
       </div>
-      <label>Partner (Kunde / Lieferant) <input name="partner"></label>
+      <label>Partner (Kunde / Lieferant) <input name="partner" list="partnerListe" autocomplete="off"></label>
+      <datalist id="partnerListe"></datalist>
+      <label id="kontoFeld">Ausgabenart <select name="konto" id="selKonto"></select></label>
       <label>Beschreibung <textarea name="beschreibung" rows="2"></textarea></label>
       <div class="zeile">
         <label>Brutto € <input type="number" step="0.01" name="brutto" required></label>
         <label>USt % <select name="ust_satz"><option>20</option><option>13</option><option>10</option><option>0</option></select></label>
       </div>
       <div id="nettoInfo" style="font-size:.9rem;color:#555"></div>
+      <div id="dlgHinweis"></div>
       <label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" name="bezahlt"> bezahlt</label>
       <div class="zeile">
         <button type="submit" id="speichern">Speichern</button>
@@ -115,11 +128,16 @@ async function start() {
   $("#jahr").innerHTML = `<option value="">Alle Jahre</option>` + [0,1,2,3,4,5,6].map(i => `<option ${i ? "" : "selected"}>${j - i}</option>`).join("");
   $("#tabs").innerHTML = `<button data-k="alle" class="aktiv">Alle</button>` +
     Object.entries(INFO.kategorien).map(([k, v]) => `<button data-k="${k}">${v}</button>`).join("");
+  $("#selKonto").innerHTML = `<option value="">– bitte wählen –</option>` + INFO.konten.map(k => `<option>${k}</option>`).join("");
+  $("#tabs").innerHTML += `<button data-k="auswertung">📊 Auswertung</button>`;
+  $("#suche").oninput = zeichnen;
+  $("#btnAbgleich").onclick = async () => { const r = await api("/api/abgleich", { method: "POST" }); meldung(`${r.zugeordnet} Zahlung(en) zugeordnet`); laden(); };
+  $("#form").kategorie.onchange = kontoFeldZeigen;
   $("#selKat").innerHTML = Object.entries(INFO.kategorien).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
   $("#tabs").onclick = e => { if (!e.target.dataset.k) return; TAB = e.target.dataset.k;
     document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("aktiv", b === e.target)); zeichnen(); };
   $("#jahr").onchange = laden;
-  $("#export").onclick = () => location.href = "/api/export.csv?jahr=" + $("#jahr").value;
+  $("#export").onclick = () => location.href = "/api/export.zip?jahr=" + $("#jahr").value;
   $("#btnFoto").onclick = () => $("#inFoto").click();
   $("#btnDatei").onclick = () => $("#inDatei").click();
   $("#btnBank").onclick = () => $("#inBank").click();
@@ -151,18 +169,25 @@ async function laden() {
 }
 
 function zeichnen() {
-  $("#btnBank").hidden = TAB !== "bank";
+  $("#btnBank").hidden = $("#btnAbgleich").hidden = TAB !== "bank";
+  $(".aktionen").hidden = $("#listenAnsicht").hidden = TAB === "auswertung";
+  $("#auswertung").hidden = TAB !== "auswertung";
+  $("#partnerListe").innerHTML = [...new Set(BELEGE.map(b => b.partner).filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
   const summe = (kat, f = "netto") => BELEGE.filter(b => kat.includes(b.kategorie)).reduce((s, b) => s + b[f], 0);
   const ein = summe(["ausgang"]), aus = summe(["eingang", "bar"]);
-  const ust = summe(["ausgang"], "ust") - summe(["eingang"], "ust");
+  const ust = summe(["ausgang"], "ust") - summe(["eingang", "bar"], "ust");
   const offen = BELEGE.filter(b => b.kategorie === "ausgang" && !b.bezahlt).reduce((s, b) => s + b.brutto, 0);
+  const ueberf = BELEGE.filter(b => b.ueberfaellig).length;
   $("#kacheln").innerHTML = [
     ["Einnahmen (netto)", eur(ein), "pos"], ["Ausgaben (netto)", eur(aus), "neg"],
     ["Ergebnis", eur(ein - aus), ein - aus < 0 ? "neg" : "pos"], ["USt-Zahllast", eur(ust), ""],
-    ["Offene Forderungen", eur(offen), offen ? "neg" : ""], ["Bank-Saldo (Bewegungen)", eur(summe(["bank"], "brutto")), ""],
+    [ueberf ? `Offene Forderungen (${ueberf} überfällig)` : "Offene Forderungen", eur(offen), offen ? "neg" : ""], ["Bank-Saldo (Bewegungen)", eur(summe(["bank"], "brutto")), ""],
   ].map(([t, w, c]) => `<div class="kachel"><small>${t}</small><b class="${c}">${w}</b></div>`).join("");
 
-  const liste = BELEGE.filter(b => TAB === "alle" || b.kategorie === TAB);
+  if (TAB === "auswertung") return auswertungZeichnen();
+  const such = $("#suche").value.trim().toLowerCase();
+  const liste = BELEGE.filter(b => (TAB === "alle" || b.kategorie === TAB) &&
+    (!such || [b.partner, b.nummer, b.beschreibung, b.konto, b.brutto.toFixed(2).replace(".", ",")].join(" ").toLowerCase().includes(such)));
   $("#liste").innerHTML = liste.map(b => `
     <tr data-id="${b.id}" class="${!b.brutto ? "warn" : ""}">
       <td>${new Date(b.datum).toLocaleDateString("de-AT")}</td>
@@ -170,10 +195,43 @@ function zeichnen() {
       <td>${esc(b.partner || b.beschreibung || "—")}${b.datei ? " 📎" : ""}</td>
       <td class="nur-gross">${esc(b.nummer)}</td>
       <td class="b ${b.brutto < 0 ? "neg" : ""}">${eur(b.brutto)}</td>
-      <td class="nur-gross">${!b.brutto ? "⚠ ausfüllen" : b.kategorie === "bank" ? "" : b.bezahlt ? "bezahlt" : '<span class="offen">offen</span>'}</td>
+      <td class="nur-gross">${status(b)}</td>
     </tr>`).join("") || `<tr><td colspan="6" style="text-align:center;color:#888">Keine Einträge</td></tr>`;
   $("#liste").querySelectorAll("tr").forEach(tr => tr.onclick = () => oeffnen(BELEGE.find(b => b.id == tr.dataset.id)));
 }
+
+function status(b) {
+  if (!b.brutto) return "⚠ ausfüllen";
+  if (b.kategorie === "bank") return b.zuordnung ? "✓ zugeordnet" : "";
+  if (b.ueberfaellig) return `<span class="offen">überfällig seit ${datum(b.faellig)}</span>`;
+  return b.bezahlt ? "bezahlt" : '<span class="offen">offen</span>';
+}
+const datum = d => d ? new Date(d).toLocaleDateString("de-AT") : "";
+
+// Monatsübersicht (Basis für die UVA) + Ausgaben nach Art
+function auswertungZeichnen() {
+  const zeilen = [], s = { ein: 0, aus: 0, ust: 0, vst: 0 };
+  for (let m = 1; m <= 12; m++) {
+    const im = BELEGE.filter(b => +b.datum.slice(5, 7) === m);
+    const sum = (kat, f) => im.filter(b => kat.includes(b.kategorie)).reduce((x, b) => x + b[f], 0);
+    const z = { ein: sum(["ausgang"], "netto"), aus: sum(["eingang", "bar"], "netto"), ust: sum(["ausgang"], "ust"), vst: sum(["eingang", "bar"], "ust") };
+    for (const k in s) s[k] += z[k];
+    if (Object.values(z).some(Boolean)) zeilen.push([new Date(2000, m - 1).toLocaleString("de-AT", { month: "long" }), z]);
+  }
+  const zelle = z => `<td class="b">${eur(z.ein)}</td><td class="b">${eur(z.aus)}</td><td class="b">${eur(z.ein - z.aus)}</td><td class="b">${eur(z.ust)}</td><td class="b">${eur(z.vst)}</td><td class="b">${eur(z.ust - z.vst)}</td>`;
+  const konten = {};
+  BELEGE.filter(b => ["eingang", "bar", "sonstiges"].includes(b.kategorie)).forEach(b => konten[b.konto || "ohne Zuordnung"] = (konten[b.konto || "ohne Zuordnung"] || 0) + b.netto);
+  $("#auswertung").innerHTML = `
+    <h3>Monate ${$("#jahr").value || "(alle Jahre)"} – netto</h3>
+    <div style="overflow-x:auto"><table><thead><tr><th>Monat</th><th class="b">Einnahmen</th><th class="b">Ausgaben</th><th class="b">Ergebnis</th><th class="b">USt</th><th class="b">Vorsteuer</th><th class="b">Zahllast</th></tr></thead>
+    <tbody>${zeilen.map(([n, z]) => `<tr><td>${n}</td>${zelle(z)}</tr>`).join("") || '<tr><td colspan="7">Keine Daten</td></tr>'}</tbody>
+    <tfoot><tr><td>Summe</td>${zelle(s)}</tr></tfoot></table></div>
+    <h3>Ausgaben nach Art – netto</h3>
+    <table><tbody>${Object.entries(konten).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="b">${eur(v)}</td></tr>`).join("") || '<tr><td>Keine Ausgaben</td></tr>'}</tbody></table>
+    <p style="font-size:.85rem;color:#666">Hinweis: vereinfachte Übersicht ohne Gewähr – ersetzt keine UVA/Steuerberatung.</p>`;
+}
+
+function kontoFeldZeigen() { $("#kontoFeld").hidden = ["ausgang", "bank"].includes($("#form").kategorie.value); }
 
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -212,7 +270,7 @@ async function bankImport(e) {
   const f = e.target.files[0]; if (!f) return;
   const r = await api("/api/bank-import", { method: "POST", body: f });
   e.target.value = "";
-  meldung(`${r.importiert} Bankbuchungen importiert`);
+  meldung(`${r.importiert} Bankbuchungen importiert, ${r.zugeordnet} Zahlung(en) zugeordnet`);
   laden();
 }
 
@@ -220,7 +278,15 @@ function oeffnen(b) {
   if (!b) return;
   AKTUELL = b;
   const f = $("#form");
-  for (const k of ["kategorie", "datum", "nummer", "partner", "beschreibung", "brutto", "ust_satz"]) f[k].value = b[k] ?? "";
+  for (const k of ["kategorie", "datum", "nummer", "partner", "beschreibung", "brutto", "ust_satz", "konto"]) f[k].value = b[k] ?? "";
+  kontoFeldZeigen();
+  const dup = b.nummer && BELEGE.find(x => x.id !== b.id && x.nummer === b.nummer && x.partner === b.partner);
+  const gegen = b.zuordnung && BELEGE.find(x => x.id === b.zuordnung);
+  $("#dlgHinweis").innerHTML = [
+    dup && `⚠ Mögliches Duplikat: gleiche Nr. am ${datum(dup.datum)} schon erfasst`,
+    b.faellig && !b.bezahlt && `Fällig am ${datum(b.faellig)}`,
+    gegen && `🔗 Zugeordnet: ${esc(gegen.partner || gegen.beschreibung)} (${datum(gegen.datum)}, ${eur(gegen.brutto)})`,
+  ].filter(Boolean).map(t => `<div class="hinweis">${t}</div>`).join("");
   f.bezahlt.checked = !!b.bezahlt;
   $("#loeschen").hidden = !b.id;
   const v = $("#vorschau");
@@ -241,7 +307,8 @@ async function speichern(e) {
   e.preventDefault();
   const f = $("#form");
   const d = { kategorie: f.kategorie.value, datum: f.datum.value, nummer: f.nummer.value, partner: f.partner.value,
-              beschreibung: f.beschreibung.value, brutto: +f.brutto.value, ust_satz: +f.ust_satz.value, bezahlt: f.bezahlt.checked ? 1 : 0 };
+              beschreibung: f.beschreibung.value, brutto: +f.brutto.value, ust_satz: +f.ust_satz.value, bezahlt: f.bezahlt.checked ? 1 : 0,
+              konto: ["ausgang", "bank"].includes(f.kategorie.value) ? "" : f.konto.value };
   const opt = { method: AKTUELL.id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) };
   await api(AKTUELL.id ? `/api/beleg/${AKTUELL.id}` : "/api/beleg", opt);
   $("#dlg").close(); meldung("Gespeichert"); laden();
