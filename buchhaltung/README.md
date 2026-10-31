@@ -5,39 +5,49 @@
 
 Belege sammeln in 5 Rubriken: **Ausgangsrechnungen, Eingangsrechnungen, Private Barbelege, Sonstiges, Bank**.
 
-## Start
-1. Python 3 installieren (python.org, bei Windows „Add to PATH“ anhaken).
-2. Doppelklick auf `start.bat` (oder `python server.py`).
-3. PC: http://localhost:8765 · Handy (gleiches WLAN): Adresse wird im Fenster angezeigt, z. B. `http://192.168.0.20:8765` → im Handy-Browser „Zum Startbildschirm hinzufügen“.
+## Am PC: als App einrichten (einmalig)
+1. Python 3 installieren (python.org, beim Setup **„Add python.exe to PATH“** anhaken).
+2. Doppelklick auf **`einrichten.bat`**.
+   → Symbol **„Buchhaltung“** auf dem Desktop, und die Buchhaltung startet beim Hochfahren still im Hintergrund
+   (nötig, damit Handy-Belege und der Rechnungsordner jederzeit übernommen werden).
+3. Ab jetzt: Doppelklick aufs Desktop-Symbol → öffnet sich als eigenes App-Fenster (ohne Browser-Leisten).
+
+Alternativ ohne Einrichtung: `start.bat` (mit sichtbarem Konsolenfenster, zum Testen/Fehlersuchen).
+Entfernen: die zwei Verknüpfungen „Buchhaltung“ auf dem Desktop und in `shell:startup` löschen.
+
+## Am Handy: als App (Android & iPhone, auch unterwegs) – empfohlen
+Über **Tailscale** (kostenlos für Privatnutzer): verbindet Handy und PC verschlüsselt, auch außerhalb des WLANs,
+ohne etwas ins Internet freizugeben. Nur deine eigenen Geräte haben Zugriff.
+1. Tailscale auf PC und Handy installieren (tailscale.com/download), mit demselben Konto anmelden.
+2. Im Tailscale-Adminbereich unter **DNS** „MagicDNS“ und **„HTTPS Certificates“** aktivieren.
+3. Am PC einmalig in der Eingabeaufforderung: `tailscale serve --bg 8765`
+   → zeigt die Adresse, z. B. `https://mein-pc.tail1234.ts.net`.
+4. Diese Adresse am Handy öffnen:
+   - **Android (Chrome):** Menü ⋮ → **App installieren**. „Buchhaltung“ erscheint dann auch im **Teilen**-Menü.
+   - **iPhone (Safari):** Teilen-Symbol → **Zum Home-Bildschirm**. Für „Teilen → Buchhaltung“ zusätzlich den
+     Kurzbefehl unten anlegen (iPhone erlaubt Web-Apps nicht im Teilen-Menü).
+
+Voraussetzung: der PC ist eingeschaltet (Autostart erledigt den Rest).
+
+**Teilen:** Foto/Scan → **Teilen** → **Buchhaltung** → Beleg wird gespeichert, ausgelesen und in die richtige Rubrik
+einsortiert; danach öffnet er sich kurz zur Kontrolle.
+
+**iPhone-Kurzbefehl** (Kurzbefehle-App → ＋):
+1. Details → *Im Share-Sheet anzeigen* einschalten, Typen: Bilder, PDFs.
+2. Aktion **Bild konvertieren** → JPEG (nur für Fotos; für PDFs weglassen bzw. zweiten Kurzbefehl).
+3. Aktion **Inhalte von URL abrufen**: URL `https://mein-pc.tail1234.ts.net/api/upload?kategorie=auto&name=beleg.jpg`,
+   Methode *POST*, Anfragetext *Datei* → Kurzbefehl-Eingabe.
+4. Name: „An Buchhaltung“.
+
+**Ohne Tailscale (nur im Heim-WLAN):** Adresse aus `start.bat` (z. B. `http://192.168.0.20:8765`) verwenden, dem PC im
+Router eine feste IP geben und bei Android einmalig in `chrome://flags/#unsafely-treat-insecure-origin-as-secure` diese
+Adresse eintragen (sonst lässt Chrome die App nicht installieren).
 
 ## Belege erfassen
 - **📷 Foto**: öffnet die Handykamera direkt.
-- **📄 Datei / Scan**: Scan-Funktion des Handys (z. B. Google Drive / iPhone Notizen-Scan als PDF) oder vorhandene Datei wählen.
-- Danach öffnet sich das Formular → Betrag, USt, Partner eintragen → Speichern. Belege ohne Betrag sind gelb markiert.
-- Die Rubrik wird vom aktuell gewählten Tab übernommen.
-
-## Handy: „Teilen → Buchhaltung“
-Foto/Scan machen → **Teilen** → **Buchhaltung** → Beleg wird gespeichert, ausgelesen und in die richtige Rubrik einsortiert.
-Danach öffnet sich der Beleg kurz zur Kontrolle.
-
-Voraussetzung: Handy im selben WLAN, PC läuft. Tipp: im Router dem PC eine **feste IP** geben, sonst ändert sich die Adresse.
-
-**Android (Chrome)** – einmalig:
-1. In Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` öffnen, die Adresse aus dem Startfenster eintragen
-   (z. B. `http://192.168.0.20:8765`), auf *Enabled* stellen, *Relaunch*.
-   (Nötig, weil Chrome „Teilen an App“ sonst nur über HTTPS erlaubt.)
-2. Die Adresse öffnen → Menü ⋮ → **App installieren**.
-3. Ab jetzt erscheint „Buchhaltung“ im Teilen-Menü (Kamera, Galerie, Google-Drive-Scan, Dateien).
-
-**iPhone** – einmalig Kurzbefehl anlegen (Kurzbefehle-App → ＋):
-1. Details → *Im Share-Sheet anzeigen* einschalten, Typen: Bilder, PDFs.
-2. Aktion **Bild konvertieren** → JPEG (nur für Fotos; für PDFs weglassen bzw. zweiten Kurzbefehl).
-3. Aktion **Inhalte von URL abrufen**: URL `http://192.168.0.20:8765/api/upload?kategorie=auto&name=beleg.jpg`,
-   Methode *POST*, Anfragetext *Datei* → Kurzbefehl-Eingabe.
-4. Name: „An Buchhaltung“. Danach: Teilen → *An Buchhaltung*.
-
-**Unterwegs (ohne WLAN):** Beleg per Teilen in einen Google-Drive-/OneDrive-Ordner speichern, der am PC synchronisiert
-wird, und diesen Ordner in `config.json` bei `"auto"` eintragen. Er wird beim nächsten PC-Start automatisch übernommen.
+- **📄 Datei / Scan**: Scan-Funktion des Handys (PDF/Bild) oder vorhandene Datei wählen.
+- Danach öffnet sich das Formular zur Kontrolle. Belege ohne Betrag sind gelb markiert.
+- Im Tab **Alle** wird die Rubrik automatisch erkannt (mit KI), in einem bestimmten Tab gilt dieser Tab.
 
 ## Automatische Belegerkennung (optional, empfohlen)
 Ohne Erkennung musst du Betrag & Co. selbst eintippen. Mit Erkennung liest Claude (KI von Anthropic) aus Foto/PDF:
@@ -76,4 +86,4 @@ Tab **Bank** → „Bank-CSV importieren“ (z. B. George-Export). Spalten Datum
 - Alles liegt in `daten/` (Datenbank + Belegdateien nach Rubrik/Jahr). **Diesen Ordner regelmäßig sichern** (7 Jahre Aufbewahrungspflicht).
 - Gelöschte Belege landen in `daten/papierkorb/`.
 
-Hinweis: kein Passwortschutz – nur im eigenen Heim-WLAN betreiben, nicht ins Internet freigeben.
+Hinweis: kein Passwortschutz – nur im Heim-WLAN oder über Tailscale nutzen, niemals per Portfreigabe ins Internet stellen.

@@ -15,6 +15,8 @@ import re
 import shutil
 import socket
 import sqlite3
+import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -569,16 +571,39 @@ def lokale_ip():
         return "127.0.0.1"
 
 
+def app_fenster_oeffnen(url):
+    """Als eigenes App-Fenster öffnen (Edge/Chrome ohne Adressleiste), sonst normaler Browser."""
+    if sys.platform == "win32":
+        for browser in ("msedge", "chrome"):
+            if subprocess.run(f'start "" {browser} --app={url}', shell=True).returncode == 0:
+                return
+    webbrowser.open(url)
+
+
+def laeuft_schon(port):
+    with socket.socket() as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
 if __name__ == "__main__":
+    # --hintergrund: nur Server starten (Autostart), kein Fenster öffnen
+    hintergrund = "--hintergrund" in sys.argv
     KONFIG = lade_konfig()
+    url = f"http://localhost:{KONFIG['port']}"
+    if laeuft_schon(KONFIG["port"]):  # schon gestartet (z. B. per Autostart) -> nur Fenster öffnen
+        if not hintergrund:
+            app_fenster_oeffnen(url)
+        sys.exit()
     init_db()
+    if sys.stdout is None:  # ohne Konsole (pyw): Ausgaben in Logdatei schreiben
+        sys.stdout = sys.stderr = open(DATEN / "server.log", "a", encoding="utf-8", buffering=1)
     threading.Thread(target=ueberwachung, args=(KONFIG,), daemon=True).start()
     port = KONFIG["port"]
-    print(f"Buchhaltung läuft:\n  PC:    http://localhost:{port}\n  Handy: http://{lokale_ip()}:{port}  (gleiches WLAN)")
+    print(f"Buchhaltung läuft:\n  PC:    {url}\n  Handy: http://{lokale_ip()}:{port}  (gleiches WLAN)")
     print("Überwachte Ordner:")
     for k, o in KONFIG["ueberwachte_ordner"].items():
         print(f"  {KATEGORIEN.get(k, 'Automatisch'):<20} {o}")
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    # Browser erst öffnen, wenn der Server wirklich läuft
-    threading.Timer(1, webbrowser.open, (f"http://localhost:{port}",)).start()
+    if not hintergrund:  # Fenster erst öffnen, wenn der Server wirklich läuft
+        threading.Timer(1, app_fenster_oeffnen, (url,)).start()
     server.serve_forever()
