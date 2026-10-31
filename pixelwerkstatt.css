@@ -1,0 +1,8 @@
+@import url("lager-enns.css");
+
+:root {
+  --orange: #6d28d9;
+  --orange-dark: #5b21b6;
+}
+
+.banner { background: #f5f3ff; }
