@@ -1,5 +1,8 @@
 # Buchhaltung – einfach
 
+
+![Übersicht](app-pc.png)
+
 Belege sammeln in 5 Rubriken: **Ausgangsrechnungen, Eingangsrechnungen, Private Barbelege, Sonstiges, Bank**.
 
 ## Start
