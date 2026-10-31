@@ -18,6 +18,7 @@ import sqlite3
 import threading
 import time
 import uuid
+import webbrowser
 from datetime import date, datetime
 from email.parser import BytesParser
 from email.policy import HTTP
@@ -519,4 +520,7 @@ if __name__ == "__main__":
     print("Überwachte Ordner:")
     for k, o in KONFIG["ueberwachte_ordner"].items():
         print(f"  {KATEGORIEN.get(k, 'Automatisch'):<20} {o}")
-    ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
+    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    # Browser erst öffnen, wenn der Server wirklich läuft
+    threading.Timer(1, webbrowser.open, (f"http://localhost:{port}",)).start()
+    server.serve_forever()

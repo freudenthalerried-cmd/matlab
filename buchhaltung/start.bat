@@ -9,6 +9,5 @@ where py >nul 2>nul && (set PY=py -3) || (set PY=python)
   exit /b
 )
 echo Fenster offen lassen, solange du die Buchhaltung benutzt!
-start "" http://localhost:8765
 %PY% server.py
 pause
