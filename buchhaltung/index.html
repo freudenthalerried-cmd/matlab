@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buchhaltung</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1f5f8b">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <style>
   :root { --p:#1f5f8b; --bg:#f4f6f8; --rot:#c0392b; --gruen:#1e8449; }
   * { box-sizing:border-box; }
@@ -48,7 +51,7 @@
 </head>
 <body>
 <header>
-  <h1>📒 Buchhaltung</h1>
+  <h1>📒 Buchhaltung <small id="kiInfo" style="font-size:.7rem;opacity:.8"></small></h1>
   <select id="jahr"></select>
   <button class="hell" id="export">CSV-Export</button>
 </header>
@@ -107,6 +110,7 @@ function meldung(t) { const m = $("#meldung"); m.textContent = t; m.style.displa
 
 async function start() {
   INFO = await api("/api/info");
+  $("#kiInfo").textContent = INFO.ki ? "· Belegerkennung an" : "";
   const j = new Date().getFullYear();
   $("#jahr").innerHTML = `<option value="">Alle Jahre</option>` + [0,1,2,3,4,5,6].map(i => `<option ${i ? "" : "selected"}>${j - i}</option>`).join("");
   $("#tabs").innerHTML = `<button data-k="alle" class="aktiv">Alle</button>` +
@@ -119,7 +123,7 @@ async function start() {
   $("#btnFoto").onclick = () => $("#inFoto").click();
   $("#btnDatei").onclick = () => $("#inDatei").click();
   $("#btnBank").onclick = () => $("#inBank").click();
-  $("#btnManuell").onclick = () => oeffnen({ kategorie: zielKategorie(), datum: heute(), brutto: 0, ust_satz: INFO.ust_standard, bezahlt: 0 });
+  $("#btnManuell").onclick = () => oeffnen({ kategorie: TAB === "alle" ? "eingang" : TAB, datum: heute(), brutto: 0, ust_satz: INFO.ust_standard, bezahlt: 0 });
   $("#inFoto").onchange = e => hochladen(e.target.files, true);
   $("#inDatei").onchange = e => hochladen(e.target.files, false);
   $("#inBank").onchange = bankImport;
@@ -127,12 +131,19 @@ async function start() {
   $("#form").onsubmit = speichern;
   $("#form").oninput = nettoZeigen;
   $("#loeschen").onclick = loeschen;
-  laden();
+  await laden();
+  // nach "Teilen -> Buchhaltung": gespeicherten Beleg zur Kontrolle öffnen
+  const p = new URLSearchParams(location.search);
+  if (p.get("beleg")) oeffnen(BELEGE.find(b => b.id == p.get("beleg")) || (await api("/api/belege")).find(b => b.id == p.get("beleg")));
+  if (p.get("fehler")) meldung("Fehler: " + p.get("fehler"));
+  if (location.search) history.replaceState(null, "", "/");
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
   setInterval(laden, 15000); // neue Belege aus überwachten Ordnern anzeigen
 }
 
 const heute = () => new Date().toISOString().slice(0, 10);
-const zielKategorie = () => TAB === "alle" ? "eingang" : TAB;
+// im Tab "Alle" erkennt der Server die Rubrik selbst (mit KI), sonst gilt der gewählte Tab
+const zielKategorie = () => TAB === "alle" ? "auto" : TAB;
 
 async function laden() {
   BELEGE = await api("/api/belege?jahr=" + $("#jahr").value);
@@ -185,6 +196,7 @@ function verkleinern(datei) {
 
 async function hochladen(dateien, sofortOeffnen) {
   let letzte;
+  meldung(INFO.ki ? "Beleg wird gelesen …" : "Wird gespeichert …");
   for (const d of dateien) {
     const f = await verkleinern(d);
     const r = await api(`/api/upload?kategorie=${zielKategorie()}&name=${encodeURIComponent(f.name)}`, { method: "POST", body: f });

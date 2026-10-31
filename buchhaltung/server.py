@@ -5,8 +5,10 @@ Start:  python server.py
 PC:     http://localhost:8765
 Handy:  http://<IP-des-PCs>:8765  (gleiches WLAN)
 """
+import base64
 import csv
 import io
+import os
 import json
 import mimetypes
 import re
@@ -17,6 +19,8 @@ import threading
 import time
 import uuid
 from datetime import date, datetime
+from email.parser import BytesParser
+from email.policy import HTTP
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -36,6 +40,8 @@ KATEGORIEN = {
     "bank": "Bank",
 }
 ERLAUBT = {".pdf", ".jpg", ".jpeg", ".png", ".heic", ".webp"}
+STATISCH = {"/manifest.webmanifest": "application/manifest+json", "/sw.js": "text/javascript",
+            "/icon-192.png": "image/png", "/icon-512.png": "image/png"}
 
 STANDARD_KONFIG = {
     "port": 8765,
@@ -46,8 +52,15 @@ STANDARD_KONFIG = {
         "eingang": "eingang_ordner/eingangsrechnungen",
         "bar": "eingang_ordner/barbelege",
         "sonstiges": "eingang_ordner/sonstiges",
+        "auto": "eingang_ordner/automatisch",
     },
     "scan_intervall_sekunden": 10,
+    # Optional: automatische Belegerkennung (Betrag, Datum, Firma, Rubrik) per Claude.
+    # Benötigt: pip install anthropic  +  API-Key von https://console.anthropic.com
+    "anthropic_api_key": "",
+    "ki_modell": "claude-opus-5-5",
+    # Dein Firmen-/Name: Rechnungen VON dir werden als Ausgangsrechnung erkannt.
+    "eigene_firma": "",
 }
 
 db_lock = threading.Lock()
@@ -169,6 +182,100 @@ def daten_erkennen(text):
     return erg
 
 
+# ---------------------------------------------------------------- KI-Erkennung (optional)
+KI_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "kategorie": {"type": "string", "enum": ["ausgang", "eingang", "bar", "sonstiges", "bank"]},
+        "datum": {"type": "string", "description": "Belegdatum YYYY-MM-DD, leer wenn unbekannt"},
+        "partner": {"type": "string", "description": "Firma/Geschäft des Geschäftspartners"},
+        "nummer": {"type": "string", "description": "Rechnungs-/Belegnummer, leer wenn keine"},
+        "beschreibung": {"type": "string", "description": "kurz: was wurde gekauft/verrechnet"},
+        "brutto": {"type": "number", "description": "Gesamtbetrag inkl. USt in EUR"},
+        "ust_satz": {"type": "number", "enum": [20, 13, 10, 0]},
+        "bezahlt": {"type": "boolean"},
+    },
+    "required": ["kategorie", "datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "bezahlt"],
+    "additionalProperties": False,
+}
+KI_TYPEN = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+
+
+def ki_erkennen(pfad):
+    """Beleg per Claude auslesen. Liefert {} wenn nicht eingerichtet oder bei Fehler."""
+    schluessel = KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
+    endung = pfad.suffix.lower()
+    if not schluessel or (endung != ".pdf" and endung not in KI_TYPEN):
+        return {}
+    try:
+        import anthropic
+    except ImportError:
+        print("[KI] Paket fehlt: pip install anthropic")
+        return {}
+    daten = base64.standard_b64encode(pfad.read_bytes()).decode()
+    if endung == ".pdf":
+        block = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": daten}}
+    else:
+        block = {"type": "image", "source": {"type": "base64", "media_type": KI_TYPEN[endung], "data": daten}}
+    firma = KONFIG.get("eigene_firma") or "(unbekannt)"
+    anweisung = (
+        f"Lies diesen Beleg aus (Österreich). Meine Firma/mein Name: {firma}.\n"
+        "Rubrik: 'ausgang' = Rechnung, die ICH an einen Kunden gestellt habe; "
+        "'eingang' = Rechnung eines Lieferanten an mich; 'bar' = Kassenbon/Barzahlung (Supermarkt, Tankstelle, Baumarkt-Kassa); "
+        "'bank' = Kontoauszug; sonst 'sonstiges'. "
+        "Bei 'ausgang' ist partner der Kunde, sonst der Aussteller. "
+        "Bei mehreren Steuersätzen den überwiegenden nehmen. Kassenbons gelten als bezahlt."
+    )
+    try:
+        client = anthropic.Anthropic(api_key=schluessel)
+        antwort = client.beta.messages.create(
+            model=KONFIG.get("ki_modell", "claude-opus-5-5"),
+            max_tokens=2000,
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+            output_config={"effort": "low", "format": {"type": "json_schema", "schema": KI_SCHEMA}},
+            messages=[{"role": "user", "content": [block, {"type": "text", "text": anweisung}]}],
+        )
+        if antwort.stop_reason == "refusal":
+            return {}
+        text = next(b.text for b in antwort.content if b.type == "text")
+        erg = json.loads(text)
+        erg["bezahlt"] = int(erg.get("bezahlt", False))
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", erg.get("datum", "")):
+            erg.pop("datum", None)
+        return erg
+    except Exception as fehler:
+        print("[KI] Fehler:", fehler)
+        return {}
+
+
+def beleg_verarbeiten(rel, kategorie, quelle, beschreibung=""):
+    """Abgelegte Datei auswerten und als Beleg buchen. kategorie='auto' -> erkennen."""
+    pfad = DATEN / rel
+    erkannt = daten_erkennen(pdf_text(pfad)) if pfad.suffix.lower() == ".pdf" else {}
+    erkannt.update({k: v for k, v in ki_erkennen(pfad).items() if v not in ("", None)})
+    if kategorie == "auto":
+        kategorie = erkannt.get("kategorie", "eingang")
+    if not rel.startswith(f"belege/{kategorie}/"):  # Datei in den Ordner der Rubrik verschieben
+        ziel = BELEGE / kategorie / str(date.today().year)
+        ziel.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(pfad), ziel / pfad.name)
+        rel = (ziel / pfad.name).relative_to(DATEN).as_posix()
+    standard_ust = 0 if kategorie in ("bar", "bank") else KONFIG["ust_standard"]
+    return beleg_anlegen(
+        kategorie=kategorie,
+        datum=erkannt.get("datum", date.today().isoformat()),
+        partner=erkannt.get("partner", ""),
+        nummer=erkannt.get("nummer", ""),
+        beschreibung=erkannt.get("beschreibung", beschreibung),
+        brutto=erkannt.get("brutto", 0),
+        ust_satz=erkannt.get("ust_satz", standard_ust),
+        bezahlt=erkannt.get("bezahlt", 1 if kategorie == "bar" else 0),
+        datei=rel,
+        quelle=quelle,
+    )
+
+
 # ---------------------------------------------------------------- Ordner-Überwachung
 def ordner_scannen(konfig):
     for kategorie, ordner in konfig["ueberwachte_ordner"].items():
@@ -182,19 +289,9 @@ def ordner_scannen(konfig):
             # Datei muss "fertig" sein (nicht mehr gerade geschrieben werden)
             if time.time() - datei.stat().st_mtime < 3:
                 continue
-            erkannt = daten_erkennen(pdf_text(datei)) if datei.suffix.lower() == ".pdf" else {}
-            rel = datei_ablegen(datei, kategorie, datei.name)
-            beleg_anlegen(
-                kategorie=kategorie,
-                datum=erkannt.get("datum", date.today().isoformat()),
-                nummer=erkannt.get("nummer", ""),
-                brutto=erkannt.get("brutto", 0),
-                ust_satz=0 if kategorie == "bar" else konfig["ust_standard"],
-                beschreibung=datei.stem,
-                datei=rel,
-                quelle="ordner",
-            )
-            print(f"[Import] {datei.name} -> {KATEGORIEN[kategorie]}")
+            rel = datei_ablegen(datei, "eingang", datei.name)
+            neu = beleg_verarbeiten(rel, kategorie, "ordner", datei.stem)
+            print(f"[Import] {datei.name} -> Beleg {neu}")
 
 
 def ueberwachung(konfig):
@@ -287,6 +384,8 @@ class Handler(BaseHTTPRequestHandler):
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path in ("/", "/index.html"):
             return self.antwort(200, (BASIS / "index.html").read_bytes(), "text/html; charset=utf-8")
+        if url.path in STATISCH:
+            return self.antwort(200, (BASIS / url.path[1:]).read_bytes(), STATISCH[url.path])
         if url.path == "/api/belege":
             sql, par = "SELECT * FROM belege WHERE 1=1", []
             if q.get("kategorie"):
@@ -299,7 +398,8 @@ class Handler(BaseHTTPRequestHandler):
             with db() as c:
                 return self.antwort(200, [zeile_zu_dict(z) for z in c.execute(sql, par)])
         if url.path == "/api/info":
-            return self.antwort(200, {"kategorien": KATEGORIEN, "ust_standard": KONFIG["ust_standard"]})
+            ki = bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
+            return self.antwort(200, {"kategorien": KATEGORIEN, "ust_standard": KONFIG["ust_standard"], "ki": ki})
         if url.path == "/api/export.csv":
             return self.export(q.get("jahr"))
         m = re.fullmatch(r"/datei/(\d+)", url.path)
@@ -339,25 +439,20 @@ class Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path == "/api/upload":
-            kategorie = q.get("kategorie", "eingang")
-            if kategorie not in KATEGORIEN:
+            kategorie = q.get("kategorie", "auto")
+            if kategorie not in KATEGORIEN and kategorie != "auto":
                 return self.antwort(400, {"fehler": "Kategorie ungültig"})
             name = unquote(q.get("name", "scan.jpg"))
             if Path(name).suffix.lower() not in ERLAUBT:
                 return self.antwort(400, {"fehler": "Dateityp nicht erlaubt"})
-            daten = self.body()
-            rel = datei_ablegen(daten, kategorie, name)
-            erkannt = daten_erkennen(pdf_text(DATEN / rel)) if name.lower().endswith(".pdf") else {}
-            neu = beleg_anlegen(
-                kategorie=kategorie,
-                datum=erkannt.get("datum", date.today().isoformat()),
-                nummer=erkannt.get("nummer", ""),
-                brutto=erkannt.get("brutto", 0),
-                ust_satz=0 if kategorie in ("bar", "bank") else KONFIG["ust_standard"],
-                datei=rel,
-                quelle="upload",
-            )
-            return self.antwort(200, {"id": neu})
+            return self.antwort(200, {"id": self.ablegen(self.body(), name, kategorie)})
+        if url.path == "/teilen":  # "Teilen -> Buchhaltung" vom Handy (Web Share Target)
+            neu = None
+            for name, daten in self.multipart_dateien():
+                if Path(name).suffix.lower() in ERLAUBT:
+                    neu = self.ablegen(daten, name, "auto")
+            ziel = f"/?beleg={neu}" if neu else "/?fehler=keine+Datei"
+            return self.antwort(303, b"", "text/plain", {"Location": ziel})
         if url.path == "/api/beleg":
             d = json.loads(self.body() or b"{}")
             felder = {k: d[k] for k in FELDER if k in d}
@@ -367,6 +462,16 @@ class Handler(BaseHTTPRequestHandler):
         if url.path == "/api/bank-import":
             return self.antwort(200, {"importiert": bank_csv_import(self.body())})
         self.antwort(404, {"fehler": "unbekannt"})
+
+    def ablegen(self, daten, name, kategorie):
+        return beleg_verarbeiten(datei_ablegen(daten, "eingang", name), kategorie, "upload")
+
+    def multipart_dateien(self):
+        kopf = f"Content-Type: {self.headers.get('Content-Type', '')}\r\n\r\n".encode()
+        nachricht = BytesParser(policy=HTTP).parsebytes(kopf + self.body())
+        for teil in nachricht.iter_parts():
+            if teil.get_filename():
+                yield teil.get_filename(), teil.get_payload(decode=True)
 
     # ---- PUT / DELETE
     def do_PUT(self):
@@ -413,5 +518,5 @@ if __name__ == "__main__":
     print(f"Buchhaltung läuft:\n  PC:    http://localhost:{port}\n  Handy: http://{lokale_ip()}:{port}  (gleiches WLAN)")
     print("Überwachte Ordner:")
     for k, o in KONFIG["ueberwachte_ordner"].items():
-        print(f"  {KATEGORIEN[k]:<20} {o}")
+        print(f"  {KATEGORIEN.get(k, 'Automatisch'):<20} {o}")
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
