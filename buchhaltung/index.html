@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buchhaltung</title>
+<style>
+  :root { --p:#1f5f8b; --bg:#f4f6f8; --rot:#c0392b; --gruen:#1e8449; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:#222; }
+  header { background:var(--p); color:#fff; padding:12px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:1.2rem; margin:0; flex:1; }
+  select, input, button, textarea { font:inherit; padding:8px 10px; border-radius:6px; border:1px solid #bbb; }
+  button { background:var(--p); color:#fff; border:none; cursor:pointer; }
+  button.hell { background:#fff; color:var(--p); border:1px solid var(--p); }
+  button.rot { background:var(--rot); }
+  main { max-width:1100px; margin:auto; padding:12px; }
+  .kacheln { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-bottom:12px; }
+  .kachel { background:#fff; border-radius:8px; padding:10px; box-shadow:0 1px 2px #0001; }
+  .kachel small { color:#666; display:block; }
+  .kachel b { font-size:1.15rem; }
+  .tabs { display:flex; gap:4px; overflow-x:auto; margin-bottom:8px; }
+  .tabs button { background:#dde5ec; color:#222; white-space:nowrap; }
+  .tabs button.aktiv { background:var(--p); color:#fff; }
+  .aktionen { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .aktionen button { flex:1 1 auto; padding:12px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; }
+  th, td { padding:8px; border-bottom:1px solid #eee; text-align:left; font-size:.95rem; }
+  td.b { text-align:right; white-space:nowrap; }
+  tr { cursor:pointer; } tr:hover td { background:#f0f6fb; }
+  .offen { color:var(--rot); font-weight:600; }
+  .neg { color:var(--rot); } .pos { color:var(--gruen); }
+  .warn { background:#fff4d6 !important; }
+  dialog { width:min(950px,96vw); border:none; border-radius:10px; padding:0; }
+  .dlg { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; }
+  .dlg .vorschau { min-height:300px; background:#eee; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+  .dlg .vorschau img, .dlg .vorschau iframe { max-width:100%; max-height:70vh; width:100%; border:0; }
+  .dlg .vorschau iframe { height:70vh; }
+  .dlg form { display:flex; flex-direction:column; gap:8px; }
+  .dlg label { font-size:.85rem; color:#555; display:flex; flex-direction:column; gap:2px; }
+  .zeile { display:flex; gap:8px; } .zeile > * { flex:1; }
+  #meldung { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 16px; border-radius:6px; display:none; }
+  @media (max-width:700px) {
+    .dlg { grid-template-columns:1fr; } .dlg .vorschau { min-height:150px; }
+    .nur-gross { display:none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📒 Buchhaltung</h1>
+  <select id="jahr"></select>
+  <button class="hell" id="export">CSV-Export</button>
+</header>
+<main>
+  <div class="kacheln" id="kacheln"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="aktionen">
+    <button id="btnFoto">📷 Foto</button>
+    <button id="btnDatei">📄 Datei / Scan</button>
+    <button class="hell" id="btnManuell">＋ Manuell</button>
+    <button class="hell" id="btnBank" hidden>🏦 Bank-CSV importieren</button>
+  </div>
+  <input type="file" id="inFoto" accept="image/*" capture="environment" hidden>
+  <input type="file" id="inDatei" accept="image/*,application/pdf" multiple hidden>
+  <input type="file" id="inBank" accept=".csv,text/csv" hidden>
+  <table>
+    <thead><tr><th>Datum</th><th class="nur-gross">Kategorie</th><th>Partner / Text</th><th class="nur-gross">Nr.</th><th class="b">Brutto</th><th class="nur-gross">Status</th></tr></thead>
+    <tbody id="liste"></tbody>
+  </table>
+</main>
+
+<dialog id="dlg">
+  <div class="dlg">
+    <div class="vorschau" id="vorschau">kein Beleg</div>
+    <form id="form" method="dialog">
+      <label>Kategorie <select name="kategorie" id="selKat"></select></label>
+      <div class="zeile">
+        <label>Datum <input type="date" name="datum" required></label>
+        <label>Rechnungsnr. <input name="nummer"></label>
+      </div>
+      <label>Partner (Kunde / Lieferant) <input name="partner"></label>
+      <label>Beschreibung <textarea name="beschreibung" rows="2"></textarea></label>
+      <div class="zeile">
+        <label>Brutto € <input type="number" step="0.01" name="brutto" required></label>
+        <label>USt % <select name="ust_satz"><option>20</option><option>13</option><option>10</option><option>0</option></select></label>
+      </div>
+      <div id="nettoInfo" style="font-size:.9rem;color:#555"></div>
+      <label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" name="bezahlt"> bezahlt</label>
+      <div class="zeile">
+        <button type="submit" id="speichern">Speichern</button>
+        <button type="button" class="hell" id="abbrechen">Abbrechen</button>
+      </div>
+      <button type="button" class="rot" id="loeschen">Löschen (→ Papierkorb)</button>
+    </form>
+  </div>
+</dialog>
+<div id="meldung"></div>
+
+<script>
+let INFO = {}, BELEGE = [], TAB = "alle", AKTUELL = null;
+const $ = s => document.querySelector(s);
+const eur = n => (n || 0).toLocaleString("de-AT", { style: "currency", currency: "EUR" });
+const api = (url, opt = {}) => fetch(url, opt).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.fehler); return j; });
+
+function meldung(t) { const m = $("#meldung"); m.textContent = t; m.style.display = "block"; setTimeout(() => m.style.display = "none", 2500); }
+
+async function start() {
+  INFO = await api("/api/info");
+  const j = new Date().getFullYear();
+  $("#jahr").innerHTML = `<option value="">Alle Jahre</option>` + [0,1,2,3,4,5,6].map(i => `<option ${i ? "" : "selected"}>${j - i}</option>`).join("");
+  $("#tabs").innerHTML = `<button data-k="alle" class="aktiv">Alle</button>` +
+    Object.entries(INFO.kategorien).map(([k, v]) => `<button data-k="${k}">${v}</button>`).join("");
+  $("#selKat").innerHTML = Object.entries(INFO.kategorien).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  $("#tabs").onclick = e => { if (!e.target.dataset.k) return; TAB = e.target.dataset.k;
+    document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("aktiv", b === e.target)); zeichnen(); };
+  $("#jahr").onchange = laden;
+  $("#export").onclick = () => location.href = "/api/export.csv?jahr=" + $("#jahr").value;
+  $("#btnFoto").onclick = () => $("#inFoto").click();
+  $("#btnDatei").onclick = () => $("#inDatei").click();
+  $("#btnBank").onclick = () => $("#inBank").click();
+  $("#btnManuell").onclick = () => oeffnen({ kategorie: zielKategorie(), datum: heute(), brutto: 0, ust_satz: INFO.ust_standard, bezahlt: 0 });
+  $("#inFoto").onchange = e => hochladen(e.target.files, true);
+  $("#inDatei").onchange = e => hochladen(e.target.files, false);
+  $("#inBank").onchange = bankImport;
+  $("#abbrechen").onclick = () => $("#dlg").close();
+  $("#form").onsubmit = speichern;
+  $("#form").oninput = nettoZeigen;
+  $("#loeschen").onclick = loeschen;
+  laden();
+  setInterval(laden, 15000); // neue Belege aus überwachten Ordnern anzeigen
+}
+
+const heute = () => new Date().toISOString().slice(0, 10);
+const zielKategorie = () => TAB === "alle" ? "eingang" : TAB;
+
+async function laden() {
+  BELEGE = await api("/api/belege?jahr=" + $("#jahr").value);
+  zeichnen();
+}
+
+function zeichnen() {
+  $("#btnBank").hidden = TAB !== "bank";
+  const summe = (kat, f = "netto") => BELEGE.filter(b => kat.includes(b.kategorie)).reduce((s, b) => s + b[f], 0);
+  const ein = summe(["ausgang"]), aus = summe(["eingang", "bar"]);
+  const ust = summe(["ausgang"], "ust") - summe(["eingang"], "ust");
+  const offen = BELEGE.filter(b => b.kategorie === "ausgang" && !b.bezahlt).reduce((s, b) => s + b.brutto, 0);
+  $("#kacheln").innerHTML = [
+    ["Einnahmen (netto)", eur(ein), "pos"], ["Ausgaben (netto)", eur(aus), "neg"],
+    ["Ergebnis", eur(ein - aus), ein - aus < 0 ? "neg" : "pos"], ["USt-Zahllast", eur(ust), ""],
+    ["Offene Forderungen", eur(offen), offen ? "neg" : ""], ["Bank-Saldo (Bewegungen)", eur(summe(["bank"], "brutto")), ""],
+  ].map(([t, w, c]) => `<div class="kachel"><small>${t}</small><b class="${c}">${w}</b></div>`).join("");
+
+  const liste = BELEGE.filter(b => TAB === "alle" || b.kategorie === TAB);
+  $("#liste").innerHTML = liste.map(b => `
+    <tr data-id="${b.id}" class="${!b.brutto ? "warn" : ""}">
+      <td>${new Date(b.datum).toLocaleDateString("de-AT")}</td>
+      <td class="nur-gross">${INFO.kategorien[b.kategorie]}</td>
+      <td>${esc(b.partner || b.beschreibung || "—")}${b.datei ? " 📎" : ""}</td>
+      <td class="nur-gross">${esc(b.nummer)}</td>
+      <td class="b ${b.brutto < 0 ? "neg" : ""}">${eur(b.brutto)}</td>
+      <td class="nur-gross">${!b.brutto ? "⚠ ausfüllen" : b.kategorie === "bank" ? "" : b.bezahlt ? "bezahlt" : '<span class="offen">offen</span>'}</td>
+    </tr>`).join("") || `<tr><td colspan="6" style="text-align:center;color:#888">Keine Einträge</td></tr>`;
+  $("#liste").querySelectorAll("tr").forEach(tr => tr.onclick = () => oeffnen(BELEGE.find(b => b.id == tr.dataset.id)));
+}
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// Handy-Fotos verkleinern (max. 2000 px, JPEG) – spart Speicher und Upload-Zeit
+function verkleinern(datei) {
+  if (!datei.type.startsWith("image/") || datei.type === "image/heic") return Promise.resolve(datei);
+  return new Promise(ok => {
+    const img = new Image();
+    img.onload = () => {
+      const f = Math.min(1, 2000 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = img.width * f; c.height = img.height * f;
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => ok(new File([b], datei.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" })), "image/jpeg", 0.85);
+    };
+    img.onerror = () => ok(datei);
+    img.src = URL.createObjectURL(datei);
+  });
+}
+
+async function hochladen(dateien, sofortOeffnen) {
+  let letzte;
+  for (const d of dateien) {
+    const f = await verkleinern(d);
+    const r = await api(`/api/upload?kategorie=${zielKategorie()}&name=${encodeURIComponent(f.name)}`, { method: "POST", body: f });
+    letzte = r.id;
+  }
+  $("#inFoto").value = $("#inDatei").value = "";
+  meldung(`${dateien.length} Beleg(e) gespeichert`);
+  await laden();
+  if (sofortOeffnen || dateien.length === 1) oeffnen(BELEGE.find(b => b.id === letzte));
+}
+
+async function bankImport(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = await api("/api/bank-import", { method: "POST", body: f });
+  e.target.value = "";
+  meldung(`${r.importiert} Bankbuchungen importiert`);
+  laden();
+}
+
+function oeffnen(b) {
+  if (!b) return;
+  AKTUELL = b;
+  const f = $("#form");
+  for (const k of ["kategorie", "datum", "nummer", "partner", "beschreibung", "brutto", "ust_satz"]) f[k].value = b[k] ?? "";
+  f.bezahlt.checked = !!b.bezahlt;
+  $("#loeschen").hidden = !b.id;
+  const v = $("#vorschau");
+  if (!b.datei) v.textContent = "kein Beleg";
+  else if (b.datei.toLowerCase().endsWith(".pdf")) v.innerHTML = `<iframe src="/datei/${b.id}"></iframe>`;
+  else v.innerHTML = `<a href="/datei/${b.id}" target="_blank"><img src="/datei/${b.id}"></a>`;
+  nettoZeigen();
+  $("#dlg").showModal();
+  f.brutto.focus(); f.brutto.select();
+}
+
+function nettoZeigen() {
+  const f = $("#form"), br = +f.brutto.value || 0, s = +f.ust_satz.value || 0, n = br / (1 + s / 100);
+  $("#nettoInfo").textContent = `Netto ${eur(n)} · USt ${eur(br - n)}`;
+}
+
+async function speichern(e) {
+  e.preventDefault();
+  const f = $("#form");
+  const d = { kategorie: f.kategorie.value, datum: f.datum.value, nummer: f.nummer.value, partner: f.partner.value,
+              beschreibung: f.beschreibung.value, brutto: +f.brutto.value, ust_satz: +f.ust_satz.value, bezahlt: f.bezahlt.checked ? 1 : 0 };
+  const opt = { method: AKTUELL.id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) };
+  await api(AKTUELL.id ? `/api/beleg/${AKTUELL.id}` : "/api/beleg", opt);
+  $("#dlg").close(); meldung("Gespeichert"); laden();
+}
+
+async function loeschen() {
+  if (!confirm("Beleg wirklich löschen? (Datei wandert in den Papierkorb-Ordner)")) return;
+  await api(`/api/beleg/${AKTUELL.id}`, { method: "DELETE" });
+  $("#dlg").close(); meldung("Gelöscht"); laden();
+}
+
+window.onunhandledrejection = e => meldung("Fehler: " + e.reason.message);
+start();
+</script>
+</body>
+</html>
