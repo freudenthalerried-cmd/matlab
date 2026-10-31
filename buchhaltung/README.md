@@ -32,12 +32,18 @@ Voraussetzung: der PC ist eingeschaltet (Autostart erledigt den Rest).
 **Teilen:** Foto/Scan → **Teilen** → **Buchhaltung** → Beleg wird gespeichert, ausgelesen und in die richtige Rubrik
 einsortiert; danach öffnet er sich kurz zur Kontrolle.
 
-**iPhone-Kurzbefehl** (Kurzbefehle-App → ＋):
-1. Details → *Im Share-Sheet anzeigen* einschalten, Typen: Bilder, PDFs.
-2. Aktion **Bild konvertieren** → JPEG (nur für Fotos; für PDFs weglassen bzw. zweiten Kurzbefehl).
-3. Aktion **Inhalte von URL abrufen**: URL `https://mein-pc.tail1234.ts.net/api/upload?kategorie=auto&name=beleg.jpg`,
-   Methode *POST*, Anfragetext *Datei* → Kurzbefehl-Eingabe.
-4. Name: „An Buchhaltung“.
+**iPhone-Kurzbefehl** (einmalig, Kurzbefehle-App → ＋) – danach in **Fotos, Dateien, Mail** unter Teilen:
+1. Oben auf den Namen tippen → „An Buchhaltung“; ⓘ → *Im Share-Sheet anzeigen* an, Typen: **Bilder** und **PDFs**.
+2. Aktion **Inhalte von URL abrufen**: URL `https://mein-pc.tail1234.ts.net/api/upload?kategorie=auto&name=beleg.jpg`,
+   Methode *POST*, Anfragetext *Datei* → **Kurzbefehl-Eingabe**.
+3. Optional Aktion **Mitteilung zeigen** „Beleg gespeichert ✓“.
+4. Im Teilen-Menü ganz unten *Aktionen bearbeiten* → „An Buchhaltung“ zu den Favoriten (steht dann oben).
+
+Fotos und PDFs gehen mit demselben Kurzbefehl (der Dateityp wird automatisch erkannt). iPhone-Fotos (HEIC) werden
+in JPEG umgewandelt, wenn am PC `pip install pillow pillow-heif` installiert ist – sonst in den iPhone-Einstellungen
+→ Kamera → Formate → **Maximale Kompatibilität** wählen.
+
+**Android:** In Google Fotos / Galerie → Teilen → **Buchhaltung** (lange drücken → *Anpinnen*, dann steht es oben).
 
 **Ohne Tailscale (nur im Heim-WLAN):** Adresse aus `start.bat` (z. B. `http://192.168.0.20:8765`) verwenden, dem PC im
 Router eine feste IP geben und bei Android einmalig in `chrome://flags/#unsafely-treat-insecure-origin-as-secure` diese

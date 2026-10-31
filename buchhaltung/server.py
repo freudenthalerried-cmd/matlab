@@ -143,8 +143,40 @@ def beleg_anlegen(**felder):
 
 
 # ---------------------------------------------------------------- Dateien
+def dateityp(daten):
+    """Echten Dateityp am Inhalt erkennen (Kurzbefehle/Teilen liefern oft falsche Namen)."""
+    if daten[:4] == b"%PDF":
+        return ".pdf"
+    if daten[:3] == b"\xff\xd8\xff":
+        return ".jpg"
+    if daten[:8] == b"\x89PNG\r\n\x1a\n":
+        return ".png"
+    if daten[:4] == b"RIFF" and daten[8:12] == b"WEBP":
+        return ".webp"
+    if daten[4:8] == b"ftyp" and daten[8:12] in (b"heic", b"heix", b"mif1", b"msf1"):
+        return ".heic"
+    return None
+
+
+def heic_zu_jpeg(daten):
+    """iPhone-Fotos (HEIC) in JPEG umwandeln – nur wenn 'pillow-heif' installiert ist."""
+    try:
+        from PIL import Image
+        from pillow_heif import register_heif_opener
+    except ImportError:
+        return None
+    register_heif_opener()
+    puffer = io.BytesIO()
+    Image.open(io.BytesIO(daten)).convert("RGB").save(puffer, "JPEG", quality=85)
+    return puffer.getvalue()
+
+
 def datei_ablegen(quelle_bytes_oder_pfad, kategorie, original_name):
     endung = Path(original_name).suffix.lower() or ".bin"
+    if isinstance(quelle_bytes_oder_pfad, (bytes, bytearray)):
+        endung = dateityp(quelle_bytes_oder_pfad) or endung
+        if endung == ".heic" and (jpeg := heic_zu_jpeg(quelle_bytes_oder_pfad)):
+            quelle_bytes_oder_pfad, endung = jpeg, ".jpg"
     ziel_ordner = BELEGE / kategorie / str(date.today().year)
     ziel_ordner.mkdir(parents=True, exist_ok=True)
     stamm = re.sub(r"[^\w\-]+", "_", Path(original_name).stem)[:60] or "beleg"
