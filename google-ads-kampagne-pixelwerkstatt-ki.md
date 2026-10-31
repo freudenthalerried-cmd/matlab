@@ -9,12 +9,13 @@ Such-Kampagne (Responsive Search Ad) für die Unterseite
 |---|---|
 | Kampagnentyp | Suchnetzwerk (ohne Displaynetzwerk, ohne Suchpartner) |
 | Kampagnenname | Pixelwerkstatt – KI-Dienstleistungen |
-| Geo-Targeting | Oberösterreich (Präsenz, nicht „Interesse“) |
+| Geo-Targeting | 80 km Umkreis Ried im Innkreis (Innviertel, Wels, Linz) |
 | Sprache | Deutsch |
 | Tagesbudget | **3 €** (≈ 90 €/Monat) |
-| Gebotsstrategie | Klicks maximieren, max. CPC 1,50 € |
+| Gebotsstrategie | Klicks maximieren (CPC-Obergrenze 1,50 € manuell setzen) |
 | Werbezeiten | Mo–Fr 07:00–19:00 |
-| Finale URL | https://pixelwerkstatt.at/pixelwerkstatt-ki-dienstleistungen.html *(Domain prüfen)* |
+| Finale URL | https://pixelwerkstatt.at/pixelwerkstatt-ki-dienstleistungen.html |
+| Status | Angelegt im Konto 437-154-1433, Kampagnen-ID 24417707000 – **PAUSIERT** |
 
 ## Keywords (Wortgruppe / exakt)
 
