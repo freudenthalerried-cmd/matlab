@@ -5,15 +5,20 @@
 
 Belege sammeln in 5 Rubriken: **Ausgangsrechnungen, Eingangsrechnungen, Private Barbelege, Sonstiges, Bank**.
 
-## Am PC: als App einrichten (einmalig)
-1. Python 3 installieren (python.org, beim Setup **„Add python.exe to PATH“** anhaken).
-2. Doppelklick auf **`einrichten.bat`**.
-   → Symbol **„Buchhaltung“** auf dem Desktop, und die Buchhaltung startet beim Hochfahren still im Hintergrund
-   (nötig, damit Handy-Belege und der Rechnungsordner jederzeit übernommen werden).
-3. Ab jetzt: Doppelklick aufs Desktop-Symbol → öffnet sich als eigenes App-Fenster (ohne Browser-Leisten).
+## Am PC: einfach starten
+1. **`Buchhaltung.exe`** herunterladen: GitHub → *Actions* → „Buchhaltung.exe bauen“ → neuester Lauf → *Artifacts* → **Buchhaltung**
+   (ZIP entpacken).
+2. Die Datei in einen eigenen Ordner legen, z. B. `Dokumente\Buchhaltung` (dort landen auch alle Daten).
+3. **Doppelklick.** Fertig: Das App-Fenster öffnet sich, das Symbol „Buchhaltung“ kommt auf den Desktop und die
+   Buchhaltung startet ab jetzt automatisch mit Windows (still im Hintergrund).
 
-Alternativ ohne Einrichtung: `start.bat` (mit sichtbarem Konsolenfenster, zum Testen/Fehlersuchen).
+Beim ersten Start warnt Windows evtl. „Der Computer wurde durch Windows geschützt“ → *Weitere Informationen* →
+*Trotzdem ausführen* (die Datei ist nicht kostenpflichtig signiert). Fragt die Firewall: *Private Netzwerke* erlauben.
+
+Kein Python nötig. Belegerkennung (KI), PDF-Auslesen und iPhone-Fotos (HEIC) sind bereits enthalten.
 Entfernen: die zwei Verknüpfungen „Buchhaltung“ auf dem Desktop und in `shell:startup` löschen.
+
+Mit installiertem Python geht es auch ohne .exe: `start.bat` bzw. `python server.py`.
 
 ## Am Handy: als App (Android & iPhone, auch unterwegs) – empfohlen
 Über **Tailscale** (kostenlos für Privatnutzer): verbindet Handy und PC verschlüsselt, auch außerhalb des WLANs,
@@ -58,7 +63,7 @@ Adresse eintragen (sonst lässt Chrome die App nicht installieren).
 ## Automatische Belegerkennung (optional, empfohlen)
 Ohne Erkennung musst du Betrag & Co. selbst eintippen. Mit Erkennung liest Claude (KI von Anthropic) aus Foto/PDF:
 Rubrik, Datum, Firma, Rechnungsnummer, Bruttobetrag, USt-Satz.
-1. `pip install anthropic`
+1. Nur bei Python-Variante: `pip install anthropic` (in der .exe schon enthalten)
 2. API-Key auf https://console.anthropic.com erstellen und in `config.json` bei `"anthropic_api_key"` eintragen.
 3. Bei `"eigene_firma"` deinen Namen/Firmennamen eintragen (damit eigene Rechnungen als *Ausgangsrechnung* erkannt werden).
 

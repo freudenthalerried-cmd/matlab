@@ -1,0 +1,41 @@
+# Baut buchhaltung/ als einzelne Windows-Datei Buchhaltung.exe (ohne Python-Installation nutzbar).
+name: Buchhaltung.exe bauen
+
+on:
+  push:
+    paths: ["buchhaltung/**", ".github/workflows/buchhaltung-exe.yml"]
+  workflow_dispatch:
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pakete installieren
+        run: pip install pyinstaller anthropic pypdf pillow pillow-heif
+      - name: Exe bauen
+        working-directory: buchhaltung
+        run: >
+          pyinstaller --onefile --noconsole --name Buchhaltung --icon icon.ico
+          --add-data "index.html;." --add-data "manifest.webmanifest;." --add-data "sw.js;."
+          --add-data "icon-192.png;." --add-data "icon-512.png;."
+          --collect-all pillow_heif --collect-submodules anthropic
+          server.py
+      - name: Exe testen (startet Server, ruft Seite und Belegliste ab)
+        working-directory: buchhaltung/dist
+        shell: pwsh
+        run: |
+          $p = Start-Process .\Buchhaltung.exe -ArgumentList "--hintergrund" -PassThru
+          Start-Sleep -Seconds 8
+          (Invoke-WebRequest http://localhost:8765/ -UseBasicParsing).StatusCode
+          (Invoke-WebRequest http://localhost:8765/api/belege -UseBasicParsing).Content
+          Stop-Process $p.Id
+          Remove-Item -Recurse -Force daten, eingang_ordner, config.json -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Buchhaltung
+          path: buchhaltung/dist/Buchhaltung.exe
+          retention-days: 90

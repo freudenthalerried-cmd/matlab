@@ -29,7 +29,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-BASIS = Path(__file__).resolve().parent
+# Als Buchhaltung.exe (PyInstaller): Daten neben der .exe, Programmdateien im entpackten Paket
+ALS_EXE = getattr(sys, "frozen", False)
+BASIS = Path(sys.executable).resolve().parent if ALS_EXE else Path(__file__).resolve().parent
+PROGRAMM = Path(getattr(sys, "_MEIPASS", BASIS))
 DATEN = BASIS / "daten"
 BELEGE = DATEN / "belege"
 PAPIERKORB = DATEN / "papierkorb"
@@ -475,9 +478,9 @@ class Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path in ("/", "/index.html"):
-            return self.antwort(200, (BASIS / "index.html").read_bytes(), "text/html; charset=utf-8")
+            return self.antwort(200, (PROGRAMM / "index.html").read_bytes(), "text/html; charset=utf-8")
         if url.path in STATISCH:
-            return self.antwort(200, (BASIS / url.path[1:]).read_bytes(), STATISCH[url.path])
+            return self.antwort(200, (PROGRAMM / url.path[1:]).read_bytes(), STATISCH[url.path])
         if url.path == "/api/belege":
             sql, par = "SELECT * FROM belege WHERE 1=1", []
             if q.get("kategorie"):
@@ -612,6 +615,25 @@ def app_fenster_oeffnen(url):
     webbrowser.open(url)
 
 
+def selbst_einrichten():
+    """Windows: beim ersten Start Desktop-Symbol und Autostart anlegen (einmalig, automatisch)."""
+    if sys.platform != "win32":
+        return
+    if ALS_EXE:
+        ziel, argumente = sys.executable, ""
+    else:
+        ziel = shutil.which("pyw") or shutil.which("pythonw") or sys.executable
+        argumente = f'"{BASIS / "server.py"}"'
+    befehl = "; ".join(
+        f"$l=(New-Object -ComObject WScript.Shell).CreateShortcut("
+        f"[IO.Path]::Combine([Environment]::GetFolderPath('{ordner}'),'Buchhaltung.lnk')); "
+        f"$l.TargetPath='{ziel}'; $l.Arguments='{(argumente + zusatz).strip()}'; "
+        f"$l.WorkingDirectory='{BASIS}'; $l.IconLocation='{ziel if ALS_EXE else BASIS / 'icon.ico'}'; $l.Save()"
+        for ordner, zusatz in (("Desktop", ""), ("Startup", " --hintergrund"))
+    )
+    subprocess.run(["powershell", "-NoProfile", "-Command", befehl], creationflags=0x08000000)
+
+
 def laeuft_schon(port):
     with socket.socket() as s:
         return s.connect_ex(("127.0.0.1", port)) == 0
@@ -627,6 +649,11 @@ if __name__ == "__main__":
             app_fenster_oeffnen(url)
         sys.exit()
     init_db()
+    if not hintergrund:
+        try:
+            selbst_einrichten()
+        except Exception as fehler:
+            print("[Einrichtung] Fehler:", fehler)
     if sys.stdout is None:  # ohne Konsole (pyw): Ausgaben in Logdatei schreiben
         sys.stdout = sys.stderr = open(DATEN / "server.log", "a", encoding="utf-8", buffering=1)
     threading.Thread(target=ueberwachung, args=(KONFIG,), daemon=True).start()
