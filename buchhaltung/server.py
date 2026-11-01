@@ -496,6 +496,9 @@ class Handler(BaseHTTPRequestHandler):
             ki = bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
             return self.antwort(200, {"kategorien": KATEGORIEN, "konten": KONTEN,
                                       "ust_standard": KONFIG["ust_standard"], "ki": ki})
+        if url.path == "/api/handy":
+            adresse, art = handy_adresse()
+            return self.antwort(200, {"url": adresse, "art": art, "qr": qr_svg(adresse)})
         if url.path == "/api/export.csv":
             return self.antwort(200, export_csv(q.get("jahr")), "text/csv; charset=utf-8",
                                 {"Content-Disposition": f'attachment; filename="buchhaltung_{q.get("jahr") or "alle"}.csv"'})
@@ -595,6 +598,35 @@ class Handler(BaseHTTPRequestHandler):
             c.execute("DELETE FROM belege WHERE id=?", (m.group(1),))
             c.execute("UPDATE belege SET zuordnung=NULL WHERE zuordnung=?", (m.group(1),))
         self.antwort(200, {"ok": True})
+
+
+OHNE_FENSTER = 0x08000000 if sys.platform == "win32" else 0
+
+
+def handy_adresse():
+    """Adresse fürs Handy: über Tailscale (HTTPS, auch unterwegs) wenn installiert, sonst Heim-WLAN."""
+    port = KONFIG["port"]
+    ts = shutil.which("tailscale") or next(
+        (p for p in (r"C:\Program Files\Tailscale\tailscale.exe",) if Path(p).exists()), None)
+    if ts:
+        try:
+            subprocess.run([ts, "serve", "--bg", str(port)], capture_output=True, timeout=30, creationflags=OHNE_FENSTER)
+            status = subprocess.run([ts, "status", "--json"], capture_output=True, timeout=10, creationflags=OHNE_FENSTER)
+            name = json.loads(status.stdout)["Self"]["DNSName"].rstrip(".")
+            if name:
+                return f"https://{name}", "tailscale"
+        except Exception as fehler:
+            print("[Tailscale]", fehler)
+    return f"http://{lokale_ip()}:{port}", "wlan"
+
+
+def qr_svg(text):
+    try:
+        import qrcode
+        import qrcode.image.svg
+    except ImportError:
+        return ""
+    return qrcode.make(text, image_factory=qrcode.image.svg.SvgPathImage, box_size=8).to_string().decode()
 
 
 def lokale_ip():

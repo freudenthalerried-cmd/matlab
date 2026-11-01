@@ -58,6 +58,7 @@
 <header>
   <h1>📒 Buchhaltung <small id="kiInfo" style="font-size:.7rem;opacity:.8"></small></h1>
   <select id="jahr"></select>
+  <button class="hell" id="btnHandy">📱 Handy verbinden</button>
   <button class="hell" id="export" title="ZIP mit Belegliste (CSV) und allen Belegdateien">⬇ Export für Steuerberater</button>
 </header>
 <main>
@@ -111,6 +112,13 @@
     </form>
   </div>
 </dialog>
+<dialog id="dlgHandy" style="max-width:420px">
+  <div style="padding:16px">
+    <h3 style="margin-top:0">📱 Handy verbinden</h3>
+    <div id="handyInhalt">Wird ermittelt …</div>
+    <button class="hell" style="margin-top:12px;width:100%" onclick="this.closest('dialog').close()">Schließen</button>
+  </div>
+</dialog>
 <div id="meldung"></div>
 
 <script>
@@ -137,6 +145,8 @@ async function start() {
   $("#tabs").onclick = e => { if (!e.target.dataset.k) return; TAB = e.target.dataset.k;
     document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("aktiv", b === e.target)); zeichnen(); };
   $("#jahr").onchange = laden;
+  $("#btnHandy").onclick = handyZeigen;
+  if (matchMedia("(max-width:700px)").matches) $("#btnHandy").hidden = true; // am Handy selbst nicht nötig
   $("#export").onclick = () => location.href = "/api/export.zip?jahr=" + $("#jahr").value;
   $("#btnFoto").onclick = () => $("#inFoto").click();
   $("#btnDatei").onclick = () => $("#inDatei").click();
@@ -229,6 +239,20 @@ function auswertungZeichnen() {
     <h3>Ausgaben nach Art – netto</h3>
     <table><tbody>${Object.entries(konten).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="b">${eur(v)}</td></tr>`).join("") || '<tr><td>Keine Ausgaben</td></tr>'}</tbody></table>
     <p style="font-size:.85rem;color:#666">Hinweis: vereinfachte Übersicht ohne Gewähr – ersetzt keine UVA/Steuerberatung.</p>`;
+}
+
+async function handyZeigen() {
+  $("#dlgHandy").showModal();
+  const h = await api("/api/handy");
+  $("#handyInhalt").innerHTML = `
+    <p>Mit der <b>Handy-Kamera</b> scannen:</p>
+    <div style="background:#fff;padding:8px;text-align:center">${h.qr || ""}</div>
+    <p style="word-break:break-all;text-align:center"><b>${esc(h.url)}</b></p>
+    <p><b>Android:</b> Seite öffnet sich → Menü ⋮ → <b>App installieren</b>. Danach: Foto → Teilen → <b>Buchhaltung</b>.<br>
+       <b>iPhone:</b> Teilen-Symbol → <b>Zum Home-Bildschirm</b>. Für „Teilen“ aus Fotos einmalig den Kurzbefehl „An Buchhaltung“ anlegen (Anleitung im README).</p>
+    ${h.art === "wlan" ? `<p class="hinweis">Funktioniert so nur im Heim-WLAN. Für unterwegs und für „Teilen“ am Android:
+      <b>Tailscale</b> auf PC und Handy installieren (gleiches Konto), dann hier erneut öffnen.</p>` : `<p>✓ Über Tailscale – funktioniert auch unterwegs.</p>`}`;
+  $("#handyInhalt svg")?.setAttribute("style", "width:220px;height:220px");
 }
 
 function kontoFeldZeigen() { $("#kontoFeld").hidden = ["ausgang", "bank"].includes($("#form").kategorie.value); }

@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Pakete installieren
-        run: pip install pyinstaller anthropic pypdf pillow pillow-heif
+        run: pip install pyinstaller anthropic pypdf pillow pillow-heif qrcode
       - name: Exe bauen
         working-directory: buchhaltung
         run: >
