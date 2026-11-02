@@ -23,9 +23,14 @@
 <main>
   <!-- 1 AUFNAHME -->
   <section id="auf">
+    <div class="card arcard">
+      <h3>📱 Schnell: Raum mit AR messen – ohne Marken, ca. 1 Minute</h3>
+      <p class="small">Handy auf jede Wand richten und 2–3 Punkte antippen (über den Möbeln, weit auseinander). Die App berechnet daraus Wände, Ecken und Winkel. Genauigkeit ca. ±1–2 cm. Braucht Chrome auf Android mit ARCore.</p>
+      <div class="row"><button id="arOpen" class="pri big">📱 AR-Aufmaß starten</button><input id="arName" placeholder="Raumname (optional)" size="14"></div>
+    </div>
     <p class="intro">Hier nimmst du den Raum auf: Marken drucken und auslegen, fotografieren, auswerten. Unsicher? Oben auf <b>? Anleitung</b> tippen.</p>
     <div class="card pgcard">
-      <h3>A · Automatisch mit Zielmarken – ohne Handmessung (±1–3 mm)</h3>
+      <h3>Genau: mit Zielmarken (±1–3 mm, dauert länger)</h3>
       <ol class="small">
         <li><b>Marken drucken</b> (100 %): am einfachsten <b>„1 Blatt“</b> – alle 16 Marken für einen Raum auf einem A4-Blatt, ausschneiden. Große Marken (1 pro Blatt) nur für sehr große Räume.</li>
         <li><b>Zollstock</b> (2 m) ganz aufgeklappt gerade auf den Boden legen. Marke 0 mit der Mitte auf <b>0 cm</b>, Marke 1 auf <b>200 cm</b> legen (Striche zeigen die Mitte). Marken 2 und 3 flach auf den Boden – bei mehreren Räumen am besten mit einem zweiten Maßband im anderen Raum auf 0 / 300 cm (Wert unten eintragen).</li>
@@ -147,7 +152,7 @@
 
   <!-- 3 PLAN -->
   <section id="plan" hidden>
-    <p class="intro">Dein Grundriss. Raum antippen zum Bearbeiten (Name, Fenster, Türen, Wände), Raum ziehen zum Verschieben. Räume aus den Fotos kommen über „In Plan übernehmen“ hierher.</p>
+    <p class="intro">Dein Grundriss. Raum antippen zum Bearbeiten (Name, Fenster, Türen, Wände), Raum ziehen zum Verschieben. Gemessene Räume (AR oder Fotos) landen automatisch hier.</p>
     <div class="row">
       <input id="nName" placeholder="Raumname" size="10">
       <input id="nW" inputmode="decimal" placeholder="Breite m" size="6">
@@ -197,6 +202,12 @@
     <p class="hint">Hinweis: Ein Einreichplan muss in Österreich in der Regel von einer befugten Person (Baumeister/Architekt) als Planverfasser unterfertigt werden. Die App liefert die Bestandsaufnahme und Planvorlage.</p>
   </section>
 </main>
+<div id="arUI" hidden>
+  <div class="arTop"><span id="arInfo"></span><span class="sp"></span><button id="arCancel">✕</button></div>
+  <div id="arMsg" class="arMsg"></div>
+  <div id="arDot" class="ardot"></div>
+  <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
+</div>
 <div id="live" hidden>
   <div class="livebar"><button id="liveClose">✕</button><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveDone">✔ Fertig – auswerten</button></div>
   <div class="liveprog"><div id="liveBar"></div></div>
@@ -209,6 +220,7 @@
 <script src="ba.js"></script>
 <script src="marker.js"></script>
 <script src="pg.js"></script>
+<script src="ar.js"></script>
 <script src="app.js"></script>
 <script src="guide.js"></script>
 </body>

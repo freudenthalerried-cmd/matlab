@@ -413,6 +413,17 @@ function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.get
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
 $('#liveDone').onclick = () => { liveStop(); if (live.shots) $('#pgRun').click(); };
 
+/* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
+$('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
+  let Q = poly.map(p => [p[0], p[1]]);
+  const r = newRoom($('#arName').value || 'Raum ' + (S.rooms.length + 1), [], 0, 0); Object.assign(r, fromPoly(Q, r));
+  if (r.segs.reduce((s, g) => s + g.turn, 0) < 0) { Q = Q.reverse(); Object.assign(r, fromPoly(Q, r)); } // Umlaufsinn wie im Plan
+  if (height) r.h = +height.toFixed(2);
+  r.x = 0; r.y = 0; placeFree(r); S.rooms.push(r); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
+  setTimeout(() => alert(`Raum übernommen: ${r.segs.length} Wände, Streuung der Wandpunkte ${Math.round(rms * 1000)} mm${height ? ', Raumhöhe ' + f2(height) + ' m' : ''}. AR ist ca. ±1–2 cm genau – für mm-Genauigkeit die Zielmarken verwenden.`), 50);
+});
+$('#arPoint').onclick = AR.point; $('#arNext').onclick = AR.next; $('#arUndo').onclick = AR.undo; $('#arDone').onclick = AR.finish; $('#arCancel').onclick = AR.cancel;
+
 /* ---------- 2 Vermessen ---------- */
 const parseLen = v => { const n = num(v); return n > 20 ? n / 100 : n; }; // > 20 -> Eingabe in cm
 const ptSigma = () => $('#snapOn').checked ? 0.5 : 1.5; // Tippgenauigkeit Raumecken px

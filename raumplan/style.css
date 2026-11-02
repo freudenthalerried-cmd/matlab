@@ -94,3 +94,17 @@ table.pgt{border-collapse:collapse;margin:6px 0;font-size:14px}table.pgt td,tabl
 #live.flash .livecam{outline:6px solid #fff;outline-offset:-6px}
 .livebtns{gap:14px;align-items:center;color:#bbb}
 button.big{font-size:18px;padding:12px 18px}
+.arcard{border-color:#2e7d32}.arcard h3{margin:4px 0}
+#arUI{position:fixed;inset:0;z-index:70;color:#fff;font-size:17px;pointer-events:none}
+#arUI>*{pointer-events:auto}
+.arTop{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 6px;background:#0008}
+.arTop button{background:#0006;color:#fff;border-color:#fff8}
+.arMsg{margin:8px 12px;padding:10px 12px;background:#000a;border-radius:10px;line-height:1.35}
+.ardot{position:fixed;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #0008;pointer-events:none}
+.ardot::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:#fff;border-radius:50%}
+.ardot.wall{border-color:#4caf50}.ardot.ceil{border-color:#29b6f6}.ardot.floor,.ardot.flat{border-color:#ffb300}
+.arBtns{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 10px calc(env(safe-area-inset-bottom,0px) + 14px);background:#0008;flex-wrap:wrap}
+.arBtns button{background:#333;color:#fff;border-color:#666;padding:10px 12px}
+.arBtns button:disabled{opacity:.4}
+.arShot{width:80px;height:80px;border-radius:50%!important;background:#fff!important;color:#000!important;font-weight:700}
+.arOk{background:#2e7d32!important;border-color:#2e7d32!important}

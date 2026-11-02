@@ -12,11 +12,22 @@
     <text x="160" y="40" font-size="11" text-anchor="middle" fill="#e0672b">■ Wandmarken: 3–4 je Wand</text>
   </svg>`;
   const steps = [
-    { t: 'Willkommen', h: `<p>Mit dieser App machst du aus Handyfotos einen <b>maßgenauen Grundriss</b> (±1–3 mm) für den Einreichplan. Von Hand messen musst du nichts.</p>
-      <p><b>Du brauchst:</b></p><ul><li>Drucker (A4)</li><li>1 Zollstock (2 m)</li><li>Klebeband oder Malerkrepp</li><li>dieses Handy</li></ul>
-      <p>Zeitaufwand pro Raum: ca. 10 Minuten Vorbereitung und 1 Minute fotografieren.</p>`,
+    { t: 'Willkommen', h: `<p>Mit dieser App misst du einen Raum in etwa <b>1 Minute</b> nur mit dem Handy auf – ohne Maßband, ohne Marken – und bekommst einen Grundriss für den Einreichplan.</p>
+      <p><b>Du brauchst:</b> ein Android-Handy mit Chrome und ARCore (fast alle neueren Handys). Genauigkeit ca. ±1–2 cm.</p>
+      <p class="hint">Für Millimeter-Genauigkeit gibt es zusätzlich den Weg mit gedruckten Zielmarken (am Ende der Anleitung).</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
-    { t: 'Marken drucken', h: `<p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate mit Nummer) auf den Fotos und berechnet daraus die Maße.</p>
+    { t: 'Raum mit AR messen', h: `<ol><li><b>📱 AR-Aufmaß starten</b> tippen und das Handy langsam bewegen, bis der Boden erkannt ist.</li>
+      <li>Den <b>Kreis in der Mitte</b> auf eine Wand richten – über den Möbeln. Grün = Wand erkannt.</li>
+      <li><b>Punkt</b> tippen, ein Stück die Wand entlang zielen, nochmal <b>Punkt</b>. 2–3 Punkte pro Wand, möglichst weit auseinander.</li>
+      <li><b>Nächste Wand</b> tippen und der Reihe nach rundherum weitermachen.</li>
+      <li>Optional: auf die <b>Decke</b> zielen (blau) und Punkt tippen – das ergibt die Raumhöhe.</li>
+      <li><b>✔ Fertig</b> – die App berechnet Ecken, Winkel und Wandlängen und legt den Raum im Plan an.</li></ol>`,
+      b: [['📱 AR-Aufmaß starten', 'ar'], ['Weiter ›', 'next', 1]] },
+    { t: 'Plan und Einreichung', h: `<p><b>3 Plan</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum – nebeneinander liegende Räume rasten ein.</p>
+      <p><b>4 Einreichung</b>: Plankopf ausfüllen und als <b>PDF</b>, <b>DXF</b> (CAD) oder Aufmaßprotokoll ausgeben.</p>
+      <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>`,
+      b: [['Fertig', 'close'], ['Genauer mit Marken ›', 'next']] },
+    { t: 'Genauer: Marken drucken', h: `<p class="hint">Optional – nur wenn ±1–2 cm nicht reichen.</p><p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate mit Nummer) auf den Fotos und berechnet daraus die Maße.</p>
       <ul><li>Alles auf <b>einem A4-Blatt</b>: 16 Marken, je 4,5 cm groß. An den grauen Linien ausschneiden.</li><li><b>Marken 0–3</b> kommen auf den Boden, <b>Marken 4–15</b> an die Wände (3 pro Wand).</li><li>Beim Drucken <b>100 % / Originalgröße</b> wählen, nicht „an Seite anpassen“.</li></ul>
       <p class="hint">Mehrere Räume? Pro Raum andere Wand-Nummern drucken, z. B. Raum 2 „ab Nr. 20“. Die Felder dazu findest du unter „1 Aufnahme“.</p>`,
       b: [['🖨 1 Blatt drucken', 'sheet'], ['Weiter ›', 'next', 1]] },
@@ -29,13 +40,9 @@
       b: [['📹 Raum aufnehmen', 'live'], ['Weiter ›', 'next', 1]] },
     { t: 'Auswerten', h: `<p>Nach „Fertig“ startet die Auswertung von selbst. Das dauert je nach Handy 1–5 Minuten, der Bildschirm soll dabei an bleiben.</p>
       <p>Danach siehst du jede Wand mit Länge und Genauigkeit, z. B. <b>4,215 m ± 1 mm (0,02 %)</b>. Grün heißt: Genauigkeit passt.</p>
-      <p>Mit <b>„In Plan übernehmen“</b> kommt der Raum in den Grundriss. Beim nächsten Raum geht es wieder bei Schritt 3 los. Die App setzt die Räume über die Verbindungsmarken 90–93 im Türbereich automatisch zusammen.</p>`,
+      <p>Mit <b>„In Plan übernehmen“</b> kommt der Raum in den Grundriss. Beim nächsten Raum geht es wieder bei „Marken auslegen“ los. Die App setzt die Räume über die Verbindungsmarken 90–93 im Türbereich automatisch zusammen.</p>`,
       b: [['▶ Jetzt auswerten', 'run'], ['Weiter ›', 'next', 1]] },
-    { t: 'Plan und Einreichung', h: `<p><b>3 Plan</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum.</p>
-      <p><b>4 Einreichung</b>: Plankopf ausfüllen (Bauvorhaben, Adresse, Grundstück) und als <b>PDF</b>, <b>DXF</b> für CAD oder Aufmaßprotokoll ausgeben.</p>
-      <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>
-      <p>Diese Anleitung findest du jederzeit oben unter <b>? Anleitung</b>.</p>`,
-      b: [['Fertig', 'close']] }
+    { t: 'Fertig', h: `<p>Das war der genaue Weg mit Marken. Die Anleitung findest du jederzeit oben unter <b>? Anleitung</b>.</p>`, b: [['Fertig', 'close']] }
   ];
   let i = 0;
   const box = document.createElement('div');
@@ -64,7 +71,7 @@
     else if (a === 'close') close();
     else if (a === 'demo') demo();
     else if (a === 'sheet') $('#pgSheet').click();
-    else { const sel = { live: '#liveOpen', files: '#pgFile', run: '#pgRun' }[a]; close(); showTab('auf'); if (sel) $(sel).click(); }
+    else { const sel = { live: '#liveOpen', files: '#pgFile', run: '#pgRun', ar: '#arOpen' }[a]; close(); showTab('auf'); if (sel) $(sel).click(); }
   };
   addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
   $('#helpBtn').onclick = () => open(0);
