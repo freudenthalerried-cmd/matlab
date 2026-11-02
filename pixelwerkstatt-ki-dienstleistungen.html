@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KI-Implementierung &amp; KI-Apps für Unternehmen – Pixelwerkstatt</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Pixelwerkstatt: KI-Implementierung, KI-Apps, maßgeschneiderte Apps und Programme, KI-Agenten und automatisierte Routinen für Unternehmen in Oberösterreich.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: Werkbank – linke Spalte Aussage, rechts ein Pixel-Raster, das sich zusammensetzt; darunter Werkzeugwand (Leistungen) und Auftragszettel (Ablauf). */
+:root {
+  --bg: #eef1f0;
+  --surface: #ffffff;
+  --ink: #14211d;
+  --muted: #55625e;
+  --line: #cfd8d5;
+  --accent: #e2560b;
+  --accent-ink: #ffffff;
+  --grid-off: #dfe5e3;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1715; --surface: #17221f; --ink: #e8eeec; --muted: #9aa8a4;
+    --line: #2a3834; --accent: #ff7a33; --accent-ink: #14110f; --grid-off: #1f2b28;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1715; --surface: #17221f; --ink: #e8eeec; --muted: #9aa8a4;
+  --line: #2a3834; --accent: #ff7a33; --accent-ink: #14110f; --grid-off: #1f2b28;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* Kopf */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 700; font-size: 18px; text-decoration: none; letter-spacing: -0.01em; }
+.logo i { display: grid; grid-template-columns: repeat(3, 6px); gap: 2px; }
+.logo i b { width: 6px; height: 6px; background: var(--ink); }
+.logo i b:nth-child(2), .logo i b:nth-child(4), .logo i b:nth-child(9) { background: var(--accent); }
+nav { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+nav a { text-decoration: none; font-weight: 500; font-size: 15px; color: var(--muted); }
+nav a:hover { color: var(--ink); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer;
+  padding: 12px 22px; font: 600 16px/1 var(--f-body); text-decoration: none;
+  background: var(--accent); color: var(--accent-ink); border-radius: 4px;
+  transition: transform .15s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+nav .btn { padding: 9px 16px; font-size: 14px; color: var(--accent-ink); }
+@media (max-width: 640px) { nav a:not(.btn) { display: none; } }
+
+/* Hero */
+.hero .wrap { display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; align-items: center; padding-block: 72px 64px; }
+.hero .wrap > * { min-width: 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 18px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: clamp(34px, 5.4vw, 60px); line-height: 1.04; font-weight: 700; }
+h1 em { font-style: normal; color: var(--accent); }
+.lead { font-size: 19px; color: var(--muted); max-width: 34em; margin: 22px 0 30px; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.pixels { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; aspect-ratio: 1; max-width: 100%; }
+.pixels span { background: var(--grid-off); border-radius: 2px; transition: background-color .5s ease; }
+.pixels span.on { background: var(--ink); }
+.pixels span.hot { background: var(--accent); }
+.pixel-cap { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 12px; display: flex; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 820px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-block: 44px; }
+  .pixels { max-width: 360px; }
+}
+
+/* Abschnitte */
+section.block .wrap { padding-block: 72px; }
+section.block + section.block .wrap { border-top: 1px solid var(--line); }
+.sec-head { display: grid; grid-template-columns: 1fr 1.4fr; gap: 32px; align-items: end; margin-bottom: 40px; }
+.sec-head > * { min-width: 0; }
+h2 { font-size: clamp(26px, 3.4vw, 38px); line-height: 1.12; font-weight: 700; }
+.sec-head p { margin: 0; color: var(--muted); max-width: 36em; }
+@media (max-width: 760px) { .sec-head { grid-template-columns: 1fr; gap: 14px; } }
+
+/* Werkzeugwand */
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1.5px solid var(--ink); border-left: 1px solid var(--line); }
+.tool { padding: 26px 24px 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tool .tag { font-family: var(--f-mono); font-size: 12px; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
+.tool h3 { font-size: 19px; line-height: 1.25; font-weight: 500; }
+.tool p { margin: 0; color: var(--muted); font-size: 16px; }
+@media (max-width: 900px) { .tools { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .tools { grid-template-columns: 1fr; } }
+
+/* Beispiele */
+.cases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.case { border: 1px solid var(--line); border-radius: 6px; padding: 22px; background: var(--surface); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.case h3 { font-size: 17px; font-weight: 500; line-height: 1.3; }
+.case dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15px; }
+.case dt { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding-top: 3px; }
+.case dd { margin: 0; }
+.note { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 16px; }
+@media (max-width: 900px) { .cases { grid-template-columns: 1fr; } }
+
+/* Ablauf – Auftragszettel */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; padding: 0 22px 0 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.steps li::before {
+  content: counter(s, decimal-leading-zero); font-family: var(--f-mono); font-weight: 600; font-size: 13px;
+  color: var(--accent); border-top: 2px solid var(--ink); padding-top: 12px;
+}
+.steps h3 { font-size: 17px; font-weight: 500; }
+.steps p { margin: 0; color: var(--muted); font-size: 15px; }
+.steps .price { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+@media (max-width: 860px) { .steps { grid-template-columns: repeat(2, 1fr); row-gap: 30px; } }
+@media (max-width: 480px) { .steps { grid-template-columns: 1fr; } }
+
+/* Kontakt */
+.contact { background: var(--ink); color: var(--bg); }
+.contact .wrap { padding-block: 72px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+.contact .wrap > * { min-width: 0; }
+.contact h2 { color: var(--bg); }
+.contact p { color: var(--bg); opacity: .78; max-width: 32em; }
+.lines { display: flex; flex-direction: column; gap: 12px; }
+.line { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--bg) 28%, transparent); border-radius: 4px; flex-wrap: wrap; }
+.line span:first-child { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+.line a, .line strong { font-weight: 600; text-decoration: none; overflow-wrap: anywhere; user-select: all; }
+.copy { background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 3px; font: 500 12px var(--f-mono); padding: 5px 9px; cursor: pointer; }
+@media (max-width: 760px) { .contact .wrap { grid-template-columns: 1fr; } }
+
+footer .wrap { padding-block: 26px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#start" aria-label="Pixelwerkstatt Startseite"><i aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i>Pixelwerkstatt</a>
+    <nav aria-label="Hauptnavigation">
+      <a href="#leistungen">Leistungen</a>
+      <a href="#beispiele">Beispiele</a>
+      <a href="#ablauf">Ablauf</a>
+      <a class="btn" href="#kontakt">Erstgespräch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="start">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">KI-Werkstatt für Unternehmen · Oberösterreich</p>
+        <h1>Ihr Betrieb, gebaut für das <em>KI-Zeitalter</em>.</h1>
+        <p class="lead">Wir analysieren Ihre Abläufe, entwickeln KI-Apps und Programme nach Maß und richten KI-Agenten ein, die Routinearbeit verlässlich erledigen. Von der ersten Idee bis zur Betreuung, alles aus einer Hand.</p>
+        <div class="actions">
+          <a class="btn" href="#kontakt">Kostenloses Erstgespräch</a>
+          <a class="btn ghost" href="#leistungen">Leistungen ansehen</a>
+        </div>
+      </div>
+      <div>
+        <div class="pixels" id="pixels" aria-hidden="true"></div>
+        <div class="pixel-cap"><span>12 × 12 px</span><span id="pixel-state">Ablauf: manuell</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="leistungen">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Unsere Werkzeugwand</h2>
+        <p>Sechs Leistungen, die ineinandergreifen. Sie wählen, was Sie brauchen. Wir setzen es vollständig um, inklusive Schulung und Wartung.</p>
+      </div>
+      <div class="tools">
+        <article class="tool"><span class="tag">Beratung</span><h3>KI-Implementierung</h3><p>Prozessanalyse, Potenzial-Check und Umsetzungsplan: wo KI in Ihrem Betrieb messbar Zeit und Geld spart.</p></article>
+        <article class="tool"><span class="tag">Apps</span><h3>KI-Apps</h3><p>Chatbots und Wissensassistenten, die mit Ihren eigenen Dokumenten, Preislisten und Systemen arbeiten.</p></article>
+        <article class="tool"><span class="tag">Software</span><h3>Apps &amp; Programme nach Maß</h3><p>Software, die zu Ihren Abläufen passt, statt Standardlösungen, an die Sie sich anpassen müssen.</p></article>
+        <article class="tool"><span class="tag">Agenten</span><h3>KI- &amp; OS-Agenten</h3><p>Agenten, die selbstständig am Computer arbeiten: E-Mails sortieren, Daten übertragen, Berichte erstellen.</p></article>
+        <article class="tool"><span class="tag">Automatisierung</span><h3>Routinen</h3><p>Wiederkehrende Aufgaben laufen zeitgesteuert im Hintergrund. Sie bekommen nur noch das Ergebnis.</p></article>
+        <article class="tool"><span class="tag">Betreuung</span><h3>Schulung &amp; Wartung</h3><p>Einschulung Ihres Teams und laufende Weiterentwicklung, damit die Lösung auch in einem Jahr noch passt.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="beispiele">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>So sieht das im Alltag aus</h2>
+        <p>Typische Aufgaben aus kleinen und mittleren Betrieben, die sich mit KI deutlich verkürzen lassen.</p>
+      </div>
+      <div class="cases">
+        <article class="case"><h3>Angebote schneller schreiben</h3><dl><dt>Vorher</dt><dd>Anfrage lesen, Positionen suchen, Angebot tippen.</dd><dt>Nachher</dt><dd>KI erstellt den Entwurf aus Anfrage und Preisliste, Sie prüfen und senden.</dd></dl></article>
+        <article class="case"><h3>Posteingang vorsortieren</h3><dl><dt>Vorher</dt><dd>Jede E-Mail einzeln öffnen und weiterleiten.</dd><dt>Nachher</dt><dd>Ein Agent ordnet zu, beantwortet Standardfragen und markiert Dringendes.</dd></dl></article>
+        <article class="case"><h3>Wissen im Betrieb finden</h3><dl><dt>Vorher</dt><dd>Ordner durchsuchen oder Kollegen fragen.</dd><dt>Nachher</dt><dd>Ein Assistent beantwortet Fragen direkt aus Ihren eigenen Unterlagen.</dd></dl></article>
+      </div>
+      <p class="note">Beispiele für typische Einsatzbereiche, keine Kundenreferenzen.</p>
+    </div>
+  </section>
+
+  <section class="block" id="ablauf">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Vom Gespräch zum laufenden System</h2>
+        <p>Klare Schritte, klare Preise. Sie wissen vor jeder Etappe, was sie kostet.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Erstgespräch</h3><p>Wir hören zu: Wo geht in Ihrem Betrieb Zeit verloren?</p><span class="price">kostenlos</span></li>
+        <li><h3>Analyse &amp; Angebot</h3><p>Potenzial-Check Ihrer Abläufe und ein konkretes Angebot.</p><span class="price">Fixpreis</span></li>
+        <li><h3>Umsetzung</h3><p>Wir bauen in kurzen Etappen, Sie testen früh mit echten Daten.</p><span class="price">Fixpreis je Etappe</span></li>
+        <li><h3>Übergabe &amp; Betreuung</h3><p>Schulung Ihres Teams, danach Wartung und Weiterentwicklung.</p><span class="price">Monatspauschale</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="contact" id="kontakt">
+    <div class="wrap">
+      <div>
+        <h2>Erstgespräch anfragen</h2>
+        <p>Beschreiben Sie kurz, welche Aufgaben Sie entlasten wollen. Wir melden uns mit konkreten Vorschlägen.</p>
+      </div>
+      <div class="lines">
+        <div class="line"><span>E-Mail</span><a href="mailto:freudenthaler.ried@gmail.com?subject=Anfrage%20KI-Dienstleistungen%20Pixelwerkstatt" id="mail">freudenthaler.ried@gmail.com</a><button class="copy" type="button" data-copy="freudenthaler.ried@gmail.com" id="copy-mail">Kopieren</button></div>
+        <div class="line"><span>Telefon</span><a href="tel:+436645103676" id="tel">0664 / 510 36 76</a><button class="copy" type="button" data-copy="+43 664 5103676" id="copy-tel">Kopieren</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Pixelwerkstatt · KI-Implementierung, KI-Apps &amp; individuelle Software</span>
+    <span>Ried im Innkreis · Oberösterreich</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Pixel-Raster: chaotische Punkte ordnen sich zu einem Zahnrad-artigen Muster ("Ablauf: automatisiert").
+  var N = 12, grid = document.getElementById('pixels'), state = document.getElementById('pixel-state');
+  var cells = [];
+  for (var i = 0; i < N * N; i++) { var s = document.createElement('span'); grid.appendChild(s); cells.push(s); }
+  var target = [
+    "............",
+    ".....##.....",
+    "..#.####.#..",
+    "...######...",
+    "..###..###..",
+    ".###.HH.###.",
+    ".###.HH.###.",
+    "..###..###..",
+    "...######...",
+    "..#.####.#..",
+    ".....##.....",
+    "............"
+  ].join('');
+  function paint(order) {
+    cells.forEach(function (c, i) {
+      c.className = '';
+      if (order) { if (target[i] === '#') c.className = 'on'; else if (target[i] === 'H') c.className = 'hot'; }
+      else { var r = Math.random(); if (r < .28) c.className = 'on'; else if (r < .33) c.className = 'hot'; }
+    });
+    state.textContent = order ? 'Ablauf: automatisiert' : 'Ablauf: manuell';
+  }
+  paint(true);
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) {
+    var ordered = true;
+    setInterval(function () { ordered = !ordered; paint(ordered); }, ordered ? 2600 : 2600);
+  }
+
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-copy');
+      var done = function () { b.textContent = 'Kopiert'; setTimeout(function () { b.textContent = 'Kopieren'; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(done, function () { select(b); });
+      } else { select(b); }
+    });
+  });
+  function select(b) {
+    var el = b.previousElementSibling, r = document.createRange();
+    r.selectNodeContents(el); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    b.textContent = 'Markiert';
+  }
+})();
+</script>
+</body>
+</html>
