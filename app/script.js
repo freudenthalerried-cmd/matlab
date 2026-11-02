@@ -610,54 +610,214 @@
     return BAUSTEINE.filter(function (b) { return b.sicherheit !== false; });
   }
 
+  // Umlaute vereinheitlichen, damit "Kuenette" und "Künette" gleich gefunden werden.
+  function normiere(text) {
+    return String(text || '').toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  }
+
+  // Ein Suchwort trifft, wenn ein Wort damit beginnt (Gasflasche -> Gasflaschen)
+  // oder – ab 5 Buchstaben – in einem zusammengesetzten Wort steckt
+  // (Dachrand -> Dachrandsicherung). Mehrwortbegriffe muessen als Ganzes vorkommen.
+  function trifft(kw, normText, woerter) {
+    const k = normiere(kw);
+    if (k.indexOf(' ') !== -1) return normText.indexOf(k) !== -1;
+    return woerter.some(function (w) {
+      return w.indexOf(k) === 0 || (k.length >= 5 && w.indexOf(k) !== -1);
+    });
+  }
+
+  function schonImText(b, t) {
+    return t.indexOf((varianten[b.id] || b.text).toLowerCase().slice(0, 40)) !== -1;
+  }
+
+  // Nur echte Treffer – keine "beliebtesten" Bausteine als Lückenfüller mehr,
+  // die mit dem Text nichts zu tun haben.
   function vorschlaegeFuer(text) {
     const t = text.toLowerCase();
     if (t.trim().length < 3) return [];
+    const normText = normiere(text);
+    const woerter = normText.split(/[^a-z0-9§-]+/).filter(Boolean);
     const treffer = [];
     sicherheitsBausteine().forEach(function (b) {
       let punkte = 0;
       b.keywords.forEach(function (kw) {
-        if (t.indexOf(kw) !== -1) punkte += 10;
+        if (trifft(kw, normText, woerter)) punkte += 10 + normiere(kw).length;
       });
-      if (punkte > 0 && t.indexOf((varianten[b.id] || b.text).toLowerCase().slice(0, 40)) === -1) {
+      if (punkte > 0 && !schonImText(b, t)) {
         treffer.push({ baustein: b, punkte: punkte + score(b) });
       }
     });
-    const dabei = treffer.map(function (x) { return x.baustein.id; });
-    treffer.slice().forEach(function (x) {
-      (x.baustein.related || []).forEach(function (rid) {
-        if (dabei.indexOf(rid) === -1) {
-          const rb = BAUSTEINE.find(function (b) { return b.id === rid && b.sicherheit !== false; });
-          if (rb && t.indexOf((varianten[rb.id] || rb.text).toLowerCase().slice(0, 40)) === -1) {
-            treffer.push({ baustein: rb, punkte: score(rb) });
-            dabei.push(rid);
-          }
-        }
-      });
-    });
     treffer.sort(function (a, b) { return b.punkte - a.punkte; });
-    if (treffer.length < 3) {
-      sicherheitsBausteine()
-        .slice()
-        .sort(function (a, b) { return score(b) - score(a); })
-        .forEach(function (b) {
-          if (treffer.length < 3 && dabei.indexOf(b.id) === -1 &&
-              t.indexOf((varianten[b.id] || b.text).toLowerCase().slice(0, 40)) === -1) {
-            treffer.push({ baustein: b, punkte: 0 });
-            dabei.push(b.id);
-          }
-        });
-    }
     return treffer.slice(0, 3).map(function (x) { return x.baustein; });
   }
 
-  // Ohne Text im Eingabefeld wird das Foto ausgewertet: die gebrauchlichsten
-  // Sicherheitsbausteine, damit auch ohne Tippen ein Vorschlag dasteht.
-  function fotoVorschlaege() {
-    return sicherheitsBausteine()
-      .slice()
-      .sort(function (a, b) { return score(b) - score(a); })
-      .slice(0, 3);
+  // ---------- Echte Foto-/Text-Analyse mit Claude (optional, eigener API-Schlüssel) ----------
+
+  const CLAUDE_MODELL = 'claude-opus-5-5';
+  let claudeSchluessel = ladeJson('bp_claude_key', '');
+  let claudeErgebnis = null;   // { quelle, erkannt, vorschlaege } der letzten Analyse
+  let claudeLaeuft = false;
+
+  function bausteinKatalog() {
+    return sicherheitsBausteine().map(function (b) {
+      return b.id + ' | ' + b.titel + ' | ' + b.kurz + (b.gesetz ? ' (' + b.gesetz.ref + ')' : '');
+    }).join('\n');
+  }
+
+  const CLAUDE_SYSTEM =
+    'Du bist Baustellenkoordinator (BauKG) in Österreich und schreibst Einträge für ' +
+    'Baustellenbesuchsprotokolle „Sicherheit am Bau“. Rechtsgrundlagen: BauKG, BauV, ASchG, AM-VO.\n' +
+    'Regeln:\n' +
+    '- Beschreibe nur, was auf dem Foto bzw. im Text tatsächlich erkennbar ist. Nichts erfinden.\n' +
+    '- Höchstens 3 Vorschläge, der wichtigste zuerst. Nur sicherheitsrelevante Punkte.\n' +
+    '- Passt ein Baustein aus dem Katalog, gib seine ID an (baustein_id) und lass text leer.\n' +
+    '- Passt keiner, baustein_id leer lassen und einen eigenen Satz im Protokollstil schreiben ' +
+    '(sachlich, max. 2 Sätze, Anweisungsform wie „… ist zu …“). Paragraphen nur nennen, wenn du dir sicher bist.\n' +
+    '- mangel = true nur bei einem klar erkennbaren Verstoß.\n' +
+    '- Ist nichts Sicherheitsrelevantes zu erkennen, gib eine leere Liste zurück.\n\n' +
+    'Baustein-Katalog (ID | Titel | Kurzfassung):\n';
+
+  const CLAUDE_SCHEMA = {
+    type: 'object',
+    properties: {
+      erkannt: { type: 'string' },
+      vorschlaege: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            baustein_id: { type: 'string' },
+            text: { type: 'string' },
+            mangel: { type: 'boolean' }
+          },
+          required: ['baustein_id', 'text', 'mangel'],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ['erkannt', 'vorschlaege'],
+    additionalProperties: false
+  };
+
+  // Foto vor dem Senden verkleinern (spart Zeit und Kosten).
+  function verkleinere(dataUrl) {
+    return new Promise(function (resolve) {
+      const img = new Image();
+      img.onload = function () {
+        const max = 1280;
+        const f = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * f);
+        c.height = Math.round(img.height * f);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = function () { resolve(dataUrl); };
+      img.src = dataUrl;
+    });
+  }
+
+  function frageClaude(text, foto) {
+    const inhalt = [];
+    const vorbereitung = foto ? verkleinere(foto) : Promise.resolve(null);
+    return vorbereitung.then(function (bild) {
+      if (bild) {
+        const teile = bild.split(',');
+        const typ = (teile[0].match(/data:(.*?);/) || [])[1] || 'image/jpeg';
+        inhalt.push({ type: 'image', source: { type: 'base64', media_type: typ, data: teile[1] } });
+      }
+      inhalt.push({
+        type: 'text',
+        text: (aktuelleBaustelle ? 'Baustelle: ' + aktuelleBaustelle.name + '\n' : '') +
+          (text ? 'Notiz des Koordinators: ' + text : 'Analysiere das Foto.')
+      });
+      return fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': claudeSchluessel,
+          'anthropic-version': '2026-10-21',
+          'anthropic-beta': 'server-side-fallback-2026-07-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: CLAUDE_MODELL,
+          max_tokens: 16000,
+          fallbacks: 'default',
+          output_config: { effort: 'low', format: { type: 'json_schema', schema: CLAUDE_SCHEMA } },
+          system: CLAUDE_SYSTEM + bausteinKatalog(),
+          messages: [{ role: 'user', content: inhalt }]
+        })
+      });
+    }).then(function (r) {
+      return r.json().then(function (daten) {
+        if (!r.ok) {
+          const msg = (daten && daten.error && daten.error.message) || ('HTTP ' + r.status);
+          throw new Error(r.status === 401 ? 'Schlüssel ungültig' : msg);
+        }
+        if (daten.stop_reason === 'refusal') throw new Error('Anfrage abgelehnt');
+        const block = (daten.content || []).find(function (c) { return c.type === 'text'; });
+        if (!block) throw new Error('Keine Antwort');
+        return JSON.parse(block.text);
+      });
+    });
+  }
+
+  function starteClaude() {
+    if (!claudeSchluessel || claudeLaeuft) return;
+    const text = kiEingabe.value.trim();
+    const foto = !kiNurText ? aktuellesFoto : null;
+    if (!text && !foto) return;
+    claudeLaeuft = true;
+    claudeErgebnis = null;
+    rendereKiSaetze();
+    frageClaude(text, foto).then(function (erg) {
+      claudeErgebnis = { quelle: text + '|' + (foto ? foto.length : 0), erkannt: erg.erkannt, vorschlaege: erg.vorschlaege || [] };
+    }).catch(function (err) {
+      claudeErgebnis = { quelle: text + '|' + (foto ? foto.length : 0), fehler: err.message || String(err), vorschlaege: [] };
+    }).then(function () {
+      claudeLaeuft = false;
+      if (!kiFenster.hidden) rendereKiSaetze();
+    });
+  }
+
+  function schluesselEintragen() {
+    const neu = window.prompt(
+      'Claude-API-Schlüssel (sk-ant-…) für echte Foto-Analyse.\n' +
+      'Wird nur auf diesem Gerät gespeichert. Leer lassen = KI-Analyse aus.',
+      claudeSchluessel || '');
+    if (neu === null) return;
+    claudeSchluessel = neu.trim();
+    speichereJson('bp_claude_key', claudeSchluessel);
+    claudeErgebnis = null;
+    rendereKiSaetze();
+  }
+
+  function freierVorschlag(v) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'ki-satz';
+    knopf.textContent = (v.mangel ? 'MANGEL: ' : '') + v.text;
+    knopf.addEventListener('click', function () {
+      if (v.mangel) setzeTyp('mangel');
+      const bisher = input.value.trim();
+      input.value = bisher ? bisher + '\n' + v.text : v.text;
+      updateSendState();
+      autoGrow();
+      ebeneVerlassen('ki');
+      input.focus();
+    });
+    return knopf;
+  }
+
+  function kleinerKnopf(text, aktion) {
+    const k = document.createElement('button');
+    k.type = 'button';
+    k.className = 'chip chip-kategorie';
+    k.textContent = text;
+    k.addEventListener('click', aktion);
+    return k;
   }
 
   // Ein Vorschlag ist hochstens drei Satze lang.
@@ -688,28 +848,77 @@
     return knopf;
   }
 
-  // Steht Text im Eingabefeld, wird er fur die Vorschlage verwendet;
-  // ist es leer, wird das Foto analysiert. Im Text-Modus bleibt das Foto aussen vor.
+  // Reihenfolge: Claude-Analyse (falls Schlüssel) -> Treffer aus dem Text ->
+  // ohne Schlüssel beim Foto die Themen-Auswahl "Was ist zu sehen?".
   function rendereKiSaetze() {
     const text = kiEingabe.value.trim();
-    const ausText = text.length > 0;
     const foto = !kiNurText && aktuellesFoto;
-    const liste = ausText ? vorschlaegeFuer(text) : (foto ? fotoVorschlaege() : []);
+    const quelle = text + '|' + (foto ? foto.length : 0);
+    kiSaetze.innerHTML = '';
 
-    if (ausText) {
-      kiQuelle.textContent = 'KI-Vorschlag aus deinem Text:';
+    if (claudeLaeuft) {
+      kiQuelle.textContent = 'KI analysiert …';
+    } else if (claudeErgebnis && claudeErgebnis.quelle === quelle) {
+      if (claudeErgebnis.fehler) {
+        kiQuelle.textContent = 'KI-Fehler: ' + claudeErgebnis.fehler;
+      } else {
+        kiQuelle.textContent = 'KI erkennt: ' + (claudeErgebnis.erkannt || '–');
+        if (!claudeErgebnis.vorschlaege.length) {
+          const leer = document.createElement('div');
+          leer.className = 'panel-hint';
+          leer.textContent = 'Nichts Sicherheitsrelevantes erkannt.';
+          kiSaetze.appendChild(leer);
+        }
+        claudeErgebnis.vorschlaege.slice(0, 3).forEach(function (v) {
+          const b = v.baustein_id && BAUSTEINE.find(function (x) { return x.id === v.baustein_id; });
+          if (b) {
+            const z = satzZeile(b);
+            if (v.mangel) z.addEventListener('click', function () { setzeTyp('mangel'); }, true);
+            kiSaetze.appendChild(z);
+          } else if (v.text) {
+            kiSaetze.appendChild(freierVorschlag(v));
+          }
+        });
+      }
+    } else if (text) {
+      const liste = vorschlaegeFuer(text);
+      kiQuelle.textContent = liste.length
+        ? 'Passende Bausteine zu deinem Text:'
+        : 'Kein passender Baustein gefunden.';
+      liste.forEach(function (b) { kiSaetze.appendChild(satzZeile(b)); });
+      if (!liste.length) {
+        kiSaetze.appendChild(freierVorschlag({ text: text.charAt(0).toUpperCase() + text.slice(1) + (/[.!?]$/.test(text) ? '' : '.'), mangel: false }));
+      }
     } else if (foto) {
-      kiQuelle.textContent = 'KI-Vorschlag aus dem Foto:';
-    } else if (kiNurText) {
-      kiQuelle.textContent = 'Bitte Text eingeben.';
+      kiQuelle.textContent = claudeSchluessel
+        ? 'Foto wird analysiert …'
+        : 'Was ist am Foto zu sehen? (oder Stichwort eintippen)';
+      if (!claudeSchluessel) {
+        const chips = document.createElement('div');
+        chips.className = 'chips';
+        FOTO_KATEGORIEN.forEach(function (k) {
+          chips.appendChild(kleinerKnopf(k.label, function () {
+            kiSaetze.innerHTML = '';
+            kiQuelle.textContent = k.label + ':';
+            k.bausteine.forEach(function (id) {
+              const b = BAUSTEINE.find(function (x) { return x.id === id; });
+              if (b) kiSaetze.appendChild(satzZeile(b));
+            });
+          }));
+        });
+        kiSaetze.appendChild(chips);
+      }
     } else {
-      kiQuelle.textContent = 'Bitte Text eingeben oder ein Foto aufnehmen.';
+      kiQuelle.textContent = kiNurText ? 'Bitte Text eingeben.' : 'Bitte Text eingeben oder ein Foto aufnehmen.';
     }
 
-    kiSaetze.innerHTML = '';
-    liste.slice(0, 3).forEach(function (b) {
-      kiSaetze.appendChild(satzZeile(b));
-    });
+    const aktionen = document.createElement('div');
+    aktionen.className = 'chips ki-claude';
+    if (claudeSchluessel && (text || foto) && !claudeLaeuft) {
+      aktionen.appendChild(kleinerKnopf(foto ? 'Foto mit KI prüfen' : 'KI fragen', starteClaude));
+    }
+    aktionen.appendChild(kleinerKnopf(claudeSchluessel ? 'KI-Schlüssel ändern' : 'Echte Foto-KI einrichten', schluesselEintragen));
+    kiSaetze.appendChild(aktionen);
     zeigeDetailStufe();
   }
 
@@ -726,6 +935,10 @@
     kiEingabe.value = '';
     rendereKiSaetze();
     kiFenster.hidden = false;
+    if (!kiNurText && aktuellesFoto && claudeSchluessel &&
+        !(claudeErgebnis && claudeErgebnis.quelle === '|' + aktuellesFoto.length)) {
+      starteClaude();
+    }
     kiEingabe.focus();
     ebeneOeffnen('ki', schliesseKiFenster);
   }
@@ -826,11 +1039,50 @@
   fotoInput.addEventListener('change', function () { verarbeiteFoto(fotoInput); });
   galerieInput.addEventListener('change', function () { verarbeiteFoto(galerieInput); });
 
-  fotoRemove.addEventListener('click', function () {
-    aktuellesFoto = null;
-    fotoInput.value = '';
-    fotoPreview.hidden = true;
+  // ---------- Rückgängig-Leiste ----------
+
+  const undoLeiste = document.createElement('div');
+  undoLeiste.className = 'undo-leiste';
+  undoLeiste.hidden = true;
+  const undoText = document.createElement('span');
+  const undoKnopf = document.createElement('button');
+  undoKnopf.type = 'button';
+  undoKnopf.textContent = 'Rückgängig';
+  undoLeiste.appendChild(undoText);
+  undoLeiste.appendChild(undoKnopf);
+  document.body.appendChild(undoLeiste);
+  let undoAktion = null;
+  let undoTimer = null;
+
+  function zeigeUndo(text, aktion) {
+    undoText.textContent = text;
+    undoAktion = aktion;
+    undoLeiste.hidden = false;
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(function () { undoLeiste.hidden = true; undoAktion = null; }, 10000);
+  }
+
+  undoKnopf.addEventListener('click', function () {
+    clearTimeout(undoTimer);
+    undoLeiste.hidden = true;
+    const a = undoAktion;
+    undoAktion = null;
+    if (a) a();
+  });
+
+  function setzeVorschauFoto(foto) {
+    aktuellesFoto = foto;
+    fotoPreviewImg.src = foto || '';
+    fotoPreview.hidden = !foto;
     updateSendState();
+  }
+
+  fotoRemove.addEventListener('click', function () {
+    const vorher = aktuellesFoto;
+    setzeVorschauFoto(null);
+    fotoInput.value = '';
+    galerieInput.value = '';
+    if (vorher) zeigeUndo('Foto entfernt', function () { setzeVorschauFoto(vorher); });
   });
 
   // ---------- Textbaustein-Panel ----------
@@ -943,6 +1195,15 @@
     const aktionen = document.createElement('span');
     aktionen.className = 'eintrag-aktionen';
 
+    const griff = document.createElement('button');
+    griff.type = 'button';
+    griff.className = 'eintrag-knopf eintrag-griff';
+    griff.textContent = '⠿';
+    griff.title = 'Ziehen zum Verschieben';
+    griff.setAttribute('aria-label', 'Eintrag verschieben');
+    griff.addEventListener('pointerdown', function (ev) { starteZiehen(ev, li); });
+    aktionen.appendChild(griff);
+
     const bearbeiten = document.createElement('button');
     bearbeiten.type = 'button';
     bearbeiten.className = 'eintrag-knopf';
@@ -958,10 +1219,18 @@
     loeschen.title = 'Eintrag löschen';
     loeschen.addEventListener('click', function () {
       const idx = eintraege.indexOf(e);
-      if (idx !== -1) eintraege.splice(idx, 1);
-      speichereJson('bp_eintraege', eintraege);
+      if (idx === -1) return;
       if (bearbeitetIndex === idx) beendeBearbeitung();
+      eintraege.splice(idx, 1);
+      if (bearbeitetIndex !== null && bearbeitetIndex > idx) bearbeitetIndex--;
+      speichereJson('bp_eintraege', eintraege);
       renderAlleEintraege();
+      zeigeUndo('Eintrag gelöscht', function () {
+        eintraege.splice(Math.min(idx, eintraege.length), 0, e);
+        if (bearbeitetIndex !== null && bearbeitetIndex >= idx) bearbeitetIndex++;
+        speichereJson('bp_eintraege', eintraege);
+        renderAlleEintraege();
+      });
     });
     aktionen.appendChild(loeschen);
     kopf.appendChild(aktionen);
@@ -975,11 +1244,31 @@
     }
 
     if (e.foto) {
+      const rahmen = document.createElement('div');
+      rahmen.className = 'eintrag-foto-rahmen';
       const img = document.createElement('img');
       img.className = 'eintrag-foto';
       img.src = e.foto;
       img.alt = 'Baustellenfoto';
-      li.appendChild(img);
+      rahmen.appendChild(img);
+      const weg = document.createElement('button');
+      weg.type = 'button';
+      weg.className = 'foto-remove eintrag-foto-weg';
+      weg.innerHTML = '&times;';
+      weg.title = 'Foto entfernen';
+      weg.addEventListener('click', function () {
+        const foto = e.foto;
+        e.foto = null;
+        speichereJson('bp_eintraege', eintraege);
+        renderAlleEintraege();
+        zeigeUndo('Foto entfernt', function () {
+          e.foto = foto;
+          speichereJson('bp_eintraege', eintraege);
+          renderAlleEintraege();
+        });
+      });
+      rahmen.appendChild(weg);
+      li.appendChild(rahmen);
     }
 
     const text = document.createElement('div');
@@ -1000,7 +1289,66 @@
       li.appendChild(icons);
     }
 
+    eintragZuLi.set(li, e);
     messages.appendChild(li);
+  }
+
+  // ---------- Einträge per Drag & Drop verschieben (Maus und Finger) ----------
+
+  const eintragZuLi = new WeakMap();
+  let ziehen = null;
+
+  function starteZiehen(ev, li) {
+    if (ev.button !== undefined && ev.button !== 0) return;
+    ev.preventDefault();
+    ziehen = { li: li, id: ev.pointerId };
+    li.classList.add('wird-gezogen');
+    try { ev.target.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+    document.addEventListener('pointermove', beimZiehen);
+    document.addEventListener('pointerup', endeZiehen);
+    document.addEventListener('pointercancel', endeZiehen);
+  }
+
+  function beimZiehen(ev) {
+    if (!ziehen || ev.pointerId !== ziehen.id) return;
+    ev.preventDefault();
+    const y = ev.clientY;
+    const andere = Array.prototype.filter.call(messages.children, function (x) { return x !== ziehen.li; });
+    let ziel = null;
+    for (let i = 0; i < andere.length; i++) {
+      const r = andere[i].getBoundingClientRect();
+      if (y < r.top + r.height / 2) { ziel = andere[i]; break; }
+    }
+    if (ziel) {
+      if (ziehen.li.nextSibling !== ziel) messages.insertBefore(ziehen.li, ziel);
+    } else if (messages.lastChild !== ziehen.li) {
+      messages.appendChild(ziehen.li);
+    }
+    // Am Bildschirmrand mitscrollen
+    if (y < 60) window.scrollBy(0, -12);
+    else if (y > window.innerHeight - 60) window.scrollBy(0, 12);
+  }
+
+  function endeZiehen(ev) {
+    if (!ziehen || ev.pointerId !== ziehen.id) return;
+    ziehen.li.classList.remove('wird-gezogen');
+    ziehen = null;
+    document.removeEventListener('pointermove', beimZiehen);
+    document.removeEventListener('pointerup', endeZiehen);
+    document.removeEventListener('pointercancel', endeZiehen);
+
+    // Neue Reihenfolge der sichtbaren Einträge in ihre bisherigen Plätze
+    // im Gesamt-Array zurückschreiben (andere Protokolle bleiben unberührt).
+    const neu = Array.prototype.map.call(messages.children, function (x) { return eintragZuLi.get(x); })
+      .filter(Boolean);
+    const bearbeitet = bearbeitetIndex !== null ? eintraege[bearbeitetIndex] : null;
+    const plaetze = neu.map(function (e) { return eintraege.indexOf(e); })
+      .filter(function (i) { return i !== -1; })
+      .sort(function (a, b) { return a - b; });
+    if (plaetze.length !== neu.length) { renderAlleEintraege(); return; }
+    plaetze.forEach(function (platz, i) { eintraege[platz] = neu[i]; });
+    if (bearbeitet) bearbeitetIndex = eintraege.indexOf(bearbeitet);
+    speichereJson('bp_eintraege', eintraege);
   }
 
   function renderAlleEintraege() {
