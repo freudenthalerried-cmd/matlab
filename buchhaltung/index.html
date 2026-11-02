@@ -58,6 +58,7 @@
 <header>
   <h1>📒 Buchhaltung <small id="kiInfo" style="font-size:.7rem;opacity:.8"></small></h1>
   <select id="jahr"></select>
+  <button class="hell" id="btnEinst" title="Einstellungen">⚙</button>
   <button class="hell" id="btnHandy">📱 Handy verbinden</button>
   <button class="hell" id="export" title="ZIP mit Belegliste (CSV) und allen Belegdateien">⬇ Export für Steuerberater</button>
 </header>
@@ -119,6 +120,21 @@
     <button class="hell" style="margin-top:12px;width:100%" onclick="this.closest('dialog').close()">Schließen</button>
   </div>
 </dialog>
+<dialog id="dlgEinst" style="max-width:480px">
+  <form id="formEinst" style="padding:16px;display:flex;flex-direction:column;gap:10px">
+    <h3 style="margin:0">⚙ Einstellungen</h3>
+    <div id="kiStatus" class="hinweis"></div>
+    <label>Dein Name / Firmenname (für die Erkennung von Ausgangsrechnungen)
+      <input name="eigene_firma" id="einstFirma" style="width:100%"></label>
+    <label>API-Schlüssel für automatisches Auslesen
+      <input name="anthropic_api_key" id="einstKey" type="password" placeholder="sk-ant-…" autocomplete="off" style="width:100%"></label>
+    <small>Schlüssel holen: <b>console.anthropic.com</b> → Konto anlegen → <i>Billing</i>: Guthaben aufladen (z. B. 5 $)
+      → <i>API Keys</i> → <i>Create Key</i> → hier einfügen. Kosten ca. 1–2 Cent pro Beleg.</small>
+    <button type="submit">Speichern</button>
+    <button type="button" class="hell" id="btnNacherkennen">🔍 Beträge bei vorhandenen Belegen erkennen</button>
+    <button type="button" class="hell" onclick="this.closest('dialog').close()">Schließen</button>
+  </form>
+</dialog>
 <div id="meldung"></div>
 
 <script>
@@ -146,6 +162,13 @@ async function start() {
     document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("aktiv", b === e.target)); zeichnen(); };
   $("#jahr").onchange = laden;
   $("#btnHandy").onclick = handyZeigen;
+  $("#btnEinst").onclick = einstellungenZeigen;
+  $("#formEinst").onsubmit = einstellungenSpeichern;
+  $("#btnNacherkennen").onclick = async () => {
+    meldung("Belege werden gelesen … (kann etwas dauern)");
+    const r = await api("/api/nacherkennen", { method: "POST" });
+    meldung(`${r.erkannt} von ${r.geprueft} Belegen ausgelesen`); laden();
+  };
   if (/Android|iPhone|iPad/i.test(navigator.userAgent)) $("#btnHandy").hidden = true; // nur am Handy selbst ausblenden
   $("#export").onclick = () => location.href = "/api/export.zip?jahr=" + $("#jahr").value;
   $("#btnFoto").onclick = () => $("#inFoto").click();
@@ -239,6 +262,24 @@ function auswertungZeichnen() {
     <h3>Ausgaben nach Art – netto</h3>
     <table><tbody>${Object.entries(konten).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="b">${eur(v)}</td></tr>`).join("") || '<tr><td>Keine Ausgaben</td></tr>'}</tbody></table>
     <p style="font-size:.85rem;color:#666">Hinweis: vereinfachte Übersicht ohne Gewähr – ersetzt keine UVA/Steuerberatung.</p>`;
+}
+
+async function einstellungenZeigen() {
+  const e = await api("/api/einstellungen");
+  $("#einstFirma").value = e.eigene_firma; $("#einstKey").value = "";
+  $("#kiStatus").textContent = e.ki ? "✓ Automatisches Auslesen ist aktiv." : "Automatisches Auslesen ist aus – API-Schlüssel eintragen.";
+  $("#btnNacherkennen").hidden = !e.ki;
+  $("#dlgEinst").showModal();
+}
+
+async function einstellungenSpeichern(ev) {
+  ev.preventDefault();
+  meldung("Wird geprüft …");
+  await api("/api/einstellungen", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eigene_firma: $("#einstFirma").value, anthropic_api_key: $("#einstKey").value }) });
+  INFO = await api("/api/info");
+  $("#kiInfo").textContent = INFO.ki ? "· Belegerkennung an" : "";
+  meldung("Gespeichert"); einstellungenZeigen();
 }
 
 async function handyZeigen() {

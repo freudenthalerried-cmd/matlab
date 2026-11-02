@@ -30,7 +30,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 # Als Buchhaltung.exe (PyInstaller): Daten neben der .exe, Programmdateien im entpackten Paket
-VERSION = "2026.11.2"
+VERSION = "2026.11.3"
 ALS_EXE = getattr(sys, "frozen", False)
 # .exe: Daten immer in Dokumente\Buchhaltung – egal wo die .exe liegt (z. B. im Download-Ordner)
 BASIS = Path.home() / "Documents" / "Buchhaltung" if ALS_EXE else Path(__file__).resolve().parent
@@ -307,6 +307,38 @@ def ki_erkennen(pfad):
         return {}
 
 
+def schluessel_pruefen(schluessel):
+    """API-Schlüssel kostenlos prüfen (Modell-Liste abrufen). Liefert Fehlertext oder ''."""
+    try:
+        import anthropic
+        anthropic.Anthropic(api_key=schluessel).models.list(limit=1)
+        return ""
+    except ImportError:
+        return "Paket fehlt: pip install anthropic"
+    except Exception as fehler:
+        return "Schlüssel ungültig oder kein Guthaben: " + str(fehler)[:150]
+
+
+def nacherkennen():
+    """Belege mit Datei, aber ohne Betrag nachträglich auslesen."""
+    with db() as c:
+        offen = c.execute("SELECT id, datei, kategorie FROM belege WHERE brutto=0 AND datei!=''").fetchall()
+    anzahl = 0
+    for z in offen:
+        pfad = DATEN / z["datei"]
+        if not pfad.exists():
+            continue
+        erkannt = daten_erkennen(pdf_text(pfad)) if pfad.suffix.lower() == ".pdf" else {}
+        erkannt.update({k: v for k, v in ki_erkennen(pfad).items() if v not in ("", None)})
+        felder = {k: erkannt[k] for k in ("datum", "partner", "nummer", "beschreibung", "brutto", "ust_satz", "konto")
+                  if k in erkannt and not (k == "konto" and z["kategorie"] in ("ausgang", "bank"))}
+        if felder.get("brutto"):
+            with db_lock, db() as c:
+                c.execute(f"UPDATE belege SET {', '.join(k + '=?' for k in felder)} WHERE id=?", [*felder.values(), z["id"]])
+            anzahl += 1
+    return {"geprueft": len(offen), "erkannt": anzahl}
+
+
 def beleg_verarbeiten(rel, kategorie, quelle, beschreibung=""):
     """Abgelegte Datei auswerten und als Beleg buchen. kategorie='auto' -> erkennen."""
     pfad = DATEN / rel
@@ -499,6 +531,9 @@ class Handler(BaseHTTPRequestHandler):
             ki = bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
             return self.antwort(200, {"kategorien": KATEGORIEN, "konten": KONTEN,
                                       "ust_standard": KONFIG["ust_standard"], "ki": ki})
+        if url.path == "/api/einstellungen":
+            return self.antwort(200, {"eigene_firma": KONFIG.get("eigene_firma", ""),
+                                      "ki": bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))})
         if url.path == "/api/version":
             return self.antwort(200, {"version": VERSION})
         if url.path == "/api/handy":
@@ -559,6 +594,20 @@ class Handler(BaseHTTPRequestHandler):
             if felder.get("kategorie") not in KATEGORIEN:
                 return self.antwort(400, {"fehler": "Kategorie ungültig"})
             return self.antwort(200, {"id": beleg_anlegen(quelle="manuell", **felder)})
+        if url.path == "/api/einstellungen":
+            d = json.loads(self.body() or b"{}")
+            gespeichert = json.loads(KONFIG_PFAD.read_text(encoding="utf-8"))
+            if "eigene_firma" in d:
+                gespeichert["eigene_firma"] = KONFIG["eigene_firma"] = d["eigene_firma"].strip()
+            if d.get("anthropic_api_key"):
+                fehler = schluessel_pruefen(d["anthropic_api_key"].strip())
+                if fehler:
+                    return self.antwort(400, {"fehler": fehler})
+                gespeichert["anthropic_api_key"] = KONFIG["anthropic_api_key"] = d["anthropic_api_key"].strip()
+            KONFIG_PFAD.write_text(json.dumps(gespeichert, indent=2, ensure_ascii=False), encoding="utf-8")
+            return self.antwort(200, {"ok": True})
+        if url.path == "/api/nacherkennen":
+            return self.antwort(200, nacherkennen())
         if url.path == "/api/bank-import":
             importiert = bank_csv_import(self.body())
             return self.antwort(200, {"importiert": importiert, "zugeordnet": bank_abgleich()})
