@@ -1127,3 +1127,64 @@ html, body {
   .gruen-kopf { background: #fff; color: #1c1c1c; border-bottom: 2px solid #14532d; }
   .eintrag { break-inside: avoid; }
 }
+
+/* Einträge verschieben */
+.eintrag-griff {
+  cursor: grab;
+  touch-action: none;
+  font-size: 18px;
+  padding: 0 6px;
+}
+.eintrag.wird-gezogen {
+  opacity: 0.85;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  border-color: var(--orange);
+  position: relative;
+  z-index: 5;
+}
+body:has(.wird-gezogen) { user-select: none; -webkit-user-select: none; }
+
+/* Foto im Eintrag mit Entfernen-Knopf */
+.eintrag-foto-rahmen {
+  position: relative;
+  display: inline-block;
+  max-width: 60%;
+  margin-bottom: 6px;
+}
+.eintrag-foto-rahmen .eintrag-foto { max-width: 100%; margin-bottom: 0; }
+.eintrag-foto-weg { top: 4px; right: 4px; }
+
+/* Rückgängig-Leiste */
+.undo-leiste {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #222;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  font-size: 14px;
+  max-width: calc(100% - 32px);
+}
+.undo-leiste[hidden] { display: none; }
+.undo-leiste button {
+  border: none;
+  background: transparent;
+  color: #7fd68f;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.ki-claude { margin-top: 8px; }
+
+@media print {
+  .eintrag-griff, .eintrag-foto-weg, .undo-leiste { display: none !important; }
+}
