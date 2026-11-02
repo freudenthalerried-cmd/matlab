@@ -8,7 +8,8 @@ Belege sammeln in 5 Rubriken: **Ausgangsrechnungen, Eingangsrechnungen, Private 
 ## Am PC: einfach starten
 1. **`Buchhaltung.exe`** herunterladen: GitHub → *Actions* → „Buchhaltung.exe bauen“ → neuester Lauf → *Artifacts* → **Buchhaltung**
    (ZIP entpacken).
-2. Die Datei in einen eigenen Ordner legen, z. B. `Dokumente\Buchhaltung` (dort landen auch alle Daten).
+2. Egal wo die Datei liegt: alle Daten landen in `Dokumente\Buchhaltung`. Neue Version = einfach die neue .exe
+   starten, die alte wird automatisch beendet und ersetzt.
 3. **Doppelklick.** Fertig: Das App-Fenster öffnet sich, das Symbol „Buchhaltung“ kommt auf den Desktop und die
    Buchhaltung startet ab jetzt automatisch mit Windows (still im Hintergrund).
 
