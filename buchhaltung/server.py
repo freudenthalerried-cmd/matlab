@@ -642,7 +642,7 @@ def app_fenster_oeffnen(url):
     """Als eigenes App-Fenster öffnen (Edge/Chrome ohne Adressleiste), sonst normaler Browser."""
     if sys.platform == "win32":
         for browser in ("msedge", "chrome"):
-            if subprocess.run(f'start "" {browser} --app={url}', shell=True).returncode == 0:
+            if subprocess.run(f'start "" {browser} --app={url} --window-size=1150,820', shell=True).returncode == 0:
                 return
     webbrowser.open(url)
 

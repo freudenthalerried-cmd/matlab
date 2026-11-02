@@ -146,7 +146,7 @@ async function start() {
     document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("aktiv", b === e.target)); zeichnen(); };
   $("#jahr").onchange = laden;
   $("#btnHandy").onclick = handyZeigen;
-  if (matchMedia("(max-width:700px)").matches) $("#btnHandy").hidden = true; // am Handy selbst nicht nötig
+  if (/Android|iPhone|iPad/i.test(navigator.userAgent)) $("#btnHandy").hidden = true; // nur am Handy selbst ausblenden
   $("#export").onclick = () => location.href = "/api/export.zip?jahr=" + $("#jahr").value;
   $("#btnFoto").onclick = () => $("#inFoto").click();
   $("#btnDatei").onclick = () => $("#inDatei").click();
