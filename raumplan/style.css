@@ -88,3 +88,9 @@ table.pgt{border-collapse:collapse;margin:6px 0;font-size:14px}table.pgt td,tabl
 .gbody{overflow:auto;font-size:15.5px;line-height:1.5}.gbody ul,.gbody ol{padding-left:22px;margin:6px 0}.gbody li{margin:3px 0}
 .gsk{width:100%;max-width:360px;display:block;margin:4px auto;color:var(--fg)}
 .gbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}.gbtns button{padding:10px 14px}
+.livehint{background:#111;color:#fff;font-size:17px;line-height:1.35;padding:8px 12px;min-height:3.2em}
+.liveprog{height:6px;background:#333}#liveBar{height:100%;width:0;background:#4caf50;transition:width .3s}
+#liveDone{background:#444;color:#ccc;border-color:#666}#liveDone.ready{background:#2e7d32;color:#fff;border-color:#2e7d32}
+#live.flash .livecam{outline:6px solid #fff;outline-offset:-6px}
+.livebtns{gap:14px;align-items:center;color:#bbb}
+button.big{font-size:18px;padding:12px 18px}

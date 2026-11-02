@@ -2,18 +2,18 @@
 /* Raumplan – Schritt-für-Schritt-Anleitung (öffnet sich beim ersten Start, danach über „? Anleitung“). */
 (() => {
   const GKEY = 'raumplan-guide';
-  const sketch = `<svg viewBox="0 0 320 210" class="gsk" role="img" aria-label="Skizze: Raum mit Maßband und Marken">
+  const sketch = `<svg viewBox="0 0 320 210" class="gsk" role="img" aria-label="Skizze: Raum mit Zollstock und Marken">
     <rect x="10" y="10" width="300" height="190" fill="none" stroke="currentColor" stroke-width="6"/>
     <line x1="60" y1="150" x2="260" y2="150" stroke="#e0a800" stroke-width="7"/>
-    <text x="160" y="176" font-size="11" text-anchor="middle" fill="currentColor">Maßband am Boden</text>
+    <text x="160" y="176" font-size="11" text-anchor="middle" fill="currentColor">Zollstock am Boden</text>
     ${[[60, 150, '0'], [260, 150, '1'], [90, 70, '2'], [230, 70, '3']].map(([x, y, t]) => `<rect x="${x - 11}" y="${y - 11}" width="22" height="22" fill="#fff" stroke="#000" stroke-width="3"/><text x="${x}" y="${y + 4}" font-size="12" font-weight="700" text-anchor="middle" fill="#000">${t}</text>`).join('')}
-    <text x="60" y="136" font-size="10" text-anchor="middle" fill="currentColor">0 cm</text><text x="260" y="136" font-size="10" text-anchor="middle" fill="currentColor">300 cm</text>
+    <text x="60" y="136" font-size="10" text-anchor="middle" fill="currentColor">0 cm</text><text x="260" y="136" font-size="10" text-anchor="middle" fill="currentColor">200 cm</text>
     ${[[60, 13], [160, 13], [260, 13], [13, 60], [13, 140], [307, 60], [307, 140], [110, 197], [210, 197]].map(([x, y]) => `<rect x="${x - 6}" y="${y - 6}" width="12" height="12" fill="#e0672b"/>`).join('')}
     <text x="160" y="40" font-size="11" text-anchor="middle" fill="#e0672b">■ Wandmarken: 3–4 je Wand</text>
   </svg>`;
   const steps = [
     { t: 'Willkommen', h: `<p>Mit dieser App machst du aus Handyfotos einen <b>maßgenauen Grundriss</b> (±1–3 mm) für den Einreichplan. Von Hand messen musst du nichts.</p>
-      <p><b>Du brauchst:</b></p><ul><li>Drucker (A4)</li><li>1 Maßband (3 m)</li><li>Klebeband oder Malerkrepp</li><li>dieses Handy</li></ul>
+      <p><b>Du brauchst:</b></p><ul><li>Drucker (A4)</li><li>1 Zollstock (2 m)</li><li>Klebeband oder Malerkrepp</li><li>dieses Handy</li></ul>
       <p>Zeitaufwand pro Raum: ca. 10 Minuten Vorbereitung und 1 Minute fotografieren.</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
     { t: 'Marken drucken', h: `<p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate mit Nummer) auf den Fotos und berechnet daraus die Maße.</p>
@@ -21,13 +21,13 @@
       <p class="hint">Mehrere Räume? Pro Raum andere Wand-Nummern drucken, z. B. Raum 2 „ab Nr. 20“. Die Felder dazu findest du unter „1 Aufnahme“.</p>`,
       b: [['🖨 1 Blatt drucken', 'sheet'], ['Weiter ›', 'next', 1]] },
     { t: 'Marken auslegen', h: `${sketch}
-      <ol><li>Maßband gerade am Boden auslegen.</li><li><b>Marke 0</b> mit der Mitte auf <b>0 cm</b>, <b>Marke 1</b> auf <b>300 cm</b>.</li><li><b>Marken 2 und 3</b> irgendwo flach auf den Boden.</li><li><b>Wandmarken</b> glatt an die Wände kleben: 3 pro Wand, unterschiedliche Höhen (z. B. 0,8 / 1,2 / 1,7 m), nahe den Ecken.</li><li>Optional für die Raumhöhe: eine Wandmarke an die Decke.</li></ol>`,
+      <ol><li>Zollstock ganz aufklappen und gerade auf den Boden legen.</li><li><b>Marke 0</b> mit dem Mittelstrich auf <b>0 cm</b>, <b>Marke 1</b> auf <b>200 cm</b>.</li><li><b>Marken 2 und 3</b> irgendwo flach auf den Boden.</li><li><b>Wandmarken</b> glatt an die Wände kleben: 3 pro Wand, unterschiedliche Höhen (z. B. 0,8 / 1,2 / 1,7 m), nahe den Ecken.</li><li>Optional für die Raumhöhe: eine Wandmarke an die Decke.</li></ol>`,
       b: [['Weiter ›', 'next', 1]] },
-    { t: 'Fotografieren', h: `<p>Stell dich nacheinander in <b>jede Raumecke</b> und mach dort 8–10 Fotos quer über den Raum. Einige Fotos sollen den Boden mit den Marken 0–3 zeigen.</p>
-      <ul><li>Insgesamt ca. <b>40 Fotos</b>.</li><li>Handy bei jedem Foto <b>ruhig halten</b>.</li><li>Bei der <b>Live-Aufnahme</b> zeigt die App grün an, welche Marken schon gut erfasst sind. Orange heißt: noch öfter fotografieren.</li></ul>
-      <p class="hint">Alternativ mit der normalen Kamera-App fotografieren und die Fotos danach auf einmal über „Fotos wählen“ laden.</p>`,
-      b: [['📷 Live-Aufnahme starten', 'live'], ['📁 Fotos wählen', 'files'], ['Weiter ›', 'next', 1]] },
-    { t: 'Auswerten', h: `<p>Tippe auf <b>▶ Auswerten</b>. Das dauert je nach Handy 1–5 Minuten, der Bildschirm soll dabei an bleiben.</p>
+    { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b> und film einfach den Raum. Du musst keine Fotos auslösen – die App fotografiert selbst, sobald du kurz ruhig hältst.</p>
+      <ol><li>Stell dich in eine Ecke und dreh dich langsam: zuerst zum Boden mit den Marken 0–3, dann die Wände entlang.</li><li>Bei jeder neuen Stelle <b>kurz ruhig halten</b>, bis es kurz vibriert.</li><li>Dann in die nächste Ecke gehen und wiederholen.</li></ol>
+      <p>Oben siehst du den Fortschritt und welche Marken noch fehlen. Wenn alle Marken grün ✓ sind, tippst du auf <b>✔ Fertig – auswerten</b>. Dauer: ca. 1–2 Minuten.</p>`,
+      b: [['📹 Raum aufnehmen', 'live'], ['Weiter ›', 'next', 1]] },
+    { t: 'Auswerten', h: `<p>Nach „Fertig“ startet die Auswertung von selbst. Das dauert je nach Handy 1–5 Minuten, der Bildschirm soll dabei an bleiben.</p>
       <p>Danach siehst du jede Wand mit Länge und Genauigkeit, z. B. <b>4,215 m ± 1 mm (0,02 %)</b>. Grün heißt: Genauigkeit passt.</p>
       <p>Mit <b>„In Plan übernehmen“</b> kommt der Raum in den Grundriss. Beim nächsten Raum geht es wieder bei Schritt 3 los. Die App setzt die Räume über die Verbindungsmarken 90–93 im Türbereich automatisch zusammen.</p>`,
       b: [['▶ Jetzt auswerten', 'run'], ['Weiter ›', 'next', 1]] },
