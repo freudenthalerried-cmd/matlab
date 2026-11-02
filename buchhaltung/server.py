@@ -30,9 +30,11 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 # Als Buchhaltung.exe (PyInstaller): Daten neben der .exe, Programmdateien im entpackten Paket
+VERSION = "2026.11.2"
 ALS_EXE = getattr(sys, "frozen", False)
-BASIS = Path(sys.executable).resolve().parent if ALS_EXE else Path(__file__).resolve().parent
-PROGRAMM = Path(getattr(sys, "_MEIPASS", BASIS))
+# .exe: Daten immer in Dokumente\Buchhaltung – egal wo die .exe liegt (z. B. im Download-Ordner)
+BASIS = Path.home() / "Documents" / "Buchhaltung" if ALS_EXE else Path(__file__).resolve().parent
+PROGRAMM = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 DATEN = BASIS / "daten"
 BELEGE = DATEN / "belege"
 PAPIERKORB = DATEN / "papierkorb"
@@ -80,6 +82,7 @@ db_lock = threading.Lock()
 
 # ---------------------------------------------------------------- Konfiguration
 def lade_konfig():
+    BASIS.mkdir(parents=True, exist_ok=True)
     if not KONFIG_PFAD.exists():
         KONFIG_PFAD.write_text(json.dumps(STANDARD_KONFIG, indent=2, ensure_ascii=False), encoding="utf-8")
     konfig = dict(STANDARD_KONFIG)
@@ -496,6 +499,8 @@ class Handler(BaseHTTPRequestHandler):
             ki = bool(KONFIG.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
             return self.antwort(200, {"kategorien": KATEGORIEN, "konten": KONTEN,
                                       "ust_standard": KONFIG["ust_standard"], "ki": ki})
+        if url.path == "/api/version":
+            return self.antwort(200, {"version": VERSION})
         if url.path == "/api/handy":
             adresse, art = handy_adresse()
             return self.antwort(200, {"url": adresse, "art": art, "qr": qr_svg(adresse)})
@@ -666,6 +671,15 @@ def selbst_einrichten():
     subprocess.run(["powershell", "-NoProfile", "-Command", befehl], creationflags=0x08000000)
 
 
+def andere_version(url):
+    try:
+        import urllib.request
+        with urllib.request.urlopen(url + "/api/version", timeout=3) as r:
+            return json.loads(r.read()).get("version") != VERSION
+    except Exception:
+        return True  # alte Versionen kennen /api/version noch nicht
+
+
 def laeuft_schon(port):
     with socket.socket() as s:
         return s.connect_ex(("127.0.0.1", port)) == 0
@@ -676,10 +690,16 @@ if __name__ == "__main__":
     hintergrund = "--hintergrund" in sys.argv
     KONFIG = lade_konfig()
     url = f"http://localhost:{KONFIG['port']}"
-    if laeuft_schon(KONFIG["port"]):  # schon gestartet (z. B. per Autostart) -> nur Fenster öffnen
-        if not hintergrund:
-            app_fenster_oeffnen(url)
-        sys.exit()
+    if laeuft_schon(KONFIG["port"]):
+        if andere_version(url) and ALS_EXE and sys.platform == "win32":
+            # ältere Buchhaltung.exe läuft noch -> beenden und durch diese ersetzen
+            subprocess.run(f'taskkill /F /IM Buchhaltung.exe /FI "PID ne {os.getpid()}"', shell=True,
+                           capture_output=True, creationflags=OHNE_FENSTER)
+            time.sleep(2)
+        else:  # gleiche Version läuft schon (z. B. per Autostart) -> nur Fenster öffnen
+            if not hintergrund:
+                app_fenster_oeffnen(url)
+            sys.exit()
     init_db()
     if not hintergrund:
         try:
