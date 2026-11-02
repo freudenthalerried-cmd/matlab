@@ -88,12 +88,26 @@ $('#targets').onclick = () => {
 /* ---------- Photogrammetrie: Zielmarken-Video -> Räume (ohne Handmessung) ---------- */
 let pgFiles = null, pgLast = null;
 $('#pgPrint').onclick = () => {
-  const n = Math.max(0, Math.min(86, Math.round(num($('#pgN').value)))), from = Math.max(4, Math.min(89, Math.round(num($('#pgFrom').value) || 4))), size = Math.max(60, Math.min(190, num($('#pgSize').value) || 160));
+  const n = Math.max(0, Math.min(86, Math.round(num($('#pgN').value)))), from = Math.max(4, Math.min(89, Math.round(num($('#pgFrom').value) || 4))), size = num($('#pgSize').value) >= 60 ? Math.min(190, num($('#pgSize').value)) : 160;
+  pgSizeSet(size);
   const lab = ['Boden – Mitte auf Maßband 0 cm', 'Boden – Mitte auf Maßband 300 cm', 'Boden', 'Boden'];
   const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: Math.min(n, 90 - from) }, (_, k) => MK.markerSVG(from + k, size, 'Wand')))
     .concat($('#pgConn').checked ? [90, 91, 92, 93].map(id => MK.markerSVG(id, size, 'Verbindung – im Türbereich am Boden liegen lassen')) : []);
   const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
+  w.document.close();
+};
+// gedruckte Markengröße merken – sie muss bei der Auswertung stimmen
+function pgSizeSet(v) { $('#pgSize').value = v; try { localStorage.setItem('raumplan-pgsize', v); } catch (e) { } }
+try { const v = localStorage.getItem('raumplan-pgsize'); if (v) $('#pgSize').value = v; } catch (e) { }
+$('#pgSize').onchange = () => pgSizeSet(num($('#pgSize').value) || 45);
+$('#pgSheet').onclick = () => { // einfach: 4 Boden- + 12 Wandmarken (3 je Wand) auf einem A4-Blatt
+  const from = Math.max(4, Math.min(78, Math.round(num($('#pgFrom').value) || 4))), size = 45;
+  pgSizeSet(size); $('#pgN').value = 12;
+  const lab = ['Boden · auf 0 cm', 'Boden · auf 300 cm', 'Boden', 'Boden'];
+  const items = [0, 1, 2, 3].map(i => [i, lab[i]]).concat(Array.from({ length: 12 }, (_, k) => [from + k, 'Wand']));
+  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken (1 Blatt)</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${MK.sheetSVG(items, size)}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
 };
 function pgSetFiles(fl) { pgFiles = [...fl]; const nv = pgFiles.filter(f => f.type.startsWith('video')).length; $('#pgSrc').textContent = nv ? `Video: ${pgFiles.find(f => f.type.startsWith('video')).name}` : `${pgFiles.length} Fotos${pgFiles.length < 25 ? ' (empfohlen ≥ 30)' : ''}`; }

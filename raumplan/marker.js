@@ -29,6 +29,23 @@ const MK = (() => {
     return o;
   }
 
+  // Alle Marken auf einem A4-Blatt (4 Spalten): kleine Marken mit Nummer und Ausschneiderahmen
+  function sheetSVG(items, size = 45) {
+    const W = 210, H = 297, cols = 4, cw = W / cols, ch = size + 22, cell = size / G;
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    o += `<text x="${W / 2}" y="9" font-size="4.2" text-anchor="middle" font-weight="bold">Raumplan-Marken · ${size} mm · mit 100 % (Originalgröße) drucken · an den grauen Linien ausschneiden</text>`;
+    items.forEach(([id, lab], i) => {
+      const gx = (i % cols) * cw, gy = 14 + Math.floor(i / cols) * ch, x0 = gx + (cw - size) / 2, y0 = gy + 4, c = DICT[id];
+      o += `<rect x="${gx + 1}" y="${gy}" width="${cw - 2}" height="${ch - 1}" fill="none" stroke="#bbb" stroke-width=".2" stroke-dasharray="1.5 1"/>`;
+      o += `<rect x="${x0}" y="${y0}" width="${size}" height="${size}" fill="#000"/>`;
+      for (let r = 0; r < N; r++) for (let k = 0; k < N; k++) if (!(c >>> (r * N + k) & 1)) o += `<rect x="${x0 + (k + 1) * cell}" y="${y0 + (r + 1) * cell}" width="${cell + 0.02}" height="${cell + 0.02}" fill="#fff"/>`;
+      const cx = x0 + size / 2, cy = y0 + size / 2;
+      if (id < 2) o += `<line x1="${cx}" y1="${y0 + size + 1.5}" x2="${cx}" y2="${y0 + size + 3}" stroke="#000" stroke-width=".3"/>`; // Mitte für Maßband
+      o += `<text x="${cx}" y="${y0 + size + 7}" font-size="5.5" text-anchor="middle" font-weight="bold">${id}</text><text x="${cx}" y="${y0 + size + 12.5}" font-size="3.4" text-anchor="middle">${lab}</text>`;
+    });
+    return o + '</svg>';
+  }
+
   /* ---------- Bildverarbeitung ---------- */
   function downscale(g, W, H, f) { // Flächenmittel, f ganzzahlig
     if (f <= 1) return { g, W, H };
@@ -277,6 +294,6 @@ const MK = (() => {
     const rms = Math.sqrt(P.reduce((s, p) => s + ((p[0] - m[0]) * n[0] + (p[1] - m[1]) * n[1]) ** 2, 0) / P.length);
     return { m, n, rms };
   }
-  return { DICT, N, G, detect, markerSVG, decodeBits, rot, bil, homog };
+  return { DICT, N, G, detect, markerSVG, sheetSVG, decodeBits, rot, bil, homog };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

@@ -1,12 +1,12 @@
 // Ende-zu-Ende: synthetische Videobilder (Raytracing) -> Markenerkennung -> Bündelausgleich -> Wände -> Raummaße
 const BA=require('../ba.js'),MK=require('../marker.js'),PG=require('../pg.js'),AG=require('../ausgleich.js'),g=AG.gauss;
-const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=0.16,W=+(process.env.IW||1920),H=Math.round(W*9/16),NF=+(process.env.NF||60);
+const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=+(process.env.MS||0.16),W=+(process.env.IW||1920),H=Math.round(W*9/16),NF=+(process.env.NF||60);
 const it=[0.78*W,W/2+2,H/2-3,0.02,-0.005];
 // Szene: Blätter (A4) mit Marke; u rechts, v unten (wie gedruckt), v×u zeigt zum Betrachter
 const sheets=[];const add=(id,c,u,v)=>sheets.push({id,c,u,v});
 add(0,[0.9,1.3,0],[1,0,0],[0,-1,0]);add(1,[3.9,1.3,0],[1,0,0],[0,-1,0]);add(2,[2.2,2.6,0],[1,0,0],[0,-1,0]);add(3,[2.2,0.6,0],[1,0,0],[0,-1,0]);
 let id=4;const walls=[[[0,0],[L,0]],[[L,0],[L,B]],[[L,B],[0,B]],[[0,B],[0,0]]];
-walls.forEach(([a,b])=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0];for(let k=0;k<4;k++){const t=.12+.76*k/3,z=[1.2,1.7,.8,1.4][k];add(id++,[a[0]+d[0]*t,a[1]+d[1]*t,z],u,[0,0,-1]);}});
+walls.forEach(([a,b])=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0];const KW=+(process.env.KW||4);for(let k=0;k<KW;k++){const t=.12+.76*k/(KW-1),z=[1.2,1.7,.8,1.4][k];add(id++,[a[0]+d[0]*t,a[1]+d[1]*t,z],u,[0,0,-1]);}});
 // Wandmarken 1 mm vor der Wand (Papier/Kleber) – realistischer Versatz
 sheets.forEach(s=>{if(s.id>=4){const n=[s.v[1]*s.u[2]-s.v[2]*s.u[1],s.v[2]*s.u[0]-s.v[0]*s.u[2],s.v[0]*s.u[1]-s.v[1]*s.u[0]];s.c=s.c.map((v,q)=>v+n[q]*0.0003);}});
 function shade(P,surf){for(const s of sheets){const d=[P[0]-s.c[0],P[1]-s.c[1],P[2]-s.c[2]],nn=[s.u[1]*s.v[2]-s.u[2]*s.v[1],s.u[2]*s.v[0]-s.u[0]*s.v[2],s.u[0]*s.v[1]-s.u[1]*s.v[0]];

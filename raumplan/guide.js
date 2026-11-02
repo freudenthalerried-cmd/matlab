@@ -17,11 +17,11 @@
       <p>Zeitaufwand pro Raum: ca. 10 Minuten Vorbereitung und 1 Minute fotografieren.</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
     { t: 'Marken drucken', h: `<p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate mit Nummer) auf den Fotos und berechnet daraus die Maße.</p>
-      <ul><li><b>Marken 0–3</b> kommen auf den Boden.</li><li><b>Marken ab 4</b> kommen an die Wände (Standard: 16 Stück).</li><li>Beim Drucken <b>100 % / Originalgröße</b> wählen, nicht „an Seite anpassen“.</li></ul>
+      <ul><li>Alles auf <b>einem A4-Blatt</b>: 16 Marken, je 4,5 cm groß. An den grauen Linien ausschneiden.</li><li><b>Marken 0–3</b> kommen auf den Boden, <b>Marken 4–15</b> an die Wände (3 pro Wand).</li><li>Beim Drucken <b>100 % / Originalgröße</b> wählen, nicht „an Seite anpassen“.</li></ul>
       <p class="hint">Mehrere Räume? Pro Raum andere Wand-Nummern drucken, z. B. Raum 2 „ab Nr. 20“. Die Felder dazu findest du unter „1 Aufnahme“.</p>`,
-      b: [['🖨 Marken jetzt drucken', 'print'], ['Weiter ›', 'next', 1]] },
+      b: [['🖨 1 Blatt drucken', 'sheet'], ['Weiter ›', 'next', 1]] },
     { t: 'Marken auslegen', h: `${sketch}
-      <ol><li>Maßband gerade am Boden auslegen.</li><li><b>Marke 0</b> mit der Mitte auf <b>0 cm</b>, <b>Marke 1</b> auf <b>300 cm</b>.</li><li><b>Marken 2 und 3</b> irgendwo flach auf den Boden.</li><li><b>Wandmarken</b> glatt an die Wände kleben: 3–4 pro Wand, unterschiedliche Höhen, nahe den Ecken.</li><li>Optional für die Raumhöhe: eine Wandmarke an die Decke.</li></ol>`,
+      <ol><li>Maßband gerade am Boden auslegen.</li><li><b>Marke 0</b> mit der Mitte auf <b>0 cm</b>, <b>Marke 1</b> auf <b>300 cm</b>.</li><li><b>Marken 2 und 3</b> irgendwo flach auf den Boden.</li><li><b>Wandmarken</b> glatt an die Wände kleben: 3 pro Wand, unterschiedliche Höhen (z. B. 0,8 / 1,2 / 1,7 m), nahe den Ecken.</li><li>Optional für die Raumhöhe: eine Wandmarke an die Decke.</li></ol>`,
       b: [['Weiter ›', 'next', 1]] },
     { t: 'Fotografieren', h: `<p>Stell dich nacheinander in <b>jede Raumecke</b> und mach dort 8–10 Fotos quer über den Raum. Einige Fotos sollen den Boden mit den Marken 0–3 zeigen.</p>
       <ul><li>Insgesamt ca. <b>40 Fotos</b>.</li><li>Handy bei jedem Foto <b>ruhig halten</b>.</li><li>Bei der <b>Live-Aufnahme</b> zeigt die App grün an, welche Marken schon gut erfasst sind. Orange heißt: noch öfter fotografieren.</li></ul>
@@ -63,7 +63,7 @@
     else if (a === 'back') { i--; render(); }
     else if (a === 'close') close();
     else if (a === 'demo') demo();
-    else if (a === 'print') $('#pgPrint').click();
+    else if (a === 'sheet') $('#pgSheet').click();
     else { const sel = { live: '#liveOpen', files: '#pgFile', run: '#pgRun' }[a]; close(); showTab('auf'); if (sel) $(sel).click(); }
   };
   addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
