@@ -5,7 +5,7 @@ const ctx=await b.newContext({permissions:['camera']});const p=await ctx.newPage
 await p.goto('file://'+__dirname+'/../index.html');await p.evaluate(()=>{localStorage.setItem('raumplan-guide','1')});await p.reload();
 await p.click('#liveOpen');const t0=Date.now();
 for(let k=0;k<12;k++){await p.waitForTimeout(10000);if(await p.isHidden('#live'))break;console.log(((Date.now()-t0)/1000|0)+' s',await p.textContent('#liveInfo'),'|',(await p.textContent('#liveHint')).slice(0,90));if(k===2)await p.screenshot({path:process.env.SP+'/coach.png'});}
-console.log('Aufnahme beendet nach',((Date.now()-t0)/1000|0),'s, automatisch:',await p.isHidden('#live'));
+if(!(await p.isHidden('#live')))console.log('Balken:',await p.evaluate(()=>live.G.map(g=>g.key+':'+lgProg(g).toFixed(2)+' top'+(g.top||0)+' w'+(g.walls?g.walls.size:'')).join(' ')+' verbunden:'+lgConnected()));console.log('Aufnahme beendet nach',((Date.now()-t0)/1000|0),'s, automatisch:',await p.isHidden('#live'));
 if(!(await p.isHidden('#live')))await p.click('#liveDone');
 await p.waitForTimeout(1000);await p.waitForFunction(()=>!document.querySelector('#pgRun').disabled,null,{timeout:900000});await p.waitForTimeout(1500);
 console.log((await p.textContent('#pgLog')).split('\n').filter(l=>!/Iteration/.test(l)).slice(-3).join('\n'));console.log((await p.textContent('#pgRes')).slice(0,500));

@@ -60,7 +60,8 @@ const PG = (() => {
     // Startwerte inkrementell: Rückwärtsschnitt (Kamera aus allen bekannten Ecken), Vorwärtsschnitt (Marke aus mehreren Bildern), Zwischenausgleich
     const mPose = new Map([[root, { R: [1, 0, 0, 0, 1, 0, 0, 0, 1], p: [0, 0, 0] }]]), cPose = new Map();
     const det = frames.map(fr => fr.dets.filter(d => kOf.has(d.id)).map(d => ({ ...d, pose: poseFromCorners(d.c, f0, cx, cy, s), area: Math.abs(areaOf(d.c)) })).filter(d => d.pose));
-    let it0 = [f0, cx, cy, 0, 0]; const cornersW = id => { const M = mPose.get(id); return local(s).map(L => addv(T3(M.R, L), M.p)); };
+    // opt.calib: vorab kalibrierte Kamera [f, cx, cy, k1, k2] – wird dann festgehalten
+    let it0 = opt.calib ? opt.calib.slice() : [f0, cx, cy, 0, 0]; const cornersW = id => { const M = mPose.get(id); return local(s).map(L => addv(T3(M.R, L), M.p)); };
     const resect = (ds, C0) => { // Gauß-Newton über 6 Posenparameter
       const P = [], U = []; ds.forEach(d => { if (!mPose.has(d.id)) return; cornersW(d.id).forEach((X, q) => { P.push(X); U.push(d.c[q]); }); });
       let c = C0.slice();
@@ -121,7 +122,7 @@ const PG = (() => {
         const ptsN = []; idsN.forEach(id => cornersW(id).forEach(X => ptsN.push(X)));
         const obsN = []; camsN.forEach((i, ci) => det[i].forEach(d => { if (!kk.has(d.id)) return; d.c.forEach((p, q) => obsN.push({ c: ci, p: 4 * kk.get(d.id) + q, u: p[0], v: p[1], s: 1 })); }));
         const k0 = kk.get(root), fixc = [0, 1, 2, 3].flatMap(q => [0, 1, 2].map(m => ({ f: Q => Q[q][m], v: ptsN[q][m], s: 1e-6, idx: [q] })));
-        const rr = BAm.solve({ it: it0, cams: camsN.map(i => cPose.get(i)), pts: ptsN, obs: obsN, cons: k0 === 0 ? fixc : [], fixIt: camsN.length >= 10 ? [false, true, true, false, true] : [true, true, true, true, true] }, { iters: 20 });
+        const rr = BAm.solve({ it: it0, cams: camsN.map(i => cPose.get(i)), pts: ptsN, obs: obsN, cons: k0 === 0 ? fixc : [], fixIt: opt.calib || camsN.length < 10 ? [true, true, true, true, true] : [false, true, true, false, true] }, { iters: 20 });
         it0 = rr.it.slice();
         camsN.forEach((i, ci) => cPose.set(i, rr.cams[ci]));
         idsN.forEach((id, k) => { const Xs = [0, 1, 2, 3].map(q => rr.pts[4 * k + q]); const p = [0, 1, 2].map(q => (Xs[0][q] + Xs[1][q] + Xs[2][q] + Xs[3][q]) / 4);
@@ -184,11 +185,12 @@ const PG = (() => {
     }
     if (opt.scaleDist2 > 0 && kU.has(3)) { const k3 = kU.get(3); cons.push({ f: Q => Math.hypot(...sub(ctrOf(Q, k3), ctrOf(Q, k2))), v: opt.scaleDist2, s: st, idx: [...idx(k2), ...idx(k3)] }); }
     log(`Startwerte: ${camIdx.length} Bilder, ${used.length} Marken, ${obs.length / 4} Sichtungen, f ≈ ${it0[0].toFixed(0)} px`);
-    let r = BAm.solve({ it: it0.slice(), cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
+    const fixK = opt.calib ? [true, true, true, true, true] : undefined;
+    let r = BAm.solve({ it: it0.slice(), cams, pts, obs, cons, fixIt: fixK }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
     if (opt.rs) { // 2. Stufe: Rolling Shutter nur für Bilder mit ≥ 3 Marken
       const nm = cams.map((_, ci) => new Set(obs.filter(o => o.c === ci).map(o => o.p >> 2)).size);
       log('Rolling-Shutter-Modell für ' + nm.filter(n => n >= (opt.rsMin || 4)).length + ' Bilder…');
-      const r2 = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs, cons }, { iters: 40, rs: true, rsCam: nm.map(n => n >= (opt.rsMin || 4)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+      const r2 = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs, cons, fixIt: fixK }, { iters: 40, rs: true, rsCam: nm.map(n => n >= (opt.rsMin || 4)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
       if (r2.rms < 0.8 * r.rms) { r = r2; log(`Rolling Shutter korrigiert: Bildfehler ${r.rms.toFixed(2)} px`); } else log('Kein nennenswerter Rolling-Shutter-Effekt – Modell nicht verwendet.');
     }
     // grobe Fehlerkennungen (z. B. Spiegelung/Fehlerkennung) entfernen und neu rechnen
@@ -197,10 +199,10 @@ const PG = (() => {
     if (bad.size) {
       const obs2 = obsUse = obs.filter((_, k) => !bad.has(Math.floor(k / 4)));
       log(`${bad.size} fehlerhafte Markensichtungen entfernt, neu ausgleichen…`);
-      res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+      res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons, fixIt: fixK }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
     }
     if (rigidCons.length && res.rms < 1) { // Stufe 2: starre Marken
-      const rr = BAm.solve({ it: res.it, cams: res.cams, pts: res.pts, obs: obsUse, cons: cons.concat(rigidCons) }, { iters: 25, rs: res.cams[0].length > 6, rsCam: res.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+      const rr = BAm.solve({ it: res.it, cams: res.cams, pts: res.pts, obs: obsUse, cons: cons.concat(rigidCons), fixIt: fixK }, { iters: 25, rs: res.cams[0].length > 6, rsCam: res.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
       if (isFinite(rr.rms) && rr.rms < res.rms * 1.15 + 0.02) { res = rr; log(`Starre Marken: Bildfehler ${rr.rms.toFixed(2)} px`); }
     }
     const sus = [2, 3].filter(id => kU.has(id) && Math.abs(ctrOf(res.pts, kU.get(id))[2]) > 0.02).map(id => `Bodenmarke ${id} liegt ${Math.round(ctrOf(res.pts, kU.get(id))[2] * 1000)} mm über/unter dem Boden`);

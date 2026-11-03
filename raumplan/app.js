@@ -384,7 +384,7 @@ function liveGroups() { // Blätter (Gruppen von Marken) je nach gedruckter Vorl
 }
 const lgOf = id => live.G.find(g => g.ids.includes(id));
 function lgProg(g) { // 0..1
-  if (g.floor) return Math.min(1, g.shots / 8) * 0.5 + Math.min(1, g.walls.size / 3) * 0.5; // Maßstab: Boden oft und mit mehreren Wänden
+  if (g.floor) return Math.min(1, g.shots / 8) * 0.35 + Math.min(1, g.walls.size / 3) * 0.35 + Math.min(1, (g.top || 0) / 3) * 0.3; // Maßstab: oft, mit Wänden und von oben
   return Math.min(2, g.bins.size) / 2 * 0.7 + Math.min(1, g.shots / 4) * 0.3; // 2 verschiedene Blickwinkel genügen
 }
 function lgConnected() { // alle gesehenen Blätter über gemeinsame Bilder verbunden?
@@ -403,9 +403,11 @@ function groupBin(g, d) {
   }
   const m = M.find(Boolean); return m ? binOf(m) : 'M';
 }
+// Bodenmarke von oben gesehen? (Viereck fast quadratisch → steiler Blick; Simulation: Bilder von oben halbieren den Maßstabsfehler)
+function fromAbove(m) { const e = [0, 1, 2, 3].map(i => Math.hypot(m.c[i][0] - m.c[(i + 1) % 4][0], m.c[i][1] - m.c[(i + 1) % 4][1])); return Math.min(...e) / Math.max(...e) > 0.75; }
 function binOf(m) { const l = Math.hypot(m.c[0][0] - m.c[3][0], m.c[0][1] - m.c[3][1]), r = Math.hypot(m.c[1][0] - m.c[2][0], m.c[1][1] - m.c[2][1]), q = l / r; return q > 1.1 ? 'L' : q < 0.91 ? 'R' : 'M'; }
 function liveCoach(d, steady, shot) {
-  const G = live.G, con = lgConnected(), all = G.every(g => lgProg(g) >= 1) || (live.shots >= 40 && G.every(g => lgProg(g) >= 0.8)); // genug Bilder → auch bei 80 % fertig
+  const G = live.G, con = lgConnected(), tot0 = G.reduce((a, g) => a + Math.min(1, lgProg(g)), 0) / G.length, all = G.every(g => lgProg(g) >= 1) || (live.shots >= 40 && tot0 >= 0.85 && G.every(g => lgProg(g) >= 0.55)); // genug Bilder → auch knapp darunter fertig
   // Balken je Blatt
   $('#liveChips').innerHTML = G.map(g => { const p = lgProg(g), col = p >= 1 ? '#2e7d32' : p > 0 ? '#e0a800' : '#c62828', vis = d.some(m => g.ids.includes(m.id));
     const bins = g.floor ? '' : `<span class="bins">${['L', 'M', 'R'].map(b => `<i class="${g.bins.has(b) ? 'on' : ''}">${b === 'L' ? '◀' : b === 'M' ? '●' : '▶'}</i>`).join('')}</span>`;
@@ -422,7 +424,7 @@ function liveCoach(d, steady, shot) {
   else {
     const todo = G.filter(g => lgProg(g) < 1).sort((a, b) => lgProg(a) - lgProg(b))[0];
     if (!todo) h = 'Nimm noch <b>zwei Blätter gemeinsam</b> ins Bild (z. B. in einer Ecke beide Wände), damit alles zusammenhängt.';
-    else if (todo.floor) h = `<b>${todo.label}</b>: Kamera etwas nach unten, sodass das Bodenblatt <b>und</b> eine Wand im Bild sind.`;
+    else if (todo.floor) h = (todo.top || 0) < 3 && todo.walls.size >= 2 ? `<b>Zollstock von oben:</b> Stell dich neben den Zollstock und filme ihn <b>von oben</b> – am besten beide Enden im Bild.` : `<b>${todo.label}</b>: Kamera etwas nach unten, sodass das Bodenblatt <b>und</b> eine Wand im Bild sind.`;
     else { const b = todo.bins; h = `<b>${todo.label}</b>: ` + (!b.size ? 'Blatt ins Bild nehmen – Abstand 1–3 m.' : b.has('L') && !b.has('R') ? 'jetzt von der <b>rechten</b> Seite schräg filmen (ein paar Schritte nach rechts gehen).' : b.has('R') && !b.has('L') ? 'jetzt von der <b>linken</b> Seite schräg filmen (ein paar Schritte nach links gehen).' : b.size === 1 ? 'jetzt von der Seite schräg filmen (ein paar Schritte nach links oder rechts gehen).' : 'noch ein paar Bilder aus anderer Position.'); }
   }
   $('#liveHint').innerHTML = h;
@@ -451,7 +453,7 @@ async function liveStart() {
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
       const vis = [...new Set(d.map(m => lgOf(m.id)))], pk = []; for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) pk.push([vis[i].key, vis[j].key].sort().join('|'));
       const binsNow = new Map(); vis.forEach(g => { if (!g.floor) binsNow.set(g, groupBin(g, d)); });
-      const gain = vis.some(g => g.shots < (g.floor ? 8 : 4) || (binsNow.has(g) && !g.bins.has(binsNow.get(g))) || (g.floor && vis.some(w => !w.floor && !g.walls.has(w.key)))) || pk.some(k => (live.pairs[k] || 0) < 2);
+      const gain = vis.some(g => g.shots < (g.floor ? 8 : 4) || (g.floor && (g.top || 0) < 3 && d.some(m => g.ids.includes(m.id) && fromAbove(m))) || (binsNow.has(g) && !g.bins.has(binsNow.get(g))) || (g.floor && vis.some(w => !w.floor && !g.walls.has(w.key)))) || pk.some(k => (live.pairs[k] || 0) < 2);
       let shot = false;
       const dt = Date.now() - live.lastShot; // mit Nutzen schnell auslösen, sonst alle 0,9 s weitere Bilder (mehr Bilder = genauer)
       if (d.length && steady && ((gain && dt > 450) || dt > 900) && live.shots < 90) {
@@ -459,7 +461,7 @@ async function liveStart() {
         const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
         if (blob) {
           pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now(); shot = true;
-          vis.forEach(g => { g.shots++; if (binsNow.has(g)) g.bins.add(binsNow.get(g)); if (g.floor) vis.forEach(w => { if (!w.floor) g.walls.add(w.key); }); });
+          vis.forEach(g => { g.shots++; if (binsNow.has(g)) g.bins.add(binsNow.get(g)); if (g.floor) { vis.forEach(w => { if (!w.floor) g.walls.add(w.key); }); if (d.some(m => g.ids.includes(m.id) && fromAbove(m))) g.top = (g.top || 0) + 1; } });
           pk.forEach(k => live.pairs[k] = (live.pairs[k] || 0) + 1);
           navigator.vibrate?.(25); $('#live').classList.add('flash'); setTimeout(() => $('#live').classList.remove('flash'), 120);
         }

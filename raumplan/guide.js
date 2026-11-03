@@ -23,7 +23,7 @@
       <p class="hint">Schiefe oder sehr lange Wand? Dann ein zweites Blatt an diese Wand (mehr Blätter drucken: Feld „Erwartete Wände“ erhöhen).</p>`,
       b: [['Weiter ›', 'next', 1]] },
     { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b>. Dann:</p>
-      <ul><li><b>Herumgehen ist erwünscht!</b> Die App braucht jedes Blatt aus mindestens zwei Richtungen. Abstand 1–3 m.</li><li><b>Nicht zoomen</b> – der Weitwinkel ist richtig. Lieber näher hingehen.</li><li><b>Langsam schwenken.</b> Du musst nichts auslösen: Sobald das Bild ruhig ist und etwas Neues zeigt, macht die App selbst ein Bild (kurzes Vibrieren).</li></ul>
+      <ul><li><b>Herumgehen ist erwünscht!</b> Die App braucht jedes Blatt aus mindestens zwei Richtungen. Abstand 1–3 m.</li><li><b>Nicht zoomen</b> – der Weitwinkel ist richtig. Lieber näher hingehen.</li><li><b>Zollstock auch von oben</b> filmen (daneben stellen, nach unten schauen) – das macht den Maßstab genau.</li><li><b>Langsam schwenken.</b> Du musst nichts auslösen: Sobald das Bild ruhig ist und etwas Neues zeigt, macht die App selbst ein Bild (kurzes Vibrieren).</li></ul>
       <p><b>Die Balken unten</b> zeigen je Blatt den Fortschritt: <span style="color:#c62828">rot</span> = noch nicht gesehen, <span style="color:#b8860b">gelb</span> = teilweise, <span style="color:#2e7d32">grün ✓</span> = fertig. ◀ ● ▶ zeigt, aus welchen Richtungen das Blatt schon gefilmt ist. Oben steht immer, was als Nächstes zu tun ist.</p>
       <p>Sind alle Balken grün, startet die Auswertung <b>von selbst</b>.</p>`,
       b: [['📹 Raum aufnehmen', 'live'], ['Weiter ›', 'next', 1]] },
