@@ -101,6 +101,27 @@ $('#pgPrint').onclick = () => {
 function pgSizeSet(v) { $('#pgSize').value = v; try { localStorage.setItem('raumplan-pgsize', v); } catch (e) { } }
 try { const v = localStorage.getItem('raumplan-pgsize'); if (v) $('#pgSize').value = v; } catch (e) { }
 $('#pgSize').onchange = () => pgSizeSet(num($('#pgSize').value) || 45);
+// Druckmaßstab: gemessene Länge der 150-mm-Kontrolllinie (leer = 150) → Faktor
+try { const v = localStorage.getItem('raumplan-ctrl'); if (v) $('#pgCtrl').value = v; } catch (e) { }
+$('#pgCtrl').onchange = () => { try { localStorage.setItem('raumplan-ctrl', $('#pgCtrl').value); } catch (e) { } };
+function printK() { const v = num($('#pgCtrl').value); return v > 100 && v < 200 ? v / 150 : 1; }
+function layoutSet(v) { try { localStorage.setItem('raumplan-layout', v); } catch (e) { } }
+function layoutGet() { try { return localStorage.getItem('raumplan-layout'); } catch (e) { return null; } }
+// Maßstabskontrolle über die Wandblätter: Markenabstände auf dem Blatt (110 / 197 mm × Druckmaßstab) gegen das Ergebnis
+function sheetScaleCheck(rec) {
+  if (layoutGet() !== 'wall') return '';
+  const from = Math.round(num($('#pgFrom').value)) || 4, k = printK(), ctr = id => { const q = rec.kU.get(id); return [0, 1, 2].map(j => [0, 1, 2, 3].reduce((a, c) => a + rec.res.pts[4 * q + c][j], 0) / 4); };
+  const rat = [];
+  for (let b = from; b + 3 < 90; b += 4) {
+    const ids = [b, b + 1, b + 2, b + 3]; if (!ids.every(id => rec.kU.has(id))) continue;
+    [[0, 1, 0.110], [2, 3, 0.110], [0, 2, 0.197], [1, 3, 0.197]].forEach(([i, j, d]) => { const A = ctr(ids[i]), B = ctr(ids[j]); rat.push(Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]) / (d * k)); });
+  }
+  if (rat.length < 4) return '';
+  const m = rat.reduce((a, v) => a + v, 0) / rat.length, dev = (m - 1) * 100;
+  return Math.abs(dev) <= 0.5
+    ? `<p class="ok">✓ Maßstabskontrolle über ${rat.length / 4} Wandblätter: ${dev >= 0 ? '+' : ''}${f2(dev, 2)} % – Zollstock und Blätter passen zusammen.</p>`
+    : `<p class="warn">⚠ Maßstabskontrolle über ${rat.length / 4} Wandblätter: ${dev >= 0 ? '+' : ''}${f2(dev, 2)} % Abweichung. Prüfen: Liegt der Zollstock genau an beiden Bodenblättern (0 / 200 cm)? Die 150-mm-Linie auf einem Blatt nachmessen und unten bei „Kontrolllinie gemessen“ eintragen.</p>`;
+}
 // 1 Blatt pro Wand: 2 Bodenblätter an den Zollstock-Enden (0+2 bei 0 cm, 1+3 bei 200 cm) + je Wand ein Blatt mit 4 Marken (80 mm)
 function wallSheetPages(nw, from) {
   const size = 80, pages = [MK.floorSheetSVG(0, 2, size, 0), MK.floorSheetSVG(1, 3, size, 200)];
@@ -110,14 +131,14 @@ function wallSheetPages(nw, from) {
 $('#pgWallSheets').onclick = () => {
   const nw = Math.max(3, Math.min(12, Math.round(num($('#pgWalls').value)) || 4)), from = Math.max(4, Math.min(89 - 4 * nw, Math.round(num($('#pgFrom').value) || 4)));
   const { size, pages } = wallSheetPages(nw, from);
-  pgSizeSet(size); $('#pgN').value = 4 * nw; $('#pgFrom').value = from; if (!$('#pgDist').value) $('#pgDist').value = '2,000';
+  pgSizeSet(size); layoutSet('wall'); $('#pgN').value = 4 * nw; $('#pgFrom').value = from; if (!$('#pgDist').value) $('#pgDist').value = '2,000';
   const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan – 1 Blatt pro Wand</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
 };
 $('#pgSheet').onclick = () => { // einfach: 4 Boden- + 12 Wandmarken (3 je Wand) auf einem A4-Blatt
   const from = Math.max(4, Math.min(78, Math.round(num($('#pgFrom').value) || 4))), size = 45;
-  pgSizeSet(size); $('#pgN').value = 12;
+  pgSizeSet(size); layoutSet('single'); $('#pgN').value = 12;
   const lab = ['Boden · auf 0 cm', 'Boden · auf 200 cm', 'Boden', 'Boden'];
   const items = [0, 1, 2, 3].map(i => [i, lab[i]]).concat(Array.from({ length: 12 }, (_, k) => [from + k, 'Wand']));
   const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
@@ -191,7 +212,7 @@ $('#pgRun').onclick = async () => {
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
-    const rec = PG.reconstruct(frames, { W, H, size: num($('#pgSize').value) / 1000 || 0.16, scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, sigPx: 0.3, log: pgLog });
+    const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, sigPx: 0.3, log: pgLog });
     pr.value = 0.95; await tick();
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
@@ -207,6 +228,7 @@ $('#pgRun').onclick = async () => {
       (rec.suspect ? `<p class="warn">⚠ ${esc(rec.suspect)} Ergebnis unsicher – mehr Fotos aus verschiedenen Positionen (auch zum Boden) aufnehmen.</p>` : '') +
       (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
+    const sc = sheetScaleCheck(rec); if (sc) $('#pgRes').insertAdjacentHTML('afterbegin', sc);
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
     const cks = $('#ckShow'); if (cks) cks.onclick = () => { $$('#pgRes .ckcol').forEach(e => e.hidden = false); cks.remove(); };

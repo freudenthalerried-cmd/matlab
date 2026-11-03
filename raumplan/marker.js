@@ -46,10 +46,20 @@ const MK = (() => {
     return o + '</svg>';
   }
 
+  // Raster (10 mm, hellgrau) + Kontrollmaßstab 150 mm zwischen den Marken – hält 10 mm Abstand zu den Marken
+  function ctrlSVG(y0, y1) {
+    let o = '';
+    for (let x = 15; x <= 195; x += 10) o += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y1}" stroke="#e2e2e2" stroke-width=".2"/>`;
+    for (let y = y0; y <= y1; y += 10) o += `<line x1="15" y1="${y}" x2="195" y2="${y}" stroke="#e2e2e2" stroke-width=".2"/>`;
+    const ry = y0 + 6; o += `<rect x="25" y="${ry - 4}" width="160" height="17" fill="#fff"/><line x1="30" y1="${ry}" x2="180" y2="${ry}" stroke="#000" stroke-width=".25"/>`;
+    for (let m = 0; m <= 150; m++) { const L = m % 10 ? (m % 5 ? 1.5 : 2.5) : 4; o += `<line x1="${30 + m}" y1="${ry}" x2="${30 + m}" y2="${ry + L}" stroke="#000" stroke-width="${m % 10 ? .12 : .25}"/>`; if (!(m % 10)) o += `<text x="${30 + m}" y="${ry + 7.5}" font-size="2.8" text-anchor="middle">${m / 10}</text>`; }
+    o += `<text x="105" y="${ry + 11.5}" font-size="3.2" text-anchor="middle">Maßstabskontrolle: 0 bis 15 = genau 150 mm. Mit dem Zollstock nachmessen – sonst Druck auf 100 % stellen.</text>`;
+    return o;
+  }
   // „1 Blatt pro Wand“: A4 mit 4 Marken in den Ecken (Mitten 105±55 / 148,5±98,5 mm). cut: obere Reihe zum Ausschneiden (Zollstock-Marken)
   function cornerSheetSVG(ids, size, title, sub, cut) {
     const W = 210, H = 297, cell = size / G, P = [[50, 50], [160, 50], [50, 247], [160, 247]];
-    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>` + ctrlSVG(100, 197);
     ids.forEach((id, i) => {
       const [cx, cy] = P[i], x0 = cx - size / 2, y0 = cy - size / 2, c = DICT[id];
       o += `<rect x="${x0}" y="${y0}" width="${size}" height="${size}" fill="#000"/>`;
@@ -66,7 +76,7 @@ const MK = (() => {
   // Bodenblatt für den Zollstock: Zollstock liegt an der Oberkante; Marke a (0 bzw. 1) oben – ihre Mitte auf der Mittellinie (= Zollstock-Strich), Marke b weiter weg
   function floorSheetSVG(a, b, size, cm) {
     const W = 210, H = 297, cell = size / G, cx = 105;
-    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>` + ctrlSVG(120, 175);
     [[a, 70], [b, 225]].forEach(([id, cy]) => {
       const x0 = cx - size / 2, y0 = cy - size / 2, c = DICT[id];
       o += `<rect x="${x0}" y="${y0}" width="${size}" height="${size}" fill="#000"/>`;
@@ -75,8 +85,8 @@ const MK = (() => {
     });
     o += `<line x1="${cx}" y1="0" x2="${cx}" y2="${70 - size / 2 - 3}" stroke="#000" stroke-width=".5"/><path d="M${cx - 4} 6 L${cx} 0 L${cx + 4} 6" fill="none" stroke="#000" stroke-width=".5"/>`;
     o += `<text x="${cx + 6}" y="12" font-size="9" font-weight="bold">Zollstock ${cm} cm hier</text>`;
-    o += `<text x="105" y="140" font-size="10" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
-    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${150 + i * 6.5}" font-size="4.6" text-anchor="middle">${t}</text>`);
+    o += `<text x="105" y="150" font-size="9" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
+    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${157 + i * 5.5}" font-size="4.2" text-anchor="middle">${t}</text>`);
     return o + '</svg>';
   }
 

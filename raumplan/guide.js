@@ -28,7 +28,7 @@
       b: [['Fertig', 'close'], ['Genauer mit Marken ›', 'next']] },
     { t: 'Genauer: Blätter drucken', h: `<p class="hint">Optional – nur wenn ±1–2 cm nicht reichen.</p>
       <p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate) auf den Bildern und berechnet daraus die Maße auf wenige Millimeter.</p>
-      <ul><li><b>2 Bodenblätter</b> – je eines für jedes Ende des Zollstocks.</li><li><b>1 Blatt pro Wand</b> – bei einem normalen Raum 4 Blätter.</li><li>Mit <b>100 % / Originalgröße</b> drucken. Nichts ausschneiden.</li></ul>`,
+      <ul><li><b>2 Bodenblätter</b> – je eines für jedes Ende des Zollstocks.</li><li><b>1 Blatt pro Wand</b> – bei einem normalen Raum 4 Blätter.</li><li>Mit <b>100 % / Originalgröße</b> drucken. Nichts ausschneiden.</li><li><b>Kontrolle:</b> Auf einem Blatt die Linie 0–15 mit dem Zollstock nachmessen. Genau 150 mm? Passt. Sonst den gemessenen Wert unter „Kontrolllinie gemessen“ eintragen.</li></ul>`,
       b: [['🖨 Blätter drucken', 'wsheets'], ['Weiter ›', 'next', 1]] },
     { t: 'Blätter auslegen', h: `${sketch}
       <ol><li><b>Zollstock</b> ganz aufklappen und gerade auf den Boden legen.</li><li><b>Bodenblatt „0 cm“</b> mit der Oberkante an den Zollstock legen, der Strich oben zeigt auf 0 cm. <b>Bodenblatt „200 cm“</b> genauso ans andere Ende.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln.</li></ol>
