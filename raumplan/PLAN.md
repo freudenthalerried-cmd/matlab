@@ -50,3 +50,13 @@ Nach jeder Phase ist die App lauffähig, und es gibt einen Maßbandtest.
 - Tests: `sim/test_calib.js` (f auf 0,03 % genau), `sim/e2e_calib.js` mit Fake-Kamera (f 1499,8 statt 1500 px, Restfehler 0,08 px, ca. 20 s), `sim/e2e_coach.js` weiterhin ok
 
 **Test am Handy:** Kalibriertafel drucken → Einstellungen → „Kamera kalibrieren“ → Tafel auf dem Tisch filmen, bis der Balken voll ist. Danach einen Raum aufnehmen und eine Wand mit dem Maßband vergleichen (einmal mit, einmal ohne Kalibrierung).
+
+### Stand Phase 2 (erledigt)
+- `kontroll.js`: Kontrollmaße aus Sprache (Web Speech, de-AT), Bluetooth-Laser (Leica DISTO; Bosch GLM experimentell) und Eingabe von Hand; Zeitstempel, Wand im Bild, Aufnahme-Nummer
+- Ansage ohne Zahl („Raumhöhe“) beschreibt die letzte Lasermessung (15 s)
+- Karte „📏 Kontrollmaße“ auf der Startseite und Knöpfe 🎤/📏 in der Live-Aufnahme
+- Nach der Auswertung: Tabelle Kontrollmaß ↔ Modell mit Abweichung (Wandlänge über Wand im Bild, Raumhöhe, Diagonale); Wandmaße werden als Kontrollmaß im Plan gespeichert, Raumhöhe ohne Deckenmarke wird übernommen
+- Tests: `sim/test_kontroll.js` (11/11 Sätze), `sim/e2e_kontroll.js` (Laser während der Aufnahme → Wand 2, Abweichung −1,2 mm ✔)
+- Offen für Phase 4: Laserpunkt im Video erkennen, Fenster/Türen zuordnen, Kontrollmaße als Beobachtung im Ausgleich
+
+**Test am Handy:** Raum aufnehmen; während der Aufnahme „🎤 Maß ansagen“ → „Raumhöhe 2,55“; mit dem Laser eine Wand messen, während das Wandblatt im Bild ist. Nach der Auswertung steht unten die Tabelle „Kontrollmaße“ mit der Abweichung. Zum Vergleich dieselbe Wand mit dem Maßband messen.

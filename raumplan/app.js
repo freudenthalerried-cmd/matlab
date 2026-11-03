@@ -253,6 +253,7 @@ $('#pgRun').onclick = async () => {
       (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const sc = sheetScaleCheck(rec); if (sc) $('#pgRes').insertAdjacentHTML('afterbegin', sc);
+    $('#pgRes').insertAdjacentHTML('beforeend', kmCompare(res));
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) pgTake(); }
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
@@ -371,6 +372,7 @@ function pgTake() {
     // Wand i im Plan = Kante Ecke i -> i+1; Sigma gleich indiziert
     r.adj = { wallSigma: d.w.sigma.map(v => v ?? 0.01), cornerMax: 0, s0: rec.res.s0, red: rec.nObs, warn: d.w.warn, v: [], pg: { rms: rec.res.rms, nImg: rec.nImg } };
     if (d.w.height && d.w.hSig !== null && d.w.hSig < 0.005) r.h = +d.w.height.toFixed(3);
+    else if (d.kmH) r.h = +d.kmH.toFixed(3);
     r.checks = Object.entries(d.checks || {}).filter(([, v]) => v).map(([w, v]) => ({ wall: +w, v }));
     r.ops = (d.ops || []).slice(); d.planRoom = r;
     r.src = 'Photogrammetrie'; S.rooms.push(r); if (first === null) first = S.rooms.length - 1;
@@ -450,7 +452,7 @@ async function liveStart() {
   live.camInfo = cm.info; live.sh = [];
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
-  pgFiles = []; $('#pgSrc').textContent = ''; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0;
+  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0;
   $('#live').hidden = false; liveCoach([], true, false);
   const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
@@ -470,6 +472,9 @@ async function liveStart() {
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
       const vis = [...new Set(d.map(m => lgOf(m.id)))], pk = []; for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) pk.push([vis[i].key, vis[j].key].sort().join('|'));
       const binsNow = new Map(); vis.forEach(g => { if (!g.floor) binsNow.set(g, groupBin(g, d)); });
+      { // Wand im Bild (für Kontrollmaße): die am größten sichtbare Wandgruppe
+        let bestG = null, bestA = 0; d.forEach(m => { const g = lgOf(m.id); if (g.floor) return; const a = Math.abs((m.c[2][0] - m.c[0][0]) * (m.c[3][1] - m.c[1][1]) - (m.c[3][0] - m.c[1][0]) * (m.c[2][1] - m.c[0][1])); if (a > bestA) { bestA = a; bestG = g; } });
+        live.visKey = bestG ? bestG.label : null; live.visIds = bestG ? bestG.ids : null; }
       const gain = vis.some(g => g.shots < (g.floor ? 8 : 4) || (g.floor && (g.top || 0) < 3 && d.some(m => g.ids.includes(m.id) && fromAbove(m))) || (binsNow.has(g) && !g.bins.has(binsNow.get(g))) || (g.floor && vis.some(w => !w.floor && !g.walls.has(w.key)))) || pk.some(k => (live.pairs[k] || 0) < 2);
       let shot = false;
       const dt = Date.now() - live.lastShot; // mit Nutzen schnell auslösen, sonst alle 0,9 s weitere Bilder (mehr Bilder = genauer)
@@ -517,6 +522,50 @@ function liveFinish() {
 }
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
 $('#liveDone').onclick = liveFinish;
+
+/* ---------- Phase 2: Kontrollmaße (kontroll.js) ---------- */
+KM.setContext(() => ({ session: live.session || null, wall: live.stream ? live.visKey : null, ids: live.stream ? live.visIds : null, shot: live.stream ? live.shots : null }));
+const kmSrc = { sprache: '🎤', laser: '📏', hand: '✍' };
+function kmRender() {
+  const L = [...KM.list].reverse();
+  $('#kmList').innerHTML = L.length ? L.map(e => `<li><span>${kmSrc[e.src] || ''}</span><span>${esc(KM.describe(e))}${e.wall ? ` <small class="hint">· ${esc(e.wall)} im Bild</small>` : ''}</span><span class="sp"></span><b>${f2(e.v, 3)} m</b><small class="hint">${new Date(e.t).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' })}</small><button data-kmdel="${e.id}">×</button></li>`).join('') + `<li><span class="sp"></span><button id="kmClear" class="danger">Alle löschen</button></li>`
+    : '<li class="hint">Noch keine Kontrollmaße.</li>';
+  $$('#kmList [data-kmdel]').forEach(b => b.onclick = () => KM.remove(+b.dataset.kmdel));
+  const c = $('#kmClear'); if (c) c.onclick = () => { if (confirm('Alle Kontrollmaße löschen?')) KM.clear(); };
+  const last = KM.list[KM.list.length - 1];
+  $('#liveKmTxt').innerHTML = last && live.session && last.session === live.session ? `✓ ${esc(KM.describe(last))} <b>${f2(last.v, 3)} m</b>${last.wall ? ' → ' + esc(last.wall) : ''}` : 'Kontrollmaß: Laser messen oder ansagen';
+}
+KM.onChange(kmRender);
+function kmMsg(t) { $('#kmState').textContent = t || ''; if (live.stream && t) $('#liveKmTxt').textContent = t; }
+function kmListen() { KM.listen((e, err) => { if (err) return kmMsg(err); if (e) { kmMsg(''); navigator.vibrate?.([20, 40, 20]); } }, st => kmMsg(st)); }
+async function kmLaser() {
+  try {
+    const n = await KM.connect(v => { const e = KM.add(v, 'laser'); navigator.vibrate?.(30); kmMsg(`Laser: ${f2(v, 3)} m${e.wall ? ' → ' + e.wall : ''} – jetzt ansagen, was es war (z. B. „Raumhöhe“), oder weitermessen.`); }, st => kmMsg(st));
+    kmMsg(n + ' verbunden ✓ – Messtaste am Laser drücken.');
+  } catch (e) { kmMsg(e.name === 'NotFoundError' ? 'Kein Laser ausgewählt.' : 'Laser: ' + e.message); }
+}
+$('#kmMic').onclick = kmListen; $('#liveMic').onclick = kmListen; $('#kmLaser').onclick = kmLaser; $('#liveLaser').onclick = kmLaser;
+const kmManual = () => { const p = KM.parse($('#kmIn').value); if (!p.v) return kmMsg('Keine Zahl erkannt – z. B. „Raumhöhe 2,55“.'); KM.add(p.v, 'hand', { ...p, text: $('#kmIn').value }); $('#kmIn').value = ''; kmMsg(''); };
+$('#kmAdd').onclick = kmManual; $('#kmIn').onkeydown = e => { if (e.key === 'Enter') kmManual(); };
+kmRender();
+// Vergleich nach der Auswertung: Kontrollmaße dieser Aufnahme gegen das Modell; Wandlängen werden auch als Kontrollmaß im Plan gespeichert
+function kmCompare(res) {
+  const ses = live.session, E = KM.list.filter(e => ses ? (e.session === ses || (!e.session && e.t >= ses)) : Date.now() - e.t < 12 * 3600e3);
+  if (!E.length) return `<p class="hint">💡 Tipp: Kontrollmaße machen das Ergebnis überprüfbar – Raumhöhe und eine Wandlänge mit dem Laser messen oder ansagen (🎤).</p>`;
+  const rows = [];
+  E.forEach(e => {
+    let model = null, sig = null, where = '';
+    res.forEach(d => {
+      if (!d.w.ok || model !== null) return;
+      if ((e.kind === 'wand' || e.kind === 'mass') && e.ids) { const i = d.w.groups.findIndex(g => g.some(id => e.ids.includes(id))); if (i >= 0) { model = d.w.lengths[i]; sig = d.w.sigma[i]; where = `${d.name} Wand ${i + 1}`; (d.checks = d.checks || {})[i] = e.v; } }
+      if (e.kind === 'hoehe') { if (d.w.height) { model = d.w.height; sig = d.w.hSig; where = d.name; } else { d.kmH = e.v; where = d.name + ' (als Raumhöhe übernommen)'; } }
+      if (e.kind === 'diag' && d.w.poly.length === 4) { const P = d.w.poly, dg = [Math.hypot(P[0][0] - P[2][0], P[0][1] - P[2][1]), Math.hypot(P[1][0] - P[3][0], P[1][1] - P[3][1])]; model = dg.reduce((a, b) => Math.abs(b - e.v) < Math.abs(a - e.v) ? b : a); sig = Math.max(...d.w.sigma.filter(x => x != null)); where = d.name + ' Diagonale'; }
+    });
+    const note = where || (e.kind === 'fenster' || e.kind === 'tuer' ? 'Fenster/Türen: Zuordnung folgt in Phase 4' : 'keine passende Wand im Bild');
+    rows.push(`<tr><td>${kmSrc[e.src] || ''} ${esc(KM.describe(e))}</td><td>${f2(e.v, 3)} m</td><td>${model !== null ? f2(model, 3) + ' m' : '–'}</td><td>${model !== null ? chkText(model - e.v, sig) : `<span class="hint">${esc(note)}</span>`}</td><td class="hint">${model !== null ? esc(where) : ''}</td></tr>`);
+  });
+  return `<h4>Kontrollmaße</h4><table class="pgt"><tr><th>Maß</th><th>gemessen</th><th>Modell</th><th>Abweichung</th><th></th></tr>${rows.join('')}</table>`;
+}
 
 /* ---------- Phase 1: Kamera-Kalibrierung (Assistent) ---------- */
 const cal = { stream: null, views: [], timer: null, busy: false, prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [] };

@@ -118,3 +118,8 @@ ol.steps{padding-left:22px;margin:6px 0 10px;font-size:15px}ol.steps li{margin:5
 details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}details.more summary{cursor:pointer;color:var(--mut);font-size:14px}
 #calUI{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:flex;flex-direction:column}
 #calUI .livebar b{margin-left:4px}#calBar{height:100%;width:0;background:#4caf50;transition:width .3s}
+
+.kmcard{border-color:#1565c0}.kmcard h3{margin:4px 0}
+.kmlist{list-style:none;padding:0;margin:6px 0;font-size:14px}.kmlist li{display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)}
+.kmlist li b{min-width:5.5em;text-align:right;font-variant-numeric:tabular-nums}.kmlist li .sp{flex:1}.kmlist button{padding:1px 8px}
+.livekm{display:flex;gap:8px;align-items:center;padding:6px 10px;background:#111;color:#ddd;font-size:14px;flex-wrap:wrap}.livekm button{color:#fff;background:#1565c0;border-color:#1565c0}
