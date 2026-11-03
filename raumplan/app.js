@@ -86,10 +86,10 @@ $('#targets').onclick = () => {
 };
 
 /* ---------- Photogrammetrie: Zielmarken-Video -> Räume (ohne Handmessung) ---------- */
-let pgFiles = null, pgLast = null;
+let pgFiles = null, pgLast = null, pgAuto = false;
 $('#pgPrint').onclick = () => {
-  const n = Math.max(0, Math.min(86, Math.round(num($('#pgN').value)))), from = Math.max(4, Math.min(89, Math.round(num($('#pgFrom').value) || 4))), size = num($('#pgSize').value) >= 60 ? Math.min(190, num($('#pgSize').value)) : 160;
-  pgSizeSet(size);
+  const n = Math.max(0, Math.min(86, Math.round(num($('#pgN').value)))), from = Math.max(4, Math.min(89, Math.round(num($('#pgFrom').value) || 4))), size = num($('#pgSize').value) >= 100 ? Math.min(190, num($('#pgSize').value)) : 160;
+  pgSizeSet(size); layoutSet('big');
   const lab = ['Boden – Mitte auf Zollstock 0 cm', 'Boden – Mitte auf Zollstock 200 cm', 'Boden', 'Boden'];
   const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: Math.min(n, 90 - from) }, (_, k) => MK.markerSVG(from + k, size, 'Wand')))
     .concat($('#pgConn').checked ? [90, 91, 92, 93].map(id => MK.markerSVG(id, size, 'Verbindung – im Türbereich am Boden liegen lassen')) : []);
@@ -105,8 +105,19 @@ $('#pgSize').onchange = () => pgSizeSet(num($('#pgSize').value) || 45);
 try { const v = localStorage.getItem('raumplan-ctrl'); if (v) $('#pgCtrl').value = v; } catch (e) { }
 $('#pgCtrl').onchange = () => { try { localStorage.setItem('raumplan-ctrl', $('#pgCtrl').value); } catch (e) { } };
 function printK() { const v = num($('#pgCtrl').value); return v > 100 && v < 200 ? v / 150 : 1; }
-function layoutSet(v) { try { localStorage.setItem('raumplan-layout', v); } catch (e) { } }
-function layoutGet() { try { return localStorage.getItem('raumplan-layout'); } catch (e) { return null; } }
+function layoutSet(v) { try { localStorage.setItem('raumplan-layout', v); } catch (e) { } if ($('#pgLayout')) $('#pgLayout').value = v; }
+function layoutGet() { try { return localStorage.getItem('raumplan-layout') || 'wall'; } catch (e) { return 'wall'; } }
+// Gedruckte Vorlage wählen → Markengröße und Anzahl passend setzen
+const LAYOUT_SIZE = { wall: 80, single: 45, big: 160 };
+function layoutApply(v) {
+  layoutSet(v); pgSizeSet(LAYOUT_SIZE[v] || 80);
+  const w = Math.round(num($('#pgWalls').value)) || 4;
+  $('#pgN').value = v === 'wall' ? 4 * w : v === 'single' ? 12 : 16;
+}
+try { if (!localStorage.getItem('raumplan-ui2')) { localStorage.setItem('raumplan-ui2', '1'); layoutApply('wall'); } } catch (e) { }
+$('#pgLayout').value = layoutGet();
+$('#pgLayout').onchange = () => layoutApply($('#pgLayout').value);
+$('#pgWalls').onchange = () => { if (layoutGet() === 'wall') $('#pgN').value = 4 * (Math.round(num($('#pgWalls').value)) || 4); };
 // Maßstabskontrolle über die Wandblätter: Markenabstände auf dem Blatt (110 / 197 mm × Druckmaßstab) gegen das Ergebnis
 function sheetScaleCheck(rec) {
   if (layoutGet() !== 'wall') return '';
@@ -230,11 +241,12 @@ $('#pgRun').onclick = async () => {
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const sc = sheetScaleCheck(rec); if (sc) $('#pgRes').insertAdjacentHTML('afterbegin', sc);
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
+    if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) pgTake(); }
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
     const cks = $('#ckShow'); if (cks) cks.onclick = () => { $$('#pgRes .ckcol').forEach(e => e.hidden = false); cks.remove(); };
     $$('#pgRes [data-ck]').forEach(inp => inp.oninput = () => { const [ri, wi] = inp.dataset.ck.split(',').map(Number), d = pgLast.res[ri], v = parseLen(inp.value);
       (d.checks = d.checks || {})[wi] = v || undefined; $(`#ck${ri}_${wi}`).innerHTML = v ? chkText(d.w.lengths[wi] - v, d.w.sigma[wi]) : ''; });
-  } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
+  } catch (e) { pgAuto = false; pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">⚠ Auswertung nicht möglich: ${esc(e.message)}</p><p>Tipp: Neu aufnehmen und dabei mehr Bilder machen, in denen <b>zwei Blätter gleichzeitig</b> zu sehen sind (Ecken), und den Zollstock zusammen mit einer Wand filmen.</p>`; }
   pr.value = 1; btn.disabled = false;
 };
 /* Öffnung (Fenster/Tür) im Foto antippen: 2 gegenüberliegende Ecken an der Wandfläche -> Schnitt mit Wandebene */
@@ -327,6 +339,7 @@ function planMarkers() { const all = {}; S.rooms.forEach(r => { const m = roomMa
 const pct = (sig, L) => sig && L ? f2(sig / L * 100, sig / L < 0.001 ? 3 : 2) + ' %' : '';
 function chkText(dv, sig) { const lim = 2 * Math.hypot(sig || 0.002, 0.0015); return `<span class="${Math.abs(dv) <= lim ? 'ok' : 'warn'}">${dv >= 0 ? '+' : ''}${f2(dv * 1000, 1)} mm ${Math.abs(dv) <= lim ? '✔' : '⚠'}</span>`; }
 function pgTake() {
+  S.rooms = S.rooms.filter(r => !r.demo); // Beispielräume weg, sobald echte Räume kommen
   const { rec, res } = pgLast; let first = null;
   // An bestehenden Plan anschließen: gemeinsame Marken (z. B. Verbindungsmarken im Türbereich)
   const fresh = PG.markerMap(rec), existing = planMarkers(), hadPg = Object.keys(existing).length > 0;
@@ -354,37 +367,66 @@ function pgTake() {
   if (msg) setTimeout(() => alert(msg), 50);
 }
 
-/* ---------- Live-Aufnahme: einfach filmen – die App fotografiert selbst, wenn das Handy ruhig ist und neue Ansichten zeigt ---------- */
-const NEED = 6; // Ansichten je Marke aus verschiedenen Blickwinkeln
-const live = { stream: null, seen: {}, last: {}, prev: null, shots: 0, busy: false, timer: null, now: new Set(), lastShot: 0, shooting: false };
-function liveExpected() {
-  const n = Math.round(num($('#pgN').value)) || 0, from = Math.round(num($('#pgFrom').value)) || 4;
-  return [0, 1, 2, 3].concat(Array.from({ length: Math.max(0, Math.min(n, 90 - from)) }, (_, k) => from + k)).concat($('#pgConn').checked ? [90, 91, 92, 93] : []);
+/* ---------- Live-Aufnahme mit Coach: nur filmen – die App fotografiert selbst, zeigt je Blatt einen Fortschrittsbalken
+   und sagt, wohin man gehen soll. Ist alles erfasst, startet die Auswertung von selbst. ---------- */
+const live = { stream: null, shots: 0, busy: false, timer: null, prev: null, lastShot: 0, G: null, pairs: {}, auto: false, doneAt: 0 };
+function liveGroups() { // Blätter (Gruppen von Marken) je nach gedruckter Vorlage
+  const from = Math.round(num($('#pgFrom').value)) || 4, n = Math.round(num($('#pgN').value)) || 0, G = [];
+  if (layoutGet() === 'wall') {
+    G.push({ key: 'B0', label: 'Zollstock 0 cm', ids: [0, 2], floor: true }, { key: 'B200', label: 'Zollstock 200 cm', ids: [1, 3], floor: true });
+    for (let w = 0; w < Math.max(3, Math.floor(n / 4)); w++) G.push({ key: 'W' + (w + 1), label: 'Wand ' + (w + 1), ids: [0, 1, 2, 3].map(k => from + 4 * w + k) });
+  } else {
+    G.push({ key: 'B', label: 'Boden', ids: [0, 1, 2, 3], floor: true });
+    for (let i = 0; i < n; i++) G.push({ key: 'M' + (from + i), label: 'Marke ' + (from + i), ids: [from + i] });
+  }
+  G.forEach(g => { g.bins = new Set(); g.shots = 0; g.walls = new Set(); });
+  return G;
 }
-const liveLab = id => id <= 3 ? `Boden ${id}` : id >= 90 ? `Verb. ${id}` : `${id}`;
-function liveMissing() { return liveExpected().filter(id => id !== 3 && !(id >= 90) && (live.seen[id] || 0) < NEED); }
-function liveChips(hint) {
-  const need = liveExpected(), extra = Object.keys(live.seen).map(Number).filter(id => !need.includes(id));
-  $('#liveChips').innerHTML = need.concat(extra).map(id => { const c = Math.min(NEED, live.seen[id] || 0); return `<span class="chip ${c >= NEED ? 'ok' : c ? 'part' : ''} ${live.now.has(id) ? 'now' : ''}">${liveLab(id)}${c >= NEED ? ' ✓' : ' ' + c + '/' + NEED}</span>`; }).join('');
-  const miss = liveMissing(), tot = need.filter(id => id !== 3 && !(id >= 90)).length;
-  $('#liveInfo').textContent = ` ${live.shots} Bilder · ${tot - miss.length}/${tot} Marken fertig`;
-  $('#liveBar').style.width = (100 * (tot - miss.length) / Math.max(1, tot)) + '%';
-  $('#liveDone').classList.toggle('ready', !miss.length && live.shots > 0);
-  if (hint !== undefined) $('#liveHint').innerHTML = hint;
+const lgOf = id => live.G.find(g => g.ids.includes(id));
+function lgProg(g) { // 0..1
+  if (g.floor) return Math.min(1, g.shots / 8) * 0.5 + Math.min(1, g.walls.size / 3) * 0.5; // Maßstab: Boden oft und mit mehreren Wänden
+  return Math.min(2, g.bins.size) / 2 * 0.7 + Math.min(1, g.shots / 4) * 0.3; // 2 verschiedene Blickwinkel genügen
 }
-// neue Ansicht einer Marke? (Mitte deutlich verschoben oder Größe deutlich anders als bei der letzten gezählten Ansicht)
-function liveNewView(m, W) {
-  const c = m.c.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4], [0, 0]), sz = Math.hypot(m.c[0][0] - m.c[2][0], m.c[0][1] - m.c[2][1]), l = live.last[m.id];
-  return { c, sz, isNew: !l || Math.hypot(c[0] - l.c[0], c[1] - l.c[1]) > 0.15 * W || sz / l.sz > 1.3 || l.sz / sz > 1.3 };
+function lgConnected() { // alle gesehenen Blätter über gemeinsame Bilder verbunden?
+  const P = {}, f = k => P[k] === undefined || P[k] === k ? k : (P[k] = f(P[k]));
+  Object.keys(live.pairs).forEach(pk => { const [a, b] = pk.split('|'); P[f(a)] = f(b); });
+  return new Set(live.G.map(g => f(g.key))).size === 1;
 }
-async function liveGrab(v) { // Bild in voller Auflösung: bei Videostream unter 3000 px lieber echtes Foto (kleine Marken brauchen Pixel)
-  if (v.videoWidth < 3000 && 'ImageCapture' in window) { try { return await new ImageCapture(live.stream.getVideoTracks()[0]).takePhoto(); } catch (e) { } }
-  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
-  return new Promise(r => c.toBlob(r, 'image/jpeg', 0.93));
+// Blickwinkel auf ein Wandblatt aus der Form des Vierecks: linke Kante länger → Kamera steht links davon
+// … für ein ganzes Wandblatt: linke Markenspalte (Marken 1, 3 des Blatts) höher als rechte → Kamera links
+function groupBin(g, d) {
+  const M = g.ids.map(id => d.find(m => m.id === id)), h = m => m ? Math.hypot(m.c[0][0] - m.c[3][0], m.c[0][1] - m.c[3][1]) + Math.hypot(m.c[1][0] - m.c[2][0], m.c[1][1] - m.c[2][1]) : 0;
+  if (g.ids.length === 4 && (M[0] || M[2]) && (M[1] || M[3])) {
+    const cx = m => m.c.reduce((a, p) => a + p[0] / 4, 0), L = [M[0], M[2]].filter(Boolean), R = [M[1], M[3]].filter(Boolean);
+    const q = (L.reduce((a, m) => a + h(m), 0) / L.length) / (R.reduce((a, m) => a + h(m), 0) / R.length);
+    if (cx(L[0]) < cx(R[0])) return q > 1.05 ? 'L' : q < 0.952 ? 'R' : 'M';
+  }
+  const m = M.find(Boolean); return m ? binOf(m) : 'M';
 }
-function liveAddFile(blob) {
-  const file = new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' });
-  pgSetFiles((pgFiles || []).filter(f => f.type.startsWith('image')).concat([file]));
+function binOf(m) { const l = Math.hypot(m.c[0][0] - m.c[3][0], m.c[0][1] - m.c[3][1]), r = Math.hypot(m.c[1][0] - m.c[2][0], m.c[1][1] - m.c[2][1]), q = l / r; return q > 1.1 ? 'L' : q < 0.91 ? 'R' : 'M'; }
+function liveCoach(d, steady, shot) {
+  const G = live.G, con = lgConnected(), all = G.every(g => lgProg(g) >= 1) || (live.shots >= 40 && G.every(g => lgProg(g) >= 0.8)); // genug Bilder → auch bei 80 % fertig
+  // Balken je Blatt
+  $('#liveChips').innerHTML = G.map(g => { const p = lgProg(g), col = p >= 1 ? '#2e7d32' : p > 0 ? '#e0a800' : '#c62828', vis = d.some(m => g.ids.includes(m.id));
+    const bins = g.floor ? '' : `<span class="bins">${['L', 'M', 'R'].map(b => `<i class="${g.bins.has(b) ? 'on' : ''}">${b === 'L' ? '◀' : b === 'M' ? '●' : '▶'}</i>`).join('')}</span>`;
+    return `<div class="lg ${vis ? 'vis' : ''}"><span class="lgl">${g.label}</span><span class="lgb"><span style="width:${Math.round(p * 100)}%;background:${col}"></span></span>${bins}${p >= 1 ? '✓' : ''}</div>`; }).join('');
+  const tot = G.reduce((a, g) => a + Math.min(1, lgProg(g)), 0) / G.length;
+  $('#liveBar').style.width = Math.round(tot * 100) + '%';
+  $('#liveInfo').textContent = ` ${live.shots} Bilder · ${Math.round(tot * 100)} %`;
+  $('#liveDone').classList.toggle('ready', all && con);
+  let h;
+  if (all && con) h = '✔ <b>Alles erfasst!</b> Die Auswertung startet gleich von selbst …';
+  else if (shot) h = '📸 Bild aufgenommen – weiter so.';
+  else if (!d.length) h = live.shots ? 'Keine Marke im Bild – richte die Kamera auf eines der Blätter.' : '<b>Start:</b> Stell dich in eine Ecke, 2–3 m von den Wänden weg. Filme zuerst den <b>Zollstock am Boden</b>, dann schwenke langsam zu den Wänden.';
+  else if (!steady) h = 'Etwas <b>langsamer</b> schwenken …';
+  else {
+    const todo = G.filter(g => lgProg(g) < 1).sort((a, b) => lgProg(a) - lgProg(b))[0];
+    if (!todo) h = 'Nimm noch <b>zwei Blätter gemeinsam</b> ins Bild (z. B. in einer Ecke beide Wände), damit alles zusammenhängt.';
+    else if (todo.floor) h = `<b>${todo.label}</b>: Kamera etwas nach unten, sodass das Bodenblatt <b>und</b> eine Wand im Bild sind.`;
+    else { const b = todo.bins; h = `<b>${todo.label}</b>: ` + (!b.size ? 'Blatt ins Bild nehmen – Abstand 1–3 m.' : b.has('L') && !b.has('R') ? 'jetzt von der <b>rechten</b> Seite schräg filmen (ein paar Schritte nach rechts gehen).' : b.has('R') && !b.has('L') ? 'jetzt von der <b>linken</b> Seite schräg filmen (ein paar Schritte nach links gehen).' : b.size === 1 ? 'jetzt von der Seite schräg filmen (ein paar Schritte nach links oder rechts gehen).' : 'noch ein paar Bilder aus anderer Position.'); }
+  }
+  $('#liveHint').innerHTML = h;
+  return all && con;
 }
 async function liveStart() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
@@ -392,8 +434,8 @@ async function liveStart() {
   catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
-  $('#live').hidden = false; if (!pgFiles || !pgFiles.some(f => f.type.startsWith('image'))) { live.seen = {}; live.last = {}; live.shots = 0; }
-  live.prev = null; liveChips('Handy auf eine Wand mit Marken richten und langsam rundum drehen.');
+  pgFiles = []; $('#pgSrc').textContent = ''; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0;
+  $('#live').hidden = false; liveCoach([], true, false);
   const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
     if (!live.stream) return;
@@ -401,53 +443,61 @@ async function liveStart() {
       live.busy = true;
       const s = Math.min(1, 1920 / v.videoWidth); cv.width = Math.round(v.videoWidth * s); cv.height = Math.round(v.videoHeight * s);
       ctx.drawImage(v, 0, 0, cv.width, cv.height);
-      const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 1920, xcorners: false });
-      // ruhig? gleiche Marken seit dem letzten Bild kaum bewegt (< 2,5 px je 960 px Breite, Bewegungsunschärfe dann < 0,5 px)
-      let mv = Infinity; if (live.prev && d.length) { mv = 0; d.forEach(m => { const q = live.prev.get(m.id); mv = Math.max(mv, q ? Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1]) : Infinity); }); }
+      const d = MK.detect(toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), cv.width, cv.height, { maxW: 1920, xcorners: false }).filter(m => lgOf(m.id));
+      // Bewegung: gleiche Marken seit dem letzten Bild (< 4 px je 960 px Breite → kaum Bewegungsunschärfe)
+      let mv = 0; if (live.prev) d.forEach(m => { const q = live.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); });
       live.prev = new Map(d.map(m => [m.id, m.c[0]]));
-      const steady = mv < 2.5 * cv.width / 960, views = d.map(m => [m, liveNewView(m, cv.width)]), fresh = views.filter(([m, w]) => w.isNew && (live.seen[m.id] || 0) < NEED + 2);
-      const r = v.getBoundingClientRect(); ov.width = r.width; ov.height = r.height; ov.style.left = v.offsetLeft + 'px'; ov.style.top = v.offsetTop + 'px';
-      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, X = p => [p[0] * k + ox, p[1] * k + oy];
-      o.clearRect(0, 0, ov.width, ov.height); o.lineWidth = 3; o.font = 'bold 16px sans-serif';
-      d.forEach(m => { o.strokeStyle = (live.seen[m.id] || 0) >= NEED ? '#4caf50' : '#ffb300'; o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(...X(p)) : o.moveTo(...X(p))); o.closePath(); o.stroke(); o.fillStyle = '#fff'; const t = X(m.c[0]); o.fillText(String(m.id), t[0], t[1] - 4); });
-      live.now = new Set(d.map(m => m.id));
-      const miss = liveMissing();
-      let hint;
-      if (!miss.length) hint = '✔ Alles erfasst – oben auf <b>Fertig</b> tippen.';
-      else if (!d.length) hint = 'Keine Marke im Bild – auf eine Wand mit Marken richten.';
-      else if (fresh.length && !steady) hint = 'Kurz <b>ruhig halten</b> …';
-      else if (!fresh.length) hint = `Weiterdrehen oder Standort wechseln. Es fehlen noch: <b>${miss.slice(0, 6).map(liveLab).join(', ')}</b>`;
-      if (fresh.length && steady && d.length >= 2 && Date.now() - live.lastShot > 600 && !live.shooting) {
-        live.shooting = true; live.lastShot = Date.now();
-        const blob = await liveGrab(v);
+      const steady = mv < 4 * cv.width / 960;
+      // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
+      const vis = [...new Set(d.map(m => lgOf(m.id)))], pk = []; for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) pk.push([vis[i].key, vis[j].key].sort().join('|'));
+      const binsNow = new Map(); vis.forEach(g => { if (!g.floor) binsNow.set(g, groupBin(g, d)); });
+      const gain = vis.some(g => g.shots < (g.floor ? 8 : 4) || (binsNow.has(g) && !g.bins.has(binsNow.get(g))) || (g.floor && vis.some(w => !w.floor && !g.walls.has(w.key)))) || pk.some(k => (live.pairs[k] || 0) < 2);
+      let shot = false;
+      const dt = Date.now() - live.lastShot; // mit Nutzen schnell auslösen, sonst alle 0,9 s weitere Bilder (mehr Bilder = genauer)
+      if (d.length && steady && ((gain && dt > 450) || dt > 900) && live.shots < 90) {
+        const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
         if (blob) {
-          liveAddFile(blob); views.forEach(([m, w]) => { if (w.isNew) { live.seen[m.id] = (live.seen[m.id] || 0) + 1; live.last[m.id] = w; } });
-          navigator.vibrate?.(30); $('#live').classList.add('flash'); setTimeout(() => $('#live').classList.remove('flash'), 150);
-          hint = '📸 Bild aufgenommen';
+          pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now(); shot = true;
+          vis.forEach(g => { g.shots++; if (binsNow.has(g)) g.bins.add(binsNow.get(g)); if (g.floor) vis.forEach(w => { if (!w.floor) g.walls.add(w.key); }); });
+          pk.forEach(k => live.pairs[k] = (live.pairs[k] || 0) + 1);
+          navigator.vibrate?.(25); $('#live').classList.add('flash'); setTimeout(() => $('#live').classList.remove('flash'), 120);
         }
-        live.shooting = false;
       }
-      liveChips(hint); live.busy = false;
+      // Marken einzeichnen: Farbe = Fortschritt des Blatts
+      // Overlay exakt über das sichtbare Videobild legen (CSS-Größe = Pixelgröße, Lage relativ zum Container)
+      const r = v.getBoundingClientRect(), pr = v.parentElement.getBoundingClientRect();
+      ov.width = Math.round(r.width); ov.height = Math.round(r.height); Object.assign(ov.style, { width: r.width + 'px', height: r.height + 'px', left: (r.left - pr.left) + 'px', top: (r.top - pr.top) + 'px', maxWidth: 'none', maxHeight: 'none' });
+      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, X = p => [p[0] * k + ox, p[1] * k + oy];
+      o.clearRect(0, 0, ov.width, ov.height); o.lineWidth = 4;
+      d.forEach(m => { const p = lgProg(lgOf(m.id)); o.strokeStyle = p >= 1 ? '#4caf50' : p > 0 ? '#ffb300' : '#ff5252'; o.beginPath(); m.c.forEach((q, i) => i ? o.lineTo(...X(q)) : o.moveTo(...X(q))); o.closePath(); o.stroke(); });
+      if (!steady && d.length) { o.fillStyle = '#ffb30055'; o.fillRect(0, 0, ov.width, 8); }
+      const fin = liveCoach(d, steady, shot);
+      if (fin && !live.doneAt) live.doneAt = Date.now();
+      live.busy = false;
+      if (fin && Date.now() - live.doneAt > 2500) return liveFinish();
     }
-    live.timer = setTimeout(loop, 150);
+    live.timer = setTimeout(loop, 120);
   };
   loop();
 }
-async function liveShot() { // manuelles Foto (volle Sensorauflösung, falls möglich)
-  const btn = $('#liveShot'), v = $('#liveVid'); btn.disabled = true;
-  try {
-    let blob = null; const track = live.stream.getVideoTracks()[0];
-    if ('ImageCapture' in window) { try { blob = await new ImageCapture(track).takePhoto(); } catch (e) { blob = null; } }
-    if (!blob) blob = await liveGrab(v);
-    liveAddFile(blob); live.lastShot = Date.now();
-    live.now.forEach(id => live.seen[id] = (live.seen[id] || 0) + 1);
-    liveChips('📸 Bild aufgenommen');
-  } catch (e) { alert('Foto fehlgeschlagen: ' + e.message); }
-  btn.disabled = false;
+async function liveShot() { // Foto von Hand (falls die Automatik etwas nicht erwischt)
+  const v = $('#liveVid'); if (!v.videoWidth) return;
+  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)); if (!blob) return;
+  pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now();
+  navigator.vibrate?.(25);
 }
 function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.stream = null; try { live.wake?.release(); } catch (e) { } $('#live').hidden = true; }
+function liveFinish() {
+  liveStop();
+  if (!live.shots) return;
+  pgSetFiles(pgFiles); showTab('auf'); pgAuto = true;
+  $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('#pgRun').click();
+}
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
-$('#liveDone').onclick = () => { liveStop(); if (live.shots) $('#pgRun').click(); };
+$('#liveDone').onclick = liveFinish;
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
 $('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
@@ -455,7 +505,7 @@ $('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
   const r = newRoom($('#arName').value || 'Raum ' + (S.rooms.length + 1), [], 0, 0); Object.assign(r, fromPoly(Q, r));
   if (r.segs.reduce((s, g) => s + g.turn, 0) < 0) { Q = Q.reverse(); Object.assign(r, fromPoly(Q, r)); } // Umlaufsinn wie im Plan
   if (height) r.h = +height.toFixed(2);
-  r.x = 0; r.y = 0; placeFree(r); S.rooms.push(r); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
+  S.rooms = S.rooms.filter(q => !q.demo); r.x = 0; r.y = 0; placeFree(r); S.rooms.push(r); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
   setTimeout(() => alert(`Raum übernommen: ${r.segs.length} Wände, Streuung der Wandpunkte ${Math.round(rms * 1000)} mm${height ? ', Raumhöhe ' + f2(height) + ' m' : ''}. AR ist ca. ±1–2 cm genau – für mm-Genauigkeit die Zielmarken verwenden.`), 50);
 });
 $('#arPoint').onclick = AR.point; $('#arNext').onclick = AR.next; $('#arUndo').onclick = AR.undo; $('#arDone').onclick = AR.finish; $('#arCancel').onclick = AR.cancel;
@@ -883,6 +933,7 @@ function snapRoom(i) {
   });
   if (bx !== null) r.x = +(r.x + bx).toFixed(3); if (by !== null) r.y = +(r.y + by).toFixed(3);
 }
+$('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
   const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return alert('Breite und Tiefe in m eingeben (z. B. 4,20).');
   const r = newRoom($('#nName').value || 'Raum ' + (S.rooms.length + 1), rectSegs(w, d), 0, 0);

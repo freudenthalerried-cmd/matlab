@@ -23,51 +23,53 @@
 <main>
   <!-- 1 AUFNAHME -->
   <section id="auf">
-    <div class="card arcard">
-      <h3>📱 Schnell: Raum mit AR messen – ohne Marken, ca. 1 Minute</h3>
-      <p class="small">Handy auf jede Wand richten und 2–3 Punkte antippen (über den Möbeln, weit auseinander). Die App berechnet daraus Wände, Ecken und Winkel. Genauigkeit ca. ±1–2 cm. Braucht Chrome auf Android mit ARCore.</p>
-      <div class="row"><button id="arOpen" class="pri big">📱 AR-Aufmaß starten</button><input id="arName" placeholder="Raumname (optional)" size="14"></div>
-    </div>
-    <p class="intro">Hier nimmst du den Raum auf: Marken drucken und auslegen, fotografieren, auswerten. Unsicher? Oben auf <b>? Anleitung</b> tippen.</p>
     <div class="card pgcard">
-      <h3>Genau: mit Zielmarken (±1–3 mm, dauert länger)</h3>
-      <ol class="small">
-        <li><b>Blätter drucken</b> (100 %, nichts ausschneiden): „1 Blatt pro Wand“ – 2 Bodenblätter für den Zollstock und je Wand ein Blatt mit 4 Marken.</li>
-        <li><b>Zollstock</b> (2 m) ganz aufgeklappt auf den Boden legen. Die beiden Bodenblätter einmal von unten an Anfang (0 cm) und Ende (200 cm) des Zollstocks kleben – Zollstock auf den grauen Streifen, Anfang/Ende auf die senkrechte Linie, beide Blätter auf derselben Seite.</li>
-        <li><b>Je Wand ein Blatt</b> flach ankleben, Mitte ca. 1,3 m hoch, nicht hinter Möbeln. Schiefe Wand: zweites Blatt nahe der anderen Ecke.</li>
-        <li><b>Filmen:</b> auf „📹 Raum aufnehmen“ tippen und den Raum langsam rundum filmen – von jeder Ecke aus, auch den Boden mit den Marken 0–3. Bei jeder Stelle kurz ruhig halten: die App macht dann selbst ein scharfes Bild (kurzes Vibrieren) und zeigt an, welche Marken noch fehlen. Sind alle grün, „Fertig – auswerten“ tippen.</li>
-        <li><b>Auswerten</b> – dauert je nach Handy 1–5 Minuten.</li>
-        <li><b>Gesamtplan aus mehreren Räumen:</b> je Raum eine eigene Fotoserie. Für jeden Raum Wandmarken mit <b>anderen Nummern</b> drucken („ab Nr.“, z. B. Raum 2 ab 20). Die <b>Verbindungsmarken 90–93</b> im Türbereich am Boden liegen lassen (je 1–2 auf jeder Seite der Tür) und in <b>beiden</b> Serien mitfotografieren. Bodenmarken 0–3 und Maßband im nächsten Raum neu auslegen. Beim „Räume übernehmen“ setzt die App den Raum automatisch passgenau an (Wandstärke inklusive).</li>
+      <h3>Raum aufnehmen</h3>
+      <ol class="steps">
+        <li><b>Blätter auslegen:</b> Zollstock mit den 2 Bodenblättern auf den Boden, an jede Wand ein Blatt. <span class="hint">Noch keine Blätter? → „🖨 Blätter drucken“ (einmalig).</span></li>
+        <li><b>„📹 Raum aufnehmen“</b> tippen und mit dem Handy durch den Raum gehen. Die App zeigt, was noch fehlt, und macht die Bilder selbst.</li>
+        <li><b>Fertig:</b> Die Auswertung startet von selbst, der Raum erscheint im Plan.</li>
       </ol>
       <div class="row">
-        <label>Wandmarken <input id="pgN" inputmode="numeric" size="3" value="12"></label>
-        <label>ab Nr. <input id="pgFrom" inputmode="numeric" size="3" value="4"></label>
-        <label><input type="checkbox" id="pgConn" checked> Verbindungsmarken 90–93</label>
-        <label>Markengröße mm <input id="pgSize" inputmode="numeric" size="4" value="45"></label>
-        <button id="pgWallSheets" class="pri">🖨 1 Blatt pro Wand (empfohlen)</button>
-        <button id="pgSheet">🖨 16 Einzelmarken</button>
-        <button id="pgPrint">🖨 Große Marken (1 pro Blatt)</button>
-      </div>
-      <div class="row">
         <button id="liveOpen" class="pri big">📹 Raum aufnehmen</button>
-        <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
-        <label class="btn">📁 Fotos / Video wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
-        <span id="pgSrc" class="hint"></span>
+        <button id="pgWallSheets">🖨 Blätter drucken</button>
+        <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
-      <div class="row"><span class="hint">Tipp: Fotos mit der normalen Kamera-App machen und dann alle auf einmal über „Fotos / Video wählen“ laden.</span>
-      </div>
-      <div class="row">
-        <label>Zollstock Marke 0 → 1 (m) <input id="pgDist" inputmode="decimal" size="6" value="2,000"></label>
-        <label>Marke 2 → 3 (m, optional) <input id="pgDist2" inputmode="decimal" size="6" placeholder="z. B. 2,000"></label>
-        <label title="Auf einem gedruckten Blatt die Linie 0–15 mit dem Zollstock nachmessen. Leer lassen, wenn sie genau 150 mm lang ist.">Kontrolllinie gemessen (mm) <input id="pgCtrl" inputmode="decimal" size="5" placeholder="150"></label>
-        <label>Erwartete Wände <input id="pgWalls" inputmode="numeric" size="2" placeholder="z. B. 4"></label>
-        <label>Bildabstand <select id="pgStep"><option value="0.1">0,1 s (genau, langsam)</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s (schnell)</option></select></label>
-      </div>
-      <label class="small">Räume (optional, bei mehreren Räumen in einem Video): je Zeile „Name: Marken von–bis“
-        <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19: 6   (6 = erwartete Wände, optional)&#10;Küche: 20-31: 4"></textarea></label>
-      <div class="row"><button id="pgRun" class="pri">▶ Auswerten</button><progress id="pgProg" max="1" value="0" hidden></progress></div>
+      <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>
+      <details class="more">
+        <summary>Einstellungen, Fotos/Video laden, andere Vorlagen</summary>
+        <div class="row">
+          <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
+          <label>Wände <input id="pgWalls" inputmode="numeric" size="2" placeholder="4"></label>
+          <label title="Auf einem gedruckten Blatt die Linie 0–15 mit dem Zollstock nachmessen. Leer lassen, wenn sie genau 150 mm lang ist.">Kontrolllinie gemessen (mm) <input id="pgCtrl" inputmode="decimal" size="5" placeholder="150"></label>
+          <label>Zollstock Marke 0 → 1 (m) <input id="pgDist" inputmode="decimal" size="6" value="2,000"></label>
+        </div>
+        <div class="row">
+          <label>Wandmarken <input id="pgN" inputmode="numeric" size="3" value="16"></label>
+          <label>ab Nr. <input id="pgFrom" inputmode="numeric" size="3" value="4"></label>
+          <label>Markengröße mm <input id="pgSize" inputmode="numeric" size="4" value="80"></label>
+          <label><input type="checkbox" id="pgConn"> Verbindungsmarken 90–93 (mehrere Räume)</label>
+          <label>Marke 2 → 3 (m, optional) <input id="pgDist2" inputmode="decimal" size="6" placeholder="z. B. 2,000"></label>
+          <label>Bildabstand Video <select id="pgStep"><option value="0.1">0,1 s</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s</option></select></label>
+        </div>
+        <div class="row">
+          <button id="pgSheet">🖨 16 Einzelmarken</button>
+          <button id="pgPrint">🖨 Große Marken</button>
+          <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
+          <label class="btn">📁 Fotos / Video wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
+          <button id="pgRun">▶ Auswerten</button>
+        </div>
+        <label class="small">Mehrere Räume in einem Video: je Zeile „Name: Marken von–bis“
+          <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19: 6&#10;Küche: 20-31: 4"></textarea></label>
+        <p class="small"><b>Gesamtplan aus mehreren Räumen:</b> je Raum eigene Aufnahme, Wandblätter mit anderen Nummern drucken („ab Nr.“, z. B. Raum 2 ab 20), Verbindungsmarken 90–93 im Türbereich liegen lassen und in beiden Aufnahmen mitfilmen.</p>
+      </details>
+    </div>
+    <div class="card arcard">
+      <h3>📱 Ohne Blätter: AR-Messung (±1–2 cm)</h3>
+      <p class="small">Handy auf jede Wand richten und 2–3 Punkte antippen (über den Möbeln). Braucht Chrome auf Android mit ARCore.</p>
+      <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button></div>
     </div>
     <details class="tip">
       <summary>B · Manuell: Fotos antippen (Referenzrechteck am Boden)</summary>
@@ -160,6 +162,7 @@
       <input id="nW" inputmode="decimal" placeholder="Breite m" size="6">
       <input id="nD" inputmode="decimal" placeholder="Tiefe m" size="6">
       <button id="nAdd" class="pri">+ Rechteckraum</button>
+      <button id="planClear" class="danger">🗑 Plan leeren</button>
       <span class="sp"></span>
       <button id="zIn">＋</button><button id="zOut">－</button><button id="zFit">Einpassen</button>
     </div>
@@ -211,12 +214,12 @@
   <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
 </div>
 <div id="live" hidden>
-  <div class="livebar"><button id="liveClose">✕</button><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveDone">✔ Fertig – auswerten</button></div>
+  <div class="livebar"><button id="liveClose">✕</button><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveDone">✔ Auswerten</button></div>
   <div class="liveprog"><div id="liveBar"></div></div>
   <div id="liveHint" class="livehint"></div>
   <div class="livecam"><video id="liveVid" playsinline muted></video><canvas id="liveOv"></canvas></div>
-  <div id="liveChips" class="chips"></div>
-  <div class="livebtns"><span class="small">Die App fotografiert automatisch, sobald du kurz ruhig hältst.</span><button id="liveShot" class="shot" title="Foto von Hand">●</button></div>
+  <div id="liveChips" class="lgs"></div>
+  <div class="livebtns"><span class="small">Herumgehen ist erwünscht · 1–3 m Abstand · <b>nicht zoomen</b> · die App fotografiert selbst</span><button id="liveShot" class="shot" title="Foto von Hand">●</button></div>
 </div>
 <script src="ausgleich.js"></script>
 <script src="ba.js"></script>

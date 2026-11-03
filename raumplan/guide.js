@@ -11,38 +11,32 @@
     <text x="160" y="45" font-size="11" text-anchor="middle" fill="#e0672b">■ 1 Blatt je Wand</text>
   </svg>`;
   const steps = [
-    { t: 'Willkommen', h: `<p>Mit dieser App misst du einen Raum in etwa <b>1 Minute</b> nur mit dem Handy auf – ohne Maßband, ohne Marken – und bekommst einen Grundriss für den Einreichplan.</p>
-      <p><b>Du brauchst:</b> ein Android-Handy mit Chrome und ARCore (fast alle neueren Handys). Genauigkeit ca. ±1–2 cm.</p>
-      <p class="hint">Für Millimeter-Genauigkeit gibt es zusätzlich den Weg mit gedruckten Zielmarken (am Ende der Anleitung).</p>`,
+    { t: 'Willkommen', h: `<p>Mit dieser App machst du aus einem kurzen Handy-Video einen <b>maßgenauen Grundriss</b> (±1–5 mm) für den Einreichplan.</p>
+      <p><b>So geht es:</b></p><ol><li><b>Blätter hinlegen</b>: Zollstock mit 2 Bodenblättern auf den Boden, an jede Wand ein Blatt (ca. 1 Minute).</li><li><b>Raum filmen</b>: mit dem Handy herumgehen – die App sagt dir, wohin, und macht die Bilder selbst (1–2 Minuten).</li><li><b>Fertig</b>: Die App rechnet von selbst und zeichnet den Raum in den Plan.</li></ol>
+      <p><b>Du brauchst:</b> Drucker (einmalig), Zollstock 2 m, Klebeband, Android-Handy mit Chrome.</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
-    { t: 'Raum mit AR messen', h: `<ol><li><b>📱 AR-Aufmaß starten</b> tippen und das Handy langsam bewegen, bis der Boden erkannt ist.</li>
-      <li>Den <b>Kreis in der Mitte</b> auf eine Wand richten – über den Möbeln. Grün = Wand erkannt.</li>
-      <li><b>Punkt</b> tippen, ein Stück die Wand entlang zielen, nochmal <b>Punkt</b>. 2–3 Punkte pro Wand, möglichst weit auseinander.</li>
-      <li><b>Nächste Wand</b> tippen und der Reihe nach rundherum weitermachen.</li>
-      <li>Optional: auf die <b>Decke</b> zielen (blau) und Punkt tippen – das ergibt die Raumhöhe.</li>
-      <li><b>✔ Fertig</b> – die App berechnet Ecken, Winkel und Wandlängen und legt den Raum im Plan an.</li></ol>`,
-      b: [['📱 AR-Aufmaß starten', 'ar'], ['Weiter ›', 'next', 1]] },
-    { t: 'Plan und Einreichung', h: `<p><b>3 Plan</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum – nebeneinander liegende Räume rasten ein.</p>
-      <p><b>4 Einreichung</b>: Plankopf ausfüllen und als <b>PDF</b>, <b>DXF</b> (CAD) oder Aufmaßprotokoll ausgeben.</p>
-      <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>`,
-      b: [['Fertig', 'close'], ['Genauer mit Marken ›', 'next']] },
-    { t: 'Genauer: Blätter drucken', h: `<p class="hint">Optional – nur wenn ±1–2 cm nicht reichen.</p>
-      <p>Die App erkennt gedruckte <b>Zielmarken</b> (schwarze Quadrate) auf den Bildern und berechnet daraus die Maße auf wenige Millimeter.</p>
-      <ul><li><b>2 Bodenblätter</b> – je eines für jedes Ende des Zollstocks.</li><li><b>1 Blatt pro Wand</b> – bei einem normalen Raum 4 Blätter.</li><li>Mit <b>100 % / Originalgröße</b> drucken. Nichts ausschneiden.</li><li><b>Kontrolle:</b> Auf einem Blatt die Linie 0–15 mit dem Zollstock nachmessen. Genau 150 mm? Passt. Sonst den gemessenen Wert unter „Kontrolllinie gemessen“ eintragen.</li></ul>`,
+    { t: 'Blätter drucken (einmalig)', h: `<ul><li><b>2 Bodenblätter</b> – kommen dauerhaft unter den Zollstock.</li><li><b>1 Blatt pro Wand</b> – für einen normalen Raum 4 Blätter.</li><li>Mit <b>100 % / Originalgröße</b> drucken, nichts ausschneiden.</li><li><b>Kontrolle:</b> Auf einem Blatt die Linie 0–15 nachmessen. Genau 150 mm? Passt. Sonst den Wert unter „Kontrolllinie gemessen“ eintragen.</li></ul>
+      <p><b>Zollstock herrichten (einmalig):</b> Zollstock auf den grauen Streifen der Bodenblätter legen, Anfang bzw. Ende genau auf die senkrechte Linie, Blätter von unten ankleben – beide auf derselben Seite.</p>`,
       b: [['🖨 Blätter drucken', 'wsheets'], ['Weiter ›', 'next', 1]] },
     { t: 'Blätter auslegen', h: `${sketch}
-      <ol><li><b>Zollstock</b> ganz aufklappen und gerade auf den Boden legen.</li><li><b>Bodenblätter einmal herrichten:</b> Zollstock auf den grauen Streifen legen (Kanten auf die Linien), Anfang bzw. Ende genau auf die senkrechte Linie, Blatt von unten ankleben. Beide Blätter auf derselben Seite. Bleiben dauerhaft dran.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln.</li></ol>
-      <p class="hint">Ca. 1 Minute. Schiefe Altbauwand? Dann ein zweites Blatt an dieselbe Wand, nahe der anderen Ecke.</p>`,
+      <ol><li><b>Zollstock</b> ganz aufklappen und flach auf den Boden legen, irgendwo frei im Raum.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln. Welches Blatt an welche Wand, ist egal.</li></ol>
+      <p class="hint">Schiefe oder sehr lange Wand? Dann ein zweites Blatt an diese Wand (mehr Blätter drucken: Feld „Erwartete Wände“ erhöhen).</p>`,
       b: [['Weiter ›', 'next', 1]] },
-    { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b> und film einfach den Raum. Du musst keine Fotos auslösen – die App fotografiert selbst, sobald du kurz ruhig hältst.</p>
-      <ol><li>Stell dich in eine Ecke und dreh dich langsam: zuerst zum Boden mit den Marken 0–3, dann die Wände entlang.</li><li>Bei jeder neuen Stelle <b>kurz ruhig halten</b>, bis es kurz vibriert.</li><li>Dann in die nächste Ecke gehen und wiederholen.</li></ol>
-      <p>Oben siehst du den Fortschritt und welche Marken noch fehlen. Wenn alle Marken grün ✓ sind, tippst du auf <b>✔ Fertig – auswerten</b>. Dauer: ca. 1–2 Minuten.</p>`,
+    { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b>. Dann:</p>
+      <ul><li><b>Herumgehen ist erwünscht!</b> Die App braucht jedes Blatt aus mindestens zwei Richtungen. Abstand 1–3 m.</li><li><b>Nicht zoomen</b> – der Weitwinkel ist richtig. Lieber näher hingehen.</li><li><b>Langsam schwenken.</b> Du musst nichts auslösen: Sobald das Bild ruhig ist und etwas Neues zeigt, macht die App selbst ein Bild (kurzes Vibrieren).</li></ul>
+      <p><b>Die Balken unten</b> zeigen je Blatt den Fortschritt: <span style="color:#c62828">rot</span> = noch nicht gesehen, <span style="color:#b8860b">gelb</span> = teilweise, <span style="color:#2e7d32">grün ✓</span> = fertig. ◀ ● ▶ zeigt, aus welchen Richtungen das Blatt schon gefilmt ist. Oben steht immer, was als Nächstes zu tun ist.</p>
+      <p>Sind alle Balken grün, startet die Auswertung <b>von selbst</b>.</p>`,
       b: [['📹 Raum aufnehmen', 'live'], ['Weiter ›', 'next', 1]] },
-    { t: 'Auswerten', h: `<p>Nach „Fertig“ startet die Auswertung von selbst. Das dauert je nach Handy 1–5 Minuten, der Bildschirm soll dabei an bleiben.</p>
-      <p>Danach siehst du jede Wand mit Länge und Genauigkeit, z. B. <b>4,215 m ± 1 mm (0,02 %)</b>. Grün heißt: Genauigkeit passt.</p>
-      <p>Mit <b>„In Plan übernehmen“</b> kommt der Raum in den Grundriss. Beim nächsten Raum geht es wieder bei „Marken auslegen“ los. Die App setzt die Räume über die Verbindungsmarken 90–93 im Türbereich automatisch zusammen.</p>`,
-      b: [['▶ Jetzt auswerten', 'run'], ['Weiter ›', 'next', 1]] },
-    { t: 'Fertig', h: `<p>Das war der genaue Weg mit Marken. Die Anleitung findest du jederzeit oben unter <b>? Anleitung</b>.</p>`, b: [['Fertig', 'close']] }
+    { t: 'Ergebnis', h: `<p>Die App rechnet 1–3 Minuten (Bildschirm anlassen). Dann siehst du jede Wand mit Länge und Genauigkeit, z. B. <b>4,215 m ± 2 mm</b>. Passt alles, kommt der Raum <b>automatisch in den Plan</b>.</p>
+      <p>Ist eine Wand <span style="color:#c62828">rot</span> oder klappt die Auswertung nicht, steht dabei, was zu tun ist – meist: noch einmal filmen und dabei mehr Bilder mit <b>zwei Blättern gleichzeitig</b> (in den Ecken) machen.</p>`,
+      b: [['Weiter ›', 'next', 1]] },
+    { t: 'Plan und Einreichung', h: `<p><b>3 Plan</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum. „Plan leeren“ löscht alles.</p>
+      <p><b>4 Einreichung</b>: Plankopf ausfüllen und als <b>PDF</b>, <b>DXF</b> (CAD) oder Aufmaßprotokoll ausgeben.</p>
+      <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>`,
+      b: [['Fertig', 'close'], ['Ohne Blätter? ›', 'next']] },
+    { t: 'Ohne Blätter: AR-Messung', h: `<p>Schnell, aber ungenauer (±1–2 cm): <b>📱 AR-Aufmaß starten</b>, Kreis auf eine Wand richten (über den Möbeln), je Wand 2–3 Mal <b>Punkt</b> tippen, dann <b>Nächste Wand</b>, rundherum. Zum Schluss <b>✔ Fertig</b>.</p>
+      <p class="hint">Braucht ein Android-Handy mit ARCore.</p>`,
+      b: [['📱 AR starten', 'ar'], ['Fertig', 'close', 1]] }
   ];
   let i = 0;
   const box = document.createElement('div');
@@ -60,7 +54,7 @@
   function close() { box.hidden = true; try { localStorage.setItem(GKEY, '1'); } catch (e) { } }
   function demo() {
     const a = newRoom('Wohnen (Beispiel)', rectSegs(4.5, 3.8), 0, 0), b = newRoom('Küche (Beispiel)', rectSegs(3.2, 3.8), 0, 0);
-    [a, b].forEach(r => { placeFree(r); S.rooms.push(r); });
+    [a, b].forEach(r => { r.demo = true; placeFree(r); S.rooms.push(r); });
     selRoom = S.rooms.length - 2; save(); close(); showTab('plan');
   }
   box.onclick = e => {

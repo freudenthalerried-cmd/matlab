@@ -108,3 +108,11 @@ button.big{font-size:18px;padding:12px 18px}
 .arBtns button:disabled{opacity:.4}
 .arShot{width:80px;height:80px;border-radius:50%!important;background:#fff!important;color:#000!important;font-weight:700}
 .arOk{background:#2e7d32!important;border-color:#2e7d32!important}
+.lgs{background:#111;padding:6px 10px;display:grid;gap:4px;max-height:28vh;overflow:auto}
+.lg{display:flex;align-items:center;gap:8px;font-size:14px;color:#ccc}
+.lg.vis .lgl{color:#fff;font-weight:700}
+.lgl{width:8.5em;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lgb{flex:1;height:12px;background:#333;border-radius:6px;overflow:hidden}.lgb span{display:block;height:100%;transition:width .3s}
+.bins i{font-style:normal;color:#555;margin-left:2px}.bins i.on{color:#4caf50}
+ol.steps{padding-left:22px;margin:6px 0 10px;font-size:15px}ol.steps li{margin:5px 0}
+details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}details.more summary{cursor:pointer;color:var(--mut);font-size:14px}
