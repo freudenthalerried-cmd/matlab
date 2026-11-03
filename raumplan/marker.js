@@ -49,11 +49,13 @@ const MK = (() => {
   // Raster (10 mm, hellgrau) + Kontrollmaßstab 150 mm zwischen den Marken – hält 10 mm Abstand zu den Marken
   function ctrlSVG(y0, y1) {
     let o = '';
-    for (let x = 15; x <= 195; x += 10) o += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y1}" stroke="#e2e2e2" stroke-width=".2"/>`;
-    for (let y = y0; y <= y1; y += 10) o += `<line x1="15" y1="${y}" x2="195" y2="${y}" stroke="#e2e2e2" stroke-width=".2"/>`;
-    const ry = y0 + 6; o += `<rect x="25" y="${ry - 4}" width="160" height="17" fill="#fff"/><line x1="30" y1="${ry}" x2="180" y2="${ry}" stroke="#000" stroke-width=".25"/>`;
-    for (let m = 0; m <= 150; m++) { const L = m % 10 ? (m % 5 ? 1.5 : 2.5) : 4; o += `<line x1="${30 + m}" y1="${ry}" x2="${30 + m}" y2="${ry + L}" stroke="#000" stroke-width="${m % 10 ? .12 : .25}"/>`; if (!(m % 10)) o += `<text x="${30 + m}" y="${ry + 7.5}" font-size="2.8" text-anchor="middle">${m / 10}</text>`; }
-    o += `<text x="105" y="${ry + 11.5}" font-size="3.2" text-anchor="middle">Maßstabskontrolle: 0 bis 15 = genau 150 mm. Mit dem Zollstock nachmessen – sonst Druck auf 100 % stellen.</text>`;
+    for (let x = 15; x <= 195; x += 10) o += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y1}" stroke="#d8d8d8" stroke-width=".25"/>`;
+    for (let y = y0; y <= y1; y += 10) o += `<line x1="15" y1="${y}" x2="195" y2="${y}" stroke="#d8d8d8" stroke-width=".25"/>`;
+    const ry = y0 + 8; o += `<rect x="22" y="${ry - 7}" width="166" height="23" fill="#fff" stroke="#000" stroke-width=".3"/>`;
+    o += `<text x="105" y="${ry - 2}" font-size="3.8" text-anchor="middle" font-weight="bold">KONTROLLE: 0 bis 15 cm = genau 150 mm – mit Zollstock nachmessen</text>`;
+    o += `<line x1="30" y1="${ry}" x2="180" y2="${ry}" stroke="#000" stroke-width=".4"/>`;
+    for (let m = 0; m <= 150; m++) { const L = m % 10 ? (m % 5 ? 2 : 3.5) : 5; o += `<line x1="${30 + m}" y1="${ry}" x2="${30 + m}" y2="${ry + L}" stroke="#000" stroke-width="${m % 10 ? .15 : .35}"/>`; if (!(m % 10)) o += `<text x="${30 + m}" y="${ry + 9}" font-size="3.6" text-anchor="middle" font-weight="bold">${m / 10}</text>`; }
+    o += `<text x="105" y="${ry + 13.5}" font-size="3" text-anchor="middle">Weicht es ab: Druck auf 100 % stellen oder den gemessenen Wert in der App bei „Kontrolllinie gemessen“ eintragen.</text>`;
     return o;
   }
   // „1 Blatt pro Wand“: A4 mit 4 Marken in den Ecken (Mitten 105±55 / 148,5±98,5 mm). cut: obere Reihe zum Ausschneiden (Zollstock-Marken)
@@ -85,8 +87,8 @@ const MK = (() => {
     });
     o += `<line x1="${cx}" y1="0" x2="${cx}" y2="${70 - size / 2 - 3}" stroke="#000" stroke-width=".5"/><path d="M${cx - 4} 6 L${cx} 0 L${cx + 4} 6" fill="none" stroke="#000" stroke-width=".5"/>`;
     o += `<text x="${cx + 6}" y="12" font-size="9" font-weight="bold">Zollstock ${cm} cm hier</text>`;
-    o += `<text x="105" y="150" font-size="9" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
-    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${157 + i * 5.5}" font-size="4.2" text-anchor="middle">${t}</text>`);
+    o += `<text x="105" y="153" font-size="8" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
+    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${159.5 + i * 5}" font-size="3.9" text-anchor="middle">${t}</text>`);
     return o + '</svg>';
   }
 
