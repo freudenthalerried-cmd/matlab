@@ -35,12 +35,12 @@
         <button id="pgWallSheets">🖨 Blätter drucken</button>
         <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
-      <p id="calState" class="small"></p>
+      <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>
       <details class="more">
-        <summary>Einstellungen, Fotos/Video laden, andere Vorlagen</summary>
+        <summary>⚙️ Einstellungen (antippen zum Aufklappen)</summary>
         <div class="row">
           <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
           <label>Wände <input id="pgWalls" inputmode="numeric" size="2" placeholder="4"></label>
@@ -56,8 +56,6 @@
           <label>Bildabstand Video <select id="pgStep"><option value="0.1">0,1 s</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s</option></select></label>
         </div>
         <div class="row">
-          <button id="calOpen">🎯 Kamera kalibrieren</button>
-          <button id="calPrint">🖨 Kalibriertafel</button>
           <button id="pgSheet">🖨 16 Einzelmarken</button>
           <button id="pgPrint">🖨 Große Marken</button>
           <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
