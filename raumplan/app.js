@@ -119,6 +119,19 @@ $('#pgLayout').value = layoutGet();
 $('#pgLayout').onchange = () => layoutApply($('#pgLayout').value);
 $('#pgWalls').onchange = () => { if (layoutGet() === 'wall') $('#pgN').value = 4 * (Math.round(num($('#pgWalls').value)) || 4); };
 // Maßstabskontrolle über die Wandblätter: Markenabstände auf dem Blatt (110 / 197 mm × Druckmaßstab) gegen das Ergebnis
+function sheetScaleDev(rec) { // Abweichung der Blattgeometrie in % (null, wenn nicht prüfbar)
+  if (layoutGet() !== 'wall') return null;
+  const from = Math.round(num($('#pgFrom').value)) || 4, k = printK(), ctr = id => { const q = rec.kU.get(id); return [0, 1, 2].map(j => [0, 1, 2, 3].reduce((a, c) => a + rec.res.pts[4 * q + c][j], 0) / 4); }, rat = [];
+  for (let b = from; b + 3 < 90; b += 4) { const ids = [b, b + 1, b + 2, b + 3]; if (!ids.every(id => rec.kU.has(id))) continue; [[0, 1, 0.110], [2, 3, 0.110], [0, 2, 0.197], [1, 3, 0.197]].forEach(([i, j, d]) => { const A = ctr(ids[i]), B = ctr(ids[j]); rat.push(Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]) / (d * k)); }); }
+  return rat.length >= 4 ? (rat.reduce((a, v) => a + v, 0) / rat.length - 1) * 100 : null;
+}
+// Plausibilität für die Neustarts: Wandanzahl wie erwartet, Blattgeometrie passt zum Maßstab
+function pgCheck(rec) {
+  const dev = sheetScaleDev(rec); if (dev !== null && Math.abs(dev) > 1) return `Maßstab passt nicht zu den Blättern (${f2(dev, 1)} %)`;
+  const exp = Math.round(num($('#pgWalls').value)) || (layoutGet() === 'wall' ? 4 : 0);
+  if (exp && !$('#pgRooms').value.trim()) { const w = PG.walls(rec); if (w.ok && w.lengths.length !== exp) return `${w.lengths.length} statt ${exp} Wände`; }
+  return null;
+}
 function sheetScaleCheck(rec) {
   if (layoutGet() !== 'wall') return '';
   const from = Math.round(num($('#pgFrom').value)) || 4, k = printK(), ctr = id => { const q = rec.kU.get(id); return [0, 1, 2].map(j => [0, 1, 2, 3].reduce((a, c) => a + rec.res.pts[4 * q + c][j], 0) / 4); };
@@ -223,7 +236,7 @@ $('#pgRun').onclick = async () => {
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
-    const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, sigPx: 0.3, log: pgLog });
+    const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, check: pgCheck, sigPx: 0.3, log: pgLog });
     pr.value = 0.95; await tick();
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);

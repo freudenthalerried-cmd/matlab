@@ -36,14 +36,16 @@ const PG = (() => {
 
   /* frames: [{dets:[{id, c:[[x,y]*4]}]}], opt: {W,H,size (m), scaleDist (m), sigTape, sigPx, log, progress} */
   function reconstruct(frames, opt) { // mit Neustarts von anderen Startmarken, falls der Bildfehler zu hoch ist
-    let best = reconstructOnce(frames, opt, 0);
+    // opt.check(rec) → Fehlertext oder null: zusätzliche Plausibilitätsprüfung (z. B. Wandanzahl, Blattgeometrie) – schlägt sie fehl, gilt das Ergebnis als verdächtig
+    const chk = r => { if (r.ok && !r.suspect && opt.check) { const m = opt.check(r); if (m) r.suspect = m; } return r; };
+    let best = chk(reconstructOnce(frames, opt, 0));
     const good = r => r.ok && r.res.rms <= (opt.goodRms || 0.5) && !r.suspect, score = r => r.ok ? r.res.rms + (r.suspect ? 10 : 0) : Infinity;
     if (good(best)) return best;
     const cnt = {}; frames.forEach(fr => fr.dets.forEach(d => cnt[d.id] = (cnt[d.id] || 0) + 1));
-    const roots = Object.keys(cnt).map(Number).filter(id => id !== 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, opt.restarts ?? 3);
+    const roots = Object.keys(cnt).map(Number).filter(id => id !== 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, opt.restarts ?? 5);
     for (const r of roots) {
       (opt.log || (() => { }))(`${best.ok ? (best.suspect || `Bildfehler ${best.res.rms.toFixed(2)} px zu hoch`) : best.msg} – Neustart ab Marke ${r}…`);
-      const t = reconstructOnce(frames, opt, r);
+      const t = chk(reconstructOnce(frames, opt, r));
       if (score(t) < score(best) || (!best.ok && t.ok)) best = t;
       if (good(best)) break;
     }

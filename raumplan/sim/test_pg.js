@@ -40,7 +40,7 @@ for(let i=0;i<NF;i++){const k=Math.floor(STN.length*i/NF),f2=(STN.length*i/NF)%1
  frames.push({dets});}
 if(CF&&!cached)fs.writeFileSync(CF,JSON.stringify(frames));if(!cErr.length)cErr=[0];cErr.sort((a,b)=>a-b);const nd=frames.reduce((s,f)=>s+f.dets.length,0);
 console.log(`Render+Erkennung ${NF} Bilder ${W}x${H}: ${((Date.now()-t0)/1000).toFixed(0)} s, ${ (nd/NF).toFixed(1)} Marken/Bild, Eckfehler median ${cErr[cErr.length>>1].toFixed(3)} px, 95% ${cErr[Math.floor(cErr.length*.95)].toFixed(3)} px, max ${cErr[cErr.length-1].toFixed(2)}`);
-t0=Date.now();const rec=PG.reconstruct(frames,{W,H,size:MS,scaleDist:SD,sigTape:+(process.env.STAPE||0.0005),sigPx:+(process.env.SPX||0.3),calib:process.env.CALIB?[it[0]*(1+(+(process.env.CALIBERR||0))),it[1],it[2],it[3],it[4]]:undefined,rs:!!process.env.RSM,log:process.env.LOG?console.log:undefined});
+t0=Date.now();const rec=PG.reconstruct(frames,{W,H,size:MS,scaleDist:SD,sigTape:+(process.env.STAPE||0.0005),sigPx:+(process.env.SPX||0.3),check:process.env.CHECK?(r=>{const w=PG.walls(r);return w.ok&&w.lengths.length!==4?'Wandanzahl '+w.lengths.length:null}):undefined,calib:process.env.CALIB?[it[0]*(1+(+(process.env.CALIBERR||0))),it[1],it[2],it[3],it[4]]:undefined,rs:!!process.env.RSM,log:process.env.LOG?console.log:undefined});
 if(!rec.ok){console.log(rec.msg);process.exit(1);}
 console.log('Rek.: Bilder',rec.nImg,'rms',rec.res.rms.toFixed(3),'f',rec.res.it[0].toFixed(1),'Marken',rec.ids.join(','));const cnts={};frames.forEach(f=>f.dets.forEach(d=>cnts[d.id]=(cnts[d.id]||0)+1));console.log('Sichtungen je Marke',JSON.stringify(cnts));
 const wl=PG.walls(rec);if(!wl.ok){console.log(wl.msg);process.exit(1);}
