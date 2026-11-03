@@ -31,7 +31,7 @@
       <ul><li><b>2 Bodenblätter</b> – je eines für jedes Ende des Zollstocks.</li><li><b>1 Blatt pro Wand</b> – bei einem normalen Raum 4 Blätter.</li><li>Mit <b>100 % / Originalgröße</b> drucken. Nichts ausschneiden.</li><li><b>Kontrolle:</b> Auf einem Blatt die Linie 0–15 mit dem Zollstock nachmessen. Genau 150 mm? Passt. Sonst den gemessenen Wert unter „Kontrolllinie gemessen“ eintragen.</li></ul>`,
       b: [['🖨 Blätter drucken', 'wsheets'], ['Weiter ›', 'next', 1]] },
     { t: 'Blätter auslegen', h: `${sketch}
-      <ol><li><b>Zollstock</b> ganz aufklappen und gerade auf den Boden legen.</li><li><b>Bodenblatt „0 cm“</b> mit der Oberkante an den Zollstock legen, der Strich oben zeigt auf 0 cm. <b>Bodenblatt „200 cm“</b> genauso ans andere Ende.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln.</li></ol>
+      <ol><li><b>Zollstock</b> ganz aufklappen und gerade auf den Boden legen.</li><li><b>Bodenblätter einmal herrichten:</b> Zollstock auf den grauen Streifen legen (Kanten auf die Linien), Anfang bzw. Ende genau auf die senkrechte Linie, Blatt von unten ankleben. Beide Blätter auf derselben Seite. Bleiben dauerhaft dran.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln.</li></ol>
       <p class="hint">Ca. 1 Minute. Schiefe Altbauwand? Dann ein zweites Blatt an dieselbe Wand, nahe der anderen Ecke.</p>`,
       b: [['Weiter ›', 'next', 1]] },
     { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b> und film einfach den Raum. Du musst keine Fotos auslösen – die App fotografiert selbst, sobald du kurz ruhig hältst.</p>

@@ -85,10 +85,13 @@ const MK = (() => {
       for (let r = 0; r < N; r++) for (let k = 0; k < N; k++) if (!(c >>> (r * N + k) & 1)) o += `<rect x="${x0 + (k + 1) * cell}" y="${y0 + (r + 1) * cell}" width="${cell + 0.02}" height="${cell + 0.02}" fill="#fff"/>`;
       o += `<text x="${cx + size / 2 + 6}" y="${cy + 3}" font-size="8" font-weight="bold">${id}</text>`;
     });
-    o += `<line x1="${cx}" y1="0" x2="${cx}" y2="${70 - size / 2 - 3}" stroke="#000" stroke-width=".5"/><path d="M${cx - 4} 6 L${cx} 0 L${cx + 4} 6" fill="none" stroke="#000" stroke-width=".5"/>`;
-    o += `<text x="${cx + 6}" y="12" font-size="9" font-weight="bold">Zollstock ${cm} cm hier</text>`;
+    // Auflagestreifen für den Zollstock (17 mm breit): Kanten auf die Linien, Strich = ${cm} cm; Blatt von unten an den Zollstock kleben
+    o += `<rect x="0" y="5" width="${W}" height="17" fill="#f2f2f2"/><line x1="0" y1="5" x2="${W}" y2="5" stroke="#000" stroke-width=".35"/><line x1="0" y1="22" x2="${W}" y2="22" stroke="#000" stroke-width=".35"/>`;
+    o += `<line x1="${cx}" y1="1" x2="${cx}" y2="26" stroke="#000" stroke-width=".5"/><text x="${cx + 2}" y="3.8" font-size="3.2" font-weight="bold">${cm} cm</text>`;
+    o += `<text x="${cm ? 52 : 158}" y="15" font-size="3.4" text-anchor="middle">Zollstock hier auflegen</text>`;
+    o += `<text x="105" y="27" font-size="2.9" text-anchor="middle">Zollstock-Kanten genau auf die beiden Linien, ${cm ? 'Zollstock-Ende (200 cm)' : 'Zollstock-Anfang (0 cm)'} auf die senkrechte Linie – dann das Blatt von unten an den Zollstock kleben.</text>`;
     o += `<text x="105" y="153" font-size="8" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
-    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${159.5 + i * 5}" font-size="3.9" text-anchor="middle">${t}</text>`);
+    ['Dieses Blatt bleibt am Zollstock kleben – einmal herrichten, immer wieder verwenden.', 'Beide Bodenblätter auf derselben Seite des Zollstocks ankleben.', 'Zum Messen den Zollstock ganz aufklappen und flach auf den Boden legen.', 'Nichts ausschneiden.'].forEach((t, i) => o += `<text x="105" y="${159.5 + i * 5}" font-size="3.9" text-anchor="middle">${t}</text>`);
     return o + '</svg>';
   }
 
