@@ -1,0 +1,43 @@
+name: Burgwacht Android
+on:
+  push:
+    paths: ['burgwacht/src/**', 'burgwacht/build.py', 'burgwacht/publish/angaben.json', 'burgwacht-android/**', '.github/workflows/burgwacht-android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.14.3' }
+      - name: Spiel bauen und in die App kopieren
+        run: |
+          python3 burgwacht/build.py
+          mkdir -p burgwacht-android/app/src/main/assets/game
+          cp -r burgwacht/dist/android/. burgwacht-android/app/src/main/assets/game/
+      - name: Test-APK und App-Bundle bauen
+        run: gradle -p burgwacht-android assembleDebug bundleRelease --no-daemon --stacktrace
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+      - run: |
+          cp burgwacht-android/app/build/outputs/apk/debug/app-debug.apk Burgwacht-Test.apk
+          cp burgwacht-android/app/build/outputs/bundle/release/app-release.aab burgwacht-unsigned.aab
+      - uses: actions/upload-artifact@v4
+        with: { name: Burgwacht-Android, path: "Burgwacht-Test.apk\nburgwacht-unsigned.aab" }
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: burgwacht-android
+          name: Burgwacht (Android)
+          make_latest: false
+          prerelease: true
+          files: |
+            Burgwacht-Test.apk
+            burgwacht-unsigned.aab
+          body: |
+            Test-APK zum Ausprobieren am Handy (mit Test-Werbung): https://github.com/${{ github.repository }}/releases/download/burgwacht-android/Burgwacht-Test.apk
+            Das App-Bundle für Google Play wird nach dem Bau mit dem Upload-Schlüssel signiert (nicht im Repository).
+            Build ${{ github.run_number }}

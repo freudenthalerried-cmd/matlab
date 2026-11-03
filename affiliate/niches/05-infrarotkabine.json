@@ -1,0 +1,51 @@
+{
+  "slug": "infrarotkabine",
+  "domain": "infrarotkabine-vergleich.at",
+  "marke": "Infrarotkabine Vergleich",
+  "thema": "Infrarotkabinen",
+  "icon": "♨️",
+  "farbe": "#c4501a",
+  "titel": "Infrarotkabine Vergleich 2026: Vollspektrum, Größen & Stromkosten",
+  "h1": "Infrarotkabine für zuhause: Welche Bauart passt zu dir?",
+  "beschreibung": "Infrarotkabinen im Vergleich: Vollspektrum vs. Flächenstrahler, 1–4 Personen, Indoor & Outdoor. Mit Stromkostenrechner und gratis Kaufcheckliste.",
+  "einleitung": "Eine Infrarotkabine braucht keinen Starkstrom, heizt in 10–15 Minuten auf und passt in fast jedes Zimmer. Entscheidend sind Strahlertyp, Holzart und Größe – nicht die Wattzahl allein. Hier vergleichen wir die wichtigsten Bauarten.",
+  "kurzantwort": "Für Wohlfühlwärme und Muskelentspannung reicht eine Kabine mit Flächenstrahlern (Carbon). Wer gezielte Tiefenwärme möchte, wählt Vollspektrumstrahler. Eine Sitzung kostet je nach Größe nur etwa 15–50 Cent Strom.",
+  "spalten": ["Personen", "Strahler", "Anschluss"],
+  "produkte": [
+    {"name": "1-Personen-Kabine mit Vollspektrumstrahlern", "badge": "Platzsparend", "fuer": "Singles, kleine Wohnungen", "specs": ["1", "Vollspektrum", "230 V Steckdose"], "pro": ["Passt in Ecken ab ca. 1 m²", "Tiefenwärme mit IR-A-Anteil", "Geringe Stromkosten"], "contra": ["Eng für große Personen", "Kein Liegen möglich"], "suche": "Infrarotkabine 1 Person Vollspektrum"},
+    {"name": "2-Personen-Kabine aus Hemlock mit Carbon-Flächenstrahlern", "badge": "Beliebteste Größe", "fuer": "Paare, Einsteiger", "specs": ["2", "Carbon-Flächenstrahler", "230 V Steckdose"], "pro": ["Gleichmäßige, milde Wärme", "Hemlock ist harzfrei und hautfreundlich", "Gutes Preis-Leistungs-Verhältnis"], "contra": ["Weniger Tiefenwirkung als Vollspektrum", "Aufbau zu zweit nötig"], "suche": "Infrarotkabine 2 Personen Hemlock Carbon"},
+    {"name": "Kombikabine (Infrarot + Sauna-Ofen)", "fuer": "Wer beides möchte", "specs": ["2–3", "Vollspektrum + Ofen", "oft 400 V"], "pro": ["Klassische Sauna und Infrarot in einem", "Aufguss möglich", "Hoher Wohlfühlfaktor"], "contra": ["Häufig Starkstrom nötig", "Deutlich teurer"], "suche": "Kombikabine Infrarot Sauna Ofen"},
+    {"name": "Eckkabine für 3–4 Personen", "fuer": "Familien", "specs": ["3–4", "Carbon oder Vollspektrum", "230 V, teils 16 A"], "pro": ["Ecklösung nutzt Raum optimal", "Platz für die ganze Familie", "Mehrere Strahlerzonen"], "contra": ["Längere Aufheizzeit", "Großer Platzbedarf"], "suche": "Infrarotkabine Eckkabine 4 Personen"},
+    {"name": "Outdoor-Infrarotkabine / Fasssauna mit IR", "fuer": "Garten und Terrasse", "specs": ["2–4", "Carbon", "Außenanschluss"], "pro": ["Spart Platz im Haus", "Wellness-Feeling im Freien", "Witterungsfestes Holz"], "contra": ["Fundament und Außenstrom nötig", "Wartung des Holzes"], "suche": "Outdoor Infrarotkabine Garten"}
+  ],
+  "rechner": {
+    "titel": "Stromkostenrechner Infrarotkabine",
+    "text": "Die Gesamtleistung steht im Datenblatt (typisch 1.200–2.500 W). Strahler laufen nicht dauerhaft auf Volllast – wir rechnen mit einem Lastfaktor.",
+    "inputs": [
+      {"id": "watt", "label": "Gesamtleistung", "wert": 1800, "einheit": "W", "step": 50},
+      {"id": "minuten", "label": "Dauer pro Sitzung inkl. Aufheizen", "wert": 45, "einheit": "min", "step": 5},
+      {"id": "proWoche", "label": "Sitzungen pro Woche", "wert": 3, "step": 1},
+      {"id": "last", "label": "Lastfaktor", "wert": 80, "einheit": "%", "step": 5},
+      {"id": "preis", "label": "Strompreis", "wert": 0.28, "einheit": "€/kWh", "step": 0.01}
+    ],
+    "outputs": [
+      {"label": "Kosten pro Sitzung", "formel": "watt / 1000 * minuten / 60 * last / 100 * preis", "einheit": "€", "stellen": 2},
+      {"label": "Kosten pro Monat", "formel": "watt / 1000 * minuten / 60 * last / 100 * preis * proWoche * 4.33", "einheit": "€", "stellen": 2},
+      {"label": "Kosten pro Jahr", "formel": "watt / 1000 * minuten / 60 * last / 100 * preis * proWoche * 52", "einheit": "€"}
+    ]
+  },
+  "ratgeber": [
+    {"h": "Vollspektrum oder Flächenstrahler?", "t": "Flächenstrahler (meist Carbon) geben vor allem langwelliges IR-C ab – angenehm milde Wärme, ähnlich einem Kachelofen. Vollspektrumstrahler enthalten zusätzlich IR-A und IR-B, die tiefer in die Haut eindringen. Sie gelten als wirksamer bei Verspannungen, können aber bei empfindlicher Haut intensiver sein.\n\nViele gute Kabinen kombinieren beides: Flächenstrahler für die Grundwärme, Vollspektrum im Rücken."},
+    {"h": "Die Holzart", "t": "Hemlock ist harzfrei, splittert kaum und ist günstig. Rote Zeder duftet angenehm und ist besonders langlebig, aber teurer. Fichte ist preiswert, kann aber bei Hitze Harz absondern. Auf Sitzflächen sollte kein lackiertes Holz verbaut sein."},
+    {"h": "Platz und Anschluss", "t": "Die meisten 1–2-Personen-Kabinen laufen an einer normalen 230-V-Steckdose (mit 16 A abgesichert, keine Mehrfachsteckdose!). Kombikabinen mit Saunaofen brauchen oft 400 V Starkstrom – das muss ein Elektriker installieren. Plane rundum ein paar Zentimeter Luft zur Wand ein."},
+    {"h": "Gesundheitlicher Hinweis", "t": "Bei Herz-Kreislauf-Erkrankungen, in der Schwangerschaft oder bei akuten Entzündungen vor der Nutzung ärztlich abklären. Unsere Seite ersetzt keine medizinische Beratung."}
+  ],
+  "faq": [
+    {"f": "Wie viel Strom verbraucht eine Infrarotkabine?", "a": "Eine 2-Personen-Kabine mit etwa 1.800 W kostet pro 45-Minuten-Sitzung rund 30 Cent Strom. Nutze den Rechner oben für deine Werte."},
+    {"f": "Brauche ich für eine Infrarotkabine Starkstrom?", "a": "Reine Infrarotkabinen nicht – sie laufen an 230 V. Nur Kombikabinen mit klassischem Saunaofen brauchen meist 400 V."},
+    {"f": "Wie heiß wird eine Infrarotkabine?", "a": "Die Lufttemperatur liegt meist bei 40–60 °C. Die Wärme entsteht hauptsächlich direkt im Körper, daher wirkt es intensiver als die Temperatur vermuten lässt."},
+    {"f": "Kann ich eine Infrarotkabine selbst aufbauen?", "a": "Ja, die meisten Kabinen werden in Modulen geliefert und sind mit zwei Personen in 1–3 Stunden aufgebaut."},
+    {"f": "Wo darf die Kabine stehen?", "a": "In jedem trockenen Innenraum mit normaler Luftfeuchte. Badezimmer nur mit ausreichender Lüftung und Abstand zur Dusche."}
+  ],
+  "checkliste": ["Stellfläche inkl. Wandabstand ausgemessen", "Raumhöhe geprüft (meist ab 2,00 m nötig)", "Eigene Steckdose mit 16 A Absicherung vorhanden", "Personenzahl festgelegt", "Strahlertyp entschieden (Carbon/Vollspektrum/Kombi)", "Holzart gewählt (Hemlock/Zeder/Fichte)", "Liefer- und Transportweg (Türbreiten) geprüft", "Gesundheitliche Fragen ärztlich abgeklärt", "Stromkosten mit dem Rechner kalkuliert", "Garantie auf Strahler und Steuerung verglichen"]
+}

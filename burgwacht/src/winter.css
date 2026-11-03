@@ -1,0 +1,9 @@
+/* Winter-Insel: eisige Oberfläche */
+body{background:#141c40}
+.res,.pill{background:linear-gradient(#3b5a9a,#1f2f62)}
+.btn{background:linear-gradient(#5f8ae0,#34539e)}
+.card{background:linear-gradient(#f4f9ff,#c9daf2);box-shadow:inset 0 2px 0 #fff,0 4px 0 #4a6aa8,0 6px 8px rgba(0,0,0,.35)}
+.card canvas{background:radial-gradient(circle at 50% 75%,#ffffff,#b8cce8)}
+.card .nm,.card .cs{color:#1d2a50}
+#panel{background:linear-gradient(#f4f9ff,#cddcf2);color:#1d2a50;box-shadow:inset 0 2px 0 #fff,0 5px 0 #4a6aa8,0 12px 30px rgba(0,0,0,.45)}
+.logo{background:linear-gradient(#ffffff 10%,#a8e4ff 45%,#4a7ae8 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:3px #101a40;filter:drop-shadow(0 6px 0 #101a40) drop-shadow(0 14px 22px rgba(0,0,0,.5))}

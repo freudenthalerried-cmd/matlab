@@ -1,0 +1,40 @@
+{
+  "artikel": [
+    {"slug": "3d-drucker-anfaenger", "titel": "3D-Drucker für Anfänger: Der einfache Einstieg (2026)", "h1": "3D-Drucker für Anfänger: In 30 Minuten zum ersten Druck", "pin": "3D-Druck für Anfänger: So einfach geht's heute", "beschreibung": "Welcher 3D-Drucker sich für Einsteiger eignet, was du zusätzlich brauchst und wie der erste Druck gelingt.", "kurzantwort": "Für Anfänger eignet sich ein vollautomatisch kalibrierender Drucker wie der Bambu Lab A1. Dazu brauchst du nur PLA-Filament und einen Account auf einer Modellplattform. Der erste Druck läuft meist innerhalb einer halben Stunde.",
+     "abschnitte": [
+       {"h": "Was Anfänger wirklich brauchen", "t": "Automatische Kalibrierung (Bett-Leveling, Vibrationskompensation), eine App mit Modell-Bibliothek und PLA-Filament. Mehr nicht. Teure Upgrades, Gehäuse und Spezialfilamente kannst du später ergänzen."},
+       {"h": "Dein erster Druck", "t": "Drucker aufstellen und Transportsicherungen entfernen, Kalibrierung starten, Filament einlegen. Dann ein kleines Testmodell aus der Bibliothek wählen – etwa einen Kabelhalter oder eine Figur. Druckzeit: 20–60 Minuten."},
+       {"h": "Typische Anfängerfehler", "t": "Fettige Druckplatte (Finger!) – mit Spülmittel und warmem Wasser reinigen. Feuchtes Filament – luftdicht mit Trockenmittel lagern. Zu große erste Projekte – starte klein und steigere dich."}
+     ],
+     "faq": [
+       {"f": "Brauche ich CAD-Kenntnisse?", "a": "Nein. Millionen fertiger Modelle gibt es kostenlos. Eigene einfache Teile kannst du später mit Programmen wie Tinkercad entwerfen."},
+       {"f": "Wie viel kostet der Einstieg insgesamt?", "a": "Drucker plus 2–3 Rollen PLA. Weiteres Zubehör ist anfangs nicht nötig."}
+     ]},
+    {"slug": "filament-arten", "titel": "Filament-Arten erklärt: PLA, PETG, ABS, ASA, TPU", "h1": "Filament-Ratgeber: Welches Material für welchen Zweck?", "pin": "PLA, PETG, ABS? Welches Filament wofür", "beschreibung": "Eigenschaften, Einsatzzwecke und Druckanforderungen von PLA, PETG, ABS, ASA und TPU – kompakt erklärt.", "kurzantwort": "PLA für Deko und Prototypen, PETG für robuste Alltagsteile, ASA für draußen (UV-beständig), ABS für hitzebeständige Teile, TPU für flexible Teile wie Handyhüllen. ABS und ASA brauchen einen geschlossenen Drucker.",
+     "abschnitte": [
+       {"h": "PLA – der Allrounder", "t": "Einfach zu drucken, riecht kaum, viele Farben. Schwäche: wird ab ca. 55 °C weich – nicht fürs Auto im Sommer."},
+       {"h": "PETG – robust und alltagstauglich", "t": "Zäher als PLA, wasserbeständig, verträgt höhere Temperaturen. Neigt zu Fäden (Stringing), lässt sich aber auf offenen Druckern verarbeiten."},
+       {"h": "ABS und ASA – für Technik und draußen", "t": "Hitzebeständig und mechanisch belastbar; ASA ist zusätzlich UV-stabil. Beide verziehen sich ohne warmes Gehäuse und geben Dämpfe ab – nur in geschlossenen Druckern mit Lüftung drucken."},
+       {"h": "TPU – flexibel", "t": "Gummiartig, ideal für Dichtungen, Puffer und Hüllen. Langsam drucken; Direktextruder sind von Vorteil."}
+     ],
+     "faq": [
+       {"f": "Welches Filament ist lebensmittelecht?", "a": "Grundsätzlich ist kein gedrucktes Teil zuverlässig lebensmittelecht, weil sich in den Schichtrillen Bakterien sammeln. Für Ausstechformen kurzfristig nutzbar, aber nicht für dauerhaften Kontakt."},
+       {"f": "Warum muss Filament trocken gelagert werden?", "a": "Feuchtigkeit führt zu Blasen, Fäden und brüchigen Teilen. Besonders PETG, TPU und Nylon sind empfindlich."}
+     ]},
+    {"slug": "mehrfarbdruck", "titel": "Mehrfarbiger 3D-Druck: AMS, CFS & MMU im Vergleich", "h1": "Mehrfarbig 3D-drucken: So funktionieren AMS, CFS und MMU", "pin": "Bunte 3D-Drucke: So funktioniert Mehrfarbdruck", "beschreibung": "Wie automatische Filamentwechsler funktionieren, wie viel Abfall entsteht und für wen sich Mehrfarbdruck lohnt.", "kurzantwort": "Filamentwechsler wie AMS (Bambu Lab), CFS (Creality) oder MMU (Prusa) wechseln automatisch zwischen 4 oder mehr Rollen. Sie lohnen sich für Figuren, Schilder und Geschenke. Nachteil: Bei jedem Farbwechsel entsteht Abfall, und Drucke dauern länger.",
+     "abschnitte": [
+       {"h": "So funktioniert es", "t": "Der Drucker zieht das aktuelle Filament zurück, schiebt das neue nach und spült die alte Farbe aus der Düse. Das Spülmaterial landet als kleines 'Poop'-Stück im Abfallbehälter."},
+       {"h": "Abfall reduzieren", "t": "Farbwechsel minimieren: Modelle so ausrichten, dass Farben schichtweise wechseln. Spülmenge in den Slicer-Einstellungen optimieren. Spülmaterial in Füllung (Infill) oder ein separates Objekt umleiten."},
+       {"h": "Lohnt es sich?", "t": "Für Funktionsteile meist nicht – eine Farbe reicht. Für Geschenke, Namensschilder, Spielfiguren und Kinderprojekte ist Mehrfarbdruck ein riesiger Spaßfaktor."}
+     ],
+     "faq": [
+       {"f": "Kann ich verschiedene Materialien kombinieren?", "a": "Ja, etwa PLA mit Stützmaterial oder PETG. Nicht alle Kombinationen haften gut aneinander."},
+       {"f": "Wie viel länger dauert ein Mehrfarbdruck?", "a": "Je nach Anzahl der Wechsel 20 % bis mehrere 100 % länger."}
+     ]}
+  ],
+  "ads": {
+    "keywords": ["3d drucker test", "3d drucker anfänger", "3d drucker vergleich", "bester 3d drucker", "bambu lab a1 test", "3d drucker kaufen", "3d drucker mehrfarbig"],
+    "headlines": ["3D-Drucker Vergleich 2026", "Ideal für Einsteiger", "Gratis Druckkosten-Rechner", "Bambu Lab, Prusa, Creality", "Unabhängiger Vergleich", "Mehrfarbdruck erklärt", "Filament-Ratgeber", "Kaufcheckliste gratis"],
+    "descriptions": ["Die besten 3D-Drucker für Einsteiger und Profis im Vergleich. Ehrlich und verständlich.", "Mit kostenlosem Rechner: Was kostet ein 3D-Druck wirklich an Material und Strom?", "Bauraum, Gehäuse, Mehrfarbe: Finde den passenden Drucker in 2 Minuten."]
+  }
+}

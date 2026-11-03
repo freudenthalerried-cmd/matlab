@@ -1,0 +1,25 @@
+# Render.com Blueprint: Repo verbinden, Ordner fakten-checker wird als Web-Service gebaut
+services:
+  - type: web
+    name: fakten-checker
+    runtime: docker
+    rootDir: fakten-checker
+    plan: starter
+    healthCheckPath: /api/ping
+    disk:
+      name: daten
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: REQUIRE_LICENSE
+        value: "true"
+      - key: MODE
+        value: spar

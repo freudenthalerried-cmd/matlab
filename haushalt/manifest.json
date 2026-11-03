@@ -1,0 +1,10 @@
+{
+  "name": "Wo ist was? – Haushalt",
+  "short_name": "Wo ist was?",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f6f7f5",
+  "theme_color": "#2f6f4f",
+  "lang": "de",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
