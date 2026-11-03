@@ -101,9 +101,9 @@ const CAL = (() => {
   }
 
   // views: [{dets:[{id,c}]}] einer Bildgröße W×H → {it, rms, n, sf}
-  function solve(views, W, H) {
+  function solve(views, W, H, opts) {
     const V = views.map(v => { const P = [], U = []; v.dets.forEach(d => { if (d.id < 40 || d.id > 59) return; corners(d.id).forEach((X, q) => { P.push(X); U.push(d.c[q]); }); }); return { P, U }; }).filter(v => v.P.length >= 16);
-    if (V.length < 6) return { err: 'Zu wenige brauchbare Bilder der Tafel (mindestens 6).' };
+    if (V.length < (opts && opts.min || 6)) return { err: 'Zu wenige brauchbare Bilder der Tafel (mindestens 6).' };
     // Startwerte (Zhang): Hauptpunkt = Bildmitte, Brennweite aus den Homographien
     const cx = W / 2, cy = H / 2; let sa = 0, sb = 0;
     V.forEach(v => { v.H = homography(v.P, v.U); const T = v.H.map((x, i) => x - (i < 3 ? cx * v.H[6 + i] : i < 6 ? cy * v.H[3 + i] : 0)); const h11 = T[0], h21 = T[3], h31 = T[6], h12 = T[1], h22 = T[4], h32 = T[7];
@@ -137,7 +137,15 @@ const CAL = (() => {
       cur = res(it, cams).e;
     }
     const r1 = res(it, cams), rms = Math.sqrt(r1.e / (2 * r1.n));
-    return { it, rms, n: V.length, pts: r1.n, W, H };
+    // Genauigkeit der Brennweite (1σ) aus der Normalgleichung
+    let sfRel = null;
+    { const N = new Float64Array(nP * nP);
+      V.forEach((v, i) => v.P.forEach((X, j) => { if (v.bad && v.bad[j]) return; const p0 = BA.project(it, cams[i], X), J = [[], []], idx = [];
+        for (let q = 0; q < 5; q++) { const h = 1e-6 * (1 + Math.abs(it[q])), t = it.slice(); t[q] += h; const p = BA.project(t, cams[i], X); J[0].push((p[0] - p0[0]) / h); J[1].push((p[1] - p0[1]) / h); idx.push(q); }
+        for (let q = 0; q < 6; q++) { const h = 1e-7 * (1 + Math.abs(cams[i][q])), c = cams[i].slice(); c[q] += h; const p = BA.project(it, c, X); J[0].push((p[0] - p0[0]) / h); J[1].push((p[1] - p0[1]) / h); idx.push(5 + 6 * i + q); }
+        for (let a = 0; a < 2; a++) idx.forEach((ia, ka) => idx.forEach((ib, kb) => N[ia * nP + ib] += J[a][ka] * J[a][kb])); }));
+      const e0 = new Float64Array(nP); e0[0] = 1; const x = chol(N, e0, nP); if (x) sfRel = Math.max(rms, 0.05) * Math.sqrt(Math.max(0, x.x[0])) / it[0]; }
+    return { it, rms, n: V.length, pts: r1.n, W, H, sfRel };
   }
   // Bild bewerten: Abdeckung (3×3) und Neigung der Tafel
   function viewInfo(dets, W, H) {

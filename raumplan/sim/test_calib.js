@@ -13,3 +13,4 @@ for (let v = 0; v < 15; v++) {
 console.log('Bilder', views.length, 'Marken/Bild', (views.reduce((a, v) => a + v.dets.length, 0) / views.length).toFixed(1), 'Infos', views.slice(0, 4).map(v => { const i = CAL.viewInfo(v.dets, W, H); return i ? i.tb + ' ' + i.tilt.toFixed(0) + '° Felder ' + i.cells.size : '-'; }).join(' | '));
 const t0 = Date.now(), r = CAL.solve(views, W, H);
 console.log(r.err || `Ergebnis f ${r.it[0].toFixed(1)} (soll ${it[0]}), cx ${r.it[1].toFixed(1)} (${it[1]}), cy ${r.it[2].toFixed(1)} (${it[2]}), k1 ${r.it[3].toFixed(4)} (${it[3]}), k2 ${r.it[4].toFixed(4)} (${it[4]}), Restfehler ${r.rms.toFixed(3)} px, ${Date.now() - t0} ms`);
+for (const k of [4, 5, 6, 8, 10]) { const q = CAL.solve(views.slice(0, k), W, H, { min: 4 }); console.log(k, 'Bilder:', q.err || `f ${q.it[0].toFixed(1)} ±${(q.sfRel * 100).toFixed(2)} %, Fehler ${((q.it[0] / it[0] - 1) * 100).toFixed(2)} %`); }
