@@ -123,3 +123,4 @@ details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}de
 .kmlist{list-style:none;padding:0;margin:6px 0;font-size:14px}.kmlist li{display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)}
 .kmlist li b{min-width:5.5em;text-align:right;font-variant-numeric:tabular-nums}.kmlist li .sp{flex:1}.kmlist button{padding:1px 8px}
 .livekm{display:flex;gap:8px;align-items:center;padding:6px 10px;background:#111;color:#ddd;font-size:14px;flex-wrap:wrap}.livekm button{color:#fff;background:#1565c0;border-color:#1565c0}
+.calstep{background:#1565c0;color:#fff;border-radius:8px;padding:1px 8px;font-size:14px;margin-right:6px}

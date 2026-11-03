@@ -146,7 +146,7 @@ const CAL = (() => {
     const pose = poseFromH(homography(P, U), 0.8 * Math.max(W, H), W / 2, H / 2), cells = new Set();
     U.forEach(u => cells.add(Math.min(2, Math.floor(3 * u[0] / W)) + 3 * Math.min(2, Math.floor(3 * u[1] / H))));
     const tb = pose.tilt < 15 ? 'flach' : Math.abs(pose.dir[0]) > Math.abs(pose.dir[1]) ? (pose.dir[0] > 0 ? 'links' : 'rechts') : (pose.dir[1] > 0 ? 'oben' : 'unten');
-    return { n: bd.length, cells, tilt: pose.tilt, tb };
+    return { n: bd.length, cells, tilt: pose.tilt, tb, az: Math.atan2(pose.dir[1], pose.dir[0]) * 57.3 };
   }
   return { IDS, corners, boardSVG, solve, viewInfo, homography };
 })();

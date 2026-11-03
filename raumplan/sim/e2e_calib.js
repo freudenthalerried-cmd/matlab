@@ -5,5 +5,5 @@ const ctx=await b.newContext({permissions:['camera']});const p=await ctx.newPage
 await p.goto('file://'+__dirname+'/../index.html');await p.evaluate(()=>{localStorage.setItem('raumplan-guide','1')});await p.reload();
 console.log('Status vorher:',await p.textContent('#calState'));
 await p.evaluate(()=>calStart());const t0=Date.now();
-for(let k=0;k<20;k++){await p.waitForTimeout(6000);if(await p.isHidden('#calUI'))break;console.log(((Date.now()-t0)/1000|0)+' s',await p.textContent('#calInfo'),'|',(await p.textContent('#calHint')).slice(0,80));if(k===1)await p.screenshot({path:process.env.SP+'/calib.png'});}
+for(let k=0;k<25;k++){await p.waitForTimeout(6000);if(await p.isHidden('#calUI'))break;console.log(((Date.now()-t0)/1000|0)+' s',await p.textContent('#calInfo'),'|',(await p.textContent('#calHint')).slice(0,80));if(k===1)await p.screenshot({path:process.env.SP+'/calib.png'});}
 await p.waitForTimeout(1000);console.log('Ergebnis:',await p.evaluate(()=>JSON.stringify(CAM.load())));console.log('Status:',await p.textContent('#calState'));console.log('errs',errs);await b.close();})();

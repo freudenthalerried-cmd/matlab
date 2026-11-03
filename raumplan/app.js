@@ -576,10 +576,16 @@ function calState() {
   const l = $('#calLink'); if (l) l.onclick = e => { e.preventDefault(); calStart(); };
 }
 $('#calPrint').onclick = () => { const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Kalibriertafel</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${CAL.boardSVG()}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); };
+// Geführte Ziele: erst die Tafel in jedes Bildfeld schieben (flach), dann 4 × schräg gehalten
+const CAL_TARGETS = [
+  { cell: 4, txt: 'Tafel in die <b>Mitte</b> des Bildes' }, { cell: 0, txt: 'Tafel nach <b>links oben</b>' }, { cell: 1, txt: 'Tafel nach <b>oben</b>' }, { cell: 2, txt: 'Tafel nach <b>rechts oben</b>' },
+  { cell: 5, txt: 'Tafel nach <b>rechts</b>' }, { cell: 8, txt: 'Tafel nach <b>rechts unten</b>' }, { cell: 7, txt: 'Tafel nach <b>unten</b>' }, { cell: 6, txt: 'Tafel nach <b>links unten</b>' }, { cell: 3, txt: 'Tafel nach <b>links</b>' },
+  { tilt: 1, txt: 'Handy <b>schräg</b> halten (ca. 30°) – Tafel in der Mitte' }, { tilt: 2, txt: 'Nochmal schräg – diesmal von einer <b>anderen Seite</b>' },
+  { tilt: 3, txt: 'Schräg von einer <b>dritten Seite</b>' }, { tilt: 4, txt: 'Schräg von der <b>vierten Seite</b>' }];
 async function calStart() {
   if (!navigator.mediaDevices) return alert('Kamera im Browser nicht verfügbar.');
   let cm; try { cm = await CAM.open(); } catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
-  Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [], steep: 0, W: 0, H: 0 });
+  Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], prev: null, last: 0, sh: [], step: 0, usedTb: new Set(), W: 0, H: 0, okSince: 0 });
   const v = $('#calVid'); v.srcObject = cal.stream; await v.play(); $('#calUI').hidden = false;
   const ov = $('#calOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
@@ -587,38 +593,49 @@ async function calStart() {
     if (!cal.busy && v.videoWidth) {
       cal.busy = true;
       const W = v.videoWidth, H = v.videoHeight, s = Math.min(1, 1280 / W); cal.W = W; cal.H = H; cv.width = Math.round(W * s); cv.height = Math.round(H * s); ctx.drawImage(v, 0, 0, cv.width, cv.height);
-      const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 1280, xcorners: false });
+      const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 1280, xcorners: false }).filter(m => m.id >= 40 && m.id <= 59);
       const sh = CAM.sharpness(g, cv.width, cv.height); cal.sh.push(sh); if (cal.sh.length > 30) cal.sh.shift(); const med = [...cal.sh].sort((a, b) => a - b)[cal.sh.length >> 1];
       let mv = 0; if (cal.prev) d.forEach(m => { const q = cal.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); }); cal.prev = new Map(d.map(m => [m.id, m.c[0]]));
-      const inf = CAL.viewInfo(d, cv.width, cv.height), steady = mv < 4 && (cal.sh.length < 5 || sh >= 0.7 * med);
-      const newCell = inf && [...inf.cells].some(c => cal.cells[c] < 2), newTilt = inf && (cal.tilts[inf.tb] || 0) < 3, dt = Date.now() - cal.last;
-      let hint;
-      if (inf && inf.n >= 6 && steady && ((newCell || newTilt) && dt > 600 || dt > 1500) && cal.views.length < 25) {
-        // Bild in voller Auflösung auswerten (Ecken genauer)
+      const inf = CAL.viewInfo(d, cv.width, cv.height), steady = mv < 8 && (cal.sh.length < 5 || sh >= 0.6 * med);
+      const tg = CAL_TARGETS[cal.step], cw3 = cv.width / 3, ch3 = cv.height / 3;
+      // Tafelmitte, Größe (mittlere Markenseite), Ziel erfüllt?
+      let ctr = null, side = 0;
+      if (d.length) { const P = d.flatMap(m => m.c); ctr = [P.reduce((a, p) => a + p[0], 0) / P.length, P.reduce((a, p) => a + p[1], 0) / P.length]; side = d.reduce((a, m) => a + Math.hypot(m.c[0][0] - m.c[1][0], m.c[0][1] - m.c[1][1]), 0) / d.length; }
+      const tooFar = side && side < 0.022 * cv.width, cellNow = ctr ? Math.min(2, Math.floor(ctr[0] / cw3)) + 3 * Math.min(2, Math.floor(ctr[1] / ch3)) : -1;
+      let ok = false, hint;
+      if (!tg) ok = false;
+      else if (!inf) hint = d.length ? 'Mehr von der Tafel ins Bild nehmen.' : 'Kalibriertafel ins Bild nehmen – flach auf dem Tisch.';
+      else if (tooFar) hint = '🔴 Zu weit weg – <b>näher ran</b> (ca. 30–50 cm).';
+      else if (tg.cell !== undefined) { const P = d.flatMap(m => m.c), inC = P.filter(p => Math.min(2, Math.floor(p[0] / cw3)) + 3 * Math.min(2, Math.floor(p[1] / ch3)) === tg.cell).length / P.length; ok = tg.cell === 4 ? cellNow === 4 : inC >= 0.25; /* Tafel deckt das Zielfeld zu einem Viertel ab */ hint = ok ? '🟢 Richtig – <b>ruhig halten</b> …' : '🟠 ' + tg.txt + ' – Handy so bewegen, dass die Tafel im Bild <b>dem gelben Pfeil folgt</b>, bis sie ins grüne Feld ragt.'; }
+      else { const newSide = [...cal.usedTb].every(a => Math.abs(((inf.az - a + 540) % 360) - 180) > 60); /* Kipprichtung mind. 60° anders als bisher */ ok = inf.tilt >= 22 && newSide && cellNow === 4; hint = ok ? '🟢 Richtig – <b>ruhig halten</b> …' : inf.tilt < 22 ? `🟠 ${tg.txt}. Jetzt ${Math.round(inf.tilt)}° – <b>stärker kippen</b>.` : !newSide ? '🟠 Diese Seite hatten wir schon – <b>von einer anderen Seite</b> schräg auf die Tafel schauen.' : '🟠 Tafel in die <b>Mitte</b> des Bildes.'; }
+      if (ok && !steady) hint = '🟢 Richtig – <b>ruhig halten</b> …';
+      if (ok && steady && Date.now() - cal.last > 400) {
         const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const x2 = c2.getContext('2d', { willReadFrequently: true }); x2.drawImage(v, 0, 0);
         const dets = MK.detect(toGray(x2, W, H, new Float32Array(W * H)), W, H).filter(m => m.id >= 40 && m.id <= 59).map(m => ({ id: m.id, c: m.c }));
-        if (dets.length >= 6) { cal.views.push({ dets }); inf.cells.forEach(c => cal.cells[c]++); cal.tilts[inf.tb] = (cal.tilts[inf.tb] || 0) + 1; if (inf.tilt > 25) cal.steep = (cal.steep || 0) + 1; cal.last = Date.now(); navigator.vibrate?.(25); hint = '📸 Bild ' + cal.views.length + ' aufgenommen'; }
+        if (dets.length >= 4) { cal.views.push({ dets }); if (tg.tilt) cal.usedTb.add(inf.az); cal.step++; cal.last = Date.now(); navigator.vibrate?.(40); hint = `✅ Bild ${cal.views.length} – nächstes Ziel …`; }
       }
-      const cellsOk = cal.cells.filter(n => n >= 1).length, tiltsOk = Math.min(3, ['flach', 'links', 'rechts', 'oben', 'unten'].filter(t => cal.tilts[t]).length + (cal.steep >= 4 ? 1 : 0));
-      // fertig: genug Bilder, Bildbereiche abgedeckt, verschiedene Neigungen – oder spätestens nach 25 Bildern
-      const done = (cal.views.length >= 15 && cellsOk >= 7 && tiltsOk >= 2) || cal.views.length >= 25;
+      const N = CAL_TARGETS.length;
+      $('#calHint').innerHTML = `<span class="calstep">Ziel ${Math.min(cal.step + 1, N)}/${N}</span> ` + (hint || '');
+      $('#calInfo').textContent = ` ${cal.views.length} Bilder · ${cal.info}`;
+      $('#calBar').style.width = Math.round(100 * Math.min(1, cal.step / N)) + '%';
       $('#calDone').disabled = cal.views.length < 10;
-      if (!hint) hint = !inf ? 'Kalibriertafel ins Bild nehmen – flach auf dem Tisch, 30–60 cm Abstand.' : !steady ? 'Ruhig halten …'
-        : cellsOk < 7 ? 'Die Tafel auch in die <b>rot markierten Bildbereiche</b> bringen (Handy verschieben, Tafel darf teilweise aus dem Bild ragen).'
-        : tiltsOk < 3 ? `Handy schräg halten – von <b>${['links', 'rechts', 'oben', 'unten'].find(t => !cal.tilts[t])}</b> auf die Tafel schauen.` : 'Weiter so – noch ein paar Bilder aus anderen Richtungen.';
-      $('#calHint').innerHTML = hint; $('#calInfo').textContent = ` ${cal.views.length} Bilder · ${cal.info}`;
-      $('#calBar').style.width = Math.round(100 * Math.min(1, (Math.min(15, cal.views.length) / 15 + Math.min(7, cellsOk) / 7 + Math.min(2, tiltsOk) / 2) / 3)) + '%';
-      // Overlay: 3×3-Raster (grün = abgedeckt), erkannte Marken
+      // Overlay: Zielfeld grün, Pfeil von der Tafel zum Ziel, Tafel grün/orange, Ruhe-Balken
       const r = v.getBoundingClientRect(), pr = v.parentElement.getBoundingClientRect();
       ov.width = Math.round(r.width); ov.height = Math.round(r.height); Object.assign(ov.style, { width: r.width + 'px', height: r.height + 'px', left: (r.left - pr.left) + 'px', top: (r.top - pr.top) + 'px', maxWidth: 'none', maxHeight: 'none' });
-      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, cw = cv.width * k / 3, ch = cv.height * k / 3;
+      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, X = p => [p[0] * k + ox, p[1] * k + oy];
       o.clearRect(0, 0, ov.width, ov.height);
-      for (let c = 0; c < 9; c++) { o.fillStyle = cal.cells[c] >= 1 ? '#4caf5033' : '#ff525233'; o.fillRect(ox + (c % 3) * cw, oy + Math.floor(c / 3) * ch, cw - 2, ch - 2); }
-      o.strokeStyle = '#4caf50'; o.lineWidth = 2; d.forEach(m => { o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(p[0] * k + ox, p[1] * k + oy) : o.moveTo(p[0] * k + ox, p[1] * k + oy)); o.closePath(); o.stroke(); });
+      if (tg) {
+        const tc = tg.cell !== undefined ? tg.cell : 4, tx = ox + (tc % 3) * cw3 * k, ty = oy + Math.floor(tc / 3) * ch3 * k, pulse = 0.5 + 0.5 * Math.sin(Date.now() / 200);
+        o.fillStyle = `rgba(76,175,80,${0.12 + 0.12 * pulse})`; o.fillRect(tx, ty, cw3 * k, ch3 * k); o.strokeStyle = '#4caf50'; o.lineWidth = 4; o.strokeRect(tx + 2, ty + 2, cw3 * k - 4, ch3 * k - 4);
+        if (ctr && !ok) { const a = X(ctr), b = [tx + cw3 * k / 2, ty + ch3 * k / 2], ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+          if (L > 30) { o.strokeStyle = '#ffeb3b'; o.lineWidth = 6; o.beginPath(); o.moveTo(...a); o.lineTo(...b); o.stroke(); o.fillStyle = '#ffeb3b'; o.beginPath(); o.moveTo(b[0], b[1]); o.lineTo(b[0] - 22 * Math.cos(ang - 0.45), b[1] - 22 * Math.sin(ang - 0.45)); o.lineTo(b[0] - 22 * Math.cos(ang + 0.45), b[1] - 22 * Math.sin(ang + 0.45)); o.closePath(); o.fill(); } }
+      }
+      o.strokeStyle = ok ? '#4caf50' : '#ff9800'; o.lineWidth = 3; d.forEach(m => { o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(...X(p)) : o.moveTo(...X(p))); o.closePath(); o.stroke(); });
+      o.fillStyle = steady ? '#4caf50' : '#f44336'; o.fillRect(0, ov.height - 10, ov.width * (steady ? 1 : Math.max(0.1, 1 - mv / 30)), 10);
       cal.busy = false;
-      if (done) return calFinish(W, H);
+      if (cal.step >= N) return calFinish(W, H);
     }
-    cal.timer = setTimeout(loop, 120);
+    cal.timer = setTimeout(loop, 100);
   };
   loop();
 }
@@ -632,7 +649,7 @@ function calFinish(W, H) {
   calState();
   alert(`Kamera kalibriert ✓\nBrennweite ${r.it[0].toFixed(0)} px, Verzeichnung k1 ${r.it[3].toFixed(3)}, Restfehler ${f2(r.rms, 2)} px aus ${r.n} Bildern.${cal.fixedFocus ? '' : '\nHinweis: Dieses Handy lässt keinen festen Fokus zu – die Kalibrierung gilt dann nur ungefähr.'}`);
 }
-$('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calDone').onclick = () => { if (cal.views.length >= 6) calFinish(cal.W, cal.H); }; calState();
+$('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calSkip').onclick = () => { if (cal.stream && cal.step < CAL_TARGETS.length - 1) cal.step++; }; $('#calDone').onclick = () => { if (cal.views.length >= 6) calFinish(cal.W, cal.H); }; calState();
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
 $('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
