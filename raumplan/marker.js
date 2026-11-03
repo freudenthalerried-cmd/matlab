@@ -46,6 +46,40 @@ const MK = (() => {
     return o + '</svg>';
   }
 
+  // „1 Blatt pro Wand“: A4 mit 4 Marken in den Ecken (Mitten 105±55 / 148,5±98,5 mm). cut: obere Reihe zum Ausschneiden (Zollstock-Marken)
+  function cornerSheetSVG(ids, size, title, sub, cut) {
+    const W = 210, H = 297, cell = size / G, P = [[50, 50], [160, 50], [50, 247], [160, 247]];
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    ids.forEach((id, i) => {
+      const [cx, cy] = P[i], x0 = cx - size / 2, y0 = cy - size / 2, c = DICT[id];
+      o += `<rect x="${x0}" y="${y0}" width="${size}" height="${size}" fill="#000"/>`;
+      for (let r = 0; r < N; r++) for (let k = 0; k < N; k++) if (!(c >>> (r * N + k) & 1)) o += `<rect x="${x0 + (k + 1) * cell}" y="${y0 + (r + 1) * cell}" width="${cell + 0.02}" height="${cell + 0.02}" fill="#fff"/>`;
+      const ty = i < 2 ? y0 + size + 7 : y0 - 3;
+      o += `<text x="${cx}" y="${ty}" font-size="6" text-anchor="middle" font-weight="bold">${id}${cut && i < 2 ? (i ? ' · auf 200 cm' : ' · auf 0 cm') : ''}</text>`;
+      if (cut && i < 2) o += `<line x1="${cx}" y1="${y0 + size + 9}" x2="${cx}" y2="${y0 + size + 12}" stroke="#000" stroke-width=".4"/><rect x="${cx - 50}" y="3" width="100" height="${size + 22}" fill="none" stroke="#999" stroke-width=".3" stroke-dasharray="2 1.5"/>`;
+    });
+    o += `<text x="105" y="140" font-size="11" text-anchor="middle" font-weight="bold">${title}</text>`;
+    sub.forEach((t, i) => o += `<text x="105" y="${150 + i * 6.5}" font-size="4.6" text-anchor="middle">${t}</text>`);
+    return o + '</svg>';
+  }
+
+  // Bodenblatt für den Zollstock: Zollstock liegt an der Oberkante; Marke a (0 bzw. 1) oben – ihre Mitte auf der Mittellinie (= Zollstock-Strich), Marke b weiter weg
+  function floorSheetSVG(a, b, size, cm) {
+    const W = 210, H = 297, cell = size / G, cx = 105;
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="Arial"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    [[a, 70], [b, 225]].forEach(([id, cy]) => {
+      const x0 = cx - size / 2, y0 = cy - size / 2, c = DICT[id];
+      o += `<rect x="${x0}" y="${y0}" width="${size}" height="${size}" fill="#000"/>`;
+      for (let r = 0; r < N; r++) for (let k = 0; k < N; k++) if (!(c >>> (r * N + k) & 1)) o += `<rect x="${x0 + (k + 1) * cell}" y="${y0 + (r + 1) * cell}" width="${cell + 0.02}" height="${cell + 0.02}" fill="#fff"/>`;
+      o += `<text x="${cx + size / 2 + 6}" y="${cy + 3}" font-size="8" font-weight="bold">${id}</text>`;
+    });
+    o += `<line x1="${cx}" y1="0" x2="${cx}" y2="${70 - size / 2 - 3}" stroke="#000" stroke-width=".5"/><path d="M${cx - 4} 6 L${cx} 0 L${cx + 4} 6" fill="none" stroke="#000" stroke-width=".5"/>`;
+    o += `<text x="${cx + 6}" y="12" font-size="9" font-weight="bold">Zollstock ${cm} cm hier</text>`;
+    o += `<text x="105" y="140" font-size="10" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
+    ['Zollstock gerade an die Oberkante dieses Blatts legen,', `der Strich oben zeigt genau auf ${cm} cm.`, 'Beide Bodenblätter gleich ausrichten (Oberkante am Zollstock).', 'Nicht ausschneiden, flach liegen lassen.'].forEach((t, i) => o += `<text x="105" y="${150 + i * 6.5}" font-size="4.6" text-anchor="middle">${t}</text>`);
+    return o + '</svg>';
+  }
+
   /* ---------- Bildverarbeitung ---------- */
   function downscale(g, W, H, f) { // Flächenmittel, f ganzzahlig
     if (f <= 1) return { g, W, H };
@@ -294,6 +328,6 @@ const MK = (() => {
     const rms = Math.sqrt(P.reduce((s, p) => s + ((p[0] - m[0]) * n[0] + (p[1] - m[1]) * n[1]) ** 2, 0) / P.length);
     return { m, n, rms };
   }
-  return { DICT, N, G, detect, markerSVG, sheetSVG, decodeBits, rot, bil, homog };
+  return { DICT, N, G, detect, markerSVG, sheetSVG, cornerSheetSVG, floorSheetSVG, decodeBits, rot, bil, homog };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

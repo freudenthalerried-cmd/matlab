@@ -101,6 +101,20 @@ $('#pgPrint').onclick = () => {
 function pgSizeSet(v) { $('#pgSize').value = v; try { localStorage.setItem('raumplan-pgsize', v); } catch (e) { } }
 try { const v = localStorage.getItem('raumplan-pgsize'); if (v) $('#pgSize').value = v; } catch (e) { }
 $('#pgSize').onchange = () => pgSizeSet(num($('#pgSize').value) || 45);
+// 1 Blatt pro Wand: 2 Bodenblätter an den Zollstock-Enden (0+2 bei 0 cm, 1+3 bei 200 cm) + je Wand ein Blatt mit 4 Marken (80 mm)
+function wallSheetPages(nw, from) {
+  const size = 80, pages = [MK.floorSheetSVG(0, 2, size, 0), MK.floorSheetSVG(1, 3, size, 200)];
+  for (let w = 0; w < nw; w++) { const ids = [0, 1, 2, 3].map(k => from + 4 * w + k); pages.push(MK.cornerSheetSVG(ids, size, `Wand ${w + 1}`, ['Flach und ohne Wellen an die Wand kleben, Mitte ca. 1,3 m hoch.', 'Nicht hinter Möbeln – die Kamera muss das Blatt gut sehen.', `Marken ${ids.join(', ')}`], false)); }
+  return { size, pages };
+}
+$('#pgWallSheets').onclick = () => {
+  const nw = Math.max(3, Math.min(12, Math.round(num($('#pgWalls').value)) || 4)), from = Math.max(4, Math.min(89 - 4 * nw, Math.round(num($('#pgFrom').value) || 4)));
+  const { size, pages } = wallSheetPages(nw, from);
+  pgSizeSet(size); $('#pgN').value = 4 * nw; $('#pgFrom').value = from; if (!$('#pgDist').value) $('#pgDist').value = '2,000';
+  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan – 1 Blatt pro Wand</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
+  w.document.close();
+};
 $('#pgSheet').onclick = () => { // einfach: 4 Boden- + 12 Wandmarken (3 je Wand) auf einem A4-Blatt
   const from = Math.max(4, Math.min(78, Math.round(num($('#pgFrom').value) || 4))), size = 45;
   pgSizeSet(size); $('#pgN').value = 12;

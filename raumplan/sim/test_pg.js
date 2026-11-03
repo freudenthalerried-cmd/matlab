@@ -4,14 +4,16 @@ const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=+(process.env.
 const it=[0.78*W,W/2+2,H/2-3,0.02,-0.005];
 // Szene: Blätter (A4) mit Marke; u rechts, v unten (wie gedruckt), v×u zeigt zum Betrachter
 const sheets=[];const add=(id,c,u,v)=>sheets.push({id,c,u,v});
-add(0,[0.9,1.3,0],[1,0,0],[0,-1,0]);add(1,[3.9,1.3,0],[1,0,0],[0,-1,0]);add(2,[2.2,2.6,0],[1,0,0],[0,-1,0]);add(3,[2.2,0.6,0],[1,0,0],[0,-1,0]);
+const SD=+(process.env.SD||3);add(0,[0.9,1.3,0],[1,0,0],[0,-1,0]);add(1,[0.9+SD,1.3,0],[1,0,0],[0,-1,0]);if(process.env.FLOOR2){add(2,[0.9,1.455,0],[1,0,0],[0,-1,0]);add(3,[0.9+SD,1.455,0],[1,0,0],[0,-1,0]);sheets.forEach(q=>{q.pw=0.105;q.ph=0.0775;});}else{add(2,[2.2,2.6,0],[1,0,0],[0,-1,0]);add(3,[2.2,0.6,0],[1,0,0],[0,-1,0]);}
 let id=4;const walls=[[[0,0],[L,0]],[[L,0],[L,B]],[[L,B],[0,B]],[[0,B],[0,0]]];
-walls.forEach(([a,b])=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0];const KW=+(process.env.KW||4);for(let k=0;k<KW;k++){const t=.12+.76*k/(KW-1),z=[1.2,1.7,.8,1.4][k];add(id++,[a[0]+d[0]*t,a[1]+d[1]*t,z],u,[0,0,-1]);}});
+if(process.env.SHEET){ // 1 A4-Blatt je Wand: 4 Marken in den Blattecken (Mitten ±55 mm waagrecht, ±98,5 mm senkrecht), Blatt bei Wandposition SHEET (0..1) in 1,3 m Höhe
+ const tp=+process.env.SHEET;walls.forEach(([a,b],w)=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0],t=tp+(w%2?.07:-.07);[[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([sx,sy])=>{const c=[a[0]+d[0]*t,a[1]+d[1]*t,1.3+sy*0.0985];add(id++,[c[0]+u[0]*sx*0.055,c[1]+u[1]*sx*0.055,c[2]],u,[0,0,-1]);sheets[sheets.length-1].pw=0.055;sheets[sheets.length-1].ph=0.0985;});});
+}else walls.forEach(([a,b])=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0];const KW=+(process.env.KW||4);for(let k=0;k<KW;k++){const t=.12+.76*k/(KW-1),z=[1.2,1.7,.8,1.4][k];add(id++,[a[0]+d[0]*t,a[1]+d[1]*t,z],u,[0,0,-1]);}});
 // Wandmarken 1 mm vor der Wand (Papier/Kleber) – realistischer Versatz
 sheets.forEach(s=>{if(s.id>=4){const n=[s.v[1]*s.u[2]-s.v[2]*s.u[1],s.v[2]*s.u[0]-s.v[0]*s.u[2],s.v[0]*s.u[1]-s.v[1]*s.u[0]];s.c=s.c.map((v,q)=>v+n[q]*0.0003);}});
 function shade(P,surf){for(const s of sheets){const d=[P[0]-s.c[0],P[1]-s.c[1],P[2]-s.c[2]],nn=[s.u[1]*s.v[2]-s.u[2]*s.v[1],s.u[2]*s.v[0]-s.u[0]*s.v[2],s.u[0]*s.v[1]-s.u[1]*s.v[0]];
   if(Math.abs(d[0]*nn[0]+d[1]*nn[1]+d[2]*nn[2])>0.002)continue;const a=d[0]*s.u[0]+d[1]*s.u[1]+d[2]*s.u[2],b=d[0]*s.v[0]+d[1]*s.v[1]+d[2]*s.v[2];
-  if(Math.abs(a)>0.105||Math.abs(b)>0.1485)continue;if(Math.abs(a)>=MS/2||Math.abs(b)>=MS/2)return 225;
+  if(Math.abs(a)>(s.pw||0.105)||Math.abs(b)>(s.ph||0.1485))continue;if(Math.abs(a)>=MS/2||Math.abs(b)>=MS/2)return 225;
   const G=MK.G,k=Math.floor((a+MS/2)/(MS/G)),r=Math.floor((b+MS/2)/(MS/G));if(r===0||r===G-1||k===0||k===G-1)return 25;return (MK.DICT[s.id]>>>((r-1)*MK.N+(k-1))&1)?25:225;}
  if(process.env.WIN&&surf===3&&P[0]>1.3&&P[0]<2.5&&P[2]>0.9&&P[2]<2.3)return 45; // Fenster in Wand y=B
  return surf===4?95+15*Math.sin(P[0]*23)*Math.sin(P[1]*19):surf===5?200:160+8*Math.sin(P[2]*7);}
@@ -32,7 +34,7 @@ for(let i=0;i<NF;i++){const k=Math.floor(4*i/NF),f2=(4*i/NF)%1,cor=[[.5,.5],[L-.
  frames.push({dets});}
 if(CF&&!cached)fs.writeFileSync(CF,JSON.stringify(frames));if(!cErr.length)cErr=[0];cErr.sort((a,b)=>a-b);const nd=frames.reduce((s,f)=>s+f.dets.length,0);
 console.log(`Render+Erkennung ${NF} Bilder ${W}x${H}: ${((Date.now()-t0)/1000).toFixed(0)} s, ${ (nd/NF).toFixed(1)} Marken/Bild, Eckfehler median ${cErr[cErr.length>>1].toFixed(3)} px, 95% ${cErr[Math.floor(cErr.length*.95)].toFixed(3)} px, max ${cErr[cErr.length-1].toFixed(2)}`);
-t0=Date.now();const rec=PG.reconstruct(frames,{W,H,size:MS,scaleDist:3.0,sigPx:0.3,rs:!!process.env.RSM,log:process.env.LOG?console.log:undefined});
+t0=Date.now();const rec=PG.reconstruct(frames,{W,H,size:MS,scaleDist:SD,sigPx:0.3,rs:!!process.env.RSM,log:process.env.LOG?console.log:undefined});
 if(!rec.ok){console.log(rec.msg);process.exit(1);}
 console.log('Rek.: Bilder',rec.nImg,'rms',rec.res.rms.toFixed(3),'f',rec.res.it[0].toFixed(1),'Marken',rec.ids.join(','));const cnts={};frames.forEach(f=>f.dets.forEach(d=>cnts[d.id]=(cnts[d.id]||0)+1));console.log('Sichtungen je Marke',JSON.stringify(cnts));
 const wl=PG.walls(rec);if(!wl.ok){console.log(wl.msg);process.exit(1);}
