@@ -141,7 +141,7 @@ const CAL = (() => {
   }
   // Bild bewerten: Abdeckung (3×3) und Neigung der Tafel
   function viewInfo(dets, W, H) {
-    const bd = dets.filter(d => d.id >= 40 && d.id <= 59); if (bd.length < 6) return null;
+    const bd = dets.filter(d => d.id >= 40 && d.id <= 59); if (bd.length < 4) return null;
     const P = [], U = []; bd.forEach(d => corners(d.id).forEach((X, q) => { P.push(X); U.push(d.c[q]); }));
     const pose = poseFromH(homography(P, U), 0.8 * Math.max(W, H), W / 2, H / 2), cells = new Set();
     U.forEach(u => cells.add(Math.min(2, Math.floor(3 * u[0] / W)) + 3 * Math.min(2, Math.floor(3 * u[1] / H))));

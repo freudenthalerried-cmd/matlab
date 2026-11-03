@@ -530,39 +530,41 @@ $('#calPrint').onclick = () => { const w = open('', '_blank'); if (!w) return al
 async function calStart() {
   if (!navigator.mediaDevices) return alert('Kamera im Browser nicht verfügbar.');
   let cm; try { cm = await CAM.open(); } catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
-  Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [] });
+  Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [], steep: 0, W: 0, H: 0 });
   const v = $('#calVid'); v.srcObject = cal.stream; await v.play(); $('#calUI').hidden = false;
   const ov = $('#calOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
     if (!cal.stream) return;
     if (!cal.busy && v.videoWidth) {
       cal.busy = true;
-      const W = v.videoWidth, H = v.videoHeight, s = Math.min(1, 1280 / W); cv.width = Math.round(W * s); cv.height = Math.round(H * s); ctx.drawImage(v, 0, 0, cv.width, cv.height);
+      const W = v.videoWidth, H = v.videoHeight, s = Math.min(1, 1280 / W); cal.W = W; cal.H = H; cv.width = Math.round(W * s); cv.height = Math.round(H * s); ctx.drawImage(v, 0, 0, cv.width, cv.height);
       const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 1280, xcorners: false });
       const sh = CAM.sharpness(g, cv.width, cv.height); cal.sh.push(sh); if (cal.sh.length > 30) cal.sh.shift(); const med = [...cal.sh].sort((a, b) => a - b)[cal.sh.length >> 1];
       let mv = 0; if (cal.prev) d.forEach(m => { const q = cal.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); }); cal.prev = new Map(d.map(m => [m.id, m.c[0]]));
-      const inf = CAL.viewInfo(d, cv.width, cv.height), steady = mv < 2.5 && (cal.sh.length < 5 || sh >= 0.7 * med);
+      const inf = CAL.viewInfo(d, cv.width, cv.height), steady = mv < 4 && (cal.sh.length < 5 || sh >= 0.7 * med);
       const newCell = inf && [...inf.cells].some(c => cal.cells[c] < 2), newTilt = inf && (cal.tilts[inf.tb] || 0) < 3, dt = Date.now() - cal.last;
       let hint;
-      if (inf && inf.n >= 8 && steady && ((newCell || newTilt) && dt > 600 || dt > 1500) && cal.views.length < 25) {
+      if (inf && inf.n >= 6 && steady && ((newCell || newTilt) && dt > 600 || dt > 1500) && cal.views.length < 25) {
         // Bild in voller Auflösung auswerten (Ecken genauer)
         const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const x2 = c2.getContext('2d', { willReadFrequently: true }); x2.drawImage(v, 0, 0);
         const dets = MK.detect(toGray(x2, W, H, new Float32Array(W * H)), W, H).filter(m => m.id >= 40 && m.id <= 59).map(m => ({ id: m.id, c: m.c }));
-        if (dets.length >= 6) { cal.views.push({ dets }); inf.cells.forEach(c => cal.cells[c]++); cal.tilts[inf.tb] = (cal.tilts[inf.tb] || 0) + 1; cal.last = Date.now(); navigator.vibrate?.(25); hint = '📸 Bild ' + cal.views.length + ' aufgenommen'; }
+        if (dets.length >= 6) { cal.views.push({ dets }); inf.cells.forEach(c => cal.cells[c]++); cal.tilts[inf.tb] = (cal.tilts[inf.tb] || 0) + 1; if (inf.tilt > 25) cal.steep = (cal.steep || 0) + 1; cal.last = Date.now(); navigator.vibrate?.(25); hint = '📸 Bild ' + cal.views.length + ' aufgenommen'; }
       }
-      const cellsOk = cal.cells.filter(n => n >= 2).length, tiltsOk = ['flach', 'links', 'rechts', 'oben', 'unten'].filter(t => cal.tilts[t]).length;
-      const done = cal.views.length >= 15 && cellsOk === 9 && tiltsOk >= 3;
+      const cellsOk = cal.cells.filter(n => n >= 1).length, tiltsOk = Math.min(3, ['flach', 'links', 'rechts', 'oben', 'unten'].filter(t => cal.tilts[t]).length + (cal.steep >= 4 ? 1 : 0));
+      // fertig: genug Bilder, Bildbereiche abgedeckt, verschiedene Neigungen – oder spätestens nach 25 Bildern
+      const done = (cal.views.length >= 15 && cellsOk >= 7 && tiltsOk >= 2) || cal.views.length >= 25;
+      $('#calDone').disabled = cal.views.length < 10;
       if (!hint) hint = !inf ? 'Kalibriertafel ins Bild nehmen – flach auf dem Tisch, 30–60 cm Abstand.' : !steady ? 'Ruhig halten …'
-        : cellsOk < 9 ? 'Die Tafel in die <b>rot markierten Bildbereiche</b> bringen (Handy verschieben).'
+        : cellsOk < 7 ? 'Die Tafel auch in die <b>rot markierten Bildbereiche</b> bringen (Handy verschieben, Tafel darf teilweise aus dem Bild ragen).'
         : tiltsOk < 3 ? `Handy schräg halten – von <b>${['links', 'rechts', 'oben', 'unten'].find(t => !cal.tilts[t])}</b> auf die Tafel schauen.` : 'Weiter so – noch ein paar Bilder aus anderen Richtungen.';
       $('#calHint').innerHTML = hint; $('#calInfo').textContent = ` ${cal.views.length} Bilder · ${cal.info}`;
-      $('#calBar').style.width = Math.round(100 * Math.min(1, (Math.min(15, cal.views.length) / 15 + cellsOk / 9 + Math.min(3, tiltsOk) / 3) / 3)) + '%';
+      $('#calBar').style.width = Math.round(100 * Math.min(1, (Math.min(15, cal.views.length) / 15 + Math.min(7, cellsOk) / 7 + Math.min(2, tiltsOk) / 2) / 3)) + '%';
       // Overlay: 3×3-Raster (grün = abgedeckt), erkannte Marken
       const r = v.getBoundingClientRect(), pr = v.parentElement.getBoundingClientRect();
       ov.width = Math.round(r.width); ov.height = Math.round(r.height); Object.assign(ov.style, { width: r.width + 'px', height: r.height + 'px', left: (r.left - pr.left) + 'px', top: (r.top - pr.top) + 'px', maxWidth: 'none', maxHeight: 'none' });
       const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, cw = cv.width * k / 3, ch = cv.height * k / 3;
       o.clearRect(0, 0, ov.width, ov.height);
-      for (let c = 0; c < 9; c++) { o.fillStyle = cal.cells[c] >= 2 ? '#4caf5033' : '#ff525233'; o.fillRect(ox + (c % 3) * cw, oy + Math.floor(c / 3) * ch, cw - 2, ch - 2); }
+      for (let c = 0; c < 9; c++) { o.fillStyle = cal.cells[c] >= 1 ? '#4caf5033' : '#ff525233'; o.fillRect(ox + (c % 3) * cw, oy + Math.floor(c / 3) * ch, cw - 2, ch - 2); }
       o.strokeStyle = '#4caf50'; o.lineWidth = 2; d.forEach(m => { o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(p[0] * k + ox, p[1] * k + oy) : o.moveTo(p[0] * k + ox, p[1] * k + oy)); o.closePath(); o.stroke(); });
       cal.busy = false;
       if (done) return calFinish(W, H);
@@ -581,7 +583,7 @@ function calFinish(W, H) {
   calState();
   alert(`Kamera kalibriert ✓\nBrennweite ${r.it[0].toFixed(0)} px, Verzeichnung k1 ${r.it[3].toFixed(3)}, Restfehler ${f2(r.rms, 2)} px aus ${r.n} Bildern.${cal.fixedFocus ? '' : '\nHinweis: Dieses Handy lässt keinen festen Fokus zu – die Kalibrierung gilt dann nur ungefähr.'}`);
 }
-$('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; calState();
+$('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calDone').onclick = () => { if (cal.views.length >= 6) calFinish(cal.W, cal.H); }; calState();
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
 $('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
