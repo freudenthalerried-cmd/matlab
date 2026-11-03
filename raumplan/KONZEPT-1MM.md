@@ -24,7 +24,9 @@ Die Streuung (1σ) wurde mit Monte-Carlo-Läufen bestimmt: Die gleichen Bilder w
 | **8 Standorte** (4 Ecken + 4 Wandmitten) | 1920 px | ≈ 2,2 mm | Geometrie besser |
 | **8 Standorte + 6 Bilder von oben auf den Maßstab** | 1920 px | **≈ 1,3 mm** | Maßstab war der größte Fehler |
 | 4 Ecken, 1 Blatt/Wand | 3840 px (Foto) | App σ 1,4 mm, Fehler ≤ 0,8 mm | volle Auflösung halbiert den Fehler |
-| 8 Standorte + Bilder von oben | 3840 px | *läuft noch* | Erwartung ≈ 0,6 mm |
+| **8 Standorte + Bilder von oben** | **3840 px** | **≈ 0,7 mm** (95 %: 1,15 mm; 36 von 40 Wänden ≤ 1 mm) | ohne Zusatzrauschen alle Wände ≤ 0,31 mm |
+
+**Ergebnis:** Mit voller Auflösung, 8 Standorten und Bildern von oben auf den Maßstab sind wir in der Simulation bei **≈ 0,7 mm (1σ)**. Das ist bewusst pessimistisch gerechnet, mit zusätzlichem Bildrauschen. Bis zu „±1 mm in 95 % der Fälle“ fehlt noch etwa ein Drittel. Das lässt sich mit mehr Bildern (≈ 100 statt 70), der Live-Genauigkeitsprüfung (4.3) und dem Abbruch erst bei Zielgenauigkeit schließen. In der Praxis kommen Fehler dazu, die die Simulation nicht kennt: Papier, Fokus, Referenzlänge. Deshalb ist die Feldvalidierung (Abschnitt 6) Pflicht, bevor wir „±1 mm“ versprechen.
 
 **Wichtigste Erkenntnisse:**
 1. **Der Maßstab ist die größte Fehlerquelle.** In jedem Lauf lagen alle Wände in dieselbe Richtung falsch. Die Bodenblätter am Zollstock werden von weitem sehr flach gesehen. Bilder schräg von oben auf den Maßstab halbieren den Fehler.
