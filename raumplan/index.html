@@ -35,6 +35,7 @@
         <button id="pgWallSheets">🖨 Blätter drucken</button>
         <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
+      <p id="calState" class="small"></p>
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>
@@ -55,6 +56,8 @@
           <label>Bildabstand Video <select id="pgStep"><option value="0.1">0,1 s</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s</option></select></label>
         </div>
         <div class="row">
+          <button id="calOpen">🎯 Kamera kalibrieren</button>
+          <button id="calPrint">🖨 Kalibriertafel</button>
           <button id="pgSheet">🖨 16 Einzelmarken</button>
           <button id="pgPrint">🖨 Große Marken</button>
           <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
@@ -213,6 +216,13 @@
   <div id="arDot" class="ardot"></div>
   <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
 </div>
+<div id="calUI" hidden>
+  <div class="livebar"><button id="calClose">✕</button><b>Kamera kalibrieren</b><span id="calInfo" class="small"></span></div>
+  <div class="liveprog"><div id="calBar"></div></div>
+  <div id="calHint" class="livehint"></div>
+  <div class="livecam"><video id="calVid" playsinline muted></video><canvas id="calOv"></canvas></div>
+  <div class="livebtns"><span class="small">Tafel flach auf den Tisch legen · aus 30–60 cm filmen · Handy langsam neigen · das Bild soll jedes Mal anders aussehen</span></div>
+</div>
 <div id="live" hidden>
   <div class="livebar"><button id="liveClose">✕</button><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveDone">✔ Auswerten</button></div>
   <div class="liveprog"><div id="liveBar"></div></div>
@@ -225,6 +235,7 @@
 <script src="ba.js"></script>
 <script src="marker.js"></script>
 <script src="pg.js"></script>
+<script src="calib.js"></script>
 <script src="ar.js"></script>
 <script src="app.js"></script>
 <script src="guide.js"></script>

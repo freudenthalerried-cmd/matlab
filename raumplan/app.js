@@ -236,7 +236,7 @@ $('#pgRun').onclick = async () => {
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
-    const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, check: pgCheck, sigPx: 0.3, log: pgLog });
+    const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, check: pgCheck, calib: CAM.forSize(W, H) || undefined, sigPx: 0.3, log: pgLog });
     pr.value = 0.95; await tick();
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
@@ -445,8 +445,9 @@ function liveCoach(d, steady, shot) {
 }
 async function liveStart() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
-  try { live.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 3840 }, height: { ideal: 2160 } }, audio: false }); }
+  let cm; try { cm = await CAM.open(); live.stream = cm.stream; }
   catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
+  live.camInfo = cm.info; live.sh = [];
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
   pgFiles = []; $('#pgSrc').textContent = ''; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0;
@@ -458,11 +459,14 @@ async function liveStart() {
       live.busy = true;
       const s = Math.min(1, 1920 / v.videoWidth); cv.width = Math.round(v.videoWidth * s); cv.height = Math.round(v.videoHeight * s);
       ctx.drawImage(v, 0, 0, cv.width, cv.height);
-      const d = MK.detect(toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), cv.width, cv.height, { maxW: 1920, xcorners: false }).filter(m => lgOf(m.id));
+      const gray = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(gray, cv.width, cv.height, { maxW: 1920, xcorners: false }).filter(m => lgOf(m.id));
+      // Schärfe: verwackelte Bilder aussortieren (Vergleich mit dem Median der letzten Bilder)
+      const sh = CAM.sharpness(gray, cv.width, cv.height); live.sh.push(sh); if (live.sh.length > 40) live.sh.shift();
+      const shMed = [...live.sh].sort((a, b) => a - b)[live.sh.length >> 1], sharp = live.sh.length < 5 || sh >= 0.7 * shMed;
       // Bewegung: gleiche Marken seit dem letzten Bild (< 4 px je 960 px Breite → kaum Bewegungsunschärfe)
       let mv = 0; if (live.prev) d.forEach(m => { const q = live.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); });
       live.prev = new Map(d.map(m => [m.id, m.c[0]]));
-      const steady = mv < 4 * cv.width / 960;
+      const steady = mv < 4 * cv.width / 960 && sharp;
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
       const vis = [...new Set(d.map(m => lgOf(m.id)))], pk = []; for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) pk.push([vis[i].key, vis[j].key].sort().join('|'));
       const binsNow = new Map(); vis.forEach(g => { if (!g.floor) binsNow.set(g, groupBin(g, d)); });
@@ -513,6 +517,71 @@ function liveFinish() {
 }
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
 $('#liveDone').onclick = liveFinish;
+
+/* ---------- Phase 1: Kamera-Kalibrierung (Assistent) ---------- */
+const cal = { stream: null, views: [], timer: null, busy: false, prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [] };
+function calState() {
+  const c = CAM.load();
+  $('#calState').innerHTML = c ? `📷 Kamera kalibriert ✓ <span class="hint">(Restfehler ${f2(c.rms, 2)} px, ${c.n} Bilder, ${esc(c.date)}${c.fixedFocus ? '' : ' – Fokus konnte nicht fixiert werden'})</span>`
+    : `📷 Kamera noch nicht kalibriert – <a href="#" id="calLink">jetzt einmalig kalibrieren</a> (2 Minuten, macht die Messung genauer).`;
+  const l = $('#calLink'); if (l) l.onclick = e => { e.preventDefault(); calStart(); };
+}
+$('#calPrint').onclick = () => { const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Kalibriertafel</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${CAL.boardSVG()}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); };
+async function calStart() {
+  if (!navigator.mediaDevices) return alert('Kamera im Browser nicht verfügbar.');
+  let cm; try { cm = await CAM.open(); } catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
+  Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], prev: null, last: 0, cells: new Array(9).fill(0), tilts: {}, sh: [] });
+  const v = $('#calVid'); v.srcObject = cal.stream; await v.play(); $('#calUI').hidden = false;
+  const ov = $('#calOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const loop = async () => {
+    if (!cal.stream) return;
+    if (!cal.busy && v.videoWidth) {
+      cal.busy = true;
+      const W = v.videoWidth, H = v.videoHeight, s = Math.min(1, 1280 / W); cv.width = Math.round(W * s); cv.height = Math.round(H * s); ctx.drawImage(v, 0, 0, cv.width, cv.height);
+      const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 1280, xcorners: false });
+      const sh = CAM.sharpness(g, cv.width, cv.height); cal.sh.push(sh); if (cal.sh.length > 30) cal.sh.shift(); const med = [...cal.sh].sort((a, b) => a - b)[cal.sh.length >> 1];
+      let mv = 0; if (cal.prev) d.forEach(m => { const q = cal.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); }); cal.prev = new Map(d.map(m => [m.id, m.c[0]]));
+      const inf = CAL.viewInfo(d, cv.width, cv.height), steady = mv < 2.5 && (cal.sh.length < 5 || sh >= 0.7 * med);
+      const newCell = inf && [...inf.cells].some(c => cal.cells[c] < 2), newTilt = inf && (cal.tilts[inf.tb] || 0) < 3, dt = Date.now() - cal.last;
+      let hint;
+      if (inf && inf.n >= 8 && steady && ((newCell || newTilt) && dt > 600 || dt > 1500) && cal.views.length < 25) {
+        // Bild in voller Auflösung auswerten (Ecken genauer)
+        const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const x2 = c2.getContext('2d', { willReadFrequently: true }); x2.drawImage(v, 0, 0);
+        const dets = MK.detect(toGray(x2, W, H, new Float32Array(W * H)), W, H).filter(m => m.id >= 40 && m.id <= 59).map(m => ({ id: m.id, c: m.c }));
+        if (dets.length >= 6) { cal.views.push({ dets }); inf.cells.forEach(c => cal.cells[c]++); cal.tilts[inf.tb] = (cal.tilts[inf.tb] || 0) + 1; cal.last = Date.now(); navigator.vibrate?.(25); hint = '📸 Bild ' + cal.views.length + ' aufgenommen'; }
+      }
+      const cellsOk = cal.cells.filter(n => n >= 2).length, tiltsOk = ['flach', 'links', 'rechts', 'oben', 'unten'].filter(t => cal.tilts[t]).length;
+      const done = cal.views.length >= 15 && cellsOk === 9 && tiltsOk >= 3;
+      if (!hint) hint = !inf ? 'Kalibriertafel ins Bild nehmen – flach auf dem Tisch, 30–60 cm Abstand.' : !steady ? 'Ruhig halten …'
+        : cellsOk < 9 ? 'Die Tafel in die <b>rot markierten Bildbereiche</b> bringen (Handy verschieben).'
+        : tiltsOk < 3 ? `Handy schräg halten – von <b>${['links', 'rechts', 'oben', 'unten'].find(t => !cal.tilts[t])}</b> auf die Tafel schauen.` : 'Weiter so – noch ein paar Bilder aus anderen Richtungen.';
+      $('#calHint').innerHTML = hint; $('#calInfo').textContent = ` ${cal.views.length} Bilder · ${cal.info}`;
+      $('#calBar').style.width = Math.round(100 * Math.min(1, (Math.min(15, cal.views.length) / 15 + cellsOk / 9 + Math.min(3, tiltsOk) / 3) / 3)) + '%';
+      // Overlay: 3×3-Raster (grün = abgedeckt), erkannte Marken
+      const r = v.getBoundingClientRect(), pr = v.parentElement.getBoundingClientRect();
+      ov.width = Math.round(r.width); ov.height = Math.round(r.height); Object.assign(ov.style, { width: r.width + 'px', height: r.height + 'px', left: (r.left - pr.left) + 'px', top: (r.top - pr.top) + 'px', maxWidth: 'none', maxHeight: 'none' });
+      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, cw = cv.width * k / 3, ch = cv.height * k / 3;
+      o.clearRect(0, 0, ov.width, ov.height);
+      for (let c = 0; c < 9; c++) { o.fillStyle = cal.cells[c] >= 2 ? '#4caf5033' : '#ff525233'; o.fillRect(ox + (c % 3) * cw, oy + Math.floor(c / 3) * ch, cw - 2, ch - 2); }
+      o.strokeStyle = '#4caf50'; o.lineWidth = 2; d.forEach(m => { o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(p[0] * k + ox, p[1] * k + oy) : o.moveTo(p[0] * k + ox, p[1] * k + oy)); o.closePath(); o.stroke(); });
+      cal.busy = false;
+      if (done) return calFinish(W, H);
+    }
+    cal.timer = setTimeout(loop, 120);
+  };
+  loop();
+}
+function calStop() { clearTimeout(cal.timer); if (cal.stream) cal.stream.getTracks().forEach(t => t.stop()); cal.stream = null; $('#calUI').hidden = true; }
+function calFinish(W, H) {
+  calStop();
+  const r = CAL.solve(cal.views, W, H);
+  if (r.err) return alert('Kalibrierung nicht möglich: ' + r.err + ' Bitte nochmal, dabei die Tafel aus mehr Richtungen filmen.');
+  if (r.rms > 0.8) return alert(`Kalibrierung ungenau (Restfehler ${f2(r.rms, 2)} px). Tafel liegt vielleicht nicht flach oder die Bilder waren unscharf – bitte nochmal.`);
+  CAM.save({ it: r.it, W, H, rms: r.rms, n: r.n, date: new Date().toLocaleDateString('de-AT'), fixedFocus: cal.fixedFocus, info: cal.info });
+  calState();
+  alert(`Kamera kalibriert ✓\nBrennweite ${r.it[0].toFixed(0)} px, Verzeichnung k1 ${r.it[3].toFixed(3)}, Restfehler ${f2(r.rms, 2)} px aus ${r.n} Bildern.${cal.fixedFocus ? '' : '\nHinweis: Dieses Handy lässt keinen festen Fokus zu – die Kalibrierung gilt dann nur ungefähr.'}`);
+}
+$('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; calState();
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
 $('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {

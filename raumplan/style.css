@@ -116,3 +116,5 @@ button.big{font-size:18px;padding:12px 18px}
 .bins i{font-style:normal;color:#555;margin-left:2px}.bins i.on{color:#4caf50}
 ol.steps{padding-left:22px;margin:6px 0 10px;font-size:15px}ol.steps li{margin:5px 0}
 details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}details.more summary{cursor:pointer;color:var(--mut);font-size:14px}
+#calUI{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:flex;flex-direction:column}
+#calUI .livebar b{margin-left:4px}#calBar{height:100%;width:0;background:#4caf50;transition:width .3s}
