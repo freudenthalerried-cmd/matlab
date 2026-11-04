@@ -92,3 +92,11 @@ Nach jeder Phase ist die App lauffähig, und es gibt einen Maßbandtest.
 - Kalibrierung je Gerät, Gerätetests (Samsung, Pixel, Xiaomi), Hilfe/Videoanleitung, verständliche Fehlermeldungen (läuft schon).
 - Haftung: Genauigkeitsangabe mit Prüfprotokoll, klarer Hinweis auf Grenzen.
 - Lizenzen aller verwendeten Bausteine prüfen (nur kommerziell nutzbare).
+
+### Simulation Galaxy S23 (Fotos 4000 × 3000, 8 Standorte, 6 Bilder von oben auf den Zollstock, Monte-Carlo mit Zusatzrauschen)
+| Blätter je Wand | Streuung (1σ) | 95 % der Wände | ≤ 1 mm |
+|---|---|---|---|
+| 1 | 0,49 mm | 0,94 mm | 39 von 40 |
+| 2 (nahe beiden Ecken) | ≈ 0,25 mm | 0,6 mm | 36 von 36 |
+
+Voraussetzung in der Simulation: Der Abstand der Bodenmarken am Zollstock ist auf ±0,5 mm bekannt. In der Praxis braucht es dafür die einmalige Kalibrierung des Maßstabs bzw. eine starre Messlatte (siehe `KONZEPT-1MM.md`).
