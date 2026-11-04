@@ -7,6 +7,7 @@
 // related  = Bausteine, die in den Berichten häufig gemeinsam vorkommen.
 // kurz     = Kurzfassung (Minus-Stufe), text = Normalfassung,
 //            gesetz = Rechtsgrundlage/Zusatztext (Plus-Stufe).
+// haupt    = Hauptwort, das in den Vorschlägen fett erscheint (sonst automatisch).
 // icon     = Symbolbild bei komplexeren Sicherheitsthemen (siehe ICONS).
 // sicherheit:false = wird vom KI-Vorschlag nicht angeboten (nicht sicherheitsrelevant).
 
@@ -74,6 +75,7 @@ const BAUSTEINE = [
   },
   {
     id: 'kollektiv',
+    haupt: 'Schutzmaßnahmen',
     titel: 'Kollektive Schutzmaßnahmen',
     kuerzel: ['kollektiv'],
     keywords: ['kollektiv', 'schutzmaßnahmen', 'entfernt', 'demontage', 'schutzgerüst', 'deckenabsicherung', 'geländer'],
@@ -111,6 +113,7 @@ const BAUSTEINE = [
   },
   {
     id: 'bauzaun',
+    haupt: 'Bauzaun',
     titel: 'Bauzaun (§ 4 Abs. 7 BauV)',
     kuerzel: ['zaun'],
     keywords: ['bauzaun', 'zaun', 'baugelände', 'zufahrtstore', 'absperrung', 'baustelleneinrichtung'],
@@ -260,6 +263,7 @@ const BAUSTEINE = [
   },
   {
     id: 'koordination',
+    haupt: 'Gewerke',
     titel: 'Koordination Gewerke (BauKG)',
     kuerzel: ['koord'],
     keywords: ['koordination', 'koordinieren', 'gleichzeitig', 'übereinander', 'mehrere firmen', 'gewerk', 'gewerke', 'subunternehmer', 'nachunternehmer', 'fremdfirma', 'professionist'],
@@ -319,6 +323,7 @@ const BAUSTEINE = [
   },
   {
     id: 'psaga',
+    haupt: 'PSA',
     titel: 'PSA gegen Absturz',
     kuerzel: ['gurt', 'psaga'],
     keywords: ['psaga', 'auffanggurt', 'gurt', 'anseilen', 'angeseilt', 'anschlagpunkt', 'sicherungsseil', 'höhensicherungsgerät'],
@@ -332,6 +337,7 @@ const BAUSTEINE = [
   },
   {
     id: 'durchsturz',
+    haupt: 'Lichtkuppeln',
     titel: 'Nicht durchsturzsichere Flächen',
     kuerzel: ['lichtkuppel'],
     keywords: ['lichtkuppel', 'lichtband', 'oberlicht', 'durchsturz', 'durchbruch', 'wellplatten', 'eternit', 'trapezblech', 'nicht tragfähig', 'nicht begehbar'],
@@ -369,6 +375,7 @@ const BAUSTEINE = [
   },
   {
     id: 'staub_laerm',
+    haupt: 'Absaugung',
     titel: 'Staub / Lärm',
     kuerzel: ['staub'],
     keywords: ['quarz', 'quarzstaub', 'flex', 'trennschleifer', 'schneiden', 'stemmen', 'lärm', 'gehörschutz', 'atemschutz', 'absaugung', 'staubentwicklung'],
@@ -393,6 +400,7 @@ const BAUSTEINE = [
   },
   {
     id: 'lob',
+    haupt: 'Baustelle',
     titel: 'Baustelle in Ordnung',
     kuerzel: ['gut'],
     keywords: ['ordentlich', 'sauber', 'in ordnung'],
