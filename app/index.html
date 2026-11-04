@@ -86,7 +86,7 @@
       </div>
 
       <div class="foto-knoepfe">
-        <label class="gross-knopf gross-gruen" for="foto-input">&#128247; Foto aufnehmen</label>
+        <label id="foto-knopf" class="gross-knopf gross-gruen" for="foto-input" title="Kurz tippen: Kamera &middot; Lang dr&uuml;cken: Foto mit Diktat">&#128247; Foto aufnehmen</label>
         <label class="gross-knopf gross-grau" for="galerie-input">&#128444;&#65039; Galerie</label>
       </div>
       <input id="foto-input" type="file" accept="image/*" capture="environment" hidden>
@@ -182,6 +182,18 @@
       <button id="bausteine-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
     </div>
     <ul id="bausteine-liste" class="bausteine-liste"></ul>
+  </div>
+
+  <!-- Eigene Kamera mit Diktat (Ausl&ouml;ser lang dr&uuml;cken) -->
+  <div id="kamera" class="kamera" hidden>
+    <video id="kamera-video" autoplay playsinline muted></video>
+    <div id="kamera-diktat" class="kamera-diktat">Sprechen &hellip;</div>
+    <div class="kamera-leiste">
+      <button id="kamera-zu" class="kamera-zu" type="button" aria-label="Kamera schlie&szlig;en">&times;</button>
+      <button id="kamera-ausloeser" class="kamera-ausloeser" type="button" aria-label="Foto aufnehmen (gedr&uuml;ckt halten zum Diktieren)"></button>
+      <span class="kamera-platz"></span>
+    </div>
+    <div class="kamera-tipp">Gedr&uuml;ckt halten &amp; sprechen &ndash; loslassen macht das Foto</div>
   </div>
 
   <!-- KI-Vorschaufenster: Eingabefeld oben, darunter das Foto -->
