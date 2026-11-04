@@ -1188,3 +1188,94 @@ body:has(.wird-gezogen) { user-select: none; -webkit-user-select: none; }
 @media print {
   .eintrag-griff, .eintrag-foto-weg, .undo-leiste { display: none !important; }
 }
+
+/* Foto-Knopf: langes Drücken ohne Kontextmenü/Textauswahl */
+#foto-knopf {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Eigene Kamera mit Diktat */
+.kamera {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.kamera[hidden] { display: none; }
+.kamera video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kamera.blitz video { opacity: 0.4; transition: opacity 0.15s; }
+.kamera-diktat {
+  position: relative;
+  margin: 0 16px 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.4;
+  min-height: 1.4em;
+}
+.kamera-diktat[hidden] { display: none; }
+.kamera.diktiert .kamera-diktat { box-shadow: 0 0 0 2px #e53935; }
+.kamera-leiste {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 16px 6px;
+}
+.kamera-ausloeser {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: rgba(255, 255, 255, 0.35);
+  touch-action: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
+}
+.kamera.diktiert .kamera-ausloeser {
+  background: #e53935;
+  animation: kamera-puls 1s ease-in-out infinite;
+}
+@keyframes kamera-puls {
+  50% { transform: scale(1.08); }
+}
+.kamera-zu {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.kamera-platz { width: 48px; }
+.kamera-tipp {
+  position: relative;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  padding: 0 16px calc(14px + env(safe-area-inset-bottom));
+}
+
+.ki-satz-eigen {
+  border-style: dashed;
+  background: transparent;
+}

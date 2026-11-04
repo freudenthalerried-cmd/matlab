@@ -886,9 +886,9 @@
         ? 'Passende Bausteine zu deinem Text:'
         : 'Kein passender Baustein gefunden.';
       liste.forEach(function (b) { kiSaetze.appendChild(satzZeile(b)); });
-      if (!liste.length) {
-        kiSaetze.appendChild(freierVorschlag({ text: text.charAt(0).toUpperCase() + text.slice(1) + (/[.!?]$/.test(text) ? '' : '.'), mangel: false }));
-      }
+      const eigen = freierVorschlag({ text: text.charAt(0).toUpperCase() + text.slice(1) + (/[.!?]$/.test(text) ? '' : '.'), mangel: false });
+      if (liste.length) eigen.classList.add('ki-satz-eigen');
+      kiSaetze.appendChild(eigen);
     } else if (foto) {
       kiQuelle.textContent = claudeSchluessel
         ? 'Foto wird analysiert …'
@@ -923,7 +923,8 @@
   }
 
   // nurText = true: Fenster ohne Foto-Vorschau, Vorschlage nur aus dem Eingabefeld.
-  function oeffneKiFenster(nurText) {
+  // vorgabe: Text, der gleich im Eingabefeld steht (z. B. aus dem Diktat).
+  function oeffneKiFenster(nurText, vorgabe) {
     kiNurText = !!nurText;
     kiVorschau.hidden = kiNurText;
     kiBild.src = kiNurText ? '' : (aktuellesFoto || '');
@@ -932,14 +933,14 @@
     kiEingabe.placeholder = kiNurText
       ? 'Text eingeben'
       : 'Text eingeben \u2013 leer lassen, dann wird das Foto analysiert';
-    kiEingabe.value = '';
+    kiEingabe.value = vorgabe || '';
     rendereKiSaetze();
     kiFenster.hidden = false;
     if (!kiNurText && aktuellesFoto && claudeSchluessel &&
-        !(claudeErgebnis && claudeErgebnis.quelle === '|' + aktuellesFoto.length)) {
+        !(claudeErgebnis && claudeErgebnis.quelle === kiEingabe.value.trim() + '|' + aktuellesFoto.length)) {
       starteClaude();
     }
-    kiEingabe.focus();
+    if (!vorgabe) kiEingabe.focus();
     ebeneOeffnen('ki', schliesseKiFenster);
   }
 
@@ -1038,6 +1039,199 @@
 
   fotoInput.addEventListener('change', function () { verarbeiteFoto(fotoInput); });
   galerieInput.addEventListener('change', function () { verarbeiteFoto(galerieInput); });
+
+  // ---------- Eigene Kamera: Auslöser lang drücken = Foto mit Diktat ----------
+  // Die System-Kamera sperrt das Mikrofon für die Web-App, daher eine eigene
+  // Kamera-Ansicht. Kurz tippen auf "Foto aufnehmen" öffnet weiter die System-Kamera.
+
+  const fotoKnopf = document.getElementById('foto-knopf');
+  const kamera = document.getElementById('kamera');
+  const kameraVideo = document.getElementById('kamera-video');
+  const kameraDiktat = document.getElementById('kamera-diktat');
+  const kameraAusloeser = document.getElementById('kamera-ausloeser');
+  const kameraZu = document.getElementById('kamera-zu');
+  const Spracherkennung = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const LANG_DRUECKEN_MS = 450;
+
+  let kameraStrom = null;
+  let kameraNachher = null;     // läuft nach dem Schließen (Foto übernehmen)
+  let haltePointer = null;      // Finger, der gerade den Auslöser hält
+  let langDruckTimer = null;
+  let langGedrueckt = false;
+  let diktat = null;
+  let diktatFertig = '';
+  let diktatZwischen = '';
+  let diktatEnde = null;
+  let ausloesenLaeuft = false;
+
+  function zeigeDiktat(text) {
+    kameraDiktat.textContent = text;
+    kameraDiktat.hidden = !text;
+  }
+
+  function starteDiktat() {
+    if (diktat) return;
+    if (!Spracherkennung) {
+      zeigeDiktat('Diktat auf diesem Gerät nicht verfügbar');
+      return;
+    }
+    diktatFertig = '';
+    diktatZwischen = '';
+    const r = new Spracherkennung();
+    r.lang = 'de-AT';
+    r.continuous = true;
+    r.interimResults = true;
+    r.onresult = function (ev) {
+      let fertig = '';
+      let zwischen = '';
+      for (let i = 0; i < ev.results.length; i++) {
+        const t = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) fertig += t; else zwischen += t;
+      }
+      diktatFertig = fertig;
+      diktatZwischen = zwischen;
+      zeigeDiktat((fertig + ' ' + zwischen).trim() || 'Sprechen …');
+    };
+    r.onerror = function (ev) {
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+        zeigeDiktat('Mikrofon nicht erlaubt – in den Browser-Einstellungen freigeben');
+      }
+    };
+    r.onend = function () {
+      diktat = null;
+      kamera.classList.remove('diktiert');
+      if (diktatEnde) { const f = diktatEnde; diktatEnde = null; f(); }
+    };
+    diktat = r;
+    kamera.classList.add('diktiert');
+    zeigeDiktat('Sprechen …');
+    try { r.start(); } catch (e) { diktat = null; kamera.classList.remove('diktiert'); }
+  }
+
+  // Stoppt das Diktat und liefert den erkannten Text (wartet kurz auf das Endergebnis).
+  function beendeDiktat() {
+    return new Promise(function (resolve) {
+      function fertig() {
+        resolve((diktatFertig + ' ' + diktatZwischen).replace(/\s+/g, ' ').trim());
+      }
+      if (!diktat) { fertig(); return; }
+      diktatEnde = fertig;
+      try { diktat.stop(); } catch (e) { diktatEnde = null; fertig(); return; }
+      setTimeout(function () {
+        if (diktatEnde === fertig) { diktatEnde = null; fertig(); }
+      }, 2000);
+    });
+  }
+
+  function oeffneKamera(mitDiktat, pointerId) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      fotoInput.click();
+      return;
+    }
+    kameraNachher = null;
+    ausloesenLaeuft = false;
+    kamera.hidden = false;
+    zeigeDiktat('');
+    ebeneOeffnen('kamera', schliesseKamera);
+    if (mitDiktat) {
+      haltePointer = pointerId;
+      starteDiktat();
+    }
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } },
+      audio: false
+    }).then(function (strom) {
+      if (kamera.hidden) { strom.getTracks().forEach(function (t) { t.stop(); }); return; }
+      kameraStrom = strom;
+      kameraVideo.srcObject = strom;
+    }).catch(function () {
+      zeigeDiktat('Kamera nicht erlaubt – schließen und kurz auf „Foto aufnehmen“ tippen');
+    });
+  }
+
+  function schliesseKamera() {
+    haltePointer = null;
+    if (diktat) { diktatEnde = null; try { diktat.abort(); } catch (e) { /* egal */ } }
+    if (kameraStrom) kameraStrom.getTracks().forEach(function (t) { t.stop(); });
+    kameraStrom = null;
+    kameraVideo.srcObject = null;
+    kamera.hidden = true;
+    kamera.classList.remove('diktiert', 'blitz');
+    const nachher = kameraNachher;
+    kameraNachher = null;
+    if (nachher) nachher();
+  }
+
+  function ausloesen() {
+    if (ausloesenLaeuft || kamera.hidden) return;
+    if (!kameraStrom || !kameraVideo.videoWidth) {
+      // Kamera noch nicht bereit: auslösen, sobald das erste Bild da ist
+      if (kameraStrom || !kameraDiktat.textContent.startsWith('Kamera nicht')) {
+        kameraVideo.addEventListener('loadeddata', ausloesen, { once: true });
+      }
+      return;
+    }
+    ausloesenLaeuft = true;
+    const c = document.createElement('canvas');
+    c.width = kameraVideo.videoWidth;
+    c.height = kameraVideo.videoHeight;
+    c.getContext('2d').drawImage(kameraVideo, 0, 0, c.width, c.height);
+    const foto = c.toDataURL('image/jpeg', 0.85);
+    kamera.classList.add('blitz');
+    beendeDiktat().then(function (text) {
+      kameraNachher = function () {
+        setzeVorschauFoto(foto);
+        fotoHinweis.hidden = true;
+        oeffneKiFenster(false, text);
+      };
+      ebeneVerlassen('kamera');
+    });
+  }
+
+  // Langes Drücken auf "Foto aufnehmen"
+  fotoKnopf.addEventListener('pointerdown', function (ev) {
+    if (ev.button !== undefined && ev.button > 0) return;
+    langGedrueckt = false;
+    clearTimeout(langDruckTimer);
+    const id = ev.pointerId;
+    langDruckTimer = setTimeout(function () {
+      langGedrueckt = true;
+      if (navigator.vibrate) navigator.vibrate(30);
+      oeffneKamera(true, id);
+    }, LANG_DRUECKEN_MS);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+    fotoKnopf.addEventListener(t, function () { clearTimeout(langDruckTimer); });
+  });
+  fotoKnopf.addEventListener('click', function (ev) {
+    if (langGedrueckt) { ev.preventDefault(); langGedrueckt = false; }
+  });
+  fotoKnopf.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+
+  // Auslöser in der Kamera: tippen = Foto, halten = diktieren, loslassen = Foto
+  let ausloeserTimer = null;
+  kameraAusloeser.addEventListener('pointerdown', function (ev) {
+    ev.preventDefault();
+    haltePointer = ev.pointerId;
+    clearTimeout(ausloeserTimer);
+    ausloeserTimer = setTimeout(starteDiktat, 300);
+  });
+  kameraAusloeser.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+
+  document.addEventListener('pointerup', function (ev) {
+    if (haltePointer === null || ev.pointerId !== haltePointer) return;
+    haltePointer = null;
+    clearTimeout(ausloeserTimer);
+    if (!kamera.hidden) ausloesen();
+  });
+  // Bricht das System den Druck ab, läuft das Diktat weiter – dann zum Auslösen tippen.
+  document.addEventListener('pointercancel', function (ev) {
+    if (haltePointer === null || ev.pointerId !== haltePointer) return;
+    haltePointer = null;
+    clearTimeout(ausloeserTimer);
+  });
+
+  kameraZu.addEventListener('click', function () { ebeneVerlassen('kamera'); });
 
   // ---------- Rückgängig-Leiste ----------
 
