@@ -751,14 +751,18 @@ function calFinish(W, H) {
 $('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calDone').onclick = () => { if (cal.views.length >= 5) calFinish(cal.W, cal.H); }; calState();
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
-$('#arOpen').onclick = () => AR.start(({ poly, height, rms }) => {
-  let Q = poly.map(p => [p[0], p[1]]);
-  const r = newRoom($('#arName').value || 'Raum ' + (S.rooms.length + 1), [], 0, 0); Object.assign(r, fromPoly(Q, r));
-  if (r.segs.reduce((s, g) => s + g.turn, 0) < 0) { Q = Q.reverse(); Object.assign(r, fromPoly(Q, r)); } // Umlaufsinn wie im Plan
-  if (height) r.h = +height.toFixed(2);
-  S.rooms = S.rooms.filter(q => !q.demo); r.x = 0; r.y = 0; placeFree(r); S.rooms.push(r); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
-  setTimeout(() => alert(`Raum übernommen: ${r.segs.length} Wände, Streuung der Wandpunkte ${Math.round(rms * 1000)} mm${height ? ', Raumhöhe ' + f2(height) + ' m' : ''}. AR ist ca. ±1–2 cm genau – für mm-Genauigkeit die Zielmarken verwenden.`), 50);
-});
+$('#arOpen').onclick = () => AR.start(r => {
+  const { poly, height, rms, sigma, scale } = r; let Q = poly.map(p => [p[0], p[1]]), sg = sigma.slice();
+  const rm = newRoom($('#arName').value || 'Raum ' + (S.rooms.length + 1), [], 0, 0); Object.assign(rm, fromPoly(Q, rm));
+  if (rm.segs.reduce((s, g) => s + g.turn, 0) < 0) { Q = Q.reverse(); sg = sg.reverse(); sg.push(sg.shift()); Object.assign(rm, fromPoly(Q, rm)); } // Umlaufsinn wie im Plan
+  if (height) rm.h = +height.toFixed(3);
+  rm.adj = { wallSigma: sg, cornerMax: 0, s0: 1, red: 0, warn: [], v: [], ar: true };
+  S.rooms = S.rooms.filter(q => !q.demo); rm.x = 0; rm.y = 0; placeFree(rm); S.rooms.push(rm); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
+  const mx = Math.max(...sg) * 1000;
+  setTimeout(() => alert(`Raum übernommen: ${rm.segs.length} Wände, Genauigkeit ca. ±${Math.round(mx)} mm${scale ? ` (Maßstab mit Zollstock um ${f2((scale.k - 1) * 100, 2)} % korrigiert)` : ' – ohne Zollstock-Maßstab'}${height ? ', Raumhöhe ' + f2(height) + ' m' : ''}.\nBitte eine Wand mit dem Maßband nachmessen und als Kontrollmaß eintragen – so lernen wir, wie genau AR bei dir wirklich ist.`), 50);
+}, { zollstock: $('#arZoll').checked ? (parseLen($('#pgDist').value) || 2) : 0 });
+$('#arScan').onclick = AR.toggleScan; $('#arZmore').onclick = AR.zMore;
+$('#arExport').onclick = () => { let L = []; try { L = JSON.parse(localStorage.getItem('raumplan-ar-log') || '[]'); } catch (e) { } if (!L.length) return alert('Noch keine AR-Messung gespeichert.'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(L)], { type: 'application/json' })); a.download = `raumplan-ar-daten-${new Date().toISOString().slice(0, 10)}.json`; a.click(); };
 $('#arPoint').onclick = AR.point; $('#arNext').onclick = AR.next; $('#arUndo').onclick = AR.undo; $('#arDone').onclick = AR.finish; $('#arCancel').onclick = AR.cancel;
 
 /* ---------- 2 Vermessen ---------- */

@@ -124,3 +124,6 @@ details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}de
 .kmlist li b{min-width:5.5em;text-align:right;font-variant-numeric:tabular-nums}.kmlist li .sp{flex:1}.kmlist button{padding:1px 8px}
 .livekm{display:flex;gap:8px;align-items:center;padding:6px 10px;background:#111;color:#ddd;font-size:14px;flex-wrap:wrap}.livekm button{color:#fff;background:#1565c0;border-color:#1565c0}
 .calstep{background:#1565c0;color:#fff;border-radius:8px;padding:1px 8px;font-size:14px;margin-right:6px}
+
+.ardot.scan{box-shadow:0 0 0 6px #29b6f688,0 0 0 2px #0008}
+#arScan{background:#1565c0!important;border-color:#1565c0!important}

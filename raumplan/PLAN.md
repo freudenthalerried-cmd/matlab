@@ -100,3 +100,16 @@ Nach jeder Phase ist die App lauffähig, und es gibt einen Maßbandtest.
 | 2 (nahe beiden Ecken) | ≈ 0,25 mm | 0,6 mm | 36 von 36 |
 
 Voraussetzung in der Simulation: Der Abstand der Bodenmarken am Zollstock ist auf ±0,5 mm bekannt. In der Praxis braucht es dafür die einmalige Kalibrierung des Maßstabs bzw. eine starre Messlatte (siehe `KONZEPT-1MM.md`).
+
+### Stand AR + Zollstock (erledigt)
+- `ar.js`: Zollstock-Maßstab (Anfang/Ende antippen, mehrere Lagen „↻ Zollstock umgelegt“), automatisches Abtasten (Punkt alle 2 cm), Möbel einseitig aussortieren (liegen vor der Wand), Genauigkeit je Wand, Rohdaten-Export
+- Simulation `sim/test_ar.js` (angenommenes ARCore-Modell: 6 mm Rauschen, 1 % Maßstab, 3 mm Drift je Wand, 15 % Möbelpunkte, 5 mm Tippfehler):
+
+| Variante | Fehler rms | 95 % |
+|---|---|---|
+| Antippen ohne Zollstock | 40 mm | 76 mm |
+| Abtasten + Zollstock (1 Lage, 3 Tipps) | 9 mm | 18 mm |
+| Abtasten + Zollstock (3 Lagen, 5 Tipps) | 6 mm | 12 mm |
+| ohne Drift und Tippfehler (Grenze des Verfahrens) | 2,8 mm | 5,5 mm |
+
+**Test am Handy nötig:** 2–3 Räume mit AR + Zollstock messen, Wände mit dem Maßband nachmessen, AR-Daten exportieren und schicken → Fehlermodell an echte Daten anpassen.

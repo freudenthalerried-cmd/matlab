@@ -76,9 +76,9 @@
       <ul id="kmList" class="kmlist"></ul>
     </div>
     <div class="card arcard">
-      <h3>📱 Ohne Blätter: AR-Messung (±1–2 cm)</h3>
-      <p class="small">Handy auf jede Wand richten und 2–3 Punkte antippen (über den Möbeln). Braucht Chrome auf Android mit ARCore.</p>
-      <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button></div>
+      <h3>📱 Ohne Wandblätter: AR-Messung</h3>
+      <p class="small">1. Zollstock antippen (Anfang und Ende) → genauer Maßstab. 2. Je Wand „▶ Abtasten“ und den Kreis über die Wand fahren – die App sammelt Punkte und sortiert Möbel aus. Braucht Chrome auf Android mit ARCore. Genauigkeit: wird mit deinen Maßband-Vergleichen ermittelt (erwartet ±5–10 mm mit Zollstock).</p>
+      <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button><label><input type="checkbox" id="arZoll" checked> mit Zollstock als Maßstab</label><button id="arExport">⬇ AR-Daten exportieren</button></div>
     </div>
     <details class="tip">
       <summary>B · Manuell: Fotos antippen (Referenzrechteck am Boden)</summary>
@@ -220,7 +220,7 @@
   <div class="arTop"><span id="arInfo"></span><span class="sp"></span><button id="arCancel">✕</button></div>
   <div id="arMsg" class="arMsg"></div>
   <div id="arDot" class="ardot"></div>
-  <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
+  <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arZmore" hidden>↻ Zollstock umgelegt</button><button id="arScan">▶ Abtasten</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
 </div>
 <div id="calUI" hidden>
   <div class="livebar"><button id="calClose">✕</button><b>Kamera kalibrieren</b><span id="calInfo" class="small"></span><span class="sp"></span><button id="calDone" disabled>✔ Fertig</button></div>
