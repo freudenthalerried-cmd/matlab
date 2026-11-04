@@ -60,3 +60,35 @@ Nach jeder Phase ist die App lauffähig, und es gibt einen Maßbandtest.
 - Offen für Phase 4: Laserpunkt im Video erkennen, Fenster/Türen zuordnen, Kontrollmaße als Beobachtung im Ausgleich
 
 **Test am Handy:** Raum aufnehmen; während der Aufnahme „🎤 Maß ansagen“ → „Raumhöhe 2,55“; mit dem Laser eine Wand messen, während das Wandblatt im Bild ist. Nach der Auswertung steht unten die Tabelle „Kontrollmaße“ mit der Abweichung. Zum Vergleich dieselbe Wand mit dem Maßband messen.
+
+### Stand Phase 2b (erledigt)
+- Marken werden schon während der Aufnahme im Hintergrund erkannt (`detworker.js`, bis 4 Threads) → Plan < 1 s nach der Aufnahme
+- Video wird im Hintergrund gesichert (OPFS, 7 Tage), „🔬 Genauer auswerten“ nutzt die ruhigen Videostellen (24–64 s)
+- Fotos in voller Sensorauflösung (ImageCapture, z. B. Galaxy S23 4000 × 3000), Fallback Videobild
+- Tests: `sim/e2e_speed.js` (Fake-Kamera über http)
+
+## 4. Neue Wünsche – Einschätzung und Reihenfolge
+
+### 4.1 Ohne Marker bzw. nur mit dem Zollstock
+| Variante | Machbar? | Erwartete Genauigkeit (4-m-Wand) |
+|---|---|---|
+| Nur AR (gibt es) | ja | ±1–2 cm |
+| AR + Zollstock als Maßstab (beide Enden antippen → Maßstab korrigieren) | ja, klein | ca. ±5–10 mm |
+| Zollstock mit 2 Bodenblättern + Wände **ohne** Marken, Auswertung über natürliche Bildmerkmale (Kanten, Steckdosen, Struktur) und Ebenen aus vielen Punkten | nur am PC sinnvoll (COLMAP, BSD-Lizenz) | ca. ±3–10 mm bei strukturierten Wänden, glatte weiße Wände deutlich schlechter |
+| Ganz ohne Marker und ohne Maß | Maßstab nur aus AR-Sensorik oder Normmaßen | ca. ±2–5 cm |
+
+**±1 mm ohne Marker ist nach heutigem Stand nicht erreichbar.** Glatte Wände geben der Kamera zu wenig Anhaltspunkte. Ohne Referenz fehlt außerdem der genaue Maßstab.
+**Auslagern:** Claude bzw. Sprach-KI eignet sich nicht für Millimeter-Geometrie. Eine **lokale Auswertung am PC** (COLMAP + eigene Ebenenausgleichung, optional KI-Tiefenmodelle wie MASt3R/VGGT) ist möglich. Achtung: Mehrere dieser KI-Modelle sind nur **nicht-kommerziell** lizenziert, das ist für ein Produkt wichtig.
+**Vorschlag:** Phase 4a „AR + Zollstock“ (klein) und Phase 4b „PC-Auswertung ohne Wandmarken“ als Versuch, beide gegen Maßband verglichen.
+
+### 4.2 Dachgeschoss, Treppenhaus, Fassade (Phase 6)
+- **Dachschrägen:** Ebenen mit Neigung (Blatt auf der Schräge oder AR-Punkte), Schnittlinien mit Wänden, Höhenlinien 1,50 m und 2,00 m, Flächen nach ÖNORM B 1800.
+- **Treppenhaus:** Geschoße über durchgehende Aufnahme verbinden, Stufenhöhe/-tiefe gemittelt, Geschoßhöhe.
+- **Fassade:** große Blätter (A3) oder Marken auf Platten, Aufnahme von außen mit Abstand, Fenster/Öffnungen in der Fassadenebene, Außenmaße als Kontrollmaße.
+
+### 4.3 App für andere Nutzer (Produkt)
+- Eigenes Hosting mit eigener Adresse statt raw.githack (z. B. GitHub Pages oder eigener Server), Versionierung, Updates.
+- **Datenschutz (DSGVO):** Videos von Wohnungen sind personenbezogen. Die Auswertung am Gerät ist ein Vorteil. Uploads nur mit Einwilligung, Löschfristen.
+- Kalibrierung je Gerät, Gerätetests (Samsung, Pixel, Xiaomi), Hilfe/Videoanleitung, verständliche Fehlermeldungen (läuft schon).
+- Haftung: Genauigkeitsangabe mit Prüfprotokoll, klarer Hinweis auf Grenzen.
+- Lizenzen aller verwendeten Bausteine prüfen (nur kommerziell nutzbare).
