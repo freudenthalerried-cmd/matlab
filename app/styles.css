@@ -1305,3 +1305,43 @@ body:has(.wird-gezogen) { user-select: none; -webkit-user-select: none; }
   border-radius: 0;
 }
 .bausteine-liste li.mein-text { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+
+/* Offene Mängel aus dem letzten Protokoll */
+.alt-maengel {
+  border: 1px solid #e0a3a3;
+  background: rgba(198, 40, 40, 0.05);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.alt-maengel[hidden] { display: none; }
+.alt-maengel-kopf {
+  font-weight: 700;
+  font-size: 13px;
+  color: #c62828;
+  margin-bottom: 4px;
+}
+.alt-mangel {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-top: 1px solid rgba(198, 40, 40, 0.15);
+  font-size: 14px;
+}
+.alt-mangel:first-of-type { border-top: none; }
+.alt-mangel img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex: none;
+}
+.alt-mangel-inhalt { flex: 1; white-space: pre-wrap; }
+.alt-mangel-herkunft { font-size: 11px; color: var(--muted); }
+.alt-mangel-weg { font-size: 22px; padding: 0 8px; line-height: 1; }
+
+@media print {
+  .alt-mangel-weg { display: none !important; }
+  .alt-maengel { break-inside: avoid; }
+}

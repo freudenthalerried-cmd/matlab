@@ -1749,8 +1749,104 @@
     speichereJson('bp_eintraege', eintraege);
   }
 
+  // ---------- Offene Mängel aus dem letzten Protokoll ----------
+  // Mängel aus Protokoll Nr. n-1 werden in Nr. n angezeigt (und gedruckt),
+  // solange sie nicht mit × entfernt werden. Ältere Protokolle sind nicht mehr relevant.
+
+  let maengelWeg = ladeJson('bp_maengel_weg', {}); // "<bs>:<nr>" -> [Schlüssel]
+  const altMaengelBox = document.createElement('div');
+  altMaengelBox.className = 'alt-maengel';
+  altMaengelBox.hidden = true;
+  messages.parentNode.insertBefore(altMaengelBox, messages);
+
+  function istMangel(e) {
+    return e.typ === 'mangel' || /^\s*MANGEL\b/i.test(e.text || '');
+  }
+
+  function mangelSchluessel(e) {
+    return String(e.ts || (e.zeit + '|' + (e.text || '').slice(0, 40)));
+  }
+
+  function eintraegeVon(nr) {
+    return eintraege.filter(function (e) {
+      const gleicheBs = e.bs === aktuelleBaustelle.id || (!e.bs && e.ort === aktuelleBaustelle.name);
+      return gleicheBs && (e.pn || 1) === nr;
+    });
+  }
+
+  // Liefert [{ e, von }] – offene Mängel, die in Protokoll nr angezeigt werden.
+  function offeneMaengel(nr) {
+    if (!aktuelleBaustelle || nr <= 1) return [];
+    const vorher = nr - 1;
+    const weg = maengelWeg[aktuelleBaustelle.id + ':' + nr] || [];
+    return eintraegeVon(vorher).filter(istMangel).map(function (e) {
+      return { e: e, von: vorher };
+    }).filter(function (x) {
+      return weg.indexOf(mangelSchluessel(x.e)) === -1;
+    });
+  }
+
+  function datumVon(nr) {
+    const k = koepfe[aktuelleBaustelle.id + ':' + nr];
+    if (!k || !k.datum) return '';
+    const t = k.datum.split('-');
+    return t.length === 3 ? t[2] + '.' + t[1] + '.' + t[0] : k.datum;
+  }
+
+  function renderAltMaengel() {
+    const liste = offeneMaengel(aktuelleNr);
+    altMaengelBox.innerHTML = '';
+    altMaengelBox.hidden = !liste.length;
+    if (!liste.length) return;
+    const kopf = document.createElement('div');
+    kopf.className = 'alt-maengel-kopf';
+    kopf.textContent = 'Offene Mängel aus dem letzten Protokoll (' + liste.length + ')';
+    altMaengelBox.appendChild(kopf);
+    liste.forEach(function (x) {
+      const zeile = document.createElement('div');
+      zeile.className = 'alt-mangel';
+      if (x.e.foto) {
+        const img = document.createElement('img');
+        img.src = x.e.foto;
+        img.alt = 'Foto';
+        zeile.appendChild(img);
+      }
+      const inhalt = document.createElement('div');
+      inhalt.className = 'alt-mangel-inhalt';
+      const herkunft = document.createElement('div');
+      herkunft.className = 'alt-mangel-herkunft';
+      herkunft.textContent = 'Aus Protokoll Nr. ' + x.von + (datumVon(x.von) ? ' vom ' + datumVon(x.von) : '');
+      const text = document.createElement('div');
+      text.textContent = x.e.text;
+      inhalt.appendChild(herkunft);
+      inhalt.appendChild(text);
+      zeile.appendChild(inhalt);
+      const weg = document.createElement('button');
+      weg.type = 'button';
+      weg.className = 'eintrag-knopf eintrag-loeschen alt-mangel-weg';
+      weg.textContent = '×';
+      weg.title = 'Nicht mehr anführen';
+      weg.setAttribute('aria-label', 'Mangel entfernen');
+      weg.addEventListener('click', function () {
+        const key = aktuelleBaustelle.id + ':' + aktuelleNr;
+        const sk = mangelSchluessel(x.e);
+        maengelWeg[key] = (maengelWeg[key] || []).concat([sk]);
+        speichereJson('bp_maengel_weg', maengelWeg);
+        renderAltMaengel();
+        zeigeUndo('Mangel entfernt', function () {
+          maengelWeg[key] = (maengelWeg[key] || []).filter(function (k) { return k !== sk; });
+          speichereJson('bp_maengel_weg', maengelWeg);
+          renderAltMaengel();
+        });
+      });
+      zeile.appendChild(weg);
+      altMaengelBox.appendChild(zeile);
+    });
+  }
+
   function renderAlleEintraege() {
     messages.innerHTML = '';
+    renderAltMaengel();
     const aktuelle = eintraegeAktuell();
     aktuelle.forEach(renderEintrag);
     const hatFoto = aktuelle.some(function (e) { return e.foto; }) || !!aktuellesFoto;
