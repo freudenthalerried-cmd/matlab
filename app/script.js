@@ -926,6 +926,7 @@
         ? 'Passende Bausteine zu deinem Text:'
         : 'Kein passender Baustein gefunden.';
       liste.forEach(function (b) { kiSaetze.appendChild(satzZeile(b, text)); });
+      eigeneFuer(text, 2).forEach(function (tr) { kiSaetze.appendChild(meinTextZeile(tr)); });
       const eigen = freierVorschlag({ text: text.charAt(0).toUpperCase() + text.slice(1) + (/[.!?]$/.test(text) ? '' : '.'), mangel: false });
       if (liste.length) eigen.classList.add('ki-satz-eigen');
       kiSaetze.appendChild(eigen);
@@ -1009,6 +1010,126 @@
     autoGrow();
     input.focus();
     renderBausteine();
+  }
+
+  // ---------- Eigene Texte merken ----------
+  // Selbst geschriebene Sätze werden gespeichert und später passend zum Thema
+  // vorgeschlagen. Kurze Sätze (unter MIN_WOERTER Wörtern) werden nicht gemerkt.
+
+  const MIN_WOERTER = 5;
+  const FUELLWOERTER = ['sind', 'wird', 'werden', 'wurde', 'wurden', 'nicht', 'eine', 'einer', 'einem',
+    'einen', 'eines', 'dass', 'oder', 'auch', 'noch', 'beim', 'sowie', 'durch', 'gegen', 'ueber',
+    'unter', 'nach', 'haben', 'diese', 'dieser', 'dieses', 'dort', 'hier', 'bitte', 'vorhanden',
+    'umgehend', 'baustelle', 'mangel', 'immer', 'wieder', 'muss', 'muessen', 'soll', 'sollen', 'kein',
+    'keine', 'ohne', 'sowie', 'wurde', 'ebenfalls', 'aktuell', 'derzeit'];
+
+  function kernWoerter(text) {
+    return normiere(text).split(/[^a-z0-9]+/).filter(function (w) {
+      return w.length >= 4 && FUELLWOERTER.indexOf(w) === -1;
+    });
+  }
+
+  function istBausteinText(satz) {
+    const n = normiere(satz).replace(/\s+/g, ' ').trim();
+    return BAUSTEINE.some(function (b) {
+      return [varianten[b.id], b.text, b.kurz, b.mangel].filter(Boolean).some(function (f) {
+        const nf = normiere(f).replace(/\s+/g, ' ').trim();
+        return nf === n || nf.indexOf(n) !== -1 || n.indexOf(nf.slice(0, 40)) !== -1;
+      });
+    }) || ALLGEMEINE_PUNKTE.some(function (pkt) { return normiere(pkt.text).indexOf(n) !== -1; });
+  }
+
+  function zerlegeSaetze(text) {
+    return String(text || '').split(/\n+/).reduce(function (alle, zeile) {
+      return alle.concat(zeile.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/));
+    }, []).map(function (x) { return x.replace(/^[•\-–]\s*/, '').trim(); }).filter(Boolean);
+  }
+
+  let eigeneTexte = ladeJson('bp_eigene_texte', null);
+
+  function merkeEigeneTexte(text, speichern) {
+    zerlegeSaetze(text).forEach(function (satz) {
+      if (satz.split(/\s+/).length < MIN_WOERTER || istBausteinText(satz)) return;
+      const key = normiere(satz).replace(/\s+/g, ' ');
+      const da = eigeneTexte.find(function (e) { return normiere(e.text).replace(/\s+/g, ' ') === key; });
+      if (da) { da.n++; da.zuletzt = Date.now(); }
+      else eigeneTexte.push({ text: satz, n: 1, zuletzt: Date.now() });
+    });
+    if (eigeneTexte.length > 300) {
+      eigeneTexte.sort(function (a, b) { return (b.n * 1e13 + b.zuletzt) - (a.n * 1e13 + a.zuletzt); });
+      eigeneTexte = eigeneTexte.slice(0, 300);
+    }
+    if (speichern !== false) speichereJson('bp_eigene_texte', eigeneTexte);
+  }
+
+  // Beim ersten Start mit dieser Funktion: bisherige Einträge übernehmen.
+  if (!Array.isArray(eigeneTexte)) {
+    eigeneTexte = [];
+    eintraege.forEach(function (e) { merkeEigeneTexte(e.text, false); });
+    speichereJson('bp_eigene_texte', eigeneTexte);
+  }
+
+  // Eigene Texte, die zum Thema passen (gemeinsame Kernwörter oder gleiches Baustein-Thema).
+  function eigeneFuer(thema, max) {
+    const themaKern = kernWoerter(thema);
+    if (!themaKern.length) return [];
+    const themaBs = vorschlaegeFuer(thema).map(function (b) { return b.id; });
+    const nThema = normiere(thema).replace(/\s+/g, ' ').trim();
+    return eigeneTexte.map(function (e) {
+      if (normiere(e.text).replace(/\s+/g, ' ').trim() === nThema) return null;
+      const kern = kernWoerter(e.text);
+      let punkte = 0;
+      let wort = null;
+      themaKern.forEach(function (tw) {
+        const k = kern.find(function (w) { return w.indexOf(tw) === 0 || tw.indexOf(w) === 0 || (tw.length >= 6 && w.indexOf(tw) !== -1); });
+        if (k) { punkte += 10; if (!wort) wort = tw; }
+      });
+      if (themaBs.length) {
+        const eBs = vorschlaegeFuer(e.text).map(function (b) { return b.id; });
+        if (eBs.some(function (id) { return themaBs.indexOf(id) !== -1; })) punkte += 8;
+      }
+      return punkte ? { e: e, punkte: punkte + Math.min(e.n, 5), wort: wort } : null;
+    }).filter(Boolean).sort(function (a, b) { return b.punkte - a.punkte; }).slice(0, max || 2);
+  }
+
+  function meinTextZeile(treffer, nachKlick) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'ki-satz ki-satz-mein';
+    const marke = document.createElement('span');
+    marke.className = 'mein-marke';
+    marke.textContent = 'Mein Text';
+    knopf.appendChild(marke);
+    const t = treffer.e.text;
+    // Hauptwort fett: erstes Wort, das zum Thema passt
+    const re = /[A-Za-zÄÖÜäöüß-]+/g;
+    let m, stelle = null;
+    while (treffer.wort && (m = re.exec(t))) {
+      const nw = normiere(m[0]);
+      if (nw.indexOf(treffer.wort) === 0 || treffer.wort.indexOf(nw) === 0 && nw.length >= 4 ||
+          (treffer.wort.length >= 6 && nw.indexOf(treffer.wort) !== -1)) { stelle = m; break; }
+    }
+    if (stelle) {
+      knopf.appendChild(document.createTextNode(t.slice(0, stelle.index)));
+      const f = document.createElement('strong');
+      f.textContent = stelle[0];
+      knopf.appendChild(f);
+      knopf.appendChild(document.createTextNode(t.slice(stelle.index + stelle[0].length)));
+    } else {
+      knopf.appendChild(document.createTextNode(t));
+    }
+    knopf.addEventListener('click', function () {
+      treffer.e.n++;
+      treffer.e.zuletzt = Date.now();
+      speichereJson('bp_eigene_texte', eigeneTexte);
+      const bisher = input.value.trim();
+      input.value = bisher ? bisher + '\n' + t : t;
+      updateSendState();
+      autoGrow();
+      if (nachKlick) nachKlick(); else ebeneVerlassen('ki');
+      input.focus();
+    });
+    return knopf;
   }
 
   // ---------- Allgemeine Punkte ----------
@@ -1351,6 +1472,48 @@
       });
       bausteineListe.appendChild(li);
     });
+
+    if (!eigeneTexte.length) return;
+    const kopfMein = document.createElement('li');
+    kopfMein.className = 'mein-kopf';
+    kopfMein.textContent = 'Meine Texte (' + eigeneTexte.length + ') – werden passend zum Thema vorgeschlagen';
+    bausteineListe.appendChild(kopfMein);
+    eigeneTexte.slice().sort(function (a, b) { return b.n - a.n || b.zuletzt - a.zuletzt; }).forEach(function (e) {
+      const li = document.createElement('li');
+      li.className = 'mein-text';
+      const t = document.createElement('div');
+      t.className = 'baustein-text';
+      t.textContent = e.text + (e.n > 1 ? '  (' + e.n + '×)' : '');
+      const weg = document.createElement('button');
+      weg.type = 'button';
+      weg.className = 'eintrag-knopf eintrag-loeschen';
+      weg.textContent = '×';
+      weg.title = 'Text vergessen';
+      weg.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        const idx = eigeneTexte.indexOf(e);
+        if (idx === -1) return;
+        eigeneTexte.splice(idx, 1);
+        speichereJson('bp_eigene_texte', eigeneTexte);
+        renderBausteine();
+        zeigeUndo('Text vergessen', function () {
+          eigeneTexte.splice(Math.min(idx, eigeneTexte.length), 0, e);
+          speichereJson('bp_eigene_texte', eigeneTexte);
+          renderBausteine();
+        });
+      });
+      li.appendChild(t);
+      li.appendChild(weg);
+      li.addEventListener('click', function () {
+        if (viewProtokoll.hidden) return;
+        const bisher = input.value.trim();
+        input.value = bisher ? bisher + '\n' + e.text : e.text;
+        updateSendState();
+        autoGrow();
+        ebeneVerlassen('bausteine');
+      });
+      bausteineListe.appendChild(li);
+    });
   }
 
   bausteineButton.addEventListener('click', function () {
@@ -1650,7 +1813,7 @@
     const thema = aktuellesThema();
     let liste = bausteineZumThema(thema);
     const kurz = thema.length > 40 ? thema.slice(0, 40) + '…' : thema;
-    if (liste.length) {
+    if (liste.length || eigeneFuer(thema, 1).length) {
       themaTitel.textContent = 'Bausteine zu „' + kurz + '“';
     } else {
       liste = sicherheitsBausteine().slice().sort(function (a, b) { return score(b) - score(a); }).slice(0, 5);
@@ -1659,6 +1822,9 @@
     themaListe.innerHTML = '';
     liste.forEach(function (b) {
       themaListe.appendChild(satzZeile(b, thema, function () { ebeneVerlassen('thema'); }));
+    });
+    eigeneFuer(thema, 3).forEach(function (tr) {
+      themaListe.appendChild(meinTextZeile(tr, function () { ebeneVerlassen('thema'); }));
     });
     themaFenster.hidden = false;
     ebeneOeffnen('thema', function () { themaFenster.hidden = true; });
@@ -1802,6 +1968,7 @@
       const alt = eintraege[bearbeitetIndex];
       if (alt.text !== text) merkeAenderung(null, alt.text, text);
       alt.text = text;
+      merkeEigeneTexte(text);
       alt.typ = eintragTyp;
       alt.icons = iconsFuerText(text);
       speichereJson('bp_eintraege', eintraege);
@@ -1819,6 +1986,7 @@
         icons: iconsFuerText(text)
       });
       speichereJson('bp_eintraege', eintraege);
+      if (text) merkeEigeneTexte(text);
     }
 
     eingefuegt = [];
