@@ -3,18 +3,24 @@
 
 const $ = s => document.querySelector(s);
 const DEF_CATS = ['Rechnung', 'Kassenbon/Garantie', 'Vertrag', 'Behörde/Steuer', 'Bank/Versicherung', 'Gesundheit', 'Bau/Haus', 'Auto', 'Termin/Einladung', 'Beschreibung/Anleitung', 'Notiz', 'Sonstiges'];
-const RULES = [
-  ['Rechnung', /rechnung|invoice|rechnungsnr|zahlbar|fällig|ust\.?-?id|mwst|netto|brutto|iban/],
-  ['Kassenbon/Garantie', /kassenbon|bon[- ]?nr|garantie|gewährleistung|kassa|beleg|summe eur|bar gegeben|kartenzahlung/],
-  ['Vertrag', /vertrag|vereinbarung|kündigung|laufzeit|unterschrift|vertragsnummer/],
-  ['Behörde/Steuer', /finanzamt|bescheid|magistrat|gemeinde|bezirkshauptmannschaft|steuer|behörde|aktenzahl|bundesministerium/],
-  ['Bank/Versicherung', /versicherung|polizze|polizzennr|kontoauszug|bank|kredit|darlehen|prämie/],
-  ['Gesundheit', /arzt|ordination|rezept|befund|krankenhaus|ögk|svs|apotheke|überweisung zum/],
-  ['Bau/Haus', /baustelle|bauvorhaben|angebot|kostenvoranschlag|baumeister|statik|einreichplan|bauamt|handwerker|fliesen|dach/],
-  ['Auto', /kfz|kennzeichen|pickerl|§ ?57a|werkstatt|service|reifen|zulassung/],
-  ['Termin/Einladung', /einladung|termin|uhr|veranstaltung|treffpunkt/],
-  ['Beschreibung/Anleitung', /anleitung|bedienungsanleitung|beschreibung|montage|hinweis|sicherheitshinweise/]
-];
+const CHECK = '__check';
+const ICONS = { 'Rechnung': '🧾', 'Kassenbon/Garantie': '🛒', 'Vertrag': '📝', 'Behörde/Steuer': '🏛️', 'Bank/Versicherung': '🏦', 'Gesundheit': '🩺', 'Bau/Haus': '🏗️', 'Auto': '🚗', 'Termin/Einladung': '📅', 'Beschreibung/Anleitung': '📘', 'Notiz': '🗒️', 'Sonstiges': '📦' };
+const icon = c => ICONS[c] || '📁';
+/* Schlüsselwörter mit Gewicht (Wortanfang zählt, z.B. "rechnung" trifft auch "Rechnungsbetrag") */
+const KW = Object.fromEntries(Object.entries({
+  'Rechnung': 'rechnung:4 invoice:4 zahlbar:2 zahlungsziel:3 fällig:1 ust-id:2 uid-nr:2 mwst:2 ust:1 netto:2 brutto:2 iban:1 kundennummer:2 kundennr:2 leistungszeitraum:3 gesamtbetrag:2 rechnungsbetrag:3 skonto:3 mahnung:3 zahlungserinnerung:4 abrechnung:3 jahresabrechnung:4 vorschreibung:3',
+  'Kassenbon/Garantie': 'kassenbon:5 bon:2 kassa:3 beleg:2 garantie:4 gewährleistung:3 rückgeld:4 gegeben:2 kartenzahlung:3 bankomat:3 filiale:2 kaufbeleg:4 seriennummer:2 umtausch:3 mwst-satz:2 summe:1 zwischensumme:3',
+  'Vertrag': 'vertrag:4 vereinbarung:3 kündigung:3 kündigungsfrist:4 laufzeit:3 unterschrift:2 vertragspartner:4 agb:2 mietvertrag:5 kaufvertrag:5 mieter:2 vermieter:3 bevollmächtigt:2',
+  'Behörde/Steuer': 'finanzamt:5 bescheid:4 magistrat:4 gemeinde:3 marktgemeinde:4 bezirkshauptmannschaft:5 steuer:2 einkommensteuer:5 behörde:3 aktenzahl:4 geschäftszahl:4 bundesministerium:4 republik:2 strafverfügung:5 meldezettel:5 pensionsversicherung:4 finanzonline:5 steuernummer:4 abgabe:2 grundsteuer:5 gebühr:1 lohnzettel:5 arbeitnehmerveranlagung:5',
+  'Bank/Versicherung': 'versicherung:4 polizze:5 kontoauszug:5 bank:2 sparkasse:3 raiffeisen:3 volksbank:3 kredit:3 darlehen:4 prämie:3 schadensfall:4 schadensmeldung:4 versicherungsnehmer:5 depot:3 zinsen:2 bausparvertrag:5 uniqa:4 generali:4 allianz:4 wiener:1',
+  'Gesundheit': 'arzt:3 ärztin:3 ordination:4 rezept:4 befund:5 krankenhaus:4 klinikum:4 ögk:5 svs:3 bvaeb:5 apotheke:4 diagnose:4 patient:3 e-card:4 impfung:4 zahnarzt:5 labor:2 therapie:3 physiotherapie:5 krankenstand:5',
+  'Bau/Haus': 'baustelle:4 bauvorhaben:5 angebot:2 kostenvoranschlag:4 baumeister:4 statik:4 einreichplan:5 bauamt:5 baubewilligung:5 bauverhandlung:5 handwerker:3 fliesen:3 dach:2 estrich:4 elektriker:3 installateur:3 heizung:2 grundstück:3 grundbuch:4 hausverwaltung:4 betriebskosten:4 rauchfangkehrer:5 bauträger:4 fertigstellung:3 bauzeit:3 regie:3 aufmaß:4 leistungsverzeichnis:5 tischler:4 zimmerei:4 spengler:4 dachdecker:5 maler:2 bodenleger:5 schlosserei:4 küche:2 lieferschein:1 fenster:1 garten:1',
+  'Auto': 'kfz:4 kennzeichen:4 pickerl:5 57a:5 werkstatt:3 reifen:3 zulassung:4 fahrzeug:3 fahrgestellnummer:5 ölwechsel:5 kilometerstand:4 vignette:4 parkstrafe:4 asfinag:4 autohaus:4 tankstelle:3 treibstoff:3 diesel:2',
+  'Termin/Einladung': 'einladung:4 termin:3 veranstaltung:3 treffpunkt:3 hochzeit:3 geburtstag:3 anmeldung:2 elternabend:4 sitzung:2 save:1',
+  'Beschreibung/Anleitung': 'anleitung:4 bedienungsanleitung:5 beschreibung:2 montage:3 sicherheitshinweise:4 inbetriebnahme:4 datenblatt:4 lieferumfang:4 wartung:2 technische:2',
+  'Notiz': 'notiz:4 einkaufsliste:5 todo:3 merken:2'
+}).map(([c, s]) => [c, s.split(' ').map(x => { const [k, w] = x.split(':'); return [k, +w]; })]));
+const STOP = new Set('der die das und oder mit für von vom zum zur den dem des ein eine einer einen ist sind wird wurde bitte sehr geehrte geehrter damen herren ihre ihr ihren sie wir uns unser unsere auf aus bei bis nach über unter durch gegen ohne seite datum straße strasse telefon fax email mail www http https tel nr. betreff österreich'.split(' '));
 
 const S = {
   get(k, d) { try { const v = localStorage.getItem('fm_' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -25,6 +31,8 @@ let docs = [];
 let filterCat = '';
 let cur = null;
 let dirty = {};
+let filterSender = '';
+let view = S.get('view', 'ordner');
 let sumsOpen = false;
 let pgUrls = [];
 
@@ -147,11 +155,44 @@ async function ocrAll(doc) {
   for (let i = 0; i < pages.length; i++) t.push((pages.length > 1 ? `--- Seite ${i + 1} ---\n` : '') + await ocr(pages[i]));
   return t.join('\n\n');
 }
-function guessCat(text) {
-  const t = text.toLowerCase();
-  let best = 'Sonstiges', score = 0;
-  for (const [c, re] of RULES) { const n = (t.match(new RegExp(re.source, 'g')) || []).length; if (n > score && cats.includes(c)) { score = n; best = c; } }
-  return cats.includes(best) ? best : cats[cats.length - 1];
+const tokens = t => String(t || '').toLowerCase().split(/[^a-z0-9äöüß-]+/).filter(x => x.length > 1);
+const headTokens = doc => [...new Set(tokens((doc.sender || '') + ' ' + (doc.text || '').slice(0, 400)))].filter(t => t.length > 3 && !/^\d+$/.test(t) && !STOP.has(t));
+function classify(text) {
+  const toks = tokens(text), sc = {};
+  cats.forEach(c => sc[c] = 0);
+  for (const [c, kws] of Object.entries(KW)) if (c in sc) for (const [k, w] of kws) { let n = 0; for (const t of toks) if (t.startsWith(k)) n++; sc[c] += w * Math.min(n, 3); }
+  // gelernt aus deinen Korrekturen: Wörter im Briefkopf + bekannte Absender
+  const L = S.get('learn', {}), tot = {}, head = new Set(headTokens({ text }));
+  for (const c in L) for (const t in L[c]) tot[t] = (tot[t] || 0) + L[c][t];
+  for (const c in L) if (c in sc) for (const t of head) if (L[c][t]) sc[c] += 3 * Math.min(L[c][t], 3) * L[c][t] / tot[t];
+  const nt = norm(text);
+  for (const v of Object.values(S.get('senders', {}))) if (v.c in sc && norm(v.n).length > 3 && nt.includes(norm(v.n))) sc[v.c] += 25;
+  const r = Object.entries(sc).filter(([c]) => c !== 'Sonstiges' && sc[c] > 0).sort((a, b) => b[1] - a[1]);
+  const fallback = cats.includes('Sonstiges') ? 'Sonstiges' : cats[cats.length - 1];
+  if (!r.length || r[0][1] < 3) return { cat: fallback, conf: 'unsicher', alts: r.slice(0, 3).map(x => x[0]) };
+  const second = r[1] ? r[1][1] : 0;
+  return { cat: r[0][0], conf: r[0][1] >= 8 && r[0][1] >= 1.6 * second ? 'sicher' : 'unsicher', alts: r.slice(1, 4).map(x => x[0]) };
+}
+function findSender(text) {
+  const nt = norm(text);
+  for (const v of Object.values(S.get('senders', {}))) if (norm(v.n).length > 3 && nt.includes(norm(v.n))) return v.n;
+  const re = /(GmbH|Ges\.?m\.?b\.?H|\bAG\b|\bKG\b|\bOG\b|e\.U\.|Bank|Sparkasse|Versicherung|Magistrat|Finanzamt|Gemeinde|Stadt |Bezirkshauptmannschaft|Ordination|Dr\.|Klinikum|Krankenhaus|Apotheke|Autohaus|Baumeister)/;
+  const l = text.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 15).find(s => re.test(s) && s.length < 60);
+  return l ? l.replace(/\s{2,}/g, ' ').replace(/\s[|•·].*$/, '').trim().slice(0, 40) : '';
+}
+function learn(doc) {
+  if (doc.learned === doc.category + '|' + doc.sender) return;
+  const L = S.get('learn', {}), m = L[doc.category] = L[doc.category] || {};
+  headTokens(doc).forEach(t => m[t] = (m[t] || 0) + 1);
+  const e = Object.entries(m); if (e.length > 400) L[doc.category] = Object.fromEntries(e.sort((a, b) => b[1] - a[1]).slice(0, 300));
+  S.set('learn', L);
+  if (doc.sender) { const sd = S.get('senders', {}); sd[norm(doc.sender)] = { n: doc.sender, c: doc.category }; S.set('senders', sd); }
+  doc.learned = doc.category + '|' + doc.sender;
+}
+const monthLabel = iso => iso ? new Date(iso).toLocaleDateString('de-AT', { month: 'long', year: 'numeric' }) : 'ohne Datum';
+function autoTitle(doc) {
+  if (doc.category === 'Sonstiges' && !doc.sender) return firstLine(doc.text) || 'Dokument';
+  return [doc.category.split('/')[0], doc.sender, doc.date ? new Date(doc.date).toLocaleDateString('de-AT', { month: 'short', year: 'numeric' }) : ''].filter(Boolean).join(' · ');
 }
 function findDates(text) {
   const out = [];
@@ -184,14 +225,14 @@ async function claude(content, max = 1200) {
 const b64 = blob => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result.split(',')[1]); f.readAsDataURL(blob); });
 async function aiAnalyze(doc) {
   const prompt = `Analysiere dieses fotografierte Dokument (ggf. mehrere Seiten; Österreich, heute ist ${today()}). Antworte NUR mit JSON:
-{"title":"kurzer Titel (max 6 Wörter, z.B. 'Stromrechnung Energie AG Okt 2026')","category":"eine aus: ${cats.join(' | ')}","text":"vollständiger Text des Dokuments","summary":"1-2 Sätze Kerninhalt","docDate":"YYYY-MM-DD oder null","amount":Zahl in EUR oder null,"due":"YYYY-MM-DD für Frist/Termin/Garantieende/Zahlungsziel oder null","dueNote":"worum es beim Termin geht oder null","repeat":"yearly bei jährlich wiederkehrender Frist (Versicherung, Pickerl, Wartung), monthly bei monatlich, sonst null","tags":["max 5 Stichworte"]}`;
+{"title":"kurzer Titel (max 6 Wörter, z.B. 'Stromrechnung Energie AG Okt 2026')","category":"genau eine aus: ${cats.join(' | ')}","sender":"Absender kurz (Firma/Behörde/Person, z.B. 'Energie AG', 'Finanzamt Linz') oder null","text":"vollständiger Text des Dokuments","summary":"1-2 Sätze Kerninhalt","docDate":"YYYY-MM-DD oder null","amount":Zahl in EUR oder null,"due":"YYYY-MM-DD für Frist/Termin/Garantieende/Zahlungsziel oder null","dueNote":"worum es beim Termin geht oder null","repeat":"yearly bei jährlich wiederkehrender Frist (Versicherung, Pickerl, Wartung), monthly bei monatlich, sonst null","tags":["max 5 Stichworte"]}`;
   const content = [];
   for (const b of [doc.img, ...(doc.more || [])].slice(0, 8)) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: await b64(b) } });
   content.push({ type: 'text', text: prompt });
   const out = await claude(content, 4000);
   const j = JSON.parse(out.slice(out.indexOf('{'), out.lastIndexOf('}') + 1));
   Object.assign(doc, {
-    title: j.title || doc.title, category: cats.includes(j.category) ? j.category : doc.category,
+    title: j.title || doc.title, sender: j.sender || doc.sender, conf: 'KI', alts: [], checked: false, category: cats.includes(j.category) ? j.category : doc.category,
     text: j.text || doc.text, summary: j.summary || '', amount: j.amount ?? doc.amount,
     tags: Array.isArray(j.tags) ? j.tags.join(', ') : doc.tags, ai: true
   });
@@ -253,8 +294,9 @@ async function processDoc(doc) {
   doc.status = 'ok';
 }
 function autoFill(doc) {
-  doc.category = guessCat(doc.text);
-  if (doc.title === 'Neues Dokument' || /^(img|dsc|pxl|photo|bild)[_-]?\d/i.test(doc.title)) doc.title = firstLine(doc.text) || doc.category;
+  if (!doc.sender) doc.sender = findSender(doc.text);
+  if (!doc.checked) { const g = classify(doc.text); Object.assign(doc, { category: g.cat, conf: g.conf, alts: g.alts }); }
+  if (doc.title === 'Neues Dokument' || /^(img|dsc|pxl|photo|bild|screenshot|whatsapp|scan)[\s_-]?/i.test(doc.title)) doc.title = autoTitle(doc);
   if (doc.amount == null) doc.amount = findAmount(doc.text);
   const fut = findDates(doc.text).filter(d => d >= today());
   if (!doc.due && fut.length) { doc.due = fut[0]; doc.dueNote = 'Datum im Dokument gefunden – bitte prüfen'; }
@@ -264,31 +306,59 @@ function autoFill(doc) {
 function score(doc, q) {
   const words = norm(q).split(/\s+/).filter(w => w.length > 1);
   if (!words.length) return 1;
-  const hay = norm([doc.title, doc.category, doc.tags, doc.notes, doc.summary, doc.place, doc.dueNote, fmtD(doc.date), (doc.date || '').slice(0, 10), doc.amount, doc.text].join(' '));
-  const head = norm([doc.title, doc.category, doc.tags].join(' '));
+  const hay = norm([doc.title, doc.sender, doc.category, doc.tags, doc.notes, doc.summary, doc.place, doc.dueNote, fmtD(doc.date), (doc.date || '').slice(0, 10), doc.amount, doc.text].join(' '));
+  const head = norm([doc.title, doc.category, doc.tags, doc.sender].join(' '));
   let s = 0;
   for (const w of words) { const c = hay.split(w).length - 1; if (!c) return 0; s += c + (head.includes(w) ? 5 : 0); }
   return s;
 }
 function filtered() {
   const q = $('#q').value.trim();
-  return docs.filter(d => !filterCat || d.category === filterCat)
+  return docs.filter(d => !filterCat || (filterCat === CHECK ? needsCheck(d) : d.category === filterCat)).filter(d => !filterSender || d.sender === filterSender)
     .map(d => [d, score(d, q)]).filter(x => x[1] > 0)
     .sort((a, b) => q ? b[1] - a[1] : (b[0].date || '').localeCompare(a[0].date || '')).map(x => x[0]);
 }
 
 /* ---------- Anzeige ---------- */
+const needsCheck = d => !d.checked && d.status !== 'neu';
+function cardItem(d) {
+  return `<div class="item" data-id="${d.id}"><img loading="lazy" src="${url(d, 'thumb')}" alt=""><div><b>${esc(d.title)}</b>
+    <span class="badge">${icon(d.category)} ${esc(d.category)}</span>${needsCheck(d) ? '<span class="badge warn">prüfen</span>' : ''}${d.due && !d.dueDone ? '⏰' : ''}${d.more?.length ? ' 📑' + (d.more.length + 1) : ''}${d.status === 'neu' ? ' ⏳' : ''}
+    ${d.sender ? `<div class="mut one">${esc(d.sender)}</div>` : ''}<div class="mut">${fmtD(d.date)}${d.amount ? ' · ' + eur(d.amount) : ''}</div></div></div>`;
+}
+function folderTile(c, ic, name, list, warn) {
+  const sum = list.reduce((a, d) => a + (+d.amount || 0), 0), latest = list.reduce((a, d) => (d.date || '') > a ? d.date : a, '');
+  const snd = [...new Set(list.map(d => d.sender).filter(Boolean))];
+  return `<button class="folder ${warn ? 'warn' : ''}" data-c="${esc(c)}"><span class="fic">${ic}</span><b>${esc(name)}</b><span class="n">${list.length}</span>
+    <span class="mut one">${snd.length ? esc(snd.slice(0, 3).join(', ')) + (snd.length > 3 ? ' …' : '') : 'zuletzt ' + fmtD(latest)}</span>${sum ? `<span class="mut">${eur(sum)}</span>` : ''}</button>`;
+}
 function render() {
-  const counts = {}; docs.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+  const counts = {}, chk = docs.filter(needsCheck), q = $('#q').value.trim();
+  docs.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+  if (filterCat && filterCat !== CHECK && !counts[filterCat]) filterCat = '';
+  if (filterCat === CHECK && !chk.length) filterCat = '';
   $('#cats').innerHTML = `<button class="chip ${filterCat ? '' : 'on'}" data-c="">Alle (${docs.length})</button>` +
-    cats.filter(c => counts[c]).map(c => `<button class="chip ${filterCat === c ? 'on' : ''}" data-c="${esc(c)}">${esc(c)} (${counts[c]})</button>`).join('');
-  const f = filtered();
-  $('#count').textContent = docs.length ? `${f.length} Dokument(e)` : '';
+    (chk.length ? `<button class="chip warn ${filterCat === CHECK ? 'on' : ''}" data-c="${CHECK}">🔎 Zu prüfen (${chk.length})</button>` : '') +
+    cats.filter(c => counts[c]).map(c => `<button class="chip ${filterCat === c ? 'on' : ''}" data-c="${esc(c)}">${icon(c)} ${esc(c)} (${counts[c]})</button>`).join('');
+  let sub = '';
+  if (filterCat && filterCat !== CHECK) {
+    const sc = {}; docs.filter(d => d.category === filterCat && d.sender).forEach(d => sc[d.sender] = (sc[d.sender] || 0) + 1);
+    const ss = Object.entries(sc).sort((a, b) => b[1] - a[1]);
+    if (ss.length) sub = `<button class="chip sm ${filterSender ? '' : 'on'}" data-s="">alle Absender</button>` + ss.map(([s, n]) => `<button class="chip sm ${filterSender === s ? 'on' : ''}" data-s="${esc(s)}">${esc(s)} (${n})</button>`).join('');
+  }
+  $('#subs').innerHTML = sub;
+  const f = filtered(), folders = view === 'ordner' && !filterCat && !q && docs.length;
+  $('#count').textContent = docs.length ? (folders ? `${docs.length} Dokument(e) · ${Object.keys(counts).length} Rubrik(en)` : `${f.length} Dokument(e)`) : '';
+  $('#viewBtn').textContent = view === 'ordner' ? '☰ Liste' : '📁 Ordner';
+  $('#checkAll').classList.toggle('hide', filterCat !== CHECK);
   $('#sums').innerHTML = sumsOpen ? sumsHtml(f) : '';
-  $('#list').innerHTML = f.length ? f.map(d => `<div class="item" data-id="${d.id}"><img loading="lazy" src="${url(d, 'thumb')}" alt=""><div><b>${esc(d.title)}</b>
-    <span class="badge">${esc(d.category)}</span>${d.due && !d.dueDone ? '⏰' : ''}${d.more?.length ? ' 📑' + (d.more.length + 1) : ''}${d.status === 'neu' ? ' ⏳' : ''}
-    <div class="mut">${fmtD(d.date)}${d.amount ? ' · € ' + Number(d.amount).toFixed(2).replace('.', ',') : ''}</div></div></div>`).join('')
-    : `<p class="mut">${docs.length ? 'Nichts gefunden.' : 'Noch leer. Unten auf „Fotografieren" tippen oder vorhandene Fotos importieren.'}</p>`;
+  if (!docs.length) $('#list').innerHTML = '<p class="mut">Noch leer. Unten auf „Fotografieren" tippen oder vorhandene Fotos importieren.</p>';
+  else if (folders) $('#list').innerHTML = (chk.length ? folderTile(CHECK, '🔎', 'Zu prüfen', chk, true) : '') + cats.filter(c => counts[c]).map(c => folderTile(c, icon(c), c, docs.filter(d => d.category === c))).join('');
+  else {
+    let last = '', html = '';
+    for (const d of f) { if (!q) { const m = monthLabel(d.date); if (m !== last) { html += `<h3 class="grp">${m}</h3>`; last = m; } } html += cardItem(d); }
+    $('#list').innerHTML = html || '<p class="mut">Nichts gefunden.</p>';
+  }
   renderDue();
 }
 function renderDue() {
@@ -318,16 +388,22 @@ function openDoc(id, keep) {
   const map = d.lat != null ? `<a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${d.lat}&mlon=${d.lon}#map=16/${d.lat}/${d.lon}">📍 ${esc(d.place || d.lat.toFixed(5) + ', ' + d.lon.toFixed(5))}</a>` : '<span class="mut">kein Ort</span>';
   $('#detail').innerHTML = `
     <div class="pages ${pgUrls.length > 1 ? 'multi' : ''}">${pgUrls.map((u, i) => `<div class="pg"><a href="${u}" target="_blank"><img src="${u}" alt="Seite ${i + 1}"></a>
-      <div class="pgbar"><button data-rot="${i}" title="Drehen">↻</button><button data-scan="${i}" title="Scan-Filter">◐</button>${i ? `<button data-del="${i}" title="Seite löschen">✕</button>` : ''}</div></div>`).join('')}</div>
+      <div class="pgbar"><button data-rot="${i}" title="Drehen">↻</button><button data-scan="${i}" title="Scan-Filter">S/W</button>${i ? `<button data-del="${i}" title="Seite löschen">✕</button>` : ''}</div></div>`).join('')}</div>
     <div class="row" style="margin:8px 0"><button id="pgCam">📷 Seite dazu</button><button id="pgGal">🖼 Seite aus Galerie</button></div>
     ${d.status === 'neu' ? '<p class="banner">⏳ Text wird erkannt …</p>' : ''}
     ${d.summary ? `<p class="card">${esc(d.summary)}</p>` : ''}
+    <div class="card assign">
+      <div class="row">
+        <div><label>Rubrik</label><select id="f_cat">${cats.map(c => `<option value="${esc(c)}" ${c === d.category ? 'selected' : ''}>${icon(c)} ${esc(c)}</option>`).join('')}</select></div>
+        <div><label>Absender</label><input id="f_sender" list="senderList" value="${esc(d.sender)}" placeholder="z.B. Energie AG"></div>
+      </div>
+      <datalist id="senderList">${[...new Set(docs.map(x => x.sender).filter(Boolean))].map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+      ${needsCheck(d) ? `<p class="hint">${d.conf === 'sicher' ? '✓ Automatisch zugeordnet' : d.conf === 'KI' ? '🤖 Von KI zugeordnet' : '⚠ Unsicher zugeordnet'} – passt das? Mit „Speichern" bestätigen, die App merkt sich Absender und Rubrik.</p>` : ''}
+      ${needsCheck(d) && d.alts?.length ? `<div class="chips">${d.alts.filter(c => cats.includes(c)).map(c => `<button class="chip" data-alt="${esc(c)}">${icon(c)} ${esc(c)}</button>`).join('')}</div>` : ''}
+    </div>
     <label>Titel</label><input id="f_title" value="${esc(d.title)}">
     <div class="row">
-      <div><label>Rubrik</label><select id="f_cat">${cats.map(c => `<option ${c === d.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
       <div><label>Datum</label><input type="date" id="f_date" value="${(d.date || '').slice(0, 10)}"></div>
-    </div>
-    <div class="row">
       <div><label>Betrag €</label><input id="f_amount" inputmode="decimal" value="${d.amount ?? ''}"></div>
       <div><label>Stichworte</label><input id="f_tags" value="${esc(d.tags)}"></div>
     </div>
@@ -353,6 +429,10 @@ function openDoc(id, keep) {
   $('#ics').onclick = () => { readForm(); icsFor(cur); };
   $('#reOcr').onclick = () => redo(false);
   $('#reAi').onclick = () => redo(true);
+  document.querySelectorAll('[data-alt]').forEach(b => b.onclick = () => {
+    $('#f_cat').value = b.dataset.alt; dirty.f_cat = b.dataset.alt;
+    document.querySelectorAll('[data-alt]').forEach(x => x.classList.toggle('on', x === b));
+  });
   $('#pdf1').onclick = () => { readForm(); savePdf([d], d.title); };
   $('#pgCam').onclick = () => pickPage(true);
   $('#pgGal').onclick = () => pickPage(false);
@@ -378,7 +458,7 @@ function readForm() {
   if (!cur) return;
   const a = $('#f_amount').value.replace(',', '.').trim();
   Object.assign(cur, {
-    title: $('#f_title').value.trim() || 'Dokument', category: $('#f_cat').value,
+    title: $('#f_title').value.trim() || 'Dokument', category: $('#f_cat').value, sender: $('#f_sender').value.trim(),
     date: $('#f_date').value ? new Date($('#f_date').value).toISOString() : cur.date,
     amount: a === '' || isNaN(+a) ? null : +a, tags: $('#f_tags').value, due: $('#f_due').value,
     dueNote: $('#f_dueNote').value, dueDone: $('#f_done').checked, notes: $('#f_notes').value, text: $('#f_text').value,
@@ -504,8 +584,8 @@ function sumsHtml(list) {
 }
 function csv() {
   const list = filtered(), q = v => '"' + String(v ?? '').replace(/"/g, '""').replace(/\s*\n\s*/g, ' ') + '"';
-  const rows = [['Datum', 'Titel', 'Rubrik', 'Betrag', 'Ort', 'Erinnerung', 'Stichworte', 'Notizen'].join(';')]
-    .concat(list.map(d => [(d.date || '').slice(0, 10), d.title, d.category, d.amount != null ? String(d.amount).replace('.', ',') : '', d.place, d.due, d.tags, d.notes].map(q).join(';')));
+  const rows = [['Datum', 'Titel', 'Rubrik', 'Absender', 'Betrag', 'Ort', 'Erinnerung', 'Stichworte', 'Notizen'].join(';')]
+    .concat(list.map(d => [(d.date || '').slice(0, 10), d.title, d.category, d.sender, d.amount != null ? String(d.amount).replace('.', ',') : '', d.place, d.due, d.tags, d.notes].map(q).join(';')));
   dl(new Blob(['\ufeff' + rows.join('\r\n')], { type: 'text/csv' }), `fotomerker-${safe(filterCat || 'liste')}-${today()}.csv`);
 }
 
@@ -551,10 +631,19 @@ $('#galBtn').onclick = () => $('#gal').click();
 $('#cam').onchange = e => { addFiles(e.target.files, true); e.target.value = ''; };
 $('#gal').onchange = e => { addFiles(e.target.files, false); e.target.value = ''; };
 $('#q').oninput = () => { showTab('archiv'); render(); };
-$('#cats').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { filterCat = b.dataset.c; render(); } };
+$('#cats').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { filterCat = b.dataset.c; filterSender = ''; render(); } };
+$('#subs').onclick = e => { const b = e.target.closest('[data-s]'); if (b) { filterSender = b.dataset.s; render(); } };
+$('#list').addEventListener('click', e => { const b = e.target.closest('.folder'); if (b) { filterCat = b.dataset.c; filterSender = ''; render(); scrollTo(0, 0); } });
+$('#viewBtn').onclick = () => { view = view === 'ordner' ? 'liste' : 'ordner'; S.set('view', view); if (view === 'ordner') { filterCat = ''; filterSender = ''; } render(); };
+$('#checkAll').onclick = async () => {
+  const l = docs.filter(needsCheck);
+  if (!confirm(`${l.length} Zuordnung(en) so bestätigen?`)) return;
+  for (const d of l) { d.checked = true; learn(d); await dbPut(d); }
+  filterCat = ''; render(); toast(`${l.length} bestätigt`);
+};
 document.body.addEventListener('click', e => { const it = e.target.closest('.item[data-id]'); if (it && !e.target.closest('#modal')) openDoc(it.dataset.id); });
 $('#close').onclick = closeDoc;
-$('#save').onclick = async () => { readForm(); await dbPut(cur); render(); closeDoc(); toast('Gespeichert'); };
+$('#save').onclick = async () => { const oldAuto = autoTitle(cur); readForm(); if (cur.title === oldAuto) cur.title = autoTitle(cur); cur.checked = true; learn(cur); await dbPut(cur); render(); closeDoc(); toast('Gespeichert ✓'); };
 $('#askBtn').onclick = ask;
 $('#pg').onchange = e => { addPages([...e.target.files]); e.target.value = ''; };
 $('#detail').addEventListener('input', e => { if (e.target.id) dirty[e.target.id] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; });

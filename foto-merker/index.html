@@ -49,7 +49,15 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:14px;display:none;z-index:20;max-width:90vw}
 .ans{white-space:pre-wrap}
 .hide{display:none!important}
-.tools{margin-bottom:8px}.tools>*{flex:0 0 auto}.tools #count{flex:1 1 auto}.tools button{padding:6px 10px;font-size:13px}
+.chip.sm{font-size:12px;padding:4px 9px}.chip.warn:not(.on){border-color:#e0a030}
+.badge.warn{background:#fff1d6;color:#8a5a00}
+.grp{grid-column:1/-1;margin:10px 0 0;font-size:14px;color:var(--mut);font-weight:600}
+.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.folder{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;box-shadow:var(--sh);position:relative;min-height:112px;min-width:0}
+.folder .fic{font-size:28px;line-height:1.2}.folder b{font-size:15px}.folder .n{position:absolute;top:12px;right:14px;font-weight:700;font-size:18px;color:var(--acc)}.folder.warn{border-color:#e0a030;background:#fff8ea}
+.assign{background:var(--acc2);margin-top:12px}.assign label:first-child{margin-top:0}.hint{font-size:13px;margin:10px 0 4px}
+@media (prefers-color-scheme:dark){.badge.warn{background:#3a3014;color:#f3dc9b}.folder.warn{background:#2c2614}}
+.tools{margin-bottom:8px}.tools>*{flex:0 0 auto}.tools #count{flex:1 1 100%}.tools button{padding:6px 10px;font-size:13px}
 .sum{width:100%;margin:4px 0 12px;font-size:14px;border-collapse:collapse}.sum td{padding:3px 0;border-bottom:1px solid var(--bd)}.sum td:last-child{text-align:right}
 .pages{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory}.pg{position:relative;flex:0 0 100%;scroll-snap-align:start}.pages.multi .pg{flex-basis:85%}
 .pg img{max-height:65vh;object-fit:contain}.pgbar{position:absolute;top:6px;right:6px;display:flex;gap:4px}.pgbar button{padding:5px 10px;background:rgba(0,0,0,.6);color:#fff}
@@ -72,7 +80,8 @@ a{color:var(--acc)}
   <section id="t-archiv">
     <div id="dueBanner"></div>
     <div class="chips" id="cats"></div>
-    <div class="row tools"><span class="mut" id="count"></span><button id="sumBtn">💶 Summen</button><button id="pdfAll">📄 PDF</button><button id="csvBtn">CSV</button></div>
+    <div class="chips" id="subs"></div>
+    <div class="row tools"><span class="mut" id="count"></span><button id="checkAll" class="pri hide">✓ Alle bestätigen</button><button id="viewBtn">☰ Liste</button><button id="sumBtn">💶 Summen</button><button id="pdfAll">📄 PDF</button><button id="csvBtn">CSV</button></div>
     <div id="sums"></div>
     <div class="grid" id="list"></div>
   </section>
