@@ -1,6 +1,6 @@
 // Ende-zu-Ende: synthetische Videobilder (Raytracing) -> Markenerkennung -> Bündelausgleich -> Wände -> Raummaße
 const BA=require('../ba.js'),MK=require('../marker.js'),PG=require('../pg.js'),AG=require('../ausgleich.js'),g=AG.gauss;
-const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=+(process.env.MS||0.16),W=+(process.env.IW||1920),H=Math.round(W*9/16),NF=+(process.env.NF||60);
+const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=+(process.env.MS||0.16),W=+(process.env.IW||1920),H=Math.round(W*(process.env.ASPECT==="4:3"?3/4:9/16)),NF=+(process.env.NF||60);
 const it=[0.78*W,W/2+2,H/2-3,0.02,-0.005];
 // Szene: Blätter (A4) mit Marke; u rechts, v unten (wie gedruckt), v×u zeigt zum Betrachter
 const sheets=[];const add=(id,c,u,v)=>sheets.push({id,c,u,v});

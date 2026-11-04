@@ -453,11 +453,28 @@ function liveCoach(d, steady, shot) {
   $('#liveHint').innerHTML = h;
   return all && con;
 }
+// Bild holen: Foto in voller Sensorauflösung (ImageCapture, ohne Blitz), sonst Videobild
+async function liveGrabFull(v) {
+  if (live.ic && live.photo) {
+    try {
+      const t0 = performance.now(), opt = { fillLightMode: 'off' }; if (live.photoW) opt.imageWidth = live.photoW;
+      const blob = await Promise.race([live.ic.takePhoto(opt).catch(() => live.ic.takePhoto()), new Promise((_, rej) => setTimeout(() => rej(new Error('Zeitüberschreitung')), 3000))]);
+      const bmp = await createImageBitmap(blob); live.photoMs = performance.now() - t0; live.photoFail = 0;
+      return { blob, bmp, W: bmp.width, H: bmp.height, photo: true };
+    } catch (e) { if (++live.photoFail >= 3) { live.photo = false; live.camInfo += ' · Fotos nicht möglich – Videobilder'; } }
+  }
+  if (!v.videoWidth) return null;
+  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)); if (!blob) return null;
+  return { blob, bmp: await createImageBitmap(c), W: c.width, H: c.height, photo: false };
+}
 async function liveStart() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
   let cm; try { cm = await CAM.open(); live.stream = cm.stream; }
   catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
-  live.camInfo = cm.info; live.sh = [];
+  live.camInfo = cm.info; live.sh = []; live.sizes = []; live.photoFail = 0; live.photoW = 0;
+  live.photo = $('#pgPhoto').checked; live.ic = 'ImageCapture' in window ? new ImageCapture(cm.track) : null;
+  if (live.ic && live.photo) { try { const pc = await live.ic.getPhotoCapabilities(); if (pc.imageWidth && pc.imageWidth.max) { live.photoW = pc.imageWidth.max; live.camInfo += ` · Fotos ${pc.imageWidth.max}×${pc.imageHeight ? pc.imageHeight.max : '?'}`; } } catch (e) { } }
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
   pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
@@ -487,12 +504,12 @@ async function liveStart() {
       const gain = vis.some(g => g.shots < (g.floor ? 8 : 4) || (g.floor && (g.top || 0) < 3 && d.some(m => g.ids.includes(m.id) && fromAbove(m))) || (binsNow.has(g) && !g.bins.has(binsNow.get(g))) || (g.floor && vis.some(w => !w.floor && !g.walls.has(w.key)))) || pk.some(k => (live.pairs[k] || 0) < 2);
       let shot = false;
       const dt = Date.now() - live.lastShot; // mit Nutzen schnell auslösen, sonst alle 0,9 s weitere Bilder (mehr Bilder = genauer)
-      if (d.length && steady && ((gain && dt > 450) || dt > 900) && live.shots < 90) {
-        const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
-        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
-        if (blob) {
-          pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now(); shot = true;
-          live.W = c.width; live.H = c.height; live.detP.push(createImageBitmap(c).then(b => DET.detect(b))); // Marken sofort im Hintergrund erkennen
+      if (d.length && steady && ((gain && dt > 450) || dt > (live.photo ? 1400 : 900)) && live.shots < 90) { // Fotomodus: zusätzliche Bilder seltener (jedes Foto kostet ca. 1 s)
+        $('#liveHint').innerHTML = live.ic && live.photo ? '📸 Foto in voller Auflösung – <b>kurz ruhig halten</b> …' : $('#liveHint').innerHTML;
+        const g0 = await liveGrabFull(v);
+        if (g0) {
+          pgFiles.push(new File([g0.blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now(); shot = true;
+          live.sizes.push(g0.W + 'x' + g0.H); live.detP.push(DET.detect(g0.bmp)); // Marken sofort im Hintergrund erkennen
           vis.forEach(g => { g.shots++; if (binsNow.has(g)) g.bins.add(binsNow.get(g)); if (g.floor) { vis.forEach(w => { if (!w.floor) g.walls.add(w.key); }); if (d.some(m => g.ids.includes(m.id) && fromAbove(m))) g.top = (g.top || 0) + 1; } });
           pk.forEach(k => live.pairs[k] = (live.pairs[k] || 0) + 1);
           navigator.vibrate?.(25); $('#live').classList.add('flash'); setTimeout(() => $('#live').classList.remove('flash'), 120);
@@ -517,10 +534,9 @@ async function liveStart() {
 }
 async function liveShot() { // Foto von Hand (falls die Automatik etwas nicht erwischt)
   const v = $('#liveVid'); if (!v.videoWidth) return;
-  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
-  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)); if (!blob) return;
-  pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now();
-  live.W = c.width; live.H = c.height; live.detP.push(createImageBitmap(c).then(b => DET.detect(b)));
+  const g0 = await liveGrabFull(v); if (!g0) return;
+  pgFiles.push(new File([g0.blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now();
+  live.sizes.push(g0.W + 'x' + g0.H); live.detP.push(DET.detect(g0.bmp));
   navigator.vibrate?.(25);
 }
 function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.stream = null; try { live.wake?.release(); } catch (e) { } $('#live').hidden = true; }
@@ -528,7 +544,9 @@ async function liveFinish() {
   const vb = VID.stop(); liveStop();
   if (!live.shots) return;
   pgSetFiles(pgFiles); showTab('auf'); pgAuto = true;
-  const detP = live.detP, W = live.W, H = live.H;
+  const cnt = {}; live.sizes.forEach(z => cnt[z] = (cnt[z] || 0) + 1); const main = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || '0x0', [W, H] = main.split('x').map(Number);
+  const keep = live.sizes.map(z => z === main), detP = live.detP.filter((_, k) => keep[k]);
+  if (keep.some(k => !k)) { pgFiles = pgFiles.filter((_, k) => keep[k]); pgSetFiles(pgFiles); }
   pgPre = { files: pgFiles, W, H, frames: () => Promise.all(detP).then(rs => rs.map((r, k) => ({ t: k, fi: k, dets: r.dets }))) };
   vb.then(async b => { if (!b || b.size < 1e5) return; const n = `aufnahme-${new Date(live.session).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${b.type.includes('mp4') ? 'mp4' : 'webm'}`; if (await VID.save(n, b)) { live.vidName = n; try { localStorage.setItem('raumplan-still-' + n, JSON.stringify(live.still)); } catch (e) { } vidState(); const r = $('#pgRefineRow'); if (r) r.hidden = false; } });
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
