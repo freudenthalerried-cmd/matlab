@@ -187,15 +187,18 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
     const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = URL.createObjectURL(video);
     await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error('Video kann nicht gelesen werden (Format?).')); });
     W = cv.width = v.videoWidth; H = cv.height = v.videoHeight; buf = new Float32Array(W * H);
-    const n = Math.floor(v.duration / step);
+    const times = Array.isArray(step) ? step.filter(t => t < v.duration) : null, n = times ? times.length : Math.floor(v.duration / step);
     pgLog(`Video ${W}×${H}, ${v.duration.toFixed(1)} s → ${n} Bilder`);
+    // Bilder nacheinander aus dem Video holen, Erkennung parallel in den Hintergrund-Threads (höchstens 2 je Thread gleichzeitig)
+    const jobs = [], lim = Math.max(2, 2 * (DET.n || 1)); let done = 0;
     for (let k = 0; k < n; k++) {
-      v.currentTime = (k + 0.5) * step;
+      v.currentTime = times ? times[k] : (k + 0.5) * step;
       await new Promise(r => { v.onseeked = r; });
-      ctx.drawImage(v, 0, 0, W, H);
-      const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
-      frames.push({ t: v.currentTime, vt: v.currentTime, dets }); prog((k + 1) / n, `Bild ${k + 1}/${n}: ${dets.length} Marken`); await tick();
+      const t = v.currentTime, bmp = await createImageBitmap(v);
+      jobs.push(DET.detect(bmp).then(r => { done++; prog(done / n, `Bild ${done}/${n}`); return { t, vt: t, dets: r.dets }; }));
+      while (jobs.length - done >= lim) await new Promise(r => setTimeout(r, 15));
     }
+    frames.push(...await Promise.all(jobs));
     URL.revokeObjectURL(v.src);
   } else {
     const imgs = files.filter(f => f.type.startsWith('image'));
@@ -231,8 +234,11 @@ $('#pgRun').onclick = async () => {
   const t0 = performance.now();
   try {
     const isVid = pgFiles.some(f => f.type.startsWith('video'));
-    let { frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; });
-    if (isVid) { const all = frames.length; frames = selectStill(frames, W, H); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
+    let frames, W, H, video = null, imgs = [];
+    if (pgOverride) { ({ frames, W, H } = pgOverride); pgOverride = null; pgLog(`Genauere Auswertung mit ${frames.length} Bildern`); }
+    else if (pgPre && pgPre.files === pgFiles) { pr.value = 0.3; frames = await pgPre.frames(); W = pgPre.W; H = pgPre.H; imgs = pgFiles; pgLog(`Marken schon während der Aufnahme erkannt (${DET.n || 1} Hintergrund-Threads)`); }
+    else ({ frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; }));
+    if (isVid && !pgOverride) { const all = frames.length; frames = selectStill(frames, W, H); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
@@ -254,6 +260,8 @@ $('#pgRun').onclick = async () => {
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const sc = sheetScaleCheck(rec); if (sc) $('#pgRes').insertAdjacentHTML('afterbegin', sc);
     $('#pgRes').insertAdjacentHTML('beforeend', kmCompare(res));
+    const rc = refineCompare(res); if (rc) $('#pgRes').insertAdjacentHTML('afterbegin', rc);
+    else { $('#pgRes').insertAdjacentHTML('beforeend', `<div class="row" id="pgRefineRow" ${live.vidName ? '' : 'hidden'}><button id="pgRefine">🔬 Genauer auswerten (mit Video)</button><span class="hint">nutzt zusätzlich alle ruhigen Videobilder – dauert länger</span></div>`); $('#pgRefine').onclick = () => live.vidName && pgRefine(live.vidName); }
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) pgTake(); }
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
@@ -452,7 +460,7 @@ async function liveStart() {
   live.camInfo = cm.info; live.sh = [];
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
-  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0;
+  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
   $('#live').hidden = false; liveCoach([], true, false);
   const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
@@ -469,6 +477,7 @@ async function liveStart() {
       let mv = 0; if (live.prev) d.forEach(m => { const q = live.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); });
       live.prev = new Map(d.map(m => [m.id, m.c[0]]));
       const steady = mv < 4 * cv.width / 960 && sharp;
+      if (steady && d.length && live.recOn) { const ts = (Date.now() - VID.since) / 1000; if (!live.still.length || ts - live.still[live.still.length - 1] >= 0.25) live.still.push(+ts.toFixed(2)); } // ruhige Momente fürs Nachauswerten
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
       const vis = [...new Set(d.map(m => lgOf(m.id)))], pk = []; for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) pk.push([vis[i].key, vis[j].key].sort().join('|'));
       const binsNow = new Map(); vis.forEach(g => { if (!g.floor) binsNow.set(g, groupBin(g, d)); });
@@ -483,6 +492,7 @@ async function liveStart() {
         const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
         if (blob) {
           pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now(); shot = true;
+          live.W = c.width; live.H = c.height; live.detP.push(createImageBitmap(c).then(b => DET.detect(b))); // Marken sofort im Hintergrund erkennen
           vis.forEach(g => { g.shots++; if (binsNow.has(g)) g.bins.add(binsNow.get(g)); if (g.floor) { vis.forEach(w => { if (!w.floor) g.walls.add(w.key); }); if (d.some(m => g.ids.includes(m.id) && fromAbove(m))) g.top = (g.top || 0) + 1; } });
           pk.forEach(k => live.pairs[k] = (live.pairs[k] || 0) + 1);
           navigator.vibrate?.(25); $('#live').classList.add('flash'); setTimeout(() => $('#live').classList.remove('flash'), 120);
@@ -510,18 +520,88 @@ async function liveShot() { // Foto von Hand (falls die Automatik etwas nicht er
   const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
   const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)); if (!blob) return;
   pgFiles.push(new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' })); live.lastShot = Date.now();
+  live.W = c.width; live.H = c.height; live.detP.push(createImageBitmap(c).then(b => DET.detect(b)));
   navigator.vibrate?.(25);
 }
 function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.stream = null; try { live.wake?.release(); } catch (e) { } $('#live').hidden = true; }
-function liveFinish() {
-  liveStop();
+async function liveFinish() {
+  const vb = VID.stop(); liveStop();
   if (!live.shots) return;
   pgSetFiles(pgFiles); showTab('auf'); pgAuto = true;
+  const detP = live.detP, W = live.W, H = live.H;
+  pgPre = { files: pgFiles, W, H, frames: () => Promise.all(detP).then(rs => rs.map((r, k) => ({ t: k, fi: k, dets: r.dets }))) };
+  vb.then(async b => { if (!b || b.size < 1e5) return; const n = `aufnahme-${new Date(live.session).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${b.type.includes('mp4') ? 'mp4' : 'webm'}`; if (await VID.save(n, b)) { live.vidName = n; try { localStorage.setItem('raumplan-still-' + n, JSON.stringify(live.still)); } catch (e) { } vidState(); const r = $('#pgRefineRow'); if (r) r.hidden = false; } });
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
-$('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
+$('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
+
+/* ---------- Phase 2b: Erkennung im Hintergrund, Video sichern, genauer nachauswerten ---------- */
+// Pool aus Web Workern: Marken in voller Auflösung schon während der Aufnahme erkennen → Auswertung am Ende in Sekunden
+const DET = (() => {
+  let pool = null, seq = 0; const wait = new Map();
+  function init() {
+    if (pool !== null) return pool;
+    try {
+      const n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
+      pool = Array.from({ length: n }, () => { const w = new Worker('detworker.js'); w.busy = 0; w.onmessage = e => { const p = wait.get(e.data.id); wait.delete(e.data.id); w.busy--; p && (e.data.err ? p.rej(new Error(e.data.err)) : p.res(e.data)); }; w.onerror = () => { pool = []; }; return w; });
+    } catch (e) { pool = []; }
+    return pool;
+  }
+  // bmp: ImageBitmap (wird übergeben, nicht kopiert); ohne Worker: Erkennung im Hauptthread
+  async function detect(bmp) {
+    const P = init();
+    if (!P.length) { const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(bmp, 0, 0); const W = bmp.width, H = bmp.height; bmp.close(); return { dets: MK.detect(toGray(x, W, H, new Float32Array(W * H)), W, H).filter(d => d.res < 0.8), W, H }; }
+    const w = P.reduce((a, b) => b.busy < a.busy ? b : a); w.busy++; const id = ++seq;
+    return new Promise((res, rej) => { wait.set(id, { res, rej }); w.postMessage({ id, bmp }, [bmp]); });
+  }
+  return { detect, get n() { return init().length; } };
+})();
+// Video der Aufnahme sichern (Hintergrund, MediaRecorder) – im Browser-Speicher (OPFS), automatisch gelöscht nach 7 Tagen
+const VID = (() => {
+  let rec = null, chunks = [], t0 = 0;
+  const mime = () => ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+  function start(stream) {
+    const m = mime(); if (!m) return false; chunks = []; t0 = Date.now();
+    const s = stream.getVideoTracks()[0].getSettings(), px = (s.width || 1920) * (s.height || 1080);
+    try { rec = new MediaRecorder(stream, { mimeType: m, videoBitsPerSecond: Math.round(px * 30 * 0.25) }); } catch (e) { return false; } // ca. 15 Mbit/s bei Full HD
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data); rec.start(1000); return true;
+  }
+  function stop() { return new Promise(res => { if (!rec || rec.state === 'inactive') return res(null); rec.onstop = () => { const b = new Blob(chunks, { type: rec.mimeType }); chunks = []; res(b); }; rec.stop(); }); }
+  async function dir() { try { const r = await navigator.storage.getDirectory(); return await r.getDirectoryHandle('aufnahmen', { create: true }); } catch (e) { return null; } }
+  async function save(name, blob) { const d = await dir(); if (!d) return false; try { const f = await d.getFileHandle(name, { create: true }), w = await f.createWritable(); await w.write(blob); await w.close(); return true; } catch (e) { return false; } }
+  async function load(name) { const d = await dir(); if (!d) return null; try { return await (await d.getFileHandle(name)).getFile(); } catch (e) { return null; } }
+  async function list() { const d = await dir(), L = []; if (!d) return L; for await (const [n, h] of d.entries()) { try { const f = await h.getFile(); L.push({ name: n, size: f.size, t: f.lastModified }); } catch (e) { } } return L.sort((a, b) => b.t - a.t); }
+  async function remove(name) { const d = await dir(); if (d) try { await d.removeEntry(name); } catch (e) { } }
+  async function cleanup(days = 7) { for (const f of await list()) if (Date.now() - f.t > days * 864e5) await remove(f.name); }
+  return { start, stop, save, load, list, remove, cleanup, get since() { return t0; } };
+})();
+let pgPre = null, pgOverride = null, pgPrev = null;
+async function vidState() {
+  const L = await VID.list(), mb = L.reduce((a, f) => a + f.size, 0) / 1e6, el = $('#vidState'); if (!el) return;
+  el.innerHTML = L.length ? `🎞 ${L.length} Video${L.length > 1 ? 's' : ''} gespeichert (${f2(mb, 0)} MB, werden nach 7 Tagen gelöscht) <button id="vidDel" class="danger">Videos löschen</button>` : '';
+  const b = $('#vidDel'); if (b) b.onclick = async () => { if (!confirm('Alle gespeicherten Aufnahme-Videos löschen?')) return; for (const f of L) await VID.remove(f.name); vidState(); };
+}
+// Nachauswertung: Einzelbilder der Aufnahme + alle ruhigen Bilder aus dem Video
+async function pgRefine(name) {
+  const file = await VID.load(name); if (!file) return alert('Video nicht mehr vorhanden.');
+  const base = pgLast, btn = $('#pgRun'), pr = $('#pgProg'); pr.hidden = false; pgLog('Genauere Auswertung: Video wird gelesen …');
+  try {
+    let still = null; try { still = JSON.parse(localStorage.getItem('raumplan-still-' + name)); } catch (e) { }
+    let { frames, W, H } = await pgFrames([file], still && still.length >= 10 ? still : 0.2, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = 'Video: ' + t; });
+    const all = frames.length; frames = selectStill(frames, W, H).map(f => ({ ...f, sw: 2.5 })); pgLog(`Video: ${frames.length} ruhige Bilder von ${all} (zählen schwächer als die Einzelfotos – Videokompression)`);
+    if (base && base.W === W && base.H === H) frames = base.frames.concat(frames); else pgLog('Einzelbilder haben eine andere Größe – nur Videobilder verwendet.');
+    pgPrev = base; pgOverride = { frames, W, H }; btn.click();
+  } catch (e) { pgLog('Fehler: ' + e.message); alert('Genauere Auswertung nicht möglich: ' + e.message); }
+}
+// Vergleich schnelle ↔ genauere Auswertung
+function refineCompare(res) {
+  if (!pgPrev) return ''; const P = pgPrev.res; pgPrev = null; const rows = [];
+  res.forEach((d, ri) => { const o = P[ri]; if (!d.w.ok || !o || !o.w.ok) return; d.w.lengths.forEach((L, i) => { const j = o.w.groups.findIndex(g => g.some(id => d.w.groups[i].includes(id))); if (j < 0) return; rows.push(`<tr><td>${esc(d.name)} Wand ${i + 1}</td><td>${f2(o.w.lengths[j], 4)} m ±${f2(o.w.sigma[j] * 1000, 1)}</td><td><b>${f2(L, 4)} m ±${f2(d.w.sigma[i] * 1000, 1)}</b></td><td>${f2((L - o.w.lengths[j]) * 1000, 1)} mm</td></tr>`); }); });
+  return rows.length ? `<h4>🔬 Vergleich schnell ↔ genau</h4><table class="pgt"><tr><th></th><th>schnell</th><th>genau (mit Video)</th><th>Unterschied</th></tr>${rows.join('')}</table>` : '';
+}
+VID.cleanup().then(vidState);
 
 /* ---------- Phase 2: Kontrollmaße (kontroll.js) ---------- */
 KM.setContext(() => ({ session: live.session || null, wall: live.stream ? live.visKey : null, ids: live.stream ? live.visIds : null, shot: live.stream ? live.shots : null }));

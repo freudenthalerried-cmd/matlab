@@ -1,5 +1,5 @@
 // Offline-Cache für die Raumplan-App (App-Hülle, cache-first; neue Version bei Änderung von VERSION)
-const VERSION = 'raumplan-v18', FILES = ['./', './index.html', './style.css', './app.js', './ausgleich.js', './ba.js', './marker.js', './pg.js', './guide.js', './ar.js', './calib.js', './kontroll.js', './manifest.json', './icon.svg'];
+const VERSION = 'raumplan-v20', FILES = ['./', './index.html', './style.css', './app.js', './ausgleich.js', './ba.js', './marker.js', './pg.js', './guide.js', './ar.js', './calib.js', './kontroll.js', './detworker.js', './manifest.json', './icon.svg'];
 self.addEventListener('install', e => e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(n => n !== VERSION).map(n => caches.delete(n)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {

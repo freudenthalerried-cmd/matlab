@@ -163,7 +163,7 @@ const PG = (() => {
     pts = pts.map(p => p.map(v => v * sc)); cams.forEach(c => { c[3] *= sc; c[4] *= sc; c[5] *= sc; });
     // Beobachtungen
     const sp = opt.sigPx || 0.3, obs = [];
-    camIdx.forEach((i, ci) => det[i].forEach(d => { if (!kU.has(d.id)) return; const k = kU.get(d.id); d.c.forEach((p, q) => obs.push({ c: ci, p: 4 * k + q, u: p[0], v: p[1], s: sp, tau: H >= W ? (p[0] - W / 2) / W : (p[1] - H / 2) / H })); }));
+    camIdx.forEach((i, ci) => det[i].forEach(d => { if (!kU.has(d.id)) return; const k = kU.get(d.id); d.c.forEach((p, q) => obs.push({ c: ci, p: 4 * k + q, u: p[0], v: p[1], s: sp * (frames[i].sw || 1), tau: H >= W ? (p[0] - W / 2) / W : (p[1] - H / 2) / H })); }));
     const idx = k => [4 * k, 4 * k + 1, 4 * k + 2, 4 * k + 3], st = opt.sigTape || 0.0005;
     const cons = [
       { f: Q => Math.hypot(...sub(ctrOf(Q, k1), ctrOf(Q, k0))), v: dist, s: st, idx: [...idx(k0), ...idx(k1)] },
