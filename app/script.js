@@ -830,7 +830,47 @@
       .join(' ');
   }
 
-  function satzZeile(b) {
+  // Hauptwort fett: das erste Wort im Baustein, das zu einem Suchwort passt –
+  // bevorzugt das Suchwort, das im Thema (Eingabetext) vorkommt.
+  function hauptwortStelle(text, b, thema) {
+    const normThema = normiere(thema || '');
+    const themaWoerter = normThema.split(/[^a-z0-9§-]+/).filter(Boolean);
+    const woerter = [];
+    const re = /[A-Za-zÄÖÜäöüß-]+/g;
+    let m;
+    while ((m = re.exec(text))) woerter.push({ wort: m[0], pos: m.index, norm: normiere(m[0]) });
+    let beste = null;
+    if (b.haupt) {
+      const hw = woerter.find(function (x) { return x.norm.indexOf(normiere(b.haupt)) === 0; });
+      if (hw) beste = { w: hw, imThema: false, haupt: true };
+    }
+    b.keywords.forEach(function (kw) {
+      const k = normiere(kw);
+      if (k.indexOf(' ') !== -1 || k.length < 3) return;
+      const w = woerter.find(function (x) {
+        return x.norm.indexOf(k) === 0 || (k.length >= 5 && x.norm.indexOf(k) !== -1);
+      });
+      if (!w) return;
+      const imThema = thema ? trifft(kw, normThema, themaWoerter) : false;
+      if (!beste || (imThema && !beste.imThema) ||
+          (imThema === beste.imThema && !beste.haupt && w.pos < beste.w.pos)) {
+        beste = { w: w, imThema: imThema };
+      }
+    });
+    return beste ? { start: beste.w.pos, ende: beste.w.pos + beste.w.wort.length } : null;
+  }
+
+  function mitHauptwort(ziel, text, b, thema) {
+    const st = hauptwortStelle(text, b, thema);
+    if (!st) { ziel.appendChild(document.createTextNode(text)); return; }
+    ziel.appendChild(document.createTextNode(text.slice(0, st.start)));
+    const fett = document.createElement('strong');
+    fett.textContent = text.slice(st.start, st.ende);
+    ziel.appendChild(fett);
+    ziel.appendChild(document.createTextNode(text.slice(st.ende)));
+  }
+
+  function satzZeile(b, thema, nachKlick) {
     const knopf = document.createElement('button');
     knopf.type = 'button';
     knopf.className = 'ki-satz';
@@ -840,10 +880,10 @@
       span.innerHTML = ICONS[b.icon];
       knopf.appendChild(span);
     }
-    knopf.appendChild(document.createTextNode(dreiSaetze(bausteinText(b))));
+    mitHauptwort(knopf, dreiSaetze(bausteinText(b)), b, thema);
     knopf.addEventListener('click', function () {
       fuegeTextEin(b);
-      ebeneVerlassen('ki');
+      if (nachKlick) nachKlick(); else ebeneVerlassen('ki');
     });
     return knopf;
   }
@@ -872,7 +912,7 @@
         claudeErgebnis.vorschlaege.slice(0, 3).forEach(function (v) {
           const b = v.baustein_id && BAUSTEINE.find(function (x) { return x.id === v.baustein_id; });
           if (b) {
-            const z = satzZeile(b);
+            const z = satzZeile(b, kiEingabe.value + ' ' + (claudeErgebnis.erkannt || ''));
             if (v.mangel) z.addEventListener('click', function () { setzeTyp('mangel'); }, true);
             kiSaetze.appendChild(z);
           } else if (v.text) {
@@ -885,7 +925,7 @@
       kiQuelle.textContent = liste.length
         ? 'Passende Bausteine zu deinem Text:'
         : 'Kein passender Baustein gefunden.';
-      liste.forEach(function (b) { kiSaetze.appendChild(satzZeile(b)); });
+      liste.forEach(function (b) { kiSaetze.appendChild(satzZeile(b, text)); });
       const eigen = freierVorschlag({ text: text.charAt(0).toUpperCase() + text.slice(1) + (/[.!?]$/.test(text) ? '' : '.'), mangel: false });
       if (liste.length) eigen.classList.add('ki-satz-eigen');
       kiSaetze.appendChild(eigen);
@@ -1300,7 +1340,8 @@
       kopf.appendChild(kuerzel);
       const text = document.createElement('div');
       text.className = 'baustein-text';
-      text.textContent = (varianten[b.id] || b.text) + (varianten[b.id] ? '  (eigene Fassung)' : '');
+      mitHauptwort(text, varianten[b.id] || b.text, b, '');
+      if (varianten[b.id]) text.appendChild(document.createTextNode('  (eigene Fassung)'));
       li.appendChild(kopf);
       li.appendChild(text);
       li.addEventListener('click', function () {
@@ -1567,6 +1608,95 @@
   input.addEventListener('input', function () {
     updateSendState();
     autoGrow();
+  });
+
+  // ---------- Langes Drücken ins Textfeld: Bausteine zum aktuellen Thema ----------
+
+  const themaFenster = document.getElementById('thema-fenster');
+  const themaTitel = document.getElementById('thema-titel');
+  const themaListe = document.getElementById('thema-liste');
+  const themaSchliessen = document.getElementById('thema-schliessen');
+  let themaTimer = null;
+  let themaStart = null;
+  let themaGeoeffnet = false;
+
+  // Thema = Satz an der Cursor-Stelle, sonst ganzer Text, sonst letzter Eintrag.
+  function aktuellesThema() {
+    const text = input.value;
+    if (text.trim()) {
+      const g = satzGrenzen(text, input.selectionStart || 0);
+      const satz = text.slice(g.start, g.ende).trim();
+      if (satz && vorschlaegeFuer(satz).length) return satz;
+      return text.trim();
+    }
+    const alle = eintraegeAktuell();
+    return alle.length ? alle[alle.length - 1].text : '';
+  }
+
+  function bausteineZumThema(thema) {
+    const treffer = thema ? vorschlaegeFuer(thema) : [];
+    const ids = treffer.map(function (b) { return b.id; });
+    // verwandte Bausteine des besten Treffers ergänzen
+    treffer.slice(0, 2).forEach(function (b) {
+      (b.related || []).forEach(function (rid) {
+        const rb = BAUSTEINE.find(function (x) { return x.id === rid && x.sicherheit !== false; });
+        if (rb && ids.indexOf(rid) === -1 && treffer.length < 5) { treffer.push(rb); ids.push(rid); }
+      });
+    });
+    return treffer;
+  }
+
+  function oeffneThemaFenster() {
+    const thema = aktuellesThema();
+    let liste = bausteineZumThema(thema);
+    const kurz = thema.length > 40 ? thema.slice(0, 40) + '…' : thema;
+    if (liste.length) {
+      themaTitel.textContent = 'Bausteine zu „' + kurz + '“';
+    } else {
+      liste = sicherheitsBausteine().slice().sort(function (a, b) { return score(b) - score(a); }).slice(0, 5);
+      themaTitel.textContent = thema ? 'Kein Bezug gefunden – häufig verwendet:' : 'Häufig verwendet:';
+    }
+    themaListe.innerHTML = '';
+    liste.forEach(function (b) {
+      themaListe.appendChild(satzZeile(b, thema, function () { ebeneVerlassen('thema'); }));
+    });
+    themaFenster.hidden = false;
+    ebeneOeffnen('thema', function () { themaFenster.hidden = true; });
+  }
+
+  input.addEventListener('pointerdown', function (ev) {
+    if (ev.button !== undefined && ev.button > 0) return;
+    themaGeoeffnet = false;
+    themaStart = { x: ev.clientX, y: ev.clientY };
+    clearTimeout(themaTimer);
+    themaTimer = setTimeout(function () {
+      themaTimer = null;
+      themaGeoeffnet = true;
+      if (navigator.vibrate) navigator.vibrate(20);
+      oeffneThemaFenster();
+    }, 550);
+  });
+  input.addEventListener('pointermove', function (ev) {
+    if (themaStart && Math.abs(ev.clientX - themaStart.x) + Math.abs(ev.clientY - themaStart.y) > 12) {
+      clearTimeout(themaTimer);
+      themaTimer = null;
+    }
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+    input.addEventListener(t, function () { clearTimeout(themaTimer); themaTimer = null; themaStart = null; });
+  });
+  // Nur wenn das Fenster aufging, das System-Menü (Einfügen/Markieren) unterdrücken.
+  input.addEventListener('contextmenu', function (ev) {
+    if (themaGeoeffnet || themaTimer) {
+      clearTimeout(themaTimer);
+      themaTimer = null;
+      if (!themaGeoeffnet) { themaGeoeffnet = true; oeffneThemaFenster(); }
+      ev.preventDefault();
+    }
+  });
+  themaSchliessen.addEventListener('click', function () { ebeneVerlassen('thema'); });
+  themaFenster.addEventListener('click', function (ev) {
+    if (ev.target === themaFenster) ebeneVerlassen('thema');
   });
 
   // ---------- Intelligente Satz-Markierung ----------
