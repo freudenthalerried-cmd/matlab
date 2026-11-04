@@ -263,12 +263,13 @@ $('#pgRun').onclick = async () => {
     const rc = refineCompare(res); if (rc) $('#pgRes').insertAdjacentHTML('afterbegin', rc);
     else { $('#pgRes').insertAdjacentHTML('beforeend', `<div class="row" id="pgRefineRow" ${live.vidName ? '' : 'hidden'}><button id="pgRefine">🔬 Genauer auswerten (mit Video)</button><span class="hint">nutzt zusätzlich alle ruhigen Videobilder – dauert länger</span></div>`); $('#pgRefine').onclick = () => live.vidName && pgRefine(live.vidName); }
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
-    if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) pgTake(); }
+    let taken = false; if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) { pgTake(); taken = true; } }
+    showResult(res, rec, taken);
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
     const cks = $('#ckShow'); if (cks) cks.onclick = () => { $$('#pgRes .ckcol').forEach(e => e.hidden = false); cks.remove(); };
     $$('#pgRes [data-ck]').forEach(inp => inp.oninput = () => { const [ri, wi] = inp.dataset.ck.split(',').map(Number), d = pgLast.res[ri], v = parseLen(inp.value);
       (d.checks = d.checks || {})[wi] = v || undefined; $(`#ck${ri}_${wi}`).innerHTML = v ? chkText(d.w.lengths[wi] - v, d.w.sigma[wi]) : ''; });
-  } catch (e) { pgAuto = false; pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">⚠ Auswertung nicht möglich: ${esc(e.message)}</p><p>Tipp: Neu aufnehmen und dabei mehr Bilder machen, in denen <b>zwei Blätter gleichzeitig</b> zu sehen sind (Ecken), und den Zollstock zusammen mit einer Wand filmen.</p>`; }
+  } catch (e) { pgAuto = false; showResult(null, null, false, e.message); pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">⚠ Auswertung nicht möglich: ${esc(e.message)}</p><p>Tipp: Neu aufnehmen und dabei mehr Bilder machen, in denen <b>zwei Blätter gleichzeitig</b> zu sehen sind (Ecken), und den Zollstock zusammen mit einer Wand filmen.</p>`; }
   pr.value = 1; btn.disabled = false;
 };
 /* Öffnung (Fenster/Tür) im Foto antippen: 2 gegenüberliegende Ecken an der Wandfläche -> Schnitt mit Wandebene */
@@ -439,8 +440,11 @@ function liveCoach(d, steady, shot) {
   $('#liveBar').style.width = Math.round(tot * 100) + '%';
   $('#liveInfo').textContent = ` ${live.shots} Bilder · ${Math.round(tot * 100)} %`;
   $('#liveDone').classList.toggle('ready', all && con);
+  if (tot > (live.bestTot || 0) + 0.005) { live.bestTot = tot; live.progT = Date.now(); } // Fortschritt merken
+  const stuck = live.shots >= 10 && Date.now() - (live.progT || Date.now()) > 20000;
   let h;
   if (all && con) h = '✔ <b>Alles erfasst!</b> Die Auswertung startet gleich von selbst …';
+  else if (stuck) h = `⏳ Es geht nicht mehr weiter? Fehlt noch: <b>${G.filter(g => lgProg(g) < 1).map(g => g.label).join(', ')}</b> – dorthin filmen, oder oben <b>„✔ Auswerten“</b> tippen: die App rechnet mit dem, was da ist, und sagt dir, was fehlt.`;
   else if (shot) h = '📸 Bild aufgenommen – weiter so.';
   else if (!d.length) h = live.shots ? 'Keine Marke im Bild – richte die Kamera auf eines der Blätter.' : '<b>Start:</b> Stell dich in eine Ecke, 2–3 m von den Wänden weg. Filme zuerst den <b>Zollstock am Boden</b>, dann schwenke langsam zu den Wänden.';
   else if (!steady) h = 'Etwas <b>langsamer</b> schwenken …';
@@ -477,7 +481,7 @@ async function liveStart() {
   if (live.ic && live.photo) { try { const pc = await live.ic.getPhotoCapabilities(); if (pc.imageWidth && pc.imageWidth.max) { live.photoW = pc.imageWidth.max; live.camInfo += ` · Fotos ${pc.imageWidth.max}×${pc.imageHeight ? pc.imageHeight.max : '?'}`; } } catch (e) { } }
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
-  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
+  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.bestTot = 0; live.progT = Date.now(); live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
   $('#live').hidden = false; liveCoach([], true, false);
   const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
@@ -554,6 +558,31 @@ async function liveFinish() {
 }
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
+
+/* ---------- Ergebnis-Bildschirm: Skizze mit allen Wandlängen, klare nächste Schritte ---------- */
+function resSketch(poly, L, sig) {
+  const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0 || 1, h = y1 - y0 || 1, k = 260 / Math.max(w, h), W = w * k + 140, H = h * k + 100;
+  const P = poly.map(p => [70 + (p[0] - x0) * k, 50 + (p[1] - y0) * k]), cx = P.reduce((a, p) => a + p[0], 0) / P.length, cy = P.reduce((a, p) => a + p[1], 0) / P.length;
+  let o = `<svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" class="ressk"><polygon points="${P.map(p => p.join(',')).join(' ')}" fill="#e3f2fd" stroke="#1f3a5f" stroke-width="5"/>`;
+  P.forEach((p, i) => { const q = P[(i + 1) % P.length], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = mx - cx, dy = my - cy, n = Math.hypot(dx, dy) || 1, tx = mx + dx / n * 26, ty = my + dy / n * 26, bad = sig[i] == null || sig[i] > 0.005;
+    o += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="700" fill="${bad ? '#c62828' : '#1b5e20'}">${f2(L[i], 3)}</text><text x="${tx}" y="${ty + 16}" text-anchor="middle" font-size="11" fill="#555">Wand ${i + 1}${sig[i] != null ? ' ±' + Math.round(sig[i] * 1000) + ' mm' : ''}</text>`; });
+  return o + '</svg>';
+}
+function showResult(res, rec, taken, err) {
+  let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
+  const ok = !err && res && res.some(d => d.w.ok);
+  let h = `<div class="rescard"><h2>${ok ? '✅ Ergebnis' : '⚠ Auswertung nicht möglich'}</h2>`;
+  if (ok) res.forEach(d => { if (!d.w.ok) { h += `<p class="warn">${esc(d.name)}: ${esc(d.w.msg)}</p>`; return; }
+    const area = Math.abs(d.w.poly.reduce((a, p, i) => { const q = d.w.poly[(i + 1) % d.w.poly.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+    h += `<h3>${esc(d.name)} · ${f2(area, 2)} m²</h3>${resSketch(d.w.poly, d.w.lengths, d.w.sigma)}<table class="pgt"><tr><th>Wand</th><th>Länge</th><th>Genauigkeit</th></tr>${d.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${d.w.sigma[i] != null && d.w.sigma[i] <= 0.005 ? 'ok' : 'warn'}">${d.w.sigma[i] == null ? '–' : '±' + f2(d.w.sigma[i] * 1000, 1) + ' mm'}</td></tr>`).join('')}</table>`;
+    if (d.w.warn.length) h += d.w.warn.map(x => `<p class="warn">⚠ ${esc(x)}</p>`).join(''); });
+  else h += `<p>${esc(err || 'Es wurden zu wenige Marken erkannt.')}</p><p><b>Was tun?</b></p><ul><li>Jedes Blatt muss auf mehreren Bildern gut zu sehen sein – auch aus der Ecke schräg.</li><li>Den Zollstock mit beiden Bodenblättern mitfilmen, auch kurz von oben.</li><li>In Ecken filmen, damit zwei Blätter gleichzeitig im Bild sind.</li></ul>`;
+  if (ok && rec && rec.suspect) h += `<p class="warn">⚠ Ergebnis unsicher: ${esc(rec.suspect)}</p>`;
+  h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen.</p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
+  box.innerHTML = h; box.hidden = false;
+  box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
+    if (a === 'take') pgTake(); else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart(); };
+}
 
 /* ---------- Phase 2b: Erkennung im Hintergrund, Video sichern, genauer nachauswerten ---------- */
 // Pool aus Web Workern: Marken in voller Auflösung schon während der Aufnahme erkennen → Auswertung am Ende in Sekunden

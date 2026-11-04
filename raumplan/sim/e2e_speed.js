@@ -12,4 +12,4 @@ console.log((await p.textContent('#pgLog')).split('\n').filter(l=>/Marken schon|
 await p.waitForFunction(()=>!!live.vidName,null,{timeout:60000}).catch(()=>{});console.log('Video gespeichert:',await p.evaluate(()=>live.vidName),await p.textContent('#vidState').catch(()=>''));
 if(await p.evaluate(()=>!!live.vidName)){const t3=Date.now();await p.evaluate(()=>{showTab('auf');pgRefine(live.vidName)});await p.waitForFunction(()=>/Vergleich schnell/.test(document.querySelector('#pgRes').textContent),null,{timeout:900000});
 console.log('Genauer auswerten:',((Date.now()-t3)/1000).toFixed(0),'s');console.log((await p.textContent('#pgRes')).split('Vergleich schnell ↔ genau')[1].slice(0,600));}
-console.log('errs',errs);await b.close();})();
+await p.screenshot({path:process.env.SP+'/result.png'});console.log('Ergebnis-Bildschirm:',await p.isVisible('#resUI'),(await p.textContent('#resUI').catch(()=>'')).slice(0,160));console.log('errs',errs);await b.close();})();

@@ -127,3 +127,7 @@ details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}de
 
 .ardot.scan{box-shadow:0 0 0 6px #29b6f688,0 0 0 2px #0008}
 #arScan{background:#1565c0!important;border-color:#1565c0!important}
+
+#resUI{position:fixed;inset:0;z-index:80;background:#000a;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
+.rescard{background:var(--card);color:var(--fg);border-radius:14px;padding:14px 16px;max-width:560px;width:100%}.rescard h2{margin:4px 0 8px}.rescard h3{margin:10px 0 4px}
+.ressk{width:100%;max-height:45vh;background:#fff;border-radius:8px;margin:6px 0}.resbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.resbtns button{padding:10px 14px}
