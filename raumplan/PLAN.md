@@ -113,3 +113,8 @@ Voraussetzung in der Simulation: Der Abstand der Bodenmarken am Zollstock ist au
 | ohne Drift und Tippfehler (Grenze des Verfahrens) | 2,8 mm | 5,5 mm |
 
 **Test am Handy nötig:** 2–3 Räume mit AR + Zollstock messen, Wände mit dem Maßband nachmessen, AR-Daten exportieren und schicken → Fehlermodell an echte Daten anpassen.
+
+### Stand AR: Zollstock-Marken automatisch (erledigt, am Gerät ungetestet)
+- WebXR „camera-access“: Kamerabild alle 0,18 s, Marken 0–3 erkannt, Markenmitte = Diagonalenschnitt, **räumlich angepeilt** aus mehreren Blickwinkeln (unabhängig von der erkannten Bodenhöhe), Maßstab aus 0→1 und 2→3 (je 2,000 m)
+- Test `sim/test_arcam.js` (AR-Welt 1,2 % falsch, 0,3 px Bildrauschen): ohne Posenrauschen 0,008 % Restfehler; mit 2 mm/0,1° AR-Posenrauschen 0,23 % (40 Bilder), 0,08 % (120), 0,02 % (240)
+- Fallback ohne Kamerazugriff: Marken antippen (mehrere Lagen)
