@@ -1,0 +1,17 @@
+# Quellen Faktenprüfung (Stand Oktober 2026)
+- Grunderwerbsteuer 3,5 %: https://www.usp.gv.at/steuern-finanzen/weitere-steuern-und-abgaben/grunderwerbsteuer.html
+- Grundbuchgebühren 1,1 % / 1,2 %, § 25a GGG ausgelaufen 30.6.2026: https://www.oesterreich.gv.at/themen/bauen_und_wohnen/grundstueckskauf_und_grundbuch/grundstueckskauf/Seite.200060.html, https://orf.at/stories/3434953/
+- Maklerprovision (§ 15 Immobilienmaklerverordnung): https://wien.arbeiterkammer.at/beratung/Wohnen/makler/Maklerprovision.html
+- Gewährleistung § 933 ABGB, GRUG 2022: https://www.wko.at/stmk/unternehmen/gewaehrleistung-neu-webinar-09032022.pdf
+- BauKG (Koordinator, Vorankündigung, SiGe-Plan): https://www.usp.gv.at/brancheninformationen/bau/koordination.html
+- Meldegesetz 3 Tage: https://www.oesterreich.gv.at/themen/persoenliche_dokumente_und_bestaetigungen/an__abmeldung_des_wohnsitzes/Seite.1180200.html
+- Burgenländisches Baugesetz 1997 (Novellen 2025): https://www.forum-media.at/brandschutz/Vorschriften/Burgenlaendisches-Baugesetz-1997/Novellen?print=1
+- ÖNORM B 1801-1:2022: https://austrian-standards.at/en/shop/onorm-b-1801-1-2022-03-01~p2867393
+- OIB-Richtlinie 2 (Rauchwarnmelder): https://www.oib.or.at
+- BTVG: https://www.wko.at/oe/immowebinar/abwicklung-von-btvg-vertraegen.pdf
+- Energieausweis im Bauverfahren: https://www.land-oberoesterreich.gv.at/80545.htm
+- KIM-V ausgelaufen 30.6.2025: https://www.wko.at/oe/bank-versicherung/newsline-2025-09.pdf
+- Elektro-Prüfung OVE E 8101: https://www.wko.at/gewerbe-handwerk/elektro-gebaeude-alarm-kommunikation/pruefung-elektrischer-anlagen-und-dokumentation
+- Abnahmebefund Feuerungsanlage (Bsp. OÖ): https://ooe.gv.at/Mediendateien/Formulare/Formulare%20Umwelt/UWD-AUWR_E-37_Abnahmebefund_Feste_Brennstoffe.pdf
+- Sanierungsoffensive 2026 ausgeschöpft: https://www.bmluk.gv.at/service/presse/klima-umwelt/2026/sanierungsoffensive-2026-alle-foerdermittel-abgeholt.html
+- Kanalanschlusspflicht: https://www.oesterreich.gv.at/themen/bauen_und_wohnen/bauen/2/Seite.2260520.html
