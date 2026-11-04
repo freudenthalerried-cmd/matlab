@@ -49,6 +49,10 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:14px;display:none;z-index:20;max-width:90vw}
 .ans{white-space:pre-wrap}
 .hide{display:none!important}
+.tools{margin-bottom:8px}.tools>*{flex:0 0 auto}.tools #count{flex:1 1 auto}.tools button{padding:6px 10px;font-size:13px}
+.sum{width:100%;margin:4px 0 12px;font-size:14px;border-collapse:collapse}.sum td{padding:3px 0;border-bottom:1px solid var(--bd)}.sum td:last-child{text-align:right}
+.pages{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory}.pg{position:relative;flex:0 0 100%;scroll-snap-align:start}.pages.multi .pg{flex-basis:85%}
+.pg img{max-height:65vh;object-fit:contain}.pgbar{position:absolute;top:6px;right:6px;display:flex;gap:4px}.pgbar button{padding:5px 10px;background:rgba(0,0,0,.6);color:#fff}
 a{color:var(--acc)}
 </style>
 </head>
@@ -68,7 +72,8 @@ a{color:var(--acc)}
   <section id="t-archiv">
     <div id="dueBanner"></div>
     <div class="chips" id="cats"></div>
-    <div class="mut" id="count"></div>
+    <div class="row tools"><span class="mut" id="count"></span><button id="sumBtn">💶 Summen</button><button id="pdfAll">📄 PDF</button><button id="csvBtn">CSV</button></div>
+    <div id="sums"></div>
     <div class="grid" id="list"></div>
   </section>
 
@@ -78,7 +83,7 @@ a{color:var(--acc)}
     <div class="card">
       <label for="ask">Frag dein Archiv</label>
       <textarea id="ask" placeholder="z.B. Wann läuft die Garantie vom Fernseher ab? Wie hoch war die letzte Stromrechnung?"></textarea>
-      <div class="row" style="margin-top:8px"><button class="pri" id="askBtn">Fragen</button></div>
+      <div class="row" style="margin-top:8px"><button class="pri" id="askBtn">Fragen</button><button id="mic" style="flex:0 0 auto">🎤</button></div>
       <p class="mut" id="askHint"></p>
     </div>
     <div id="answer"></div>
@@ -94,6 +99,11 @@ a{color:var(--acc)}
       <input id="model" placeholder="claude-haiku-5-5">
       <label><input type="checkbox" id="autoAi" style="width:auto"> Neue Fotos automatisch mit KI analysieren</label>
       <div class="row" style="margin-top:8px"><button class="pri" id="saveKey">Speichern</button></div>
+    </div>
+    <div class="card">
+      <b>Aufnahme</b>
+      <label><input type="checkbox" id="scanOn" style="width:auto"> Neue Fotos automatisch als Scan verbessern (Graustufen, Papier weiß, besser lesbar)</label>
+      <p class="mut">Tipp: Fotos aus WhatsApp, Mail oder Galerie über „Teilen → Foto Merker" direkt ablegen (Android, App installiert).</p>
     </div>
     <div class="card">
       <b>Rubriken</b>
@@ -117,6 +127,7 @@ a{color:var(--acc)}
 </div>
 <input type="file" id="cam" accept="image/*" capture="environment" class="hide">
 <input type="file" id="gal" accept="image/*" multiple class="hide">
+<input type="file" id="pg" accept="image/*" multiple class="hide">
 
 <div id="modal">
   <div class="bar"><button id="close">← Zurück</button><button class="pri" id="save">Speichern</button></div>
