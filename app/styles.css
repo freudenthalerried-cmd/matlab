@@ -1345,3 +1345,114 @@ body:has(.wird-gezogen) { user-select: none; -webkit-user-select: none; }
   .alt-mangel-weg { display: none !important; }
   .alt-maengel { break-inside: avoid; }
 }
+
+/* Navigation zur Baustelle (Tesla -> Google Maps -> Handy) */
+.karte-zeile {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.karte-zeile .baustelle-karte { flex: 1; min-width: 0; }
+
+.karte-navi {
+  flex: 0 0 auto;
+  width: 52px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bubble);
+  font-size: 22px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.karte-navi:hover { border-color: #14532d; background: rgba(30, 122, 60, 0.08); }
+
+.navi-panel {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  max-width: 608px;
+  max-height: calc(100% - 32px);
+  margin: 0 auto;
+  z-index: 30;
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.navi-inhalt {
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.navi-name { font-size: 18px; font-weight: 800; }
+
+.navi-adresse { font-size: 14px; }
+.navi-adresse:empty { display: none; }
+
+.navi-koord {
+  align-self: flex-start;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: rgba(30, 122, 60, 0.06);
+  padding: 4px 8px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.navi-koord:empty { display: none; }
+
+.navi-qualitaet {
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.navi-qualitaet.genau { background: #e6f4ea; color: #14532d; border: 1px solid #b7dfc3; }
+.navi-qualitaet.ungefaehr { background: #fff4e5; color: #8a4b00; border: 1px solid #f5c98a; }
+.navi-qualitaet.fehlt { background: #fdecec; color: #9b1c1c; border: 1px solid #f3b4b4; }
+
+.navi-knoepfe {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.navi-knoepfe a.gross-knopf {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.navi-knoepfe .gross-knopf[aria-disabled="true"],
+.navi-knoepfe .gross-knopf:disabled { opacity: 0.45; pointer-events: none; }
+
+.navi-hinweis { font-size: 12px; color: var(--muted); }
+
+.navi-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.navi-fallback .panel-hint { margin: 0; }
+
+@media print {
+  .navi-panel, .karte-navi { display: none !important; }
+}

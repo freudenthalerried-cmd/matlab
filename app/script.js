@@ -23,6 +23,23 @@
   const infoAdresse = document.getElementById('info-adresse');
   const infoGeocode = document.getElementById('info-geocode');
   const infoGeoStatus = document.getElementById('info-geo-status');
+  const infoNavi = document.getElementById('info-navi');
+  const standortNavi = document.getElementById('standort-navi');
+  const naviPanel = document.getElementById('navi-panel');
+  const naviClose = document.getElementById('navi-close');
+  const naviName = document.getElementById('navi-name');
+  const naviAdresse = document.getElementById('navi-adresse');
+  const naviKoord = document.getElementById('navi-koord');
+  const naviQualitaet = document.getElementById('navi-qualitaet');
+  const naviKorrektur = document.getElementById('navi-korrektur');
+  const naviAdresseInput = document.getElementById('navi-adresse-input');
+  const naviGeocode = document.getElementById('navi-geocode');
+  const naviPosition = document.getElementById('navi-position');
+  const naviTesla = document.getElementById('navi-tesla');
+  const naviGmaps = document.getElementById('navi-gmaps');
+  const naviHandy = document.getElementById('navi-handy');
+  const naviKopieren = document.getElementById('navi-kopieren');
+  const naviStatus = document.getElementById('navi-status');
   const standortAdresse = document.getElementById('standort-adresse');
 
   const form = document.getElementById('chat-form');
@@ -245,7 +262,19 @@
           if (badge) karte.querySelector('.karte-badge').textContent = badge;
           karte.querySelector('.karte-unterzeile').textContent = unterzeile;
           karte.addEventListener('click', function () { oeffneBaustelle(bs); });
-          gruppenContainer.appendChild(karte);
+
+          const zeile = document.createElement('div');
+          zeile.className = 'karte-zeile';
+          const navi = document.createElement('button');
+          navi.type = 'button';
+          navi.className = 'karte-navi';
+          navi.title = 'Navigation zur Baustelle';
+          navi.setAttribute('aria-label', 'Navigation zu ' + bs.name);
+          navi.innerHTML = '&#129517;';
+          navi.addEventListener('click', function () { oeffneNavi(bs); });
+          zeile.appendChild(karte);
+          zeile.appendChild(navi);
+          gruppenContainer.appendChild(zeile);
         });
       }
     });
@@ -462,36 +491,71 @@
 
     infoGeocode.disabled = true;
     infoGeoStatus.textContent = 'Adresse wird gesucht …';
-    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=at&q=' +
-      encodeURIComponent(adresse);
-    fetch(url, { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.status)); })
-      .then(function (daten) {
-        if (!daten.length) {
-          infoGeoStatus.textContent = 'Adresse nicht gefunden – bitte genauer angeben (Straße, PLZ, Ort).';
-          return;
-        }
-        standorte[bs.id] = { lat: parseFloat(daten[0].lat), lng: parseFloat(daten[0].lon) };
-        speichereJson('bp_standorte', standorte);
-        infoGeoStatus.textContent = 'Koordinaten gespeichert: ' + (daten[0].display_name || adresse);
+    geocodiere(bs, adresse)
+      .then(function (treffer) {
+        infoGeoStatus.textContent = treffer.grob
+          ? 'Nur Ortslage gefunden: ' + treffer.anzeige + ' – bitte Straße und Hausnummer angeben.'
+          : 'Koordinaten gespeichert: ' + treffer.anzeige;
         infoPosition.textContent = 'Position gespeichert – neu setzen';
       })
-      .catch(function () {
-        infoGeoStatus.textContent = 'Adresssuche nicht erreichbar – vor Ort die Position speichern.';
+      .catch(function (err) {
+        infoGeoStatus.textContent = err && err.message === 'nicht gefunden'
+          ? 'Adresse nicht gefunden – bitte genauer angeben (Straße, PLZ, Ort).'
+          : 'Adresssuche nicht erreichbar – vor Ort die Position speichern.';
       })
       .then(function () { infoGeocode.disabled = false; });
   });
 
+  // Adresse -> Koordinaten (Nominatim). Speichert das Ergebnis je Baustelle
+  // inklusive Genauigkeit: 'grob' heißt, es wurde nur ein Ort/eine PLZ gefunden,
+  // keine Straße – für die Navigation ist das zu ungenau.
+  function geocodiere(bs, adresse) {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&countrycodes=at&q=' +
+      encodeURIComponent(adresse);
+    return fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.status)); })
+      .then(function (daten) {
+        if (!daten.length) throw new Error('nicht gefunden');
+        const d = daten[0];
+        const a = d.address || {};
+        const grob = !(a.road || a.house_number || a.building || a.amenity || a.industrial);
+        const eintrag = {
+          lat: parseFloat(d.lat), lng: parseFloat(d.lon),
+          quelle: 'adresse', grob: grob, anzeige: d.display_name || adresse
+        };
+        standorte[bs.id] = eintrag;
+        speichereJson('bp_standorte', standorte);
+        return eintrag;
+      });
+  }
+
+  // Aktuelle GPS-Position als genaue Baustellenposition speichern.
+  function speicherePosition(bs) {
+    return new Promise(function (resolve, reject) {
+      if (!navigator.geolocation) { reject(new Error('kein GPS')); return; }
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        standorte[bs.id] = {
+          lat: pos.coords.latitude, lng: pos.coords.longitude,
+          quelle: 'gps', genauigkeitM: Math.round(pos.coords.accuracy || 0)
+        };
+        speichereJson('bp_standorte', standorte);
+        resolve(standorte[bs.id]);
+      }, function () { reject(new Error('kein GPS')); },
+      { enableHighAccuracy: true, timeout: 8000 });
+    });
+  }
+
   infoPosition.addEventListener('click', function () {
-    if (!navigator.geolocation || !aktuelleBaustelle) return;
-    const bs = aktuelleBaustelle;
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      standorte[bs.id] = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      speichereJson('bp_standorte', standorte);
+    if (!aktuelleBaustelle) return;
+    speicherePosition(aktuelleBaustelle).then(function () {
       infoPosition.textContent = 'Position gespeichert – neu setzen';
     }, function () {
       infoPosition.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen';
-    }, { enableHighAccuracy: true, timeout: 8000 });
+    });
+  });
+
+  infoNavi.addEventListener('click', function () {
+    if (aktuelleBaustelle) oeffneNavi(aktuelleBaustelle);
   });
 
   // ---------- Detailstufe (– kürzer / + länger mit Gesetzestext) ----------
@@ -2177,6 +2241,7 @@
     standortAdresse.textContent = adressen[treffer.baustelle.id] || treffer.baustelle.ort || '';
     if (treffer.baustelle.ordnerUrl) standortOrdner.href = treffer.baustelle.ordnerUrl;
     else standortOrdner.removeAttribute('href');
+    standortNavi.hidden = false;
     standortBanner.hidden = false;
   }
 
@@ -2217,6 +2282,7 @@
         ? offen + ' Baustelle(n) ohne Koordinaten – Adresse unter „Verteiler / Protokolle“ eintragen.'
         : '';
       standortOrdner.removeAttribute('href');
+      standortNavi.hidden = true;
       standortBanner.hidden = false;
     }
   }
@@ -2257,6 +2323,235 @@
   });
 
   ortungButton.addEventListener('click', function () { ermittleStandort(false); });
+
+  // ---------- Navigation zur Baustelle ----------
+  // Reihenfolge: An Tesla senden (Teilen-Menü) -> Google Maps -> Handy-Navigation.
+  // In jedem Fall gehen die exakten Koordinaten mit; sie werden beim Senden an
+  // Tesla zusätzlich in die Zwischenablage kopiert.
+
+  let naviBaustelle = null;
+
+  // Ziel mit Genauigkeit: gespeicherte Position (Adresse/GPS) ist genau,
+  // die Ortskoordinaten aus den Stammdaten sind nur das Ortszentrum.
+  function zielFuer(bs) {
+    const st = standorte[bs.id];
+    if (st) return { lat: st.lat, lng: st.lng, genau: !st.grob, quelle: st.quelle || 'gespeichert', anzeige: st.anzeige };
+    if (typeof bs.lat === 'number') return { lat: bs.lat, lng: bs.lng, genau: false, quelle: 'ort' };
+    return null;
+  }
+
+  function koordText(z) {
+    return z.lat.toFixed(6) + ', ' + z.lng.toFixed(6);
+  }
+
+  function gmapsUrl(z) {
+    return 'https://www.google.com/maps/dir/?api=1&destination=' +
+      z.lat.toFixed(6) + ',' + z.lng.toFixed(6) + '&travelmode=driving';
+  }
+
+  function istIos() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function istAndroid() {
+    return /Android/i.test(navigator.userAgent);
+  }
+
+  // Standard-Navigation des Handys: Apple Karten bzw. Android geo:-Link.
+  function handyUrl(z, name) {
+    const k = z.lat.toFixed(6) + ',' + z.lng.toFixed(6);
+    if (istIos()) return 'maps://?daddr=' + k + '&dirflg=d';
+    if (istAndroid()) return 'geo:' + k + '?q=' + k + '(' + encodeURIComponent(name) + ')';
+    return gmapsUrl(z);
+  }
+
+  function kopiere(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(function () { return kopiereFallback(text); });
+    }
+    return Promise.resolve(kopiereFallback(text));
+  }
+
+  function kopiereFallback(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    if (!ok) throw new Error('kopieren fehlgeschlagen');
+  }
+
+  function oeffneNavi(bs) {
+    naviBaustelle = bs;
+    naviStatus.textContent = '';
+    naviAdresseInput.value = adressen[bs.id] || '';
+    renderNavi();
+    naviPanel.hidden = false;
+    ebeneOeffnen('navi', function () { naviPanel.hidden = true; naviBaustelle = null; });
+
+    // Adresse eingetragen, aber noch keine genaue Position: automatisch ermitteln.
+    const z = zielFuer(bs);
+    if (adressen[bs.id] && (!z || !z.genau) && !naviGeocode.disabled) {
+      naviErmittle(bs, adressen[bs.id]);
+    }
+  }
+
+  function renderNavi() {
+    const bs = naviBaustelle;
+    if (!bs) return;
+    const z = zielFuer(bs);
+    naviName.textContent = bs.name;
+    naviAdresse.textContent = (z && z.anzeige) ? z.anzeige : adresseFuer(bs);
+    naviKoord.textContent = z ? koordText(z) : '';
+    naviQualitaet.className = 'navi-qualitaet ' + (!z ? 'fehlt' : z.genau ? 'genau' : 'ungefaehr');
+    if (!z) {
+      naviQualitaet.textContent = '⛔ Keine Position bekannt – Adresse eintragen oder vor Ort die Position speichern.';
+    } else if (z.genau) {
+      naviQualitaet.textContent = z.quelle === 'gps'
+        ? '✅ Genaue Position (vor Ort per GPS gespeichert).'
+        : '✅ Genaue Position (aus der Adresse ermittelt).';
+    } else {
+      naviQualitaet.textContent = '⚠️ Nur ungefähre Lage (Ortszentrum). Für die genaue Baustellenposition die Adresse eintragen und ermitteln.';
+    }
+    naviKorrektur.hidden = !!(z && z.genau);
+    naviPosition.textContent = 'Aktuelle Position speichern';
+
+    const aktiv = !!z;
+    naviTesla.disabled = !aktiv;
+    naviKopieren.disabled = !aktiv;
+    naviGmaps.setAttribute('aria-disabled', aktiv ? 'false' : 'true');
+    naviHandy.setAttribute('aria-disabled', aktiv ? 'false' : 'true');
+    naviGmaps.href = aktiv ? gmapsUrl(z) : '#';
+    naviHandy.href = aktiv ? handyUrl(z, bs.name) : '#';
+  }
+
+  function naviErmittle(bs, adresse) {
+    naviGeocode.disabled = true;
+    naviStatus.textContent = 'Genaue Position wird aus der Adresse ermittelt …';
+    return geocodiere(bs, adresse)
+      .then(function (t) {
+        naviStatus.textContent = t.grob
+          ? 'Nur der Ort wurde gefunden – bitte Straße und Hausnummer ergänzen.'
+          : 'Genaue Position gespeichert.';
+      })
+      .catch(function (err) {
+        naviStatus.textContent = err && err.message === 'nicht gefunden'
+          ? 'Adresse nicht gefunden – bitte genauer angeben (Straße, PLZ, Ort).'
+          : 'Adresssuche nicht erreichbar (kein Netz?) – vor Ort die Position speichern.';
+      })
+      .then(function () {
+        naviGeocode.disabled = false;
+        if (naviBaustelle === bs) renderNavi();
+      });
+  }
+
+  naviGeocode.addEventListener('click', function () {
+    const bs = naviBaustelle;
+    if (!bs) return;
+    const adresse = naviAdresseInput.value.trim();
+    if (!adresse) { naviStatus.textContent = 'Bitte zuerst die Adresse eintragen.'; return; }
+    adressen[bs.id] = adresse;
+    speichereJson('bp_adressen', adressen);
+    naviErmittle(bs, adresse);
+  });
+
+  naviAdresseInput.addEventListener('change', function () {
+    const bs = naviBaustelle;
+    if (!bs) return;
+    const a = naviAdresseInput.value.trim();
+    if (a) adressen[bs.id] = a; else delete adressen[bs.id];
+    speichereJson('bp_adressen', adressen);
+  });
+
+  naviPosition.addEventListener('click', function () {
+    const bs = naviBaustelle;
+    if (!bs) return;
+    naviPosition.textContent = 'Position wird ermittelt …';
+    speicherePosition(bs).then(function (st) {
+      naviStatus.textContent = 'Genaue Position gespeichert' +
+        (st.genauigkeitM ? ' (±' + st.genauigkeitM + ' m)' : '') + '.';
+    }, function () {
+      naviStatus.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
+    }).then(function () { if (naviBaustelle === bs) renderNavi(); });
+  });
+
+  // Nur ungefähre Lage? Vor dem Senden einmal nachfragen.
+  function naviFreigabe(z) {
+    if (!z) { naviStatus.textContent = 'Keine Position bekannt – zuerst Adresse ermitteln oder Position speichern.'; return false; }
+    if (z.genau) return true;
+    return window.confirm('Es ist nur die ungefähre Lage (Ortszentrum) bekannt.\nTrotzdem dorthin navigieren?');
+  }
+
+  naviTesla.addEventListener('click', function () {
+    const bs = naviBaustelle;
+    if (!bs) return;
+    const z = zielFuer(bs);
+    if (!naviFreigabe(z)) return;
+    const koord = koordText(z);
+    const adresse = (z.anzeige || adresseFuer(bs));
+    const text = bs.name + '\n' + adresse + '\n' + koord;
+
+    // Teilen und Kopieren laufen parallel; der Status fasst beides zusammen.
+    let teilenStatus = navigator.share
+      ? 'Teilen-Menü geöffnet – „Tesla“ wählen.'
+      : 'Teilen ist auf diesem Gerät nicht möglich – bitte Google Maps oder Handy-Navigation verwenden.';
+    let kopiertStatus = 'Koordinaten: ' + koord;
+    function zeigeStatus() { naviStatus.textContent = teilenStatus + ' ' + kopiertStatus; }
+
+    kopiere(koord)
+      .then(function () { kopiertStatus = 'Koordinaten kopiert: ' + koord; }, function () { /* bleibt bei Anzeige */ })
+      .then(zeigeStatus);
+
+    if (navigator.share) {
+      navigator.share({ title: bs.name, text: text, url: gmapsUrl(z) })
+        .then(function () { teilenStatus = 'An Tesla gesendet (Teilen-Menü).'; })
+        .catch(function (err) {
+          teilenStatus = (err && err.name === 'AbortError')
+            ? 'Teilen abgebrochen – alternativ Google Maps oder Handy-Navigation.'
+            : 'Senden an Tesla nicht möglich – bitte Google Maps oder Handy-Navigation verwenden.';
+        })
+        .then(zeigeStatus);
+    }
+    zeigeStatus();
+  });
+
+  function naviLinkKlick(event) {
+    const bs = naviBaustelle;
+    if (!bs) { event.preventDefault(); return; }
+    const z = zielFuer(bs);
+    if (!naviFreigabe(z)) { event.preventDefault(); return; }
+    naviStatus.textContent = 'Navigation gestartet mit ' + koordText(z) + '.';
+  }
+
+  naviGmaps.addEventListener('click', naviLinkKlick);
+  naviHandy.addEventListener('click', naviLinkKlick);
+
+  function naviKoordKopieren() {
+    const bs = naviBaustelle;
+    const z = bs && zielFuer(bs);
+    if (!z) return;
+    const koord = koordText(z);
+    kopiere(koord).then(function () {
+      naviStatus.textContent = 'Koordinaten kopiert: ' + koord;
+    }, function () {
+      naviStatus.textContent = 'Kopieren nicht möglich – Koordinaten: ' + koord;
+    });
+  }
+
+  naviKopieren.addEventListener('click', naviKoordKopieren);
+  naviKoord.addEventListener('click', naviKoordKopieren);
+
+  naviClose.addEventListener('click', function () { ebeneVerlassen('navi'); });
+
+  standortNavi.addEventListener('click', function () {
+    if (erkannteBaustelle) oeffneNavi(erkannteBaustelle);
+  });
 
   // ---------- Start ----------
 
