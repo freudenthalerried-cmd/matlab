@@ -103,7 +103,7 @@ const FILM = (() => {
   }
 
   // ---------- AR-Sitzung (nur im Browser) ----------
-  const MAXP = 200000;
+  const MAXP = 600000;
   function addPoint(x, y, z) { const g = Math.min(65535, st.cams.length); if (st.n < MAXP) { st.pts[st.n * 3] = x; st.pts[st.n * 3 + 1] = y; st.pts[st.n * 3 + 2] = z; st.pc[st.n] = g; st.n++; } else { const i = (Math.random() * MAXP) | 0; st.pts[i * 3] = x; st.pts[i * 3 + 1] = y; st.pts[i * 3 + 2] = z; st.pc[i] = g; } }
   function camGroups() { // Kameragruppen (0,3 m) je gespeicherter Kameraindex → Uint16 je Punkt
     const key = c => Math.round(c[0] / 0.3) * 4096 + Math.round(c[2] / 0.3), ids = new Map(), gi = st.cams.map(c => { const k = key(c); if (!ids.has(k)) ids.set(k, ids.size); return ids.get(k); });
@@ -112,12 +112,14 @@ const FILM = (() => {
   function markerScale() { if (st.mobs.length < 30 || typeof AR === 'undefined') return null; try { const fy = st.fc && st.fc.floor !== null ? st.fc.floor : 0; const r = AR.autoScale(st.mobs, 2, fy); return r && r.k ? r : null; } catch (e) { return null; } }
   function ui(msg) { const m = el('filmMsg'); if (m && msg !== undefined) m.innerHTML = msg; const fc = st.frames > 40 ? floorCeil(st.pts, st.n) : { floor: null, ceil: null }; st.fc = fc; const ms = markerScale(); st.ms = ms;
     const cnt = {}; st.mobs.forEach(o => cnt[o.id] = (cnt[o.id] || 0) + 1); const seen = [0, 1, 2, 3].filter(i => cnt[i] >= 15);
-    const t = el('filmTop'); if (t) t.innerHTML = `${st.n.toLocaleString('de-AT')} Punkte · Boden ${fc.floor !== null ? '✓' : '…'} · Decke ${fc.ceil !== null ? `✓ ${(fc.ceil - fc.floor).toFixed(2).replace('.', ',')} m` : '…'}<br>Zollstock-Marken ${st.camOk ? (seen.length ? seen.join(',') + (ms ? ` ✓ Maßstab ${((ms.k - 1) * 100).toFixed(1).replace('.', ',')} %` : ' (noch aus mehr Richtungen filmen)') : 'noch keine – von oben auf den Zollstock') : 'kein Kamerazugriff'}`; drawMap(); }
+    const camY = st.cams.length && fc.floor !== null ? st.cams[st.cams.length - 1][1] - fc.floor : null, live = st.live && !st.live.err ? st.live : null, dims = live ? live.poly.slice(0, 2).map((p, i) => { const q = live.poly[(i + 1) % live.poly.length]; return Math.hypot(q[0] - p[0], q[1] - p[1]).toFixed(2).replace('.', ','); }) : null;
+    const t = el('filmTop'); if (t) t.innerHTML = `${st.n.toLocaleString('de-AT')} Punkte · Ausrichtung ${st.flip === null ? '… (nach unten schauen)' : 'ABCD'[st.flip] + ' ✓'} · Boden ${fc.floor !== null ? '✓' : '…'} · Decke ${fc.ceil !== null ? `✓ ${(fc.ceil - fc.floor).toFixed(2).replace('.', ',')} m` : '…'}${camY !== null ? ` · Handy ${camY.toFixed(2).replace('.', ',')} m hoch` : ''}${live ? `<br><b>Raum ca. ${dims[0]} × ${dims[1]} m</b> (${live.poly.length} Wände, ${Math.round(live.cover)} % gesehen)` : st.live && st.live.err ? `<br>${st.live.err}` : ''}<br>Zollstock-Marken ${st.camOk ? (seen.length ? seen.join(',') + (ms ? ` ✓ Maßstab ${((ms.k - 1) * 100).toFixed(1).replace('.', ',')} %` : ' (noch aus mehr Richtungen filmen)') : 'noch keine – von oben auf den Zollstock') : 'kein Kamerazugriff'}`; drawMap(); }
   function drawMap() { const cv = el('filmMap'); if (!cv || !st.n) return; const g = cv.getContext('2d'), W = cv.width, H = cv.height; g.fillStyle = '#000a'; g.fillRect(0, 0, W, H);
     const cx = st.cams.length ? st.cams[st.cams.length - 1][0] : 0, cz = st.cams.length ? st.cams[st.cams.length - 1][2] : 0, sc = W / 9;
     const fy = st.fc && st.fc.floor !== null ? st.fc.floor : null, Hh = fy !== null && st.fc.ceil !== null ? st.fc.ceil - fy : 2.5, step = Math.max(1, Math.floor(st.n / 8000));
     g.fillStyle = '#9f9'; for (let i = 0; i < st.n; i += step) { const y = st.pts[i * 3 + 1]; if (fy !== null && (y < fy + 0.45 * Hh || y > fy + Hh - 0.1)) continue; const x = (st.pts[i * 3] - cx) * sc + W / 2, zz = (st.pts[i * 3 + 2] - cz) * sc + H / 2; if (x >= 0 && zz >= 0 && x < W && zz < H) g.fillRect(x, zz, 2, 2); }
     g.strokeStyle = '#fff'; g.lineWidth = 1; g.beginPath(); for (let i = 0; i < st.cams.length; i++) { const c = st.cams[i], x = (c[0] - cx) * sc + W / 2, zz = (c[2] - cz) * sc + H / 2; i ? g.lineTo(x, zz) : g.moveTo(x, zz); } g.stroke();
+    if (st.live && !st.live.err) { const k = st.live.scale ? st.live.scale.k : 1; g.strokeStyle = '#ff9800'; g.lineWidth = 2; g.beginPath(); st.live.poly.forEach((p, i) => { const x = (p[0] / k - cx) * sc + W / 2, zz = (p[1] / k - cz) * sc + H / 2; i ? g.lineTo(x, zz) : g.moveTo(x, zz); }); g.closePath(); g.stroke(); }
     g.fillStyle = '#29b6f6'; g.beginPath(); g.arc(W / 2, H / 2, 4, 0, 7); g.fill(); if (st.dir) { g.strokeStyle = '#29b6f6'; g.lineWidth = 2; g.beginPath(); g.moveTo(W / 2, H / 2); g.lineTo(W / 2 + st.dir[0] * 18, H / 2 + st.dir[1] * 18); g.stroke(); } }
   async function supported() { if (!navigator.xr) return false; return navigator.xr.isSessionSupported('immersive-ar').catch(() => false); }
   // kleines Kamerabild (640 px breit) über einen Shader aus der Kameratextur – statt 8 MB pro Bild nur ~1 MB, kein Ruckeln
@@ -134,7 +136,7 @@ const FILM = (() => {
   }
   async function start(opts, onDone) {
     const root = el('filmUI'); root.hidden = false;
-    Object.assign(st, { pts: new Float32Array(MAXP * 3), pc: new Uint16Array(MAXP), n: 0, cams: [], done: onDone, opts, flip: null, top: [0, 0], bot: [0, 0], frames: 0, t0: Date.now(), fc: null, ms: null, dir: null, lastUi: 0, lastMk: 0, noDepth: 0, mobs: [], camOk: false, grab: null, mkStat: '' });
+    Object.assign(st, { pts: new Float32Array(MAXP * 3), pc: new Uint16Array(MAXP), n: 0, cams: [], done: onDone, opts, flip: null, orient: [[0, 0], [0, 0], [0, 0], [0, 0]], frames: 0, t0: Date.now(), fc: null, ms: null, dir: null, lastUi: 0, lastMk: 0, lastLive: 0, live: null, noDepth: 0, mobs: [], camOk: false, grab: null });
     let s; try { s = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['depth-sensing'], optionalFeatures: ['dom-overlay', 'local-floor', 'camera-access'], domOverlay: { root }, depthSensing: { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha', 'float32'] } }); }
     catch (e) { root.hidden = true; return onDone({ err: 'nodepth', msg: e.message }); }
     st.s = s; const cv = document.createElement('canvas'), gl = cv.getContext('webgl', { xrCompatible: true });
@@ -142,13 +144,17 @@ const FILM = (() => {
     let space; try { space = await s.requestReferenceSpace('local-floor'); } catch (e) { space = await s.requestReferenceSpace('local'); }
     let glb = null; try { if ((s.enabledFeatures || []).includes('camera-access') && typeof XRWebGLBinding !== 'undefined') { glb = new XRWebGLBinding(s, gl); st.camOk = true; } } catch (e) { }
     s.addEventListener('end', () => { st.s = null; root.hidden = true; });
-    ui('Zuerst kurz <b>von oben auf den Zollstock</b> mit den Blättern (1–2 m Abstand, aus 2–3 Richtungen). Dann langsam <b>rundherum</b> filmen: alle Wände bis oben, kurz Boden und Decke.');
+    ui('Zuerst <b>nach unten auf den Zollstock</b> mit den Blättern schauen (1–2 m Abstand, 2–3 Richtungen) – so lernt die App auch die Ausrichtung des Tiefenbilds. Dann langsam <b>rundherum</b>: alle Wände bis oben, kurz Boden und Decke. Die orange Linie unten ist der erkannte Raum.');
+    // Tiefenbild → Weltpunkt. Vier mögliche Ausrichtungen des Tiefenbilds (Zeilen von oben/unten, Zeilen/Spalten vertauscht):
+    // A: ny aus v (oben = oben), B: ny aus 1−v, C: ny aus u, D: ny aus 1−u. Entscheidung: beim Blick nach unten müssen die Punkte unter der Kamera liegen.
+    const conv = (u, v, d, mode, M, P) => { let nx, ny; if (mode === 0) { nx = 2 * u - 1; ny = 1 - 2 * v; } else if (mode === 1) { nx = 2 * u - 1; ny = 2 * v - 1; } else if (mode === 2) { nx = 2 * v - 1; ny = 1 - 2 * u; } else { nx = 2 * v - 1; ny = 2 * u - 1; }
+      const x = d * (nx + P[8]) / P[0], y = d * (ny + P[9]) / P[5], z = -d; return [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]]; };
     const frame = (t, f) => {
       if (!st.s) return; s.requestAnimationFrame(frame);
       const bl = s.renderState.baseLayer; gl.bindFramebuffer(gl.FRAMEBUFFER, bl.framebuffer); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
       const vp = f.getViewerPose(space); if (!vp) return; const view = vp.views[0]; st.frames++;
       const M = view.transform.matrix, P = view.projectionMatrix, cp = [M[12], M[13], M[14]]; if (st.frames % 6 === 0) st.cams.push(cp); st.dir = [-M[8], -M[10]];
-      // Zollstock-Marken im kleinen Kamerabild (alle 350 ms, solange noch nicht genug gesehen)
+      const look = -M[9]; // Blickrichtung y: < 0 = nach unten
       if (glb && view.camera && t - st.lastMk > 350 && st.mobs.length < 600) { st.lastMk = t;
         try { const W = view.camera.width, H = view.camera.height, SW = 640, SH = Math.round(640 * H / W); if (!st.grab) st.grab = camGrabber(gl, SW, SH);
           if (st.grab) { const tex = glb.getCameraImage(view.camera), g = st.grab(tex); gl.bindFramebuffer(gl.FRAMEBUFFER, bl.framebuffer); gl.viewport(0, 0, bl.framebufferWidth, bl.framebufferHeight);
@@ -157,20 +163,20 @@ const FILM = (() => {
         catch (e) { st.camOk = false; } }
       let di = null; try { di = f.getDepthInformation(view); } catch (e) { } if (!di) { st.noDepth++; if (st.noDepth === 90) ui('⚠ Noch keine Tiefendaten – Handy langsam hin und her bewegen, Raum muss hell genug sein.'); return; }
       if (st.frames % 2) return;
-      const NX = 32, NY = 24; const conv = (u, v, d, flip) => { const nx = 2 * u - 1, ny = flip ? 2 * v - 1 : 1 - 2 * v, x = d * (nx + P[8]) / P[0], y = d * (ny + P[9]) / P[5], z = -d; return [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]]; };
+      const NX = 32, NY = 24;
       for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const u = (i + 0.5) / NX, v = (j + 0.5) / NY; let d; try { d = di.getDepthInMeters(u, v); } catch (e) { continue; } if (!(d > 0.3 && d < 6)) continue;
-        if (st.flip === null) { const q = conv(u, v, d, 0); if (j < NY / 3) { st.top[0] += q[1]; st.top[1]++; } else if (j >= 2 * NY / 3) { st.bot[0] += q[1]; st.bot[1]++; } }
-        else { const q = conv(u, v, d, st.flip); addPoint(q[0], q[1], q[2]); } }
-      // Zeilenrichtung des Tiefenbilds: das Handy wird aufrecht gehalten → obere Bildzeilen liegen in der Welt höher als untere
-      if (st.flip === null && st.frames >= 40 && st.top[1] > 200 && st.bot[1] > 200) st.flip = st.top[0] / st.top[1] > st.bot[0] / st.bot[1] ? 0 : 1;
+        if (st.flip === null) { if (Math.abs(look) > 0.4) for (let m = 0; m < 4; m++) { const q = conv(u, v, d, m, M, P); const below = q[1] < cp[1]; st.orient[m][0] += (look < 0) === below ? 1 : 0; st.orient[m][1]++; } }
+        else { const q = conv(u, v, d, st.flip, M, P); addPoint(q[0], q[1], q[2]); } }
+      if (st.flip === null && st.orient[0][1] >= 1500) { let best = 0; for (let m = 1; m < 4; m++) if (st.orient[m][0] / st.orient[m][1] > st.orient[best][0] / st.orient[best][1]) best = m; const q = st.orient[best][0] / st.orient[best][1]; if (q >= 0.75) { st.flip = best; st.orientQ = q; navigator.vibrate?.(40); } else st.orient = [[0, 0], [0, 0], [0, 0], [0, 0]]; }
+      if (st.flip !== null && t - st.lastLive > 2500 && st.n > 8000) { st.lastLive = t; try { const { pc, groups } = camGroups(); st.live = solve(st.pts, st.n, st.cams, { ...st.opts, markers: markerScale() }, groups > 1 ? pc : null); } catch (e) { st.live = { err: e.message }; } }
       if (t - st.lastUi > 400) { st.lastUi = t; ui(); }
     };
     s.requestAnimationFrame(frame);
   }
-  function finish() { if (!st.s) return; const { pc, groups } = camGroups(), ms = markerScale(); const r = solve(st.pts, st.n, st.cams, { ...st.opts, markers: ms }, groups > 1 ? pc : null); if (r.err) { ui(`⚠ ${r.err}`); return; }
+  function finish() { if (!st.s) return; if (st.flip === null) { ui('⚠ Ausrichtung noch nicht bestimmt – bitte kurz schräg nach unten auf den Boden/Zollstock schauen.'); return; } const { pc, groups } = camGroups(), ms = markerScale(); const r = solve(st.pts, st.n, st.cams, { ...st.opts, markers: ms }, groups > 1 ? pc : null); if (r.err) { ui(`⚠ ${r.err}`); return; }
     // Rohdaten für die Analyse (Entwicklermodus): jeder 8. Punkt, Kameras, Marken-Sichtungen
     const step = Math.max(1, Math.ceil(st.n / 25000)), P = []; for (let i = 0; i < st.n; i += step) P.push(+st.pts[i * 3].toFixed(3), +st.pts[i * 3 + 1].toFixed(3), +st.pts[i * 3 + 2].toFixed(3));
-    r.raw = { ...r.raw, flip: st.flip, groups, frames: st.frames, secs: Math.round((Date.now() - st.t0) / 1000), mobs: st.mobs.length, markerK: ms, points: P, pointStep: step, camsXYZ: st.cams.map(c => c.map(v => +v.toFixed(3))) };
+    r.raw = { ...r.raw, flip: st.flip, orientQ: st.orientQ, orient: st.orient, groups, frames: st.frames, secs: Math.round((Date.now() - st.t0) / 1000), mobs: st.mobs.length, markerK: ms, points: P, pointStep: step, camsXYZ: st.cams.map(c => c.map(v => +v.toFixed(3))) };
     st.s.end(); st.done && st.done(r); }
   function cancel() { st.s && st.s.end(); }
   return { start, finish, cancel, supported, solve, floorCeil, band, cells, envelope, segments, rectFit, polyFit, _st: st };
