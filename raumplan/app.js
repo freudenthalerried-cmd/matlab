@@ -292,12 +292,12 @@ function opStart(ri, wi) {
     <div id="opWrap" style="overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px;touch-action:pan-x pan-y"><canvas id="opCv" style="display:block"></canvas></div>
     <p id="opOut"></p>
     <div class="row"><select id="opType"><option value="fenster">Fenster</option><option value="tuer">Tür</option><option value="dg">Durchgang</option></select>
-    <button id="opAdd" class="pri" disabled>Öffnung übernehmen</button><button id="opClose">Schließen</button></div>`;
+    <button id="opAdd" class="pri" disabled>Öffnung übernehmen</button><button id="opRes">📋 zurück zum Ergebnis</button><button id="opClose">Schließen</button></div>`;
   $('#opSel').onchange = e => { opSt.k = +e.target.value; opSt.pts = []; opShow(); };
   $('#opZoom').oninput = () => opDraw();
   $('#opClr').onclick = () => { opSt.pts = []; opDraw(); };
   $('#opClose').onclick = () => { box.remove(); opSt = null; };
-  $('#opAdd').onclick = opAdd;
+  $('#opAdd').onclick = opAdd; $('#opRes').onclick = opBack;
   $('#opCv').onclick = e => {
     if (!opSt.cv || opSt.pts.length >= 2) return; const c = $('#opCv'), r = c.getBoundingClientRect(), k = c.width / r.width;
     let p = [(e.clientX - r.left) * k, (e.clientY - r.top) * k];
@@ -329,6 +329,7 @@ function opText() {
   const sd = k => R.length > 1 ? ' ±' + f2(Math.sqrt(R.reduce((s, r) => s + (r[k] - m[k]) ** 2, 0) / (R.length - 1)) * 1000, 1) : '';
   $('#opOut').innerHTML = `<b>${R.length} Messung${R.length > 1 ? 'en (Mittel)' : ''}:</b> Breite ${f2(m.w, 3)} m${sd('w')} · Höhe ${f2(m.h, 3)} m${sd('h')} · Brüstung ${f2(m.brh, 3)} m${sd('brh')} · ab Wandanfang ${f2(m.pos, 3)} m<br><span class="hint">Für den Mittelwert: anderes Foto wählen und erneut 2 Ecken antippen.</span>`;
 }
+function opBack() { if (pgLast) showResult(pgLast.res, pgLast.rec, pgLast.res.some(d => d.planRoom)); }
 function opAdd() {
   const m = opMean(), d = pgLast.res[opSt.ri], t = $('#opType').value;
   const op = { type: t, wall: opSt.wi, pos: +m.pos.toFixed(4), w: +m.w.toFixed(4), h: +m.h.toFixed(4), brh: t === 'fenster' ? +m.brh.toFixed(4) : 0 };
@@ -570,6 +571,26 @@ $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveC
 $('#liveDone').onclick = liveFinish;
 $('#liveToAR').onclick = () => { VID.stop(); liveStop(); $('#arOpen').click(); }; // keine Blätter → AR-Messung
 
+/* ---------- 3D-Ansicht (isometrisch, „Puppenhaus“): Wände mit Raumhöhe, Fenster/Türen, Maße der Öffnungen ---------- */
+function view3d() {
+  const el = $('#v3d'); if (!S.rooms.length) { el.innerHTML = '<p class="hint">Noch keine Räume.</p>'; return; }
+  const c30 = Math.cos(Math.PI / 6), s30 = 0.5, PJ = (x, y, z) => [(x - y) * c30, (x + y) * s30 - z], faces = [];
+  S.rooms.forEach(r => { const g = geo(r), P = g.P, n = P.length, h = r.h || 2.6;
+    faces.push({ d: -1e9, poly: P.map(p => PJ(p[0], p[1], 0)), fill: '#e8eef6', stroke: '#9fb3c8', label: [g.c, `${r.name} · ${f2(g.area, 2)} m² · RH ${f2(h, 2)} m`] });
+    P.forEach((p, i) => { const q = P[(i + 1) % n], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+      // Wände, deren Innenseite zum Betrachter zeigt (hinten), voll; vordere nur als Kante
+      const e = g.E[i], front = e.n[0] + e.n[1] > 0;
+      faces.push({ d: mx + my, poly: [PJ(p[0], p[1], 0), PJ(q[0], q[1], 0), PJ(q[0], q[1], front ? 0.15 : h), PJ(p[0], p[1], front ? 0.15 : h)], fill: front ? '#c9d6e3' : '#f4f6f9', stroke: '#5b7088' });
+      (r.ops || []).filter(o => o.wall === i && !front).forEach(o => { const a = [p[0] + e.d[0] * o.pos, p[1] + e.d[1] * o.pos], b = [a[0] + e.d[0] * o.w, a[1] + e.d[1] * o.w], z0 = o.type === 'fenster' ? o.brh : 0, z1 = z0 + o.h;
+        faces.push({ d: mx + my + 0.001, poly: [PJ(a[0], a[1], z0), PJ(b[0], b[1], z0), PJ(b[0], b[1], z1), PJ(a[0], a[1], z1)], fill: o.type === 'fenster' ? '#9fd3f5' : '#d7b98e', stroke: '#2b5a7a', label: [[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (z0 + z1) / 2], `${Math.round(o.w * 100)}/${Math.round(o.h * 100)}`] }); }); }); });
+  faces.sort((a, b) => a.d - b.d);
+  const pts = faces.flatMap(f => f.poly), xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs) - 0.5, y0 = Math.min(...ys) - 0.5, w = Math.max(...xs) - x0 + 0.5, hh = Math.max(...ys) - y0 + 0.5;
+  let o = `<svg viewBox="${x0} ${y0} ${w} ${hh}" class="v3d" xmlns="http://www.w3.org/2000/svg">`;
+  faces.forEach(f => { o += `<polygon points="${f.poly.map(p => p.map(v => v.toFixed(3)).join(',')).join(' ')}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="0.015"/>`;
+    if (f.label) { const L = f.label[0], q = L.length === 3 ? PJ(L[0], L[1], L[2]) : PJ(L[0], L[1], 0); o += `<text x="${q[0]}" y="${q[1]}" font-size="${L.length === 3 ? 0.2 : 0.24}" font-weight="600" text-anchor="middle" fill="#123">${esc(f.label[1])}</text>`; } });
+  el.innerHTML = o + '</svg><p class="hint">3D-Übersicht: hintere Wände voll, vordere niedrig geschnitten. Fenster blau, Türen braun, beschriftet mit Breite/Höhe in cm.</p>';
+}
+
 /* ---------- Ergebnis-Bildschirm: Skizze mit allen Wandlängen, klare nächste Schritte ---------- */
 function resSketch(poly, L, sig) {
   const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0 || 1, h = y1 - y0 || 1, k = 260 / Math.max(w, h), W = w * k + 140, H = h * k + 100;
@@ -586,14 +607,20 @@ function showResult(res, rec, taken, err) {
   let h = `<div class="rescard"><h2>${ok ? '✅ Ergebnis' : '⚠ Auswertung nicht möglich'}</h2>`;
   if (ok) res.forEach(d => { if (!d.w.ok) { h += `<p class="warn">${esc(d.name)}: ${esc(d.w.msg)}</p>`; return; }
     const area = Math.abs(d.w.poly.reduce((a, p, i) => { const q = d.w.poly[(i + 1) % d.w.poly.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
-    h += `<h3>${esc(d.name)} · ${f2(area, 2)} m²</h3>${resSketch(d.w.poly, d.w.lengths, d.w.sigma)}<table class="pgt"><tr><th>Wand</th><th>Länge</th><th>Genauigkeit</th></tr>${d.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${d.w.sigma[i] != null && d.w.sigma[i] <= 0.005 ? 'ok' : 'warn'}">${d.w.sigma[i] == null ? '–' : '±' + f2(d.w.sigma[i] * 1000, 1) + ' mm'}</td></tr>`).join('')}</table>`;
+    const ri = res.indexOf(d), hh = d.w.height && d.w.hSig !== null && d.w.hSig < 0.005 ? d.w.height : (d.kmH || (d.planRoom && d.planRoom.hSet ? d.planRoom.h : null));
+    h += `<h3>${esc(d.name)} · ${f2(area, 2)} m²</h3>${resSketch(d.w.poly, d.w.lengths, d.w.sigma)}<table class="pgt"><tr><th>Wand</th><th>Länge</th><th>Genauigkeit</th><th></th></tr>${d.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${d.w.sigma[i] != null && d.w.sigma[i] <= 0.005 ? 'ok' : 'warn'}">${d.w.sigma[i] == null ? '–' : '±' + f2(d.w.sigma[i] * 1000, 1) + ' mm'}</td><td><button data-r="op" data-ri="${ri}" data-wi="${i}">📐 Fenster/Tür</button></td></tr>`).join('')}</table>`;
+    h += `<p><b>Raumhöhe:</b> ${hh ? `<b>${f2(hh, 3)} m</b>` : '<span class="hint">nicht gemessen</span>'} – <label>eintragen <input data-rh="${ri}" inputmode="decimal" size="6" placeholder="z. B. 2,55" value="${hh ? f2(hh, 3) : ''}"></label> <span class="hint">(Laser/Maßband, oder Wandblatt an die Decke kleben)</span></p>`;
+    const ops = d.ops || [];
+    h += ops.length ? `<p><b>Fenster/Türen:</b></p><ul>${ops.map(o => `<li>${o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang'} in Wand ${o.wall + 1}: Breite <b>${f2(o.w, 3)} m</b> · Höhe <b>${f2(o.h, 3)} m</b>${o.type === 'fenster' ? ` · Parapet ${f2(o.brh, 3)} m` : ''} · ab Wandanfang ${f2(o.pos, 3)} m</li>`).join('')}</ul>` : `<p class="hint">Fenster und Türen: bei der Wand auf „📐 Fenster/Tür“ tippen, dann im Foto zwei gegenüberliegende Ecken der Öffnung antippen.</p>`;
     if (d.w.warn.length) h += d.w.warn.map(x => `<p class="warn">⚠ ${esc(x)}</p>`).join(''); });
   else h += `<p>${esc(err || 'Es wurden zu wenige Marken erkannt.')}</p><p><b>Was tun?</b></p><ul><li>Jedes Blatt muss auf mehreren Bildern gut zu sehen sein – auch aus der Ecke schräg.</li><li>Den Zollstock mit beiden Bodenblättern mitfilmen, auch kurz von oben.</li><li>In Ecken filmen, damit zwei Blätter gleichzeitig im Bild sind.</li></ul>`;
   if (ok && rec && rec.suspect) h += `<p class="warn">⚠ Ergebnis unsicher: ${esc(rec.suspect)}</p>`;
   h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen.</p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
   box.innerHTML = h; box.hidden = false;
   box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
-    if (a === 'take') { pgTake(); showTab('plan'); } else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart(); };
+    if (a === 'take') { pgTake(); showTab('plan'); } else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart();
+    else if (a === 'op') { const b = e.target.closest('[data-r]'); showTab('auf'); opStart(+b.dataset.ri, +b.dataset.wi); setTimeout(() => $('#opBox') && $('#opBox').scrollIntoView({ behavior: 'smooth' }), 100); } };
+  box.querySelectorAll('[data-rh]').forEach(inp => { inp.onclick = e => e.stopPropagation(); inp.onchange = () => { const d = res[+inp.dataset.rh], v = parseLen(inp.value); if (!(v > 1.5 && v < 8)) return; d.kmH = v; if (d.planRoom && S.rooms.includes(d.planRoom)) { d.planRoom.h = +v.toFixed(3); d.planRoom.hSet = true; save(); renderPlan(); } }; });
 }
 
 /* ---------- Phase 2b: Erkennung im Hintergrund, Video sichern, genauer nachauswerten ---------- */
@@ -1229,7 +1256,7 @@ function snapRoom(i) {
   });
   if (bx !== null) r.x = +(r.x + bx).toFixed(3); if (by !== null) r.y = +(r.y + by).toFixed(3);
 }
-$('#toProj').onclick = () => showTab('proj'); $('#backPlan').onclick = () => showTab('plan');
+$('#toProj').onclick = () => showTab('proj'); $('#show3d').onclick = () => { const el = $('#v3d'); el.hidden = !el.hidden; if (!el.hidden) view3d(); }; $('#showRes').onclick = opBack; $('#backPlan').onclick = () => showTab('plan');
 $('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
   const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return alert('Breite und Tiefe in m eingeben (z. B. 4,20).');
