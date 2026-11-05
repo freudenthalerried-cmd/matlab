@@ -576,7 +576,7 @@ async function liveFinish() {
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
-$('#liveMk').onclick = () => { live.autoAR = false; liveStart(); }; $('#liveOpen').onclick = () => arStart(); // direkt ohne Marken: Zollstock filmen → Wände (Marken-Messung nur noch über „Einstellungen“) $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
+$('#liveMk').onclick = () => { live.autoAR = false; liveStart(); }; $('#liveOpen').onclick = () => filmStart(); // Standard: Raum filmen (Tiefendaten), Fragen vorab $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
 $('#liveToAR').onclick = () => { VID.stop(); liveStop(); arStart(); }; // keine Blätter → AR-Messung
 
@@ -904,6 +904,35 @@ function measureStart() {
   };
   draw(); box.hidden = false;
 }
+// ---------- Raum filmen: zwei Fragen (Raumhöhe = Kontrollmaß, rechteckig?), dann nur filmen – Boden/Decke/Wände findet film.js ----------
+function filmStart() {
+  if (!navigator.xr) return arNotSupported();
+  let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
+  let rh = ''; try { rh = localStorage.getItem('raumplan-rh') || ''; } catch (e) { }
+  box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📹 Raum filmen</h2>
+    <p>Zwei Angaben, dann einfach langsam rundherum filmen – nichts antippen.</p>
+    <div class="grid">
+      <label>Raumhöhe in m <span class="hint">(einmal mit Zollstock/Laser messen – das ist das Kontrollmaß)</span><input id="fmH" inputmode="decimal" placeholder="z. B. 2,52" value="${esc(rh)}"></label>
+      <label>Raum rechteckig? <select id="fmRect"><option value="1">Ja – 4 Wände, rechte Winkel</option><option value="0">Nein – L-Form oder mehr Ecken</option></select></label>
+      <label><input type="checkbox" id="fmDach"> Dachschrägen vorhanden</label>
+    </div>
+    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
+    <div class="row"><button data-r="go" class="pri">📹 Filmen starten</button><button data-r="x">Abbrechen</button></div></div>`;
+  setTimeout(() => $('#fmH').focus(), 50);
+  box.onclick = e => { const act = e.target.closest('[data-r]')?.dataset.r; if (!act) return;
+    if (act === 'x') { box.hidden = true; return; }
+    const hv = parseLen($('#fmH').value); if (!(hv > 1.8 && hv < 6)) { notice('Bitte die Raumhöhe in Metern eingeben, z. B. 2,52.'); return; }
+    try { localStorage.setItem('raumplan-rh', $('#fmH').value); } catch (e) { }
+    const opts = { height: hv, rect: $('#fmRect').value === '1', dach: $('#fmDach').checked, name: $('#arName').value.trim() }; box.hidden = true;
+    const o = { ...modeGet(), z: false };
+    FILM.start(opts, r => {
+      if (r.err === 'nodepth') { box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📱 Keine Tiefendaten</h2><p>Dieses Handy liefert in Chrome keine Tiefendaten (ARCore Depth). Dann geht es mit Antippen: Zollstock filmen, Ecken anpeilen.</p><div class="row"><button data-r="ar" class="pri">Ecken antippen</button><button data-r="hand">✏ Maße von Hand</button><button data-r="x">Schließen</button></div><p class="hint">${esc(r.msg || '')}</p></div>`;
+        box.onclick = ev => { const b = ev.target.closest('[data-r]')?.dataset.r; if (!b) return; box.hidden = true; if (b === 'ar') arStart(); else if (b === 'hand') { showTab('plan'); setTimeout(() => $('#nW').focus(), 50); } }; return; }
+      arResult(r, o, Date.now());
+    });
+  };
+}
+$('#filmDone').onclick = () => FILM.finish(); $('#filmCancel').onclick = () => FILM.cancel();
 function arStart(msg) {
   const o = { ...modeGet(), z: true }; if (msg) notice(msg);
   if (!navigator.xr) return arNotSupported();
@@ -942,10 +971,10 @@ function arResult(r, o, tEnd) {
     const c = calc(), mx = Math.max(...c.sg) * 1000, rel = c.sk * 100;
     let qual, cls;
     if (c.m) { qual = `Maßstab aus ${c.m} Kontrollmaß${c.m > 1 ? 'en' : ''}${sc ? ` (Zollstock wich ${f2(c.zdev, 2)} % ab)` : ''}.`; cls = 'ok'; }
-    else if (sc) { qual = `Maßstab aus dem Zollstock (±${f2(rel, 2)} %). Mit einem Kontrollmaß wird es sicherer.`; cls = 'ok'; }
+    else if (sc) { qual = `Maßstab aus ${sc.height ? 'der Raumhöhe' : 'dem Zollstock'} (±${f2(rel, 2)} %). Mit einem Kontrollmaß (Wandlänge) wird es sicherer.`; cls = 'ok'; }
     else { qual = `⚠ SEHR UNGENAU: weder Zollstock noch Kontrollmaß – nur der Handy-Maßstab (±1–3 %, bei 4 m bis ±${Math.round(40 * 3)} mm). Bitte mindestens eine lange Wand mit Maßband/Laser nachmessen und unten eintragen.`; cls = 'warn'; }
     let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
-    box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis (ohne Marken)</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
+    box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis${r.cover != null ? ` (gefilmt, ${Math.round(r.cover)} % rundherum)` : ' (ohne Marken)'}</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
       <p class="${cls}">${qual}</p>
       <p class="accbig ${c.sk <= 0.002 ? 'ok' : c.sk <= 0.005 ? 'mid' : 'warn'}">Genauigkeit ±${f2(Math.max(...c.sg.map((g, i) => g / c.L[i])) * 100, 2)} %</p>
       <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] / x <= 0.002 ? 'ok' : c.sg[i] / x <= 0.005 ? 'mid' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm · ${f2(c.sg[i] / x * 100, 2)} %</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>

@@ -12,16 +12,15 @@
   </svg>`;
   const steps = [
     { t: 'Willkommen', h: `<p>Mit dieser App misst du einen Raum mit dem Handy aus und bekommst einen <b>maßstäblichen Grundriss</b> für den Einreichplan.</p>
-      <p><b>So geht es:</b></p><ol><li><b>Zollstock</b> ganz ausgeklappt auf den Boden legen.</li><li><b>„📹 Raum messen“</b> tippen: zuerst den Zollstock filmen, dann jede <b>Ecke unten</b> anpeilen und „Ecke“ tippen, zuletzt die Decke.</li><li><b>Fertig</b>: Die App rechnet und zeichnet den Raum in den Plan.</li></ol>
-      <p><b>Du brauchst:</b> Zollstock 2 m und ein Android-Handy mit Chrome und ARCore („Google Play-Dienste für AR“). Kein Drucker, nichts kleben.</p>`,
+      <p><b>So geht es:</b></p><ol><li><b>Raumhöhe</b> einmal messen (Zollstock oder Laser).</li><li><b>„📹 Raum filmen“</b> tippen, Raumhöhe eingeben, „rechteckig?“ beantworten – dann langsam <b>rundherum filmen</b>. Nichts antippen.</li><li><b>Fertig</b>: Die App findet Boden, Decke und Wände selbst und zeichnet den Raum in den Plan.</li></ol>
+      <p><b>Du brauchst:</b> ein Android-Handy mit Chrome und ARCore („Google Play-Dienste für AR“). Kein Drucker, nichts kleben, keine Punkte.</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
-    { t: 'Raum messen', h: `${sketch}
-      <ol><li><b>Zollstock</b>: Handy auf den Zollstock richten, 1–2 m Abstand. Die App erkennt ihn selbst und nimmt ihn als Maßstab. Wird er nicht erkannt: Kreis auf Anfang bzw. Ende richten und „Punkt“ tippen.</li>
-      <li><b>Ecken</b>: Den Kreis genau auf eine Raumecke <b>unten</b> (Boden/Wand) richten und „📍 Ecke“ tippen. So rundherum, zum Schluss wieder auf die erste Ecke – dann ist der Raum geschlossen.</li>
-      <li><b>Decke</b>: Kreis auf die Kante Wand/Decke richten und „📍 Decke“ tippen – das ist die Raumhöhe.</li></ol>
-      <p><b>Oben im Bild</b> steht laufend die Genauigkeit in % (<span style="color:#2e7d32">grün</span> = gut) und was noch fehlt. Langsam bewegen, Möbel überspringen – die App sortiert sie aus.</p>`,
-      b: [['📹 Raum messen', 'live'], ['Weiter ›', 'next', 1]] },
-    { t: 'Ergebnis', h: `<p>Nach „✔ Fertig“ zeigt die App eine Skizze mit jeder Wandlänge und ihrer Genauigkeit, z. B. <b>4,21 m ± 8 mm</b>.</p>
+    { t: 'Raum filmen', h: `<ol><li><b>Fragen</b>: Raumhöhe eintippen (z. B. 2,52) und sagen, ob der Raum rechteckig ist.</li>
+      <li><b>Filmen</b>: Handy ruhig halten und sich langsam einmal im Kreis drehen, dabei die Wände bis oben filmen, kurz auch Boden und Decke. Bei großen Räumen ein paar Schritte gehen. Türen vorher schließen.</li>
+      <li><b>Karte</b>: Unten rechts füllt sich eine Karte von oben – sind alle Wände zu sehen, „✔ Fertig“.</li></ol>
+      <p>Die App misst den Abstand Boden–Decke selbst und vergleicht ihn mit deiner Raumhöhe – daraus kommt der Maßstab. Möbel stören nicht: Nur die obere Wandhälfte zählt.</p>`,
+      b: [['📹 Raum filmen', 'live'], ['Weiter ›', 'next', 1]] },
+    { t: 'Ergebnis', h: `<p>Nach „✔ Fertig“ zeigt die App eine Skizze mit jeder Wandlänge und ihrer Genauigkeit, z. B. <b>4,21 m ± 12 mm</b>.</p>
       <ul><li><b>Kontrollmaß:</b> Eine lange Wand mit Maßband oder Laser nachmessen und eintragen – damit stimmt der Maßstab sicher.</li><li><b>Korrigieren:</b> Ein Maß antippen und eintippen oder ansagen (🎤).</li><li><b>Übernehmen:</b> Der Raum kommt in den Plan (Reiter „2 Ergebnis“).</li></ul>
       <p class="hint">Fenster und Türen: im Plan den Raum antippen → bei der Wand „+ Öffnung“.</p>`,
       b: [['Weiter ›', 'next', 1]] },
@@ -32,7 +31,7 @@
     { t: 'Andere Messarten', h: `<p><b>Kein ARCore am Handy?</b> Oder soll es <b>millimetergenau</b> werden? Dann gibt es zwei Wege:</p>
       <ul><li><b>🎯 Mit Marken-Blättern</b> (±1–5 mm): gedruckte Blätter an die Wände kleben, Raum filmen, die App rechnet. Braucht einmalig einen Drucker. Zu finden unter „🔧 Andere Messarten“ im Reiter 1.</li>
       <li><b>Von Hand</b>: Breite und Tiefe eintippen, „+ Rechteckraum“ im Reiter 2 – Wände und Winkel dann im Raum anpassen.</li></ul>
-      <p class="hint">Die Kamera-Kalibrierung (unter Einstellungen) macht nur die Marken-Messung genauer; für den Zollstock-Weg ist sie nicht nötig.</p>`,
+      <p class="hint">Liefert das Handy keine Tiefendaten, bietet die App „Ecken antippen“ an (Zollstock als Maßstab, Ecken anpeilen). Die Kamera-Kalibrierung (unter Einstellungen) betrifft nur die Marken-Messung.</p>`,
       b: [['🎯 Mit Marken messen', 'mk'], ['Fertig', 'close', 1]] }
   ];
   let i = 0;

@@ -155,3 +155,8 @@ details.more2 summary{cursor:pointer;font-weight:600}
 details.menu{position:relative}details.menu summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--card);white-space:nowrap}details.menu summary::-webkit-details-marker{display:none}
 .menubox{position:absolute;left:0;top:calc(100% + 4px);max-width:calc(100vw - 32px);z-index:20;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:210px;box-shadow:0 6px 20px #0004}.menubox button{text-align:left}
 #rpanel details.more{margin-top:10px}#andere>.card{margin-top:10px}#andere>p{margin:6px 0 0}
+/* Raum filmen */
+#filmUI{position:fixed;inset:0;z-index:70;color:#fff;font-size:17px;pointer-events:none}#filmUI>*{pointer-events:auto}#filmUI[hidden]{display:none}
+#filmMap{position:fixed;right:10px;bottom:calc(64px + env(safe-area-inset-bottom,0px));width:180px;height:180px;border-radius:10px;border:1px solid #fff6;background:#0008}
+#filmUI .arBtns button.arOk{background:#2e7d32;border-color:#4caf50;font-size:16px;padding:12px 16px}
+#resUI .grid label{font-size:14px;color:var(--fg)}#resUI .grid input,#resUI .grid select{font-size:16px}

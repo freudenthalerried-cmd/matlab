@@ -24,12 +24,12 @@
     <div class="card pgcard">
       <h3>Raum messen</h3>
       <ol class="steps">
-        <li><b>Zollstock</b> ganz ausgeklappt auf den Boden legen, <b>„📹 Raum messen“</b> tippen und ihn von oben filmen – die App erkennt ihn selbst und nimmt ihn als Maßstab.</li>
-        <li>Dann jede <b>Raumecke unten anpeilen</b> und „Ecke“ tippen, rundherum bis zur ersten Ecke; zuletzt die Decke für die Raumhöhe. Die Genauigkeit in % steht laufend oben (grün = gut).</li>
-        <li>Am Ende eine Wand mit <b>Maßband/Laser</b> als Kontrollmaß eintragen – dann stimmt der Maßstab sicher.</li>
+        <li><b>Raumhöhe</b> einmal messen (Zollstock oder Laser) – das ist das einzige Kontrollmaß.</li>
+        <li><b>„📹 Raum filmen“</b> tippen, zwei kurze Fragen beantworten (Raumhöhe, rechteckig?), dann langsam <b>rundherum filmen</b>: alle Wände, kurz Boden und Decke. Nichts antippen.</li>
+        <li><b>✔ Fertig</b> – die App findet Boden, Decke und Wände selbst und zeichnet den Raum in den Plan.</li>
       </ol>
       <div class="row">
-        <button id="liveOpen" class="pri big">📹 Raum messen</button>
+        <button id="liveOpen" class="pri big">📹 Raum filmen</button>
                 <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
@@ -80,8 +80,8 @@
       <ul id="kmList" class="kmlist"></ul>
     </div>
     <div class="card arcard">
-      <h3>📱 Ohne Wandblätter: AR-Messung</h3>
-      <p class="small">1. Zollstock antippen (Anfang und Ende) → genauer Maßstab. 2. Je Wand „▶ Abtasten“ und den Kreis über die Wand fahren – die App sammelt Punkte und sortiert Möbel aus. Braucht Chrome auf Android mit ARCore. Genauigkeit: wird mit deinen Maßband-Vergleichen ermittelt (erwartet ±5–10 mm mit Zollstock).</p>
+      <h3>📱 AR von Hand: Ecken antippen</h3>
+      <p class="small">Falls das Handy keine Tiefendaten liefert: Zollstock filmen (Maßstab), dann jede Raumecke unten anpeilen und „Ecke“ tippen, zuletzt die Decke. Braucht Chrome auf Android mit ARCore. Genauigkeit erwartet ±1–2 cm.</p>
       <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button><label><input type="checkbox" id="arZoll" checked> mit Zollstock als Maßstab</label><button id="arExport">⬇ AR-Daten exportieren</button></div>
     </div>
     <details class="tip">
@@ -230,6 +230,12 @@
     <p class="hint">Hinweis: Ein Einreichplan muss in Österreich in der Regel von einer befugten Person (Baumeister/Architekt) als Planverfasser unterfertigt werden. Die App liefert die Bestandsaufnahme und Planvorlage.</p>
   </section>
 </main>
+<div id="filmUI" hidden>
+  <div class="arTop"><span id="filmTop"></span><span class="sp"></span><button id="filmCancel">✕</button></div>
+  <div id="filmMsg" class="arMsg"></div>
+  <canvas id="filmMap" width="180" height="180"></canvas>
+  <div class="arBtns"><button id="filmDone" class="arOk">✔ Fertig – Raum berechnen</button></div>
+</div>
 <div id="arUI" hidden>
   <canvas id="arCv"></canvas>
   <div class="arTop"><span id="arInfo"></span><span class="sp"></span><button id="arCancel">✕</button></div>
@@ -261,6 +267,7 @@
 <script src="calib.js"></script>
 <script src="kontroll.js"></script>
 <script src="ar.js"></script>
+<script src="film.js"></script>
 <script src="dev.js"></script>
 <script src="app.js"></script>
 <script src="guide.js"></script>
