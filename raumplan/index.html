@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Raumplan – Grundriss aus Fotos</title>
+<meta name="theme-color" content="#1f3a5f">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<header>
+  <div class="hrow"><h1>Raumplan <small id="ver" class="ver"></small></h1><button id="helpBtn" class="help">? Anleitung</button></div>
+  <nav>
+    <button data-t="auf" class="on">1 Aufmaß</button>
+    <button data-t="plan">2 Ergebnis</button>
+  </nav>
+</header>
+<main>
+  <!-- 1 AUFNAHME -->
+  <section id="auf">
+    <div class="card pgcard">
+      <h3>Raum messen</h3>
+      <ol class="steps">
+        <li><b>Zollstock</b> mit den 2 Bodenblättern ausgeklappt auf den Boden legen – das ist der Maßstab (Blätter: unter „Andere Messarten“ drucken).</li>
+        <li><b>„📹 Raum filmen“</b> tippen, eine Frage (rechteckig?), zuerst von oben auf den Zollstock, dann langsam <b>rundherum filmen</b>: alle Wände, kurz Boden und Decke. Nichts antippen.</li>
+        <li><b>✔ Fertig</b> – die App findet Boden, Decke und Wände selbst und zeichnet den Raum in den Plan.</li>
+      </ol>
+      <div class="row">
+        <button id="liveOpen" class="pri big">📹 Raum filmen</button>
+                <input id="arName" placeholder="Raumname (optional)" size="14">
+      </div>
+      <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
+      <pre id="pgLog" class="log" hidden></pre>
+      <div id="pgRes"></div>
+    </div>
+    <details class="card more2" id="andere"><summary>🔧 Andere Messarten (Marken-Blätter, von Hand) und Einstellungen</summary>
+    <p class="small">Für Handys ohne ARCore – oder wenn es millimetergenau werden soll.</p>
+    <div class="card kmcard">
+      <h3>🎯 Mit Marken-Blättern messen <span class="hint">(±1–5 mm, braucht einmalig einen Drucker)</span></h3>
+      <p class="small">Blätter drucken, an jede Wand eines kleben, Zollstock mit den Bodenblättern auf den Boden legen, Raum filmen – die App fotografiert selbst und rechnet.</p>
+      <div class="row"><button id="liveMk" class="pri">🎯 Mit Marken-Blättern messen</button><button id="pgWallSheets">🖨 Blätter drucken</button></div>
+      <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
+      <details class="more">
+        <summary>⚙️ Experteneinstellungen für Marken-Blätter</summary>
+        <div class="row">
+          <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
+          <label><input type="checkbox" id="pgPhoto" checked> Fotos in voller Auflösung (genauer, je Bild ca. 1 s ruhig halten)</label>
+          <label>Wände <input id="pgWalls" inputmode="numeric" size="2" placeholder="4"></label>
+          <label title="Auf einem gedruckten Blatt die Linie 0–15 mit dem Zollstock nachmessen. Leer lassen, wenn sie genau 150 mm lang ist.">Kontrolllinie gemessen (mm) <input id="pgCtrl" inputmode="decimal" size="5" placeholder="150"></label>
+          <label>Zollstock Marke 0 → 1 (m) <input id="pgDist" inputmode="decimal" size="6" value="2,000"></label>
+        </div>
+        <div class="row">
+          <label>Wandmarken <input id="pgN" inputmode="numeric" size="3" value="16"></label>
+          <label>ab Nr. <input id="pgFrom" inputmode="numeric" size="3" value="4"></label>
+          <label>Markengröße mm <input id="pgSize" inputmode="numeric" size="4" value="80"></label>
+          <label><input type="checkbox" id="pgConn"> Verbindungsmarken 90–93 (mehrere Räume)</label>
+          <label>Marke 2 → 3 (m, optional) <input id="pgDist2" inputmode="decimal" size="6" placeholder="z. B. 2,000"></label>
+          <label>Bildabstand Video <select id="pgStep"><option value="0.1">0,1 s</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s</option></select></label>
+        </div>
+        <div class="row">
+          <button id="pgSheet">🖨 16 Einzelmarken</button>
+          <button id="pgPrint">🖨 Große Marken</button>
+          <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
+          <label class="btn">📁 Fotos / Video wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
+          <button id="pgRun">▶ Auswerten</button>
+        </div>
+        <label class="small">Mehrere Räume in einem Video: je Zeile „Name: Marken von–bis“
+          <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19: 6&#10;Küche: 20-31: 4"></textarea></label>
+        <p id="vidState" class="small"></p>
+        <p class="small"><b>Gesamtplan aus mehreren Räumen:</b> je Raum eigene Aufnahme, Wandblätter mit anderen Nummern drucken („ab Nr.“, z. B. Raum 2 ab 20), Verbindungsmarken 90–93 im Türbereich liegen lassen und in beiden Aufnahmen mitfilmen.</p>
+      </details>
+    </div>
+    <div class="card kmcard">
+      <h3>📏 Kontrollmaße <span class="hint">(empfohlen: Raumhöhe + eine Wandlänge)</span></h3>
+      <p class="small">Während der Aufnahme mit dem Laser messen oder das Maß ansagen, z. B. „Raumhöhe 2,55“ oder „Fenster Küche 1,20 breit“. Die App merkt sich, welche Wand gerade im Bild war, und vergleicht nach der Auswertung.</p>
+      <div class="row"><button id="kmMic">🎤 Maß ansagen</button><button id="kmLaser">📏 Laser verbinden</button><input id="kmIn" placeholder="oder eintippen: Raumhöhe 2,55" size="22"><button id="kmAdd">+</button><span id="kmState" class="hint"></span></div>
+      <ul id="kmList" class="kmlist"></ul>
+    </div>
+    <div class="card arcard">
+      <h3>📱 AR von Hand: Ecken antippen</h3>
+      <p class="small">Falls das Handy keine Tiefendaten liefert: Zollstock filmen (Maßstab), dann jede Raumecke unten anpeilen und „Ecke“ tippen, zuletzt die Decke. Braucht Chrome auf Android mit ARCore. Genauigkeit erwartet ±1–2 cm.</p>
+      <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button><label><input type="checkbox" id="arZoll" checked> mit Zollstock als Maßstab</label><button id="arExport">⬇ AR-Daten exportieren</button></div>
+    </div>
+    <details class="tip">
+      <summary>B · Manuell: Fotos antippen (Referenzrechteck am Boden)</summary>
+      <ol>
+        <li>Mit Kreppband ein <b>Referenz-Rechteck</b> am Boden kleben (z.&nbsp;B. 2,00 × 1,00 m, mit Maßband genau abmessen, rechte Winkel über Diagonale prüfen: 2,236 m). Am genauesten: an die 4 Ecken die <b>gedruckten Zielmarken</b> (🎯) legen – deren Kreuzmitte findet die App auf 1/20 Pixel genau; das Rechteck zwischen den Kreuzmitten mit dem Maßband abmessen. Weitere Marken entlang der Kanten (z. B. alle 50 cm) erhöhen die Genauigkeit. Einfaches Kreppband-Kreuz geht auch, ist aber ungenauer.</li>
+        <li>Langsam durch den Raum filmen, Kamera leicht nach unten – Referenz-Rechteck <b>und</b> die Raumecken am Boden (Übergang Wand/Boden) sollen gut sichtbar sein.</li>
+        <li><b>Für ±3 mm:</b> Wandlängen mit dem Maßband messen (in ca. 1 m Höhe, über den Möbeln) und je Raum 2 Diagonalen oder Eckwinkel über Sehne – Eingabe im Reiter „2 Ergebnis“ → Raum antippen → „Maßband-Messungen“. Die Fotos liefern Form, Lage und Kontrolle.</li>
+        <li>Für Messungen im Foto: besser <b>Fotos (volle Auflösung)</b> statt Video; wenn Video, dann 4K. Einmalig die Kamera kalibrieren (Modus „Kamera kalibrieren“).</li>
+        <li>Pro Raum 1–3 Standbilder übernehmen, auf denen Rechteck und Ecken zu sehen sind. Das Rechteck kann für jedes Bild neu im Raum platziert werden.</li>
+      </ol>
+    <div class="row">
+      <label class="btn">🎥 Video aufnehmen<input id="camIn" type="file" accept="video/*" capture="environment" hidden></label>
+      <label class="btn">📁 Video / Fotos wählen<input id="fileIn" type="file" accept="video/*,image/*" multiple hidden></label>
+      <button id="targets">🎯 Zielmarken drucken</button>
+    </div>
+    <video id="vid" playsinline muted controls></video>
+    <div class="row">
+      <button id="stepB">◀ Bild</button>
+      <button id="grab" class="pri">📸 Standbild übernehmen</button>
+      <button id="stepF">Bild ▶</button>
+    </div>
+    <h3>Standbilder</h3>
+    <div id="snaps" class="snaps"><p class="hint">Noch keine Standbilder.</p></div>
+    </details>
+    </details>
+  </section>
+
+  <!-- 2 VERMESSEN -->
+  <section id="mess" hidden>
+    <p class="intro">Nur für den <b>manuellen Weg B</b> (ohne Zielmarken): Standbild wählen, Referenzrechteck und Raumecken antippen. Mit Zielmarken (Weg A) brauchst du diesen Schritt nicht.</p>
+    <div class="row">
+      <select id="snapSel"></select>
+      <div class="seg">
+        <button data-m="ref" class="on">A Referenz</button>
+        <button data-m="pts">B Raumecken</button>
+        <button data-m="kal">Kamera kalibrieren</button>
+      </div>
+    </div>
+    <div class="row" id="refRow">
+      <select id="refType">
+        <option value="rect">Rechteck am Boden (genau)</option>
+        <option value="line">Nur Maßband-Strecke (Foto frontal, ungenau)</option>
+      </select>
+      <label id="lW">Breite A–B m <input id="refW" inputmode="decimal" size="5"></label>
+      <label id="lD">Tiefe B–C m <input id="refD" inputmode="decimal" size="5"></label>
+      <label id="lL">Länge m <input id="refL" inputmode="decimal" size="5"></label>
+    </div>
+    <div class="row" id="optRow">
+      <label><input type="checkbox" id="snapOn" checked> Subpixel-Eckenfang</label>
+      <label>Sockelleiste mm <input id="skirt" inputmode="decimal" size="3"></label>
+      <label>Boden uneben ±mm <input id="floorS" inputmode="decimal" size="3"></label>
+    </div>
+    <div class="row" id="kalRow" hidden>
+      <button id="kNew">Neue Linie</button><button id="kRun" class="pri">k1 berechnen</button><button id="kClr" class="danger">Linien löschen</button>
+      <span id="kInfo" class="hint"></span>
+    </div>
+    <p id="mstat" class="hint"></p>
+    <div id="mwrap"><canvas id="mc"></canvas></div>
+    <div class="row">
+      <label>Zoom <input id="zoom" type="range" min="1" max="8" step="0.25" value="1"></label>
+      <button data-n="-1,0">←</button><button data-n="0,-1">↑</button><button data-n="0,1">↓</button><button data-n="1,0">→</button>
+      <button id="ptDel">Punkt löschen</button>
+      <button id="ptClr" class="danger">Alle löschen</button>
+    </div>
+    <canvas id="loupe" width="160" height="160" hidden></canvas>
+    <div id="mres"></div>
+    <div class="row">
+      <label><input type="checkbox" id="closed" checked> Punkte bilden geschlossenen Raum</label>
+    </div>
+    <div class="row">
+      <button id="toRoom" class="pri">→ neuer Raum</button>
+      <select id="tgtRoom"></select><label>ab Ecke <input id="tgtCorner" inputmode="numeric" size="2" value="1"></label>
+      <button id="toExist">→ zu Raum hinzufügen</button>
+      <button id="toMeas">Strecken → Messliste</button>
+    </div>
+    <h3>Messliste</h3>
+    <div class="row">
+      <input id="mName" placeholder="Bezeichnung (z. B. Küche Wand Nord)">
+      <input id="mVal" inputmode="decimal" placeholder="m oder cm" size="7">
+      <button id="mAdd">+ manuell</button>
+    </div>
+    <ul id="mlist"></ul>
+    <datalist id="measList"></datalist>
+  </section>
+
+  <!-- 3 PLAN -->
+  <section id="plan" hidden>
+    <p class="intro">Dein Grundriss. Raum antippen zum Bearbeiten (Name, Fenster, Türen, Wände), Raum ziehen zum Verschieben. Gemessene Räume (AR oder Fotos) landen automatisch hier.</p>
+    <div class="row">
+      <input id="nName" placeholder="Raumname" size="10">
+      <input id="nW" inputmode="decimal" placeholder="Breite m" size="6">
+      <input id="nD" inputmode="decimal" placeholder="Tiefe m" size="6">
+      <button id="nAdd" class="pri">+ Rechteckraum</button>
+    </div>
+    <div class="row">
+      <button id="show3d">🧊 3D</button>
+      <button id="cutBtn">✂ Schnitt</button>
+      <button id="toProj" class="pri">📄 Plankopf &amp; Export</button>
+      <details class="menu" id="planMenu"><summary>⋯ Mehr</summary><div class="menubox">
+        <button id="showRes">📋 Letztes Messergebnis</button>
+        <button id="zFit">Einpassen</button><button id="zIn">＋ Vergrößern</button><button id="zOut">－ Verkleinern</button>
+        <button id="planClear" class="danger">🗑 Plan leeren</button></div></details>
+    </div>
+    <div id="v3d" hidden></div>
+    <div id="vcut" hidden></div>
+    <svg id="psvg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="rpanel"></div>
+  </section>
+
+  <!-- 4 EINREICHUNG -->
+  <section id="proj" hidden>
+    <p class="intro">Plankopf ausfüllen und den fertigen Plan als PDF, DXF oder Aufmaßprotokoll ausgeben. Das Projekt bleibt am Handy gespeichert.</p>
+    <div class="row"><button id="backPlan">‹ zurück zum Ergebnis</button></div>
+    <form id="pform" class="grid">
+      <label>Bauvorhaben<input name="bv"></label>
+      <label>Bauwerber / Bauherr<input name="bh"></label>
+      <label>Adresse<input name="adr"></label>
+      <label>Grundstück Nr.<input name="gst"></label>
+      <label>Katastralgemeinde<input name="kg"></label>
+      <label>Planverfasser<input name="pv"></label>
+      <label>Planinhalt<input name="inhalt"></label>
+      <label>Plan-Nr.<input name="nr"></label>
+      <label>Datum<input name="datum"></label>
+      <label>Nordrichtung ° (0 = oben)<input name="nord" inputmode="decimal"></label>
+      <label>Maßstab<select name="scale"><option value="50">1:50</option><option value="100">1:100</option><option value="200">1:200</option></select></label>
+      <label>Blattgröße<select name="paper"><option>A3</option><option>A4</option><option>A2</option></select></label>
+      <label>Standard Außenwand m<input name="wallT" inputmode="decimal"></label>
+      <label>Innenwand (Fang-Abstand) m<input name="innerT" inputmode="decimal"></label>
+      <label>Außenmaß gemessen X (m/cm)<input name="ax" inputmode="decimal"></label>
+      <label>Außenmaß gemessen Y (m/cm)<input name="ay" inputmode="decimal"></label>
+      <label>Genauigkeitsziel ±mm<input name="target" inputmode="decimal"></label>
+      <label>Maßangabe<select name="dimFmt"><option value="mm">m mit mm hochgestellt (4,21⁵)</option><option value="cm">m auf cm (4,22)</option></select></label>
+    </form>
+    <p id="fitMsg" class="hint"></p><p id="axMsg"></p>
+    <div class="row">
+      <button id="xPrint" class="pri">🖨 PDF / Drucken</button>
+      <button id="xSvg">SVG</button>
+      <button id="xDxf">DXF (CAD)</button>
+      <button id="xCsv">Aufmaßprotokoll (CSV)</button>
+      <button id="xJson">Projekt speichern</button>
+      <label class="btn">Projekt laden<input id="xLoad" type="file" accept=".json,application/json" hidden></label>
+      <button id="xNew" class="danger">Neues Projekt</button>
+    </div>
+    <div id="preview"></div>
+    <p class="hint">Hinweis: Ein Einreichplan muss in Österreich in der Regel von einer befugten Person (Baumeister/Architekt) als Planverfasser unterfertigt werden. Die App liefert die Bestandsaufnahme und Planvorlage.</p>
+  </section>
+</main>
+<div id="filmUI" hidden>
+  <div class="arTop"><span id="filmTop"></span><span class="sp"></span><button id="filmCancel">✕</button></div>
+  <div id="filmMsg" class="arMsg"></div>
+  <canvas id="filmMap" width="180" height="180"></canvas>
+  <div class="arBtns"><button id="filmDone" class="arOk">✔ Fertig – Raum berechnen</button></div>
+</div>
+<div id="arUI" hidden>
+  <canvas id="arCv"></canvas>
+  <div class="arTop"><span id="arInfo"></span><span class="sp"></span><button id="arCancel">✕</button></div>
+  <div id="arMsg" class="arMsg"></div>
+  <div id="arDot" class="ardot"></div>
+  <div class="arBtns"><button id="arUndo">↶ Rückgängig</button><button id="arZmore" hidden>↻ Zollstock umgelegt</button><button id="arScan">▶ Abtasten</button><button id="arPoint" class="arShot">Punkt</button><button id="arNext">Nächste Wand ›</button><button id="arDone" class="arOk">✔ Fertig</button></div>
+</div>
+<div id="calUI" hidden>
+  <div class="livebar"><button id="calClose">✕</button><b>Kamera kalibrieren</b><span id="calInfo" class="small"></span><span class="sp"></span><button id="calDone" disabled>✔ Fertig</button></div>
+  <div class="liveprog"><div id="calBar"></div></div>
+  <div id="calHint" class="livehint"></div>
+  <div class="livecam"><video id="calVid" playsinline muted></video><canvas id="calOv"></canvas></div>
+  <div class="livebtns"><span class="small">Tafel flach auf den Tisch · 30–50 cm Abstand · Tafel aus verschiedenen Lagen und schräg filmen · Balken unten <b style="color:#4caf50">grün</b> = ruhig · fertig bei Genauigkeit ±0,2 %</span></div>
+</div>
+<div id="live" hidden>
+  <div class="livebar"><button id="liveClose">✕</button><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveDone">✔ Auswerten</button></div>
+  <div class="liveprog"><div id="liveBar"></div></div>
+  <div id="liveHint" class="livehint"></div>
+  <div class="livecam"><video id="liveVid" playsinline muted></video><canvas id="liveOv"></canvas></div>
+  <div id="liveChips" class="lgs"></div>
+  <div class="livekm"><button id="liveToAR" hidden class="toar">📱 Keine Blätter? Ohne Marken messen (AR)</button></div>
+  <div id="liveKm" class="livekm"><button id="liveMic">🎤 Maß ansagen</button><button id="liveLaser">📏 Laser</button><span id="liveKmTxt"></span></div>
+  <div class="livebtns"><span class="small">Herumgehen ist erwünscht · 1–3 m Abstand · <b>nicht zoomen</b> · die App fotografiert selbst</span><button id="liveShot" class="shot" title="Foto von Hand">●</button></div>
+</div>
+<script src="ausgleich.js"></script>
+<script src="ba.js"></script>
+<script src="marker.js"></script>
+<script src="pg.js"></script>
+<script src="calib.js"></script>
+<script src="kontroll.js"></script>
+<script src="ar.js"></script>
+<script src="film.js"></script>
+<script src="view3d.js"></script>
+<script src="dev.js"></script>
+<script src="app.js"></script>
+<script src="guide.js"></script>
+</body>
+</html>
