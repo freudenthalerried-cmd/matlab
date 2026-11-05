@@ -136,7 +136,7 @@ const FILM = (() => {
   }
   async function start(opts, onDone) {
     const root = el('filmUI'); root.hidden = false;
-    Object.assign(st, { pts: new Float32Array(MAXP * 3), pc: new Uint16Array(MAXP), n: 0, cams: [], done: onDone, opts, flip: null, orient: [[0, 0], [0, 0], [0, 0], [0, 0]], frames: 0, t0: Date.now(), fc: null, ms: null, dir: null, lastUi: 0, lastMk: 0, lastLive: 0, live: null, noDepth: 0, mobs: [], camOk: false, grab: null });
+    Object.assign(st, { pts: new Float32Array(MAXP * 3), pc: new Uint16Array(MAXP), n: 0, cams: [], done: onDone, opts, flip: null, orient: [[0, 0], [0, 0], [0, 0], [0, 0]], frames: 0, t0: Date.now(), fc: null, ms: null, dir: null, lastUi: 0, lastMk: 0, lastLive: 0, live: null, noDepth: 0, mobs: [], camOk: false, grab: null, rec: [], thumbs: [], lastThumb: 0 });
     let s; try { s = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['depth-sensing'], optionalFeatures: ['dom-overlay', 'local-floor', 'camera-access'], domOverlay: { root }, depthSensing: { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha', 'float32'] } }); }
     catch (e) { root.hidden = true; return onDone({ err: 'nodepth', msg: e.message }); }
     st.s = s; const cv = document.createElement('canvas'), gl = cv.getContext('webgl', { xrCompatible: true });
@@ -159,24 +159,31 @@ const FILM = (() => {
         try { const W = view.camera.width, H = view.camera.height, SW = 640, SH = Math.round(640 * H / W); if (!st.grab) st.grab = camGrabber(gl, SW, SH);
           if (st.grab) { const tex = glb.getCameraImage(view.camera), g = st.grab(tex); gl.bindFramebuffer(gl.FRAMEBUFFER, bl.framebuffer); gl.viewport(0, 0, bl.framebufferWidth, bl.framebufferHeight);
             const proj = Float64Array.from(P), cam = Float64Array.from(M);
+            if (t - st.lastThumb > 1500 && st.thumbs.length < 40) { st.lastThumb = t; try { const c2 = document.createElement('canvas'); c2.width = SW; c2.height = SH; const q = c2.getContext('2d'), im = q.createImageData(SW, SH); for (let i = 0; i < SW * SH; i++) { const v = g[i]; im.data[i * 4] = v; im.data[i * 4 + 1] = v; im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; } q.putImageData(im, 0, 0); const tt = Math.round(t), MM = Array.from(M, v => +v.toFixed(4)); c2.toBlob(b => { if (b) st.thumbs.push(new File([b], `bild-${String(st.thumbs.length).padStart(3, '0')}-${tt}.jpg`, { type: 'image/jpeg' })); }, 'image/jpeg', 0.6); } catch (e) { } }
             setTimeout(() => { try { MK.detect(g, SW, SH, { maxW: SW }).filter(m => m.id <= 3 && m.res < 0.8).forEach(m => { const c = AR.markerCenter(m.c); st.mobs.push({ id: m.id, u: c[0], v: c[1], W: SW, H: SH, proj, cam }); }); } catch (e) { } }, 0); } }
         catch (e) { st.camOk = false; } }
       let di = null; try { di = f.getDepthInformation(view); } catch (e) { } if (!di) { st.noDepth++; if (st.noDepth === 90) ui('⚠ Noch keine Tiefendaten – Handy langsam hin und her bewegen, Raum muss hell genug sein.'); return; }
       if (st.frames % 2) return;
-      const NX = 32, NY = 24;
-      for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const u = (i + 0.5) / NX, v = (j + 0.5) / NY; let d; try { d = di.getDepthInMeters(u, v); } catch (e) { continue; } if (!(d > 0.3 && d < 6)) continue;
+      const NX = 32, NY = 24, dm = new Uint16Array(NX * NY);
+      for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const u = (i + 0.5) / NX, v = (j + 0.5) / NY; let d; try { d = di.getDepthInMeters(u, v); } catch (e) { continue; } if (!(d > 0.3 && d < 6)) continue; dm[j * NX + i] = Math.round(d * 1000);
         if (st.flip === null) { if (Math.abs(look) > 0.4) for (let m = 0; m < 4; m++) { const q = conv(u, v, d, m, M, P); const below = q[1] < cp[1]; st.orient[m][0] += (look < 0) === below ? 1 : 0; st.orient[m][1]++; } }
         else { const q = conv(u, v, d, st.flip, M, P); addPoint(q[0], q[1], q[2]); } }
+      if (st.rec.length < 4000) st.rec.push({ t: Math.round(t), M: Array.from(M, v => +v.toFixed(5)), P: [P[0], P[5], P[8], P[9]], look: +look.toFixed(3), d: dm });
       if (st.flip === null && st.orient[0][1] >= 1500) { let best = 0; for (let m = 1; m < 4; m++) if (st.orient[m][0] / st.orient[m][1] > st.orient[best][0] / st.orient[best][1]) best = m; const q = st.orient[best][0] / st.orient[best][1]; if (q >= 0.75) { st.flip = best; st.orientQ = q; navigator.vibrate?.(40); } else st.orient = [[0, 0], [0, 0], [0, 0], [0, 0]]; }
       if (st.flip !== null && t - st.lastLive > 2500 && st.n > 8000) { st.lastLive = t; try { const { pc, groups } = camGroups(); st.live = solve(st.pts, st.n, st.cams, { ...st.opts, markers: markerScale() }, groups > 1 ? pc : null); } catch (e) { st.live = { err: e.message }; } }
       if (t - st.lastUi > 400) { st.lastUi = t; ui(); }
     };
     s.requestAnimationFrame(frame);
   }
-  function finish() { if (!st.s) return; if (st.flip === null) { ui('⚠ Ausrichtung noch nicht bestimmt – bitte kurz schräg nach unten auf den Boden/Zollstock schauen.'); return; } const { pc, groups } = camGroups(), ms = markerScale(); const r = solve(st.pts, st.n, st.cams, { ...st.opts, markers: ms }, groups > 1 ? pc : null); if (r.err) { ui(`⚠ ${r.err}`); return; }
-    // Rohdaten für die Analyse (Entwicklermodus): jeder 8. Punkt, Kameras, Marken-Sichtungen
-    const step = Math.max(1, Math.ceil(st.n / 25000)), P = []; for (let i = 0; i < st.n; i += step) P.push(+st.pts[i * 3].toFixed(3), +st.pts[i * 3 + 1].toFixed(3), +st.pts[i * 3 + 2].toFixed(3));
-    r.raw = { ...r.raw, flip: st.flip, orientQ: st.orientQ, orient: st.orient, groups, frames: st.frames, secs: Math.round((Date.now() - st.t0) / 1000), mobs: st.mobs.length, markerK: ms, points: P, pointStep: step, camsXYZ: st.cams.map(c => c.map(v => +v.toFixed(3))) };
+  function finish() { if (!st.s) return;
+    const { pc, groups } = camGroups(), ms = markerScale();
+    let r = st.flip === null ? { err: 'Ausrichtung nicht bestimmt – es wurden keine Punkte gesammelt. Beim nächsten Mal zuerst schräg nach unten auf Boden/Zollstock schauen.' } : solve(st.pts, st.n, st.cams, { ...st.opts, markers: ms }, groups > 1 ? pc : null);
+    const step = Math.max(1, Math.ceil(st.n / 40000)), P = []; for (let i = 0; i < st.n; i += step) P.push(+st.pts[i * 3].toFixed(3), +st.pts[i * 3 + 1].toFixed(3), +st.pts[i * 3 + 2].toFixed(3));
+    const b64 = a => { let s = ''; const u = new Uint8Array(a.buffer); for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); };
+    const fc = st.fc || floorCeil(st.pts, st.n);
+    r.raw = { ...(r.raw || {}), n: st.n, flip: st.flip, orientQ: st.orientQ, orient: st.orient, groups, frames: st.frames, secs: Math.round((Date.now() - st.t0) / 1000), mobs: st.mobs.length, markerK: ms, floor: fc.floor, ceil: fc.ceil, points: P, pointStep: step, camsXYZ: st.cams.map(c => c.map(v => +v.toFixed(3))), opts: st.opts,
+      rec: { NX: 32, NY: 24, n: st.rec.length, frames: st.rec.map(q => ({ t: q.t, M: q.M, P: q.P, look: q.look, d: b64(q.d) })) } };
+    r.thumbs = st.thumbs.slice(); r.view = { pts: Float32Array.from(P), n: P.length / 3, cams: r.raw.camsXYZ, floor: fc.floor ?? 0, ceil: fc.ceil };
     st.s.end(); st.done && st.done(r); }
   function cancel() { st.s && st.s.end(); }
   return { start, finish, cancel, supported, solve, floorCeil, band, cells, envelope, segments, rectFit, polyFit, _st: st };

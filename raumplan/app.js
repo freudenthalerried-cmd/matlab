@@ -2,7 +2,7 @@
 /* Raumplan – 2D-Grundriss aus Handyvideo mit Boden-Referenzrechteck (Homographie). */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const KEY = 'raumplan-v1';
-const APP_VER = 'v40 · 05.11.2026';
+const APP_VER = 'v41 · 05.11.2026';
 const REPO = 'freudenthalerried-cmd/matlab', BRANCH = 'claude/2d-floor-plan-video-0sv7hg';
 // Neue Version da? Jede Version hat einen festen Link (Commit). Die App fragt GitHub nach dem neuesten Commit und zeigt einen Hinweis mit Link.
 (async () => { try {
@@ -935,9 +935,27 @@ function filmStart() {
     FILM.start(opts, r => {
       if (r.err === 'nodepth') { box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📱 Keine Tiefendaten</h2><p>Dieses Handy liefert in Chrome keine Tiefendaten (ARCore Depth). Dann geht es mit Antippen: Zollstock filmen, Ecken anpeilen.</p><div class="row"><button data-r="ar" class="pri">Ecken antippen</button><button data-r="hand">✏ Maße von Hand</button><button data-r="x">Schließen</button></div><p class="hint">${esc(r.msg || '')}</p></div>`;
         box.onclick = ev => { const b = ev.target.closest('[data-r]')?.dataset.r; if (!b) return; box.hidden = true; if (b === 'ar') arStart(); else if (b === 'hand') { showTab('plan'); setTimeout(() => $('#nW').focus(), 50); } }; return; }
-      arResult(r, o, Date.now());
+      show3d(r, o);
     });
   };
+}
+// 3D-Kontrolle: das Aufgenommene als drehbares Gitter – erst wenn es stimmt, weiter zum Ergebnis; sonst Messung senden
+function show3d(r, o) {
+  if (typeof DEV !== 'undefined' && DEV.on) { const n = r.poly ? r.poly.length : 0; DEV.capture({ source: 'film', frames: [], imgs: r.thumbs || [], ar: r.raw || null, rec: null, err: r.err || null, res: r.poly ? [{ name: 'Film', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }] : [], version: APP_VER, log: '', km: KM.list }); r.captured = true; }
+  let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
+  const v = r.view, dims = r.poly ? r.poly.slice(0, 2).map((p, i) => f2(dist(p, r.poly[(i + 1) % r.poly.length]), 2)).join(' × ') + ' m' : null;
+  box.hidden = false; box.innerHTML = `<div class="rescard"><h2>🧊 3D-Kontrolle</h2>
+    <p class="hint">Das hat die App aufgenommen: Punkte (blau = Boden, gelb = Decke), Raster 1 m, weiße Linie = Weg des Handys${r.poly ? ', orange = erkannter Raum' : ''}. Ziehen = drehen, zwei Finger = zoomen.</p>
+    <canvas id="v3cv" width="${Math.min(900, Math.round(innerWidth - 60))}" height="${Math.round(Math.min(innerHeight * 0.55, 600))}" style="width:100%;border-radius:10px;touch-action:none"></canvas>
+    <div class="row"><button data-v="top">Draufsicht</button><button data-v="side">Seite</button><button data-v="free">Frei</button></div>
+    <p>${r.err ? `<span class="warn">⚠ ${esc(r.err)}</span>` : `Erkannt: <b>${dims}</b>, ${r.poly.length} Wände, ${Math.round(r.cover)} % gesehen${r.scale ? `, Maßstab aus ${r.scale.marker ? 'Zollstock-Blättern' : 'Raumhöhe'}` : ', <span class="warn">kein Maßstab (keine Marken gesehen)</span>'}`}</p>
+    <div class="row">${r.poly ? '<button data-v="ok" class="pri">✔ Sieht richtig aus → Ergebnis</button>' : ''}<button data-v="send">📤 Messung an Claude senden</button><button data-v="x">Schließen</button></div></div>`;
+  const api = VIEW3D.show($('#v3cv'), { pts: v.pts, n: v.n, cams: v.cams, floor: v.floor, ceil: v.ceil, poly: r.poly, k: r.scale ? r.scale.k : 1 });
+  box.onclick = e => { const b = e.target.closest('[data-v]')?.dataset.v; if (!b) return;
+    if (b === 'top') api.top(); else if (b === 'side') api.side(); else if (b === 'free') api.free();
+    else if (b === 'send') { if (typeof DEV !== 'undefined') DEV.shareLast(); }
+    else if (b === 'ok') { box.hidden = true; arResult(r, o, Date.now()); }
+    else box.hidden = true; };
 }
 $('#filmDone').onclick = () => FILM.finish(); $('#filmCancel').onclick = () => FILM.cancel();
 function arStart(msg) {
@@ -958,7 +976,7 @@ function arNotSupported() {
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
-  if (typeof DEV !== 'undefined' && DEV.on) { const n = r.poly.length; DEV.capture({ source: 'ar', frames: [], imgs: [], ar: r.raw || null, rec: null, res: [{ name: 'AR', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }], version: APP_VER, log: '', km: KM.list }); } // DEV
+  if (typeof DEV !== 'undefined' && DEV.on && !r.captured) { const n = r.poly.length; DEV.capture({ source: 'ar', frames: [], imgs: [], ar: r.raw || null, rec: null, res: [{ name: 'AR', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }], version: APP_VER, log: '', km: KM.list }); } // DEV
   const t0 = tEnd - 3 * 3600e3; let Q = r.poly.map(p => [p[0], p[1]]);
   const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
   const scaleTerm = L => L * (sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.01) * (sc ? sc.k : 1);
