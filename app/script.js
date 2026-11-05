@@ -184,7 +184,7 @@
   }
 
   function verteilerAnzahl(bs) {
-    const v = verteiler[bs.id];
+    const v = verteiler[bs.id] || bs.verteiler;
     if (!v) return bs.verteilerN || 0;
     return v.split(',').map(function (e) { return e.trim(); }).filter(Boolean).length;
   }
@@ -389,7 +389,7 @@
 
   function renderInfo() {
     const bs = aktuelleBaustelle;
-    infoVerteiler.value = verteiler[bs.id] || '';
+    infoVerteiler.value = verteiler[bs.id] || bs.verteiler || '';
     infoProtokolle.innerHTML = '';
     if (bs.protokolle && bs.protokolle.length) {
       const hint = document.createElement('div');
@@ -427,6 +427,7 @@
 
   function adresseFuer(bs) {
     if (adressen[bs.id]) return adressen[bs.id];
+    if (bs.adresse) return bs.adresse;
     // Vorbelegung aus den Stammdaten, damit das Feld nicht leer bleibt
     return [bs.name, bs.ort].filter(Boolean).join(', ');
   }
@@ -2107,7 +2108,7 @@
 
   function baueMailto() {
     const bs = aktuelleBaustelle;
-    const verteilerText = (bs && verteiler[bs.id]) || '';
+    const verteilerText = (bs && (verteiler[bs.id] || bs.verteiler)) || '';
     const empfaenger = verteilerText.split(',')
       .map(function (e) { return e.trim(); })
       .filter(function (e) { return e.indexOf('@') !== -1; });

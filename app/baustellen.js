@@ -197,5 +197,15 @@ const BAUSTELLEN = [
     name: 'Perg Habau Bürozubau',
     verteilerN: 4,
     protokolle: []
+  },
+  {
+    id: 'rohrbach_fadinger',
+    ort: 'Rohrbach-Berg', gruppe: 'Rohrbach RUNDE',
+    adresse: 'Fadingerstraße, 4150 Rohrbach-Berg',
+    lat: 48.5717, lng: 13.9886,
+    name: 'Fadingerstraße Rohrbach (BV 2270)',
+    protokolle: [
+      { titel: '03.11.26 – Protokoll (im Mail-Betreff fälschlich 20.10.)', url: 'https://mail.google.com/mail/u/0/#all/thread-f:1880836637948195056' }
+    ]
   }
 ];
