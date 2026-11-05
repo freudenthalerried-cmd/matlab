@@ -32,6 +32,7 @@
         <span class="standort-aktionen">
           <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
           <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
+          <button id="standort-navi" type="button" class="chip chip-kategorie" title="Navigation">&#129517;</button>
           <button id="standort-schliessen" type="button" class="eintrag-knopf" aria-label="Schließen">&times;</button>
         </span>
       </div>
@@ -168,6 +169,7 @@
         <div class="info-knoepfe">
           <button id="info-geocode" class="chip chip-kategorie" type="button">Aus Adresse ermitteln</button>
           <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
+          <button id="info-navi" class="chip chip-kategorie" type="button">&#129517; Navigation</button>
         </div>
       </div>
 
@@ -175,6 +177,41 @@
 
     <input id="ort-input" type="hidden">
   </main>
+
+  <!-- Navigation zur Baustelle: Tesla -> Google Maps -> Handy-Navigation -->
+  <div id="navi-panel" class="navi-panel" hidden>
+    <div class="panel-header">
+      <span>&#129517; Navigation zur Baustelle</span>
+      <button id="navi-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
+    </div>
+    <div class="navi-inhalt">
+      <div id="navi-name" class="navi-name"></div>
+      <div id="navi-adresse" class="navi-adresse"></div>
+      <button id="navi-koord" class="navi-koord" type="button" title="Koordinaten kopieren"></button>
+      <div id="navi-qualitaet" class="navi-qualitaet"></div>
+
+      <div id="navi-korrektur" class="navi-korrektur" hidden>
+        <div class="panel-hint">Genaue Baustellenadresse (Stra&szlig;e Nr., PLZ Ort):</div>
+        <input id="navi-adresse-input" class="verteiler-input" type="text" placeholder="z. B. Hamburgerstra&szlig;e 12, 4840 V&ouml;cklabruck">
+        <div class="info-knoepfe">
+          <button id="navi-geocode" class="chip chip-kategorie" type="button">Aus Adresse ermitteln</button>
+          <button id="navi-position" class="chip chip-kategorie" type="button">Aktuelle Position speichern</button>
+        </div>
+      </div>
+
+      <div class="navi-knoepfe">
+        <button id="navi-tesla" class="gross-knopf gross-gruen breit" type="button">&#128663; An Tesla senden</button>
+        <div class="navi-hinweis">Im Teilen-Men&uuml; &bdquo;Tesla&ldquo; w&auml;hlen. Die Koordinaten werden zus&auml;tzlich kopiert &ndash; bei Bedarf in der Tesla-Navigation einf&uuml;gen.</div>
+        <div class="navi-fallback">
+          <span class="panel-hint">Hat es nicht geklappt?</span>
+          <a id="navi-gmaps" class="gross-knopf gross-grau breit" href="#" target="_blank" rel="noopener">&#128506;&#65039; Mit Google Maps navigieren</a>
+          <a id="navi-handy" class="gross-knopf gross-grau breit" href="#" rel="noopener">&#128241; Am Handy navigieren</a>
+          <button id="navi-kopieren" class="chip chip-kategorie" type="button">&#128203; Koordinaten kopieren</button>
+        </div>
+      </div>
+      <div id="navi-status" class="geo-status"></div>
+    </div>
+  </div>
 
   <div id="bausteine-panel" class="bausteine-panel" hidden>
     <div class="panel-header">
