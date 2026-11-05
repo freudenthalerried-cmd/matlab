@@ -227,7 +227,10 @@ function pgRoomDefs(txt, ids) { // "Name: 4-19" oder "Name: 4-19: 6" (6 Wände e
     .map(m => ({ name: m[1], ids: new Set(ids.filter(i => i >= +m[2] && i <= +m[3])), expect: m[4] ? +m[4] : 0 }));
   return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null, expect: Math.round(num($('#pgWalls').value)) || 0 }];
 }
+let devD = null; // DEV
+function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v28', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
 $('#pgRun').onclick = async () => {
+  devD = null; // DEV
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
   const ob = $('#opBox'); if (ob) ob.remove(); opSt = null;
   const btn = $('#pgRun'), pr = $('#pgProg'); btn.disabled = true; pr.hidden = false; $('#pgLog').textContent = ''; $('#pgRes').innerHTML = '';
@@ -239,9 +242,11 @@ $('#pgRun').onclick = async () => {
     else if (pgPre && pgPre.files === pgFiles) { pr.value = 0.3; frames = await pgPre.frames(f => { pr.value = f * 0.8; resBusy(`Marken in den Bildern … ${Math.round(f * 100)} %`); }); W = pgPre.W; H = pgPre.H; imgs = pgFiles; pgLog(`Marken schon während der Aufnahme erkannt (${DET.n || 1} Hintergrund-Threads)`); }
     else ({ frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; }));
     if (isVid && !pgOverride) { const all = frames.length; frames = selectStill(frames, W, H); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
+    devD = { frames, W, H, imgs: imgs && imgs.length ? imgs : pgFiles, source: pgPre && pgPre.files === pgFiles ? 'live' : isVid ? 'video' : 'fotos' }; // DEV
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
+    devD.opts = { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, sigPx: 0.3 }; // DEV
     const rec = PG.reconstruct(frames, { W, H, size: (num($('#pgSize').value) / 1000 || 0.16) * printK(), scaleDist: parseLen($('#pgDist').value) || 2, scaleDist2: parseLen($('#pgDist2').value) || 0, check: pgCheck, calib: CAM.forSize(W, H) || undefined, sigPx: 0.3, log: pgLog });
     pr.value = 0.95; await tick();
     if (!rec.ok) throw new Error(rec.msg);
@@ -265,11 +270,12 @@ $('#pgRun').onclick = async () => {
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     let taken = false; if (pgAuto) { pgAuto = false; if (res.some(r => r.w.ok) && !rec.suspect && rec.res.rms <= 0.6 && res.every(r => !r.w.ok || r.w.sigma.every(x => x != null && x < 0.02))) { pgTake(); taken = true; } }
     showResult(res, rec, taken);
+    devCap({ ...devD, rec, res }); // DEV
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
     const cks = $('#ckShow'); if (cks) cks.onclick = () => { $$('#pgRes .ckcol').forEach(e => e.hidden = false); cks.remove(); };
     $$('#pgRes [data-ck]').forEach(inp => inp.oninput = () => { const [ri, wi] = inp.dataset.ck.split(',').map(Number), d = pgLast.res[ri], v = parseLen(inp.value);
       (d.checks = d.checks || {})[wi] = v || undefined; $(`#ck${ri}_${wi}`).innerHTML = v ? chkText(d.w.lengths[wi] - v, d.w.sigma[wi]) : ''; });
-  } catch (e) { pgAuto = false; showResult(null, null, false, e.message); pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">⚠ Auswertung nicht möglich: ${esc(e.message)}</p><p>Tipp: Neu aufnehmen und dabei mehr Bilder machen, in denen <b>zwei Blätter gleichzeitig</b> zu sehen sind (Ecken), und den Zollstock zusammen mit einer Wand filmen.</p>`; }
+  } catch (e) { devCap({ ...(devD || {}), err: e.message }); /* DEV */ pgAuto = false; showResult(null, null, false, e.message); pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">⚠ Auswertung nicht möglich: ${esc(e.message)}</p><p>Tipp: Neu aufnehmen und dabei mehr Bilder machen, in denen <b>zwei Blätter gleichzeitig</b> zu sehen sind (Ecken), und den Zollstock zusammen mit einer Wand filmen.</p>`; }
   pr.value = 1; btn.disabled = false;
 };
 /* Öffnung (Fenster/Tür) im Foto antippen: 2 gegenüberliegende Ecken an der Wandfläche -> Schnitt mit Wandebene */
@@ -475,7 +481,7 @@ async function liveGrabFull(v) {
 }
 async function liveStart() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
-  let cm; try { cm = await CAM.open(); live.stream = cm.stream; }
+  let cm; try { cm = await CAM.open(); live.stream = cm.stream; if (typeof DEV !== 'undefined') DEV.camInfo(cm.stream); /* DEV */ }
   catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
   live.camInfo = cm.info; live.sh = []; live.sizes = []; live.photoFail = 0; live.photoW = 0;
   live.photo = $('#pgPhoto').checked; live.ic = 'ImageCapture' in window ? new ImageCapture(cm.track) : null;
@@ -563,7 +569,7 @@ async function liveFinish() {
       out.push({ t: k, fi: k, dets: r.dets }); prog && prog((k + 1) / detP.length); await tick();
     }
     return out; } };
-  vb.then(async b => { if (!b || b.size < 1e5) return; const n = `aufnahme-${new Date(live.session).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${b.type.includes('mp4') ? 'mp4' : 'webm'}`; if (await VID.save(n, b)) { live.vidName = n; try { localStorage.setItem('raumplan-still-' + n, JSON.stringify(live.still)); } catch (e) { } vidState(); const r = $('#pgRefineRow'); if (r) r.hidden = false; } });
+  vb.then(async b => { if (!b || b.size < 1e5) return; const n = `aufnahme-${new Date(live.session).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${b.type.includes('mp4') ? 'mp4' : 'webm'}`; if (await VID.save(n, b)) { live.vidName = n; try { localStorage.setItem('raumplan-still-' + n, JSON.stringify(live.still)); } catch (e) { } vidState(); if (typeof DEV !== 'undefined') DEV.setVideo(n); /* DEV */ const r = $('#pgRefineRow'); if (r) r.hidden = false; } });
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
@@ -591,6 +597,52 @@ function view3d() {
   el.innerHTML = o + '</svg><p class="hint">3D-Übersicht: hintere Wände voll, vordere niedrig geschnitten. Fenster blau, Türen braun, beschriftet mit Breite/Höhe in cm.</p>';
 }
 
+
+/* ---------- Maße bearbeiten: Wert antippen → eintippen oder ansagen (🎤) ---------- */
+function editVals(title, fields, done) { // fields: [{k, label, v}] (v in m), done(obj) bei OK
+  let box = $('#edUI'); if (!box) { box = document.createElement('div'); box.id = 'edUI'; document.body.appendChild(box); }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  box.innerHTML = `<div class="rescard"><h3>✏ ${esc(title)}</h3>${fields.map((f, i) => `<div class="row"><label style="flex:1">${esc(f.label)}<input data-i="${i}" inputmode="decimal" value="${f.v == null ? '' : f2(f.v, 3)}" style="width:100%"></label>${SR ? `<button data-mic="${i}" title="ansagen">🎤</button>` : ''}</div>`).join('')}<p id="edMsg" class="hint">${SR ? 'Zahl eintippen oder 🎤 tippen und ansagen, z. B. „4 Meter 21“ oder „2,55“.' : 'Zahl in m oder cm eintippen.'}</p><div class="resbtns"><button id="edOk" class="pri">✔ Übernehmen</button><button id="edNo">Abbrechen</button></div></div>`;
+  box.hidden = false; const inp = [...box.querySelectorAll('input')]; setTimeout(() => { inp[0].focus(); inp[0].select(); }, 50);
+  const close = () => { box.hidden = true; box.innerHTML = ''; };
+  const ok = () => { const o = {}; for (const [i, f] of fields.entries()) { const t = inp[i].value.trim(), p = t ? KM.parse(t).v : null; if (t && !p) { $('#edMsg').innerHTML = `<span class="warn">„${esc(t)}“ ist keine gültige Zahl.</span>`; return; } o[f.k] = p; } close(); done(o); };
+  $('#edOk').onclick = ok; $('#edNo').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  inp.forEach(x => x.onkeydown = e => { if (e.key === 'Enter') ok(); });
+  box.querySelectorAll('[data-mic]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.mic, r = new SR(); r.lang = 'de-AT'; r.maxAlternatives = 3; b.textContent = '⏺'; $('#edMsg').textContent = 'hört zu …';
+    r.onresult = ev => { const alts = [...ev.results[0]].map(a => a.transcript), best = alts.find(a => KM.parse(a).v) || alts[0], v = KM.parse(best).v;
+      if (v) { inp[i].value = f2(v, 3); $('#edMsg').textContent = `„${best}“ → ${f2(v, 3)} m`; } else $('#edMsg').innerHTML = `<span class="warn">„${esc(best)}“ – keine Zahl erkannt.</span>`; };
+    r.onerror = ev => $('#edMsg').innerHTML = `<span class="warn">${ev.error === 'not-allowed' ? 'Mikrofon nicht freigegeben.' : 'Nicht verstanden – bitte nochmal.'}</span>`;
+    r.onend = () => b.textContent = '🎤'; try { r.start(); } catch (e) { }
+  });
+}
+// Zuordnung Ergebnis-Wand i → Plan-Wand (Reihenfolge/Richtung können sich bei der Übernahme ändern)
+function wallMap(lengths, segs) {
+  const n = lengths.length; if (!segs || segs.length !== n) return null; let best = null;
+  for (const dir of [1, -1]) for (let s = 0; s < n; s++) { const map = lengths.map((_, i) => ((dir * i + s) % n + n) % n), e = lengths.reduce((a, L, i) => a + (L - segs[map[i]].len) ** 2, 0); if (!best || e < best.e) best = { map, e }; }
+  return best.map;
+}
+const OPF = o => [{ k: 'w', label: 'Breite m', v: o.w }, { k: 'h', label: 'Höhe m', v: o.h }, ...(o.type === 'fenster' ? [{ k: 'brh', label: 'Parapet (BRH) m', v: o.brh || 0 }] : []), { k: 'pos', label: 'Abstand ab Wandanfang m', v: o.pos }];
+const OPN = o => o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang';
+function resEdit(a, res, rec, taken) { // Ergebnis-Bildschirm: data-ed="len,ri,i" | "op,ri,k"
+  const [kind, ri, i] = a.split(','), d = res[+ri], k = +i, pr = d.planRoom && S.rooms.includes(d.planRoom) ? d.planRoom : null;
+  if (kind === 'len') editVals(`${d.name} – Wand ${k + 1}`, [{ k: 'L', label: 'Länge m', v: d.w.lengths[k] }], o => {
+    if (!o.L) return; const map = pr ? wallMap(d.w.lengths, pr.segs) : null; d.w.lengths[k] = o.L; (d.w.man = d.w.man || [])[k] = true;
+    if (pr && map) { pr.segs[map[k]].len = +o.L.toFixed(4); pr.adj = null; save(); renderPlan(); }
+    showResult(res, rec, taken); });
+  else { const op = d.ops[k]; editVals(`${d.name} – ${OPN(op)} in Wand ${op.wall + 1}`, OPF(op), o => {
+    const po = pr && pr.ops.find(x => x === op || (x.wall === op.wall && Math.abs(x.pos - op.pos) < 1e-6 && Math.abs(x.w - op.w) < 1e-6));
+    for (const f in o) if (o[f] != null) { op[f] = o[f]; if (po) po[f] = o[f]; }
+    if (po) { save(); renderPlan(); } showResult(res, rec, taken); }); }
+}
+function planEdit(a) { // Plan: data-ed="seg,ri,i" | "op,ri,k" | "rh,ri"
+  const [kind, ri, i] = a.split(','), r = S.rooms[+ri], k = +i; if (!r) return;
+  const after = () => { r.adj = null; save(); renderPlan(); roomPanel(); if (!$('#vcut').hidden) viewCut(); };
+  if (kind === 'seg') editVals(`${r.name} – Wand ${k + 1}`, [{ k: 'L', label: 'Länge m (lichtes Maß)', v: r.segs[k].len }], o => { if (o.L) { r.segs[k].len = +o.L.toFixed(4); after(); } });
+  else if (kind === 'rh') editVals(`${r.name} – Raumhöhe`, [{ k: 'h', label: 'Raumhöhe m', v: r.h }], o => { if (o.h) { r.h = +o.h.toFixed(3); r.hSet = true; after(); } });
+  else { const op = r.ops[k]; editVals(`${r.name} – ${OPN(op)} in Wand ${op.wall + 1}`, OPF(op), o => { for (const f in o) if (o[f] != null) op[f] = +o[f].toFixed(4); after(); }); }
+}
+
 /* ---------- Ergebnis-Bildschirm: Skizze mit allen Wandlängen, klare nächste Schritte ---------- */
 function resSketch(poly, L, sig) {
   const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0 || 1, h = y1 - y0 || 1, k = 260 / Math.max(w, h), W = w * k + 140, H = h * k + 100;
@@ -608,16 +660,16 @@ function showResult(res, rec, taken, err) {
   if (ok) res.forEach(d => { if (!d.w.ok) { h += `<p class="warn">${esc(d.name)}: ${esc(d.w.msg)}</p>`; return; }
     const area = Math.abs(d.w.poly.reduce((a, p, i) => { const q = d.w.poly[(i + 1) % d.w.poly.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
     const ri = res.indexOf(d), hh = d.w.height && d.w.hSig !== null && d.w.hSig < 0.005 ? d.w.height : (d.kmH || (d.planRoom && d.planRoom.hSet ? d.planRoom.h : null));
-    h += `<h3>${esc(d.name)} · ${f2(area, 2)} m²</h3>${resSketch(d.w.poly, d.w.lengths, d.w.sigma)}<table class="pgt"><tr><th>Wand</th><th>Länge</th><th>Genauigkeit</th><th></th></tr>${d.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${d.w.sigma[i] != null && d.w.sigma[i] <= 0.005 ? 'ok' : 'warn'}">${d.w.sigma[i] == null ? '–' : '±' + f2(d.w.sigma[i] * 1000, 1) + ' mm'}</td><td><button data-r="op" data-ri="${ri}" data-wi="${i}">📐 Fenster/Tür</button></td></tr>`).join('')}</table>`;
+    h += `<h3>${esc(d.name)} · ${f2(area, 2)} m²</h3>${resSketch(d.w.poly, d.w.lengths, d.w.sigma)}<table class="pgt"><tr><th>Wand</th><th>Länge</th><th>Genauigkeit</th><th></th></tr>${d.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td class="ed" data-ed="len,${ri},${i}"><b>${f2(L, 3)}&nbsp;m</b> ✏</td><td class="${d.w.man && d.w.man[i] ? 'hint' : d.w.sigma[i] != null && d.w.sigma[i] <= 0.005 ? 'ok' : 'warn'}">${d.w.man && d.w.man[i] ? 'von Hand' : d.w.sigma[i] == null ? '–' : '±' + f2(d.w.sigma[i] * 1000, 1) + ' mm'}</td><td><button data-r="op" data-ri="${ri}" data-wi="${i}">📐 Fenster/Tür</button></td></tr>`).join('')}</table>`;
     h += `<p><b>Raumhöhe:</b> ${hh ? `<b>${f2(hh, 3)} m</b>` : '<span class="hint">nicht gemessen</span>'} – <label>eintragen <input data-rh="${ri}" inputmode="decimal" size="6" placeholder="z. B. 2,55" value="${hh ? f2(hh, 3) : ''}"></label> <span class="hint">(Laser/Maßband, oder Wandblatt an die Decke kleben)</span></p>`;
     const ops = d.ops || [];
-    h += ops.length ? `<p><b>Fenster/Türen:</b></p><ul>${ops.map(o => `<li>${o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang'} in Wand ${o.wall + 1}: Breite <b>${f2(o.w, 3)} m</b> · Höhe <b>${f2(o.h, 3)} m</b>${o.type === 'fenster' ? ` · Parapet ${f2(o.brh, 3)} m` : ''} · ab Wandanfang ${f2(o.pos, 3)} m</li>`).join('')}</ul>` : `<p class="hint">Fenster und Türen: bei der Wand auf „📐 Fenster/Tür“ tippen, dann im Foto zwei gegenüberliegende Ecken der Öffnung antippen.</p>`;
+    h += ops.length ? `<p><b>Fenster/Türen:</b></p><ul>${ops.map((o, k) => `<li class="ed" data-ed="op,${ri},${k}">✏ ${o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang'} in Wand ${o.wall + 1}: Breite <b>${f2(o.w, 3)} m</b> · Höhe <b>${f2(o.h, 3)} m</b>${o.type === 'fenster' ? ` · Parapet ${f2(o.brh, 3)} m` : ''} · ab Wandanfang ${f2(o.pos, 3)} m</li>`).join('')}</ul>` : `<p class="hint">Fenster und Türen: bei der Wand auf „📐 Fenster/Tür“ tippen, dann im Foto zwei gegenüberliegende Ecken der Öffnung antippen.</p>`;
     if (d.w.warn.length) h += d.w.warn.map(x => `<p class="warn">⚠ ${esc(x)}</p>`).join(''); });
   else h += `<p>${esc(err || 'Es wurden zu wenige Marken erkannt.')}</p><p><b>Was tun?</b></p><ul><li>Jedes Blatt muss auf mehreren Bildern gut zu sehen sein – auch aus der Ecke schräg.</li><li>Den Zollstock mit beiden Bodenblättern mitfilmen, auch kurz von oben.</li><li>In Ecken filmen, damit zwei Blätter gleichzeitig im Bild sind.</li></ul>`;
   if (ok && rec && rec.suspect) h += `<p class="warn">⚠ Ergebnis unsicher: ${esc(rec.suspect)}</p>`;
   h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen.</p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
   box.innerHTML = h; box.hidden = false;
-  box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
+  box.onclick = e => { const ed = e.target.closest('[data-ed]'); if (ed) return resEdit(ed.dataset.ed, res, rec, taken); const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
     if (a === 'take') { pgTake(); showTab('plan'); } else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart();
     else if (a === 'op') { const b = e.target.closest('[data-r]'); showTab('auf'); opStart(+b.dataset.ri, +b.dataset.wi); setTimeout(() => $('#opBox') && $('#opBox').scrollIntoView({ behavior: 'smooth' }), 100); } };
   box.querySelectorAll('[data-rh]').forEach(inp => { inp.onclick = e => e.stopPropagation(); inp.onchange = () => { const d = res[+inp.dataset.rh], v = parseLen(inp.value); if (!(v > 1.5 && v < 8)) return; d.kmH = v; if (d.planRoom && S.rooms.includes(d.planRoom)) { d.planRoom.h = +v.toFixed(3); d.planRoom.hSet = true; save(); renderPlan(); } }; });
@@ -687,7 +739,7 @@ function refineCompare(res) {
   res.forEach((d, ri) => { const o = P[ri]; if (!d.w.ok || !o || !o.w.ok) return; d.w.lengths.forEach((L, i) => { const j = o.w.groups.findIndex(g => g.some(id => d.w.groups[i].includes(id))); if (j < 0) return; rows.push(`<tr><td>${esc(d.name)} Wand ${i + 1}</td><td>${f2(o.w.lengths[j], 4)} m ±${f2(o.w.sigma[j] * 1000, 1)}</td><td><b>${f2(L, 4)} m ±${f2(d.w.sigma[i] * 1000, 1)}</b></td><td>${f2((L - o.w.lengths[j]) * 1000, 1)} mm</td></tr>`); }); });
   return rows.length ? `<h4>🔬 Vergleich schnell ↔ genau</h4><table class="pgt"><tr><th></th><th>schnell</th><th>genau (mit Video)</th><th>Unterschied</th></tr>${rows.join('')}</table>` : '';
 }
-VID.cleanup().then(vidState);
+(typeof DEV !== 'undefined' && DEV.on ? Promise.resolve() : VID.cleanup()).then(vidState); // DEV: Videos behalten
 
 /* ---------- Phase 2: Kontrollmaße (kontroll.js) ---------- */
 KM.setContext(() => ({ session: live.session || null, wall: live.stream ? live.visKey : null, ids: live.stream ? live.visIds : null, shot: live.stream ? live.shots : null }));
@@ -1143,8 +1195,8 @@ function planSVG(sel) {
     o += `<path d="M${g.P.map(T).join('L')}Z" fill="${sel === ri ? '#e3eefc' : '#fff'}" stroke="none"/>`;
     o += `<path d="M${g.O.map(T).join('L')}Z M${g.P.map(T).join('L')}Z" fill-rule="evenodd" fill="${col}" ${r.status === 'abbruch' ? 'fill-opacity=".55"' : ''} stroke="#000" stroke-width="${mm(.35)}"/>`;
     // Öffnungen
-    (r.ops || []).forEach(op => {
-      const e = g.E[op.wall]; if (!e) return;
+    (r.ops || []).forEach((op, oi) => {
+      const e = g.E[op.wall]; if (!e) return; const edA = `class="ed" data-ed="op,${ri},${oi}"`;
       const s0 = add(e.p, mul(e.d, op.pos)), s1 = add(s0, mul(e.d, op.w)), nt = mul(e.n, e.t), eps = mul(e.n, -0.01), ept = mul(e.n, e.t + 0.01);
       o += `<path d="M${[add(s0, eps), add(s1, eps), add(s1, ept), add(s0, ept)].map(T).join('L')}Z" fill="#fff"/>`;
       o += line(s0, add(s0, nt), .35) + line(s1, add(s1, nt), .35);
@@ -1152,8 +1204,8 @@ function planSVG(sel) {
       const mids = add(mid(s0, s1), mul(e.n, e.t / 2)), ang = rdAngle(e.d);
       if (op.type === 'fenster') {
         [0, .45, .55, 1].forEach(f => o += line(add(s0, mul(e.n, e.t * f)), add(s1, mul(e.n, e.t * f)), f % 1 ? .18 : .25));
-        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(3.5) / 100))), `FE ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang);
-        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(6.5) / 100))), `BRH ${Math.round((op.brh || 0) * 100)}`, 2, ang);
+        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(3.5) / 100))), `FE ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang, edA);
+        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(6.5) / 100))), `BRH ${Math.round((op.brh || 0) * 100)}`, 2, ang, edA);
       } else {
         const inw = op.aus ? 1 : -1, base = op.aus ? e.t : 0;
         const h0 = add(op.flip ? s1 : s0, mul(e.n, base)), o1 = add(op.flip ? s0 : s1, mul(e.n, base));
@@ -1165,27 +1217,27 @@ function planSVG(sel) {
           const arc = []; for (let k = 0; k <= 16; k++) { const a = a0 + da * k / 16; arc.push(add(h0, [Math.cos(a) * op.w, Math.sin(a) * op.w])); }
           o += `<polyline points="${arc.map(T).join(' ')}" fill="none" stroke="#000" stroke-width="${mm(.18)}"/>`;
         }
-        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(4) / 100))), `${op.type === 'tuer' ? 'T' : 'DG'} ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang);
+        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(4) / 100))), `${op.type === 'tuer' ? 'T' : 'DG'} ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang, edA);
       }
     });
     // Bemaßung (lichte Maße)
-    if (r.dims !== false) g.E.forEach(e => {
+    if (r.dims !== false) g.E.forEach((e, i) => {
       if (innerWall(ri, e)) { // Innenwand: Maßkette im Raum
         const off = -mm(5) / 100, a = add(e.p, mul(e.n, off)), b = add(e.q, mul(e.n, off)), tk = mul(add(e.d, e.n), mm(1.3) / 100);
         o += line(a, b, .18) + line(add(a, tk), add(a, mul(tk, -1)), .35) + line(add(b, tk), add(b, mul(tk, -1)), .35);
-        o += dimTxt(add(mid(a, b), mul(e.n, -mm(2.2) / 100)), e.L, rdAngle(e.d));
+        o += dimTxt(add(mid(a, b), mul(e.n, -mm(2.2) / 100)), e.L, rdAngle(e.d)).replace('<text ', `<text class="ed" data-ed="seg,${ri},${i}" `);
         return;
       }
       const off = e.t + mm(7) / 100, a = add(e.p, mul(e.n, off)), b = add(e.q, mul(e.n, off)), tk = mul(add(e.d, e.n), mm(1.3) / 100);
       o += line(add(e.p, mul(e.n, e.t + mm(1.5) / 100)), add(a, mul(e.n, mm(1.5) / 100)), .13) + line(add(e.q, mul(e.n, e.t + mm(1.5) / 100)), add(b, mul(e.n, mm(1.5) / 100)), .13);
       o += line(a, b, .18) + line(add(a, tk), add(a, mul(tk, -1)), .35) + line(add(b, tk), add(b, mul(tk, -1)), .35);
-      o += dimTxt(add(mid(a, b), mul(e.n, mm(2.2) / 100)), e.L, rdAngle(e.d));
+      o += dimTxt(add(mid(a, b), mul(e.n, mm(2.2) / 100)), e.L, rdAngle(e.d)).replace('<text ', `<text class="ed" data-ed="seg,${ri},${i}" `);
     });
     // Raumstempel
     const c = add(g.c, [r.lx || 0, r.ly || 0]), dy = mm(4.2) / 100;
     o += txt(c, r.name, 3, 0, 'font-weight="bold"');
     o += txt(add(c, [0, -dy]), `${f2(g.area)} m²`, 2.5);
-    o += txt(add(c, [0, -2 * dy]), `RH ${f2(r.h)} m`, 2.2);
+    o += txt(add(c, [0, -2 * dy]), `RH ${f2(r.h)} m`, 2.2, 0, `class="ed" data-ed="rh,${ri}"`);
     if (r.floor) o += txt(add(c, [0, -3 * dy]), r.floor, 2.2);
     if (sel === ri) {
       o += `<path d="M${g.O.map(T).join('L')}Z" fill="none" stroke="#1e6fd9" stroke-width="${mm(.8)}" stroke-dasharray="${mm(3)} ${mm(2)}"/>`;
@@ -1218,11 +1270,11 @@ function gridSVG() {
 }
 function svgPt(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
 svg.addEventListener('pointerdown', e => {
-  const g = e.target.closest('.room'), p = svgPt(e);
+  const g = e.target.closest('.room'), p = svgPt(e), edT = e.target.closest('[data-ed]');
   if (cutMode) { cutTap([p.x / 100, -p.y / 100]); return; }
   if (g) {
     const i = +g.dataset.i; if (selRoom !== i) { selRoom = i; roomPanel(); }
-    drag = { i, p, x: S.rooms[i].x, y: S.rooms[i].y, moved: false };
+    drag = { i, p, x: S.rooms[i].x, y: S.rooms[i].y, moved: false, ed: edT && edT.dataset.ed, cx: e.clientX, cy: e.clientY };
   } else drag = { pan: true, cx: e.clientX, cy: e.clientY, vx: vb.x, vy: vb.y, moved: false };
   svg.setPointerCapture(e.pointerId); renderPlan();
 });
@@ -1233,6 +1285,7 @@ svg.addEventListener('pointermove', e => {
     if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
     vb.x = drag.vx - dx * u; vb.y = drag.vy - dy * u; renderPlan(); return;
   }
+  if (!drag.moved && Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) < 6) return; // Antippen ≠ Verschieben
   const p = svgPt(e), r = S.rooms[drag.i];
   r.x = Math.round((drag.x + (p.x - drag.p.x) / 100) * 100) / 100;
   r.y = Math.round((drag.y - (p.y - drag.p.y) / 100) * 100) / 100;
@@ -1242,7 +1295,7 @@ svg.addEventListener('pointerup', () => {
   if (!drag) return;
   if (drag.pan && !drag.moved && selRoom !== null) { selRoom = null; roomPanel(); }
   if (!drag.pan && drag.moved) { snapRoom(drag.i); save(); roomPanel(); }
-  drag = null; renderPlan();
+  const ed = !drag.pan && !drag.moved && drag.ed; drag = null; renderPlan(); if (ed) planEdit(ed);
 });
 svg.addEventListener('wheel', e => { e.preventDefault(); zoomBy(e.deltaY > 0 ? 1.15 : 1 / 1.15); }, { passive: false });
 function zoomBy(f) { const ar = svg.clientHeight / svg.clientWidth, cx = vb.x + vb.w / 2, cy = vb.y + vb.w * ar / 2; vb.w *= f; vb.x = cx - vb.w / 2; vb.y = cy - vb.w * ar / 2; renderPlan(); }
