@@ -12,13 +12,13 @@
   </svg>`;
   const steps = [
     { t: 'Willkommen', h: `<p>Mit dieser App misst du einen Raum mit dem Handy aus und bekommst einen <b>maßstäblichen Grundriss</b> für den Einreichplan.</p>
-      <p><b>So geht es:</b></p><ol><li><b>Zollstock</b> mit den 2 Bodenblättern auf den Boden legen (Maßstab).</li><li><b>„📹 Raum filmen“</b> tippen, „rechteckig?“ beantworten (Raumhöhe optional) – kurz von oben auf den Zollstock, dann langsam <b>rundherum filmen</b>. Nichts antippen.</li><li><b>Fertig</b>: Die App findet Boden, Decke und Wände selbst und zeichnet den Raum in den Plan.</li></ol>
+      <p><b>So geht es:</b></p><ol><li><b>Zollstock</b> mit den 2 Bodenblättern auf den Boden legen (Maßstab).</li><li><b>„📹 Raum filmen“</b> tippen, „rechteckig?“ beantworten – kurz von oben auf den Zollstock, dann langsam <b>rundherum filmen</b>. Nichts antippen.</li><li><b>Fertig</b>: Die App findet Boden, Decke und Wände selbst und zeichnet den Raum in den Plan.</li></ol>
       <p><b>Du brauchst:</b> Zollstock 2 m mit den 2 Bodenblättern (einmal drucken, ankleben) und ein Android-Handy mit Chrome und ARCore. Keine Wandblätter, keine Punkte.</p>`,
       b: [['Beispiel ansehen', 'demo'], ['Los geht’s ›', 'next', 1]] },
-    { t: 'Raum filmen', h: `<ol><li><b>Fragen</b>: Ist der Raum rechteckig? Raumhöhe kannst du als Kontrolle eintippen, musst aber nicht.</li><li><b>Zollstock</b>: zuerst 1–2 m Abstand, von oben auf den Zollstock mit den Blättern, aus 2–3 Richtungen – oben erscheint „Marken 0,1 ✓ Maßstab“.</li>
+    { t: 'Raum filmen', h: `<ol><li><b>Frage</b>: Ist der Raum rechteckig? Mehr nicht.</li><li><b>Zollstock</b>: zuerst 1–2 m Abstand, von oben auf den Zollstock mit den Blättern, aus 2–3 Richtungen – oben erscheint „Marken 0,1 ✓ Maßstab“.</li>
       <li><b>Filmen</b>: Handy ruhig halten und sich langsam einmal im Kreis drehen, dabei die Wände bis oben filmen, kurz auch Boden und Decke. Bei großen Räumen ein paar Schritte gehen. Türen vorher schließen.</li>
       <li><b>Karte</b>: Unten rechts füllt sich eine Karte von oben – sind alle Wände zu sehen, „✔ Fertig“.</li></ol>
-      <p>Den Maßstab nimmt die App von den Zollstock-Blättern (2,000 m). Hast du die Raumhöhe eingetippt, prüft sie damit den Maßstab zusätzlich. Möbel stören nicht: Nur die obere Wandhälfte zählt. Jede Messung wird im Hintergrund gesichert – nach dem Ergebnis „📤 Messung an Claude senden“ (Google Drive, Ordner Raumplan-Dev), damit die App daraus lernt.</p>`,
+      <p>Den Maßstab nimmt die App von den Zollstock-Blättern (2,000 m). Beim Ergebnis kannst du freiwillig die Raumhöhe oder eine Wandlänge als Kontrollmaß eintragen. Möbel stören nicht: Nur die obere Wandhälfte zählt. Jede Messung wird im Hintergrund gesichert – nach dem Ergebnis „📤 Messung an Claude senden“ (Google Drive, Ordner Raumplan-Dev), damit die App daraus lernt.</p>`,
       b: [['📹 Raum filmen', 'live'], ['Weiter ›', 'next', 1]] },
     { t: 'Ergebnis', h: `<p>Nach „✔ Fertig“ zeigt die App eine Skizze mit jeder Wandlänge und ihrer Genauigkeit, z. B. <b>4,21 m ± 12 mm</b>.</p>
       <ul><li><b>Kontrollmaß:</b> Eine lange Wand mit Maßband oder Laser nachmessen und eintragen – damit stimmt der Maßstab sicher.</li><li><b>Korrigieren:</b> Ein Maß antippen und eintippen oder ansagen (🎤).</li><li><b>Übernehmen:</b> Der Raum kommt in den Plan (Reiter „2 Ergebnis“).</li></ul>

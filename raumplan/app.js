@@ -2,6 +2,18 @@
 /* Raumplan – 2D-Grundriss aus Handyvideo mit Boden-Referenzrechteck (Homographie). */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const KEY = 'raumplan-v1';
+const APP_VER = 'v39 · 05.11.2026';
+const REPO = 'freudenthalerried-cmd/matlab', BRANCH = 'claude/2d-floor-plan-video-0sv7hg';
+// Neue Version da? Jede Version hat einen festen Link (Commit). Die App fragt GitHub nach dem neuesten Commit und zeigt einen Hinweis mit Link.
+(async () => { try {
+  const v = document.getElementById('ver'); if (v) v.textContent = APP_VER;
+  const own = (location.pathname.match(/\/([0-9a-f]{40})\//) || [])[1] || null;
+  const r = await fetch(`https://api.github.com/repos/${REPO}/commits/${encodeURIComponent(BRANCH)}`, { cache: 'no-store' }); if (!r.ok) return; const j = await r.json();
+  if (!j.sha || j.sha === own) return;
+  const d = new Date(j.commit.committer.date), when = d.toLocaleString('de-AT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const b = document.createElement('div'); b.id = 'upd'; b.innerHTML = `🆕 Neuere Version vom ${when}: <a href="https://raw.githack.com/${REPO}/${j.sha}/raumplan/index.html" rel="noopener">jetzt öffnen</a> <span class="hint">(${(j.commit.message || '').split('\n')[0].slice(0, 90)})</span>`;
+  document.querySelector('main').prepend(b);
+} catch (e) { } })();
 const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(n) ? n : 0; };
 const f2 = (v, d = 2) => (+v).toFixed(d).replace('.', ',');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -651,7 +663,7 @@ function resSketch(poly, L, sig) {
   const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0 || 1, h = y1 - y0 || 1, k = 260 / Math.max(w, h), W = w * k + 140, H = h * k + 100;
   const P = poly.map(p => [70 + (p[0] - x0) * k, 50 + (p[1] - y0) * k]), cx = P.reduce((a, p) => a + p[0], 0) / P.length, cy = P.reduce((a, p) => a + p[1], 0) / P.length;
   let o = `<svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" class="ressk"><polygon points="${P.map(p => p.join(',')).join(' ')}" fill="#e3f2fd" stroke="#1f3a5f" stroke-width="5"/>`;
-  P.forEach((p, i) => { const q = P[(i + 1) % P.length], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = mx - cx, dy = my - cy, n = Math.hypot(dx, dy) || 1, tx = mx + dx / n * 26, ty = my + dy / n * 26, bad = sig[i] == null || sig[i] > 0.005;
+  P.forEach((p, i) => { const q = P[(i + 1) % P.length], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = mx - cx, dy = my - cy, n = Math.hypot(dx, dy) || 1, tx = mx + dx / n * 26, ty = my + dy / n * 26, bad = sig[i] == null || sig[i] > 0.02; // rot erst ab ±2 cm (gefilmt: ±1–2 cm sind normal)
     o += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="700" fill="${bad ? '#c62828' : '#1b5e20'}">${f2(L[i], 3)} m</text><text x="${tx}" y="${ty + 16}" text-anchor="middle" font-size="11" fill="#555">Wand ${i + 1}${sig[i] != null ? ' ±' + Math.round(sig[i] * 1000) + ' mm' : ''}</text>`; });
   return o + '</svg>';
 }
@@ -908,22 +920,17 @@ function measureStart() {
 function filmStart() {
   if (!navigator.xr) return arNotSupported();
   let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
-  let rh = ''; try { rh = localStorage.getItem('raumplan-rh') || ''; } catch (e) { }
   box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📹 Raum filmen</h2>
     <p><b>Zollstock mit den 2 Bodenblättern</b> ausgeklappt auf den Boden legen (Marken 0/1 bzw. 2/3 = 2,000 m). Das ist der Maßstab. Dann einfach langsam rundherum filmen – nichts antippen.</p>
     <div class="grid">
-      <label>Raumhöhe in m <span class="hint">(optional – Kontrolle für den Maßstab)</span><input id="fmH" inputmode="decimal" placeholder="z. B. 2,52 oder leer" value="${esc(rh)}"></label>
       <label>Raum rechteckig? <select id="fmRect"><option value="1">Ja – 4 Wände, rechte Winkel</option><option value="0">Nein – L-Form oder mehr Ecken</option></select></label>
       <label><input type="checkbox" id="fmDach"> Dachschrägen vorhanden</label>
     </div>
-    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Zuerst kurz von oben auf den Zollstock filmen (aus 2–3 Richtungen), dann rundherum. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
+    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Zuerst kurz von oben auf den Zollstock filmen (aus 2–3 Richtungen), dann rundherum. Kontrollmaße (Raumhöhe, eine Wand) kannst du danach beim Ergebnis eintragen – freiwillig. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
     <div class="row"><button data-r="go" class="pri">📹 Filmen starten</button><button data-r="x">Abbrechen</button></div></div>`;
-  setTimeout(() => $('#fmH').focus(), 50);
   box.onclick = e => { const act = e.target.closest('[data-r]')?.dataset.r; if (!act) return;
     if (act === 'x') { box.hidden = true; return; }
-    const hv = parseLen($('#fmH').value) || null; if (hv !== null && !(hv > 1.8 && hv < 6)) { notice('Raumhöhe in Metern, z. B. 2,52 – oder das Feld leer lassen.'); return; }
-    try { localStorage.setItem('raumplan-rh', $('#fmH').value); } catch (e) { }
-    const opts = { height: hv, rect: $('#fmRect').value === '1', dach: $('#fmDach').checked, name: $('#arName').value.trim() }; box.hidden = true;
+    const opts = { height: null, rect: $('#fmRect').value === '1', dach: $('#fmDach').checked, name: $('#arName').value.trim() }; box.hidden = true;
     const o = { ...modeGet(), z: false };
     FILM.start(opts, r => {
       if (r.err === 'nodepth') { box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📱 Keine Tiefendaten</h2><p>Dieses Handy liefert in Chrome keine Tiefendaten (ARCore Depth). Dann geht es mit Antippen: Zollstock filmen, Ecken anpeilen.</p><div class="row"><button data-r="ar" class="pri">Ecken antippen</button><button data-r="hand">✏ Maße von Hand</button><button data-r="x">Schließen</button></div><p class="hint">${esc(r.msg || '')}</p></div>`;
@@ -951,21 +958,23 @@ function arNotSupported() {
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
-  if (typeof DEV !== 'undefined' && DEV.on) { const n = r.poly.length; DEV.capture({ source: 'ar', frames: [], imgs: [], ar: r.raw || null, rec: null, res: [{ name: 'AR', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }], version: 'raumplan-v33', log: '', km: KM.list }); } // DEV
+  if (typeof DEV !== 'undefined' && DEV.on) { const n = r.poly.length; DEV.capture({ source: 'ar', frames: [], imgs: [], ar: r.raw || null, rec: null, res: [{ name: 'AR', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }], version: APP_VER, log: '', km: KM.list }); } // DEV
   const t0 = tEnd - 3 * 3600e3; let Q = r.poly.map(p => [p[0], p[1]]);
   const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
   const scaleTerm = L => L * (sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.01) * (sc ? sc.k : 1);
   const fit = L0.map((L, i) => Math.sqrt(Math.max(0, r.sigma[i] ** 2 - scaleTerm(L) ** 2)) || 0.003);
-  const A = { km: {} };
+  const A = { km: {}, h: null };
   // gesprochene/gemessene Wandmaße der letzten Stunden der passendsten Wand zuordnen (±8 %)
   KM.list.filter(e => e.t >= t0 && (e.kind === 'wand' || e.kind === 'mass')).forEach(e => { let bi = -1, bd = 0.08; L0.forEach((L, i) => { const d = Math.abs(e.v / L - 1); if (d < bd && A.km[i] == null) { bd = d; bi = i; } }); if (bi >= 0) A.km[bi] = e.v; });
   const calc = () => {
     const ks = Object.entries(A.km).map(([i, v]) => ({ i: +i, r: v / L0[+i] })), m = ks.length;
     let k = 1, sk;
-    if (m) { const sw = ks.reduce((a, q) => a + L0[q.i], 0); k = ks.reduce((a, q) => a + q.r * L0[q.i], 0) / sw; const sd = m > 1 ? Math.sqrt(ks.reduce((a, q) => a + (q.r - k) ** 2, 0) / (m - 1)) : 0.002; sk = Math.hypot(0.001 / sw, sd / Math.sqrt(m)); }
+    const kh = A.h && r.height ? A.h / r.height : null;
+    if (!m && kh && !(sc && sc.marker)) { k = kh; sk = 0.006; } // Raumhöhe als Maßstab, wenn keine Zollstock-Marken
+    else if (m) { const sw = ks.reduce((a, q) => a + L0[q.i], 0); k = ks.reduce((a, q) => a + q.r * L0[q.i], 0) / sw; const sd = m > 1 ? Math.sqrt(ks.reduce((a, q) => a + (q.r - k) ** 2, 0) / (m - 1)) : 0.002; sk = Math.hypot(0.001 / sw, sd / Math.sqrt(m)); }
     else sk = sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.015; // nur Handy: WebXR-Maßstab erfahrungsgemäß 1–2 % daneben
     const L = L0.map(x => x * k), sg = L.map((x, i) => Math.hypot(fit[i] * k, x * sk));
-    return { k, sk, m, L, sg, h: r.height ? r.height * k : null, zdev: m && sc ? (k - 1) * 100 : null };
+    return { k, sk, m, L, sg, h: r.height ? r.height * k : null, zdev: m && sc ? (k - 1) * 100 : null, hdev: kh && !(!m && kh && !(sc && sc.marker)) ? (1 / kh - 1) * 100 : null };
   };
   const draw = () => {
     const c = calc(), mx = Math.max(...c.sg) * 1000, rel = c.sk * 100;
@@ -977,12 +986,14 @@ function arResult(r, o, tEnd) {
     box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis${r.cover != null ? ` (gefilmt, ${Math.round(r.cover)} % rundherum)` : ' (ohne Marken)'}</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
       <p class="${cls}">${qual}</p>
       <p class="accbig ${c.sk <= 0.002 ? 'ok' : c.sk <= 0.005 ? 'mid' : 'warn'}">Genauigkeit ±${f2(Math.max(...c.sg.map((g, i) => g / c.L[i])) * 100, 2)} %</p>
+      ${r.height ? `<p>Raumhöhe laut Messung <b>${f2(c.h, 2)} m</b> · <span class="ed" data-h="1">${A.h ? `tatsächlich <b>${f2(A.h, 2)} m</b> ✏${c.hdev != null ? ` (${c.hdev >= 0 ? '+' : ''}${f2(c.hdev, 1)} %)` : ''}` : '📏 tatsächliche Raumhöhe eintragen (freiwillig)'}</span></p>` : ''}
       <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] / x <= 0.002 ? 'ok' : c.sg[i] / x <= 0.005 ? 'mid' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm · ${f2(c.sg[i] / x * 100, 2)} %</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>
       <p class="hint">Kontrollmaß: bei der Wand auf „📏 eintragen“ tippen und das gemessene Maß eintippen oder ansagen (🎤). Die längste Wand bringt am meisten.</p>
       <p><b>Raumhöhe:</b> ${c.h ? f2(c.h, 3) + ' m' : 'nicht gemessen'} · Genauigkeit ca. ±${Math.round(mx)} mm</p>
       <div class="resbtns"><button data-a="take" class="pri">✔ In Plan übernehmen</button><button data-a="no">Verwerfen</button></div></div>`;
     box.hidden = false;
     box.onclick = e => { const km = e.target.closest('[data-km]'), a = e.target.closest('[data-a]')?.dataset.a;
+      const hh = e.target.closest('[data-h]'); if (hh) { editVals('Raumhöhe', [{ k: 'v', label: 'gemessen m (leer = entfernen)', v: A.h }], v => { A.h = v.v || null; draw(); }); return; }
       if (km) { const i = +km.dataset.km; editVals(`Kontrollmaß Wand ${i + 1}`, [{ k: 'v', label: 'gemessen m (leer = entfernen)', v: A.km[i] }], v => { if (v.v) A.km[i] = v.v; else delete A.km[i]; draw(); }); }
       else if (a === 'no') { if (confirm('Messung verwerfen?')) box.hidden = true; }
       else if (a === 'take') { box.hidden = true; arTake(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.sg.slice(), c.h, c.m ? `${c.m} Kontrollmaß(e)` : sc ? 'Zollstock' : 'nur Handy – ungenau'); }
