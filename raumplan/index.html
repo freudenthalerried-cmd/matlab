@@ -14,24 +14,22 @@
 <header>
   <div class="hrow"><h1>Raumplan</h1><button id="helpBtn" class="help">? Anleitung</button></div>
   <nav>
-    <button data-t="auf" class="on">1 Aufnahme</button>
-    <button data-t="mess">2 Vermessen</button>
-    <button data-t="plan">3 Plan</button>
-    <button data-t="proj">4 Einreichung</button>
+    <button data-t="auf" class="on">1 Aufmaß</button>
+    <button data-t="plan">2 Ergebnis</button>
   </nav>
 </header>
 <main>
   <!-- 1 AUFNAHME -->
   <section id="auf">
     <div class="card pgcard">
-      <h3>Raum aufnehmen</h3>
+      <h3>Raum messen</h3>
       <ol class="steps">
-        <li><b>Blätter auslegen:</b> Zollstock mit den 2 Bodenblättern auf den Boden, an jede Wand ein Blatt. <span class="hint">Noch keine Blätter? → „🖨 Blätter drucken“ (einmalig).</span></li>
-        <li><b>„📹 Raum aufnehmen“</b> tippen und mit dem Handy durch den Raum gehen. Die App zeigt, was noch fehlt, und macht die Bilder selbst.</li>
-        <li><b>Fertig:</b> Die Auswertung startet von selbst, der Raum erscheint im Plan.</li>
+        <li><b>„📹 Raum messen“</b> tippen und mit dem Handy durch den Raum gehen.</li>
+        <li><b>Mit Blättern</b> (Zollstock + Wandblätter): die App erkennt sie selbst und misst auf wenige Millimeter. <b>Ohne Blätter:</b> die App bietet die AR-Messung an (ca. ±1 cm).</li>
+        <li>Das <b>Ergebnis</b> erscheint von selbst – mit Skizze und allen Maßen.</li>
       </ol>
       <div class="row">
-        <button id="liveOpen" class="pri big">📹 Raum aufnehmen</button>
+        <button id="liveOpen" class="pri big">📹 Raum messen</button>
         <button id="pgWallSheets">🖨 Blätter drucken</button>
         <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
@@ -69,6 +67,7 @@
         <p class="small"><b>Gesamtplan aus mehreren Räumen:</b> je Raum eigene Aufnahme, Wandblätter mit anderen Nummern drucken („ab Nr.“, z. B. Raum 2 ab 20), Verbindungsmarken 90–93 im Türbereich liegen lassen und in beiden Aufnahmen mitfilmen.</p>
       </details>
     </div>
+    <details class="card more2"><summary>📏 Kontrollmaße und AR-Messung von Hand starten</summary>
     <div class="card kmcard">
       <h3>📏 Kontrollmaße <span class="hint">(empfohlen: Raumhöhe + eine Wandlänge)</span></h3>
       <p class="small">Während der Aufnahme mit dem Laser messen oder das Maß ansagen, z. B. „Raumhöhe 2,55“ oder „Fenster Küche 1,20 breit“. Die App merkt sich, welche Wand gerade im Bild war, und vergleicht nach der Auswertung.</p>
@@ -80,6 +79,7 @@
       <p class="small">1. Zollstock antippen (Anfang und Ende) → genauer Maßstab. 2. Je Wand „▶ Abtasten“ und den Kreis über die Wand fahren – die App sammelt Punkte und sortiert Möbel aus. Braucht Chrome auf Android mit ARCore. Genauigkeit: wird mit deinen Maßband-Vergleichen ermittelt (erwartet ±5–10 mm mit Zollstock).</p>
       <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button><label><input type="checkbox" id="arZoll" checked> mit Zollstock als Maßstab</label><button id="arExport">⬇ AR-Daten exportieren</button></div>
     </div>
+    </details>
     <details class="tip">
       <summary>B · Manuell: Fotos antippen (Referenzrechteck am Boden)</summary>
       <ol>
@@ -172,6 +172,7 @@
       <input id="nD" inputmode="decimal" placeholder="Tiefe m" size="6">
       <button id="nAdd" class="pri">+ Rechteckraum</button>
       <button id="planClear" class="danger">🗑 Plan leeren</button>
+      <button id="toProj">📄 Plankopf &amp; Export</button>
       <span class="sp"></span>
       <button id="zIn">＋</button><button id="zOut">－</button><button id="zFit">Einpassen</button>
     </div>
@@ -182,6 +183,7 @@
   <!-- 4 EINREICHUNG -->
   <section id="proj" hidden>
     <p class="intro">Plankopf ausfüllen und den fertigen Plan als PDF, DXF oder Aufmaßprotokoll ausgeben. Das Projekt bleibt am Handy gespeichert.</p>
+    <div class="row"><button id="backPlan">‹ zurück zum Ergebnis</button></div>
     <form id="pform" class="grid">
       <label>Bauvorhaben<input name="bv"></label>
       <label>Bauwerber / Bauherr<input name="bh"></label>
@@ -235,6 +237,7 @@
   <div id="liveHint" class="livehint"></div>
   <div class="livecam"><video id="liveVid" playsinline muted></video><canvas id="liveOv"></canvas></div>
   <div id="liveChips" class="lgs"></div>
+  <div class="livekm"><button id="liveToAR" hidden class="toar">📱 Keine Blätter? Ohne Marken messen (AR)</button></div>
   <div id="liveKm" class="livekm"><button id="liveMic">🎤 Maß ansagen</button><button id="liveLaser">📏 Laser</button><span id="liveKmTxt"></span></div>
   <div class="livebtns"><span class="small">Herumgehen ist erwünscht · 1–3 m Abstand · <b>nicht zoomen</b> · die App fotografiert selbst</span><button id="liveShot" class="shot" title="Foto von Hand">●</button></div>
 </div>

@@ -22,16 +22,16 @@
       <ol><li><b>Zollstock</b> ganz aufklappen und flach auf den Boden legen, irgendwo frei im Raum.</li><li>An <b>jede Wand ein Blatt</b> kleben (2 Klebestreifen), Mitte ca. 1,3 m hoch, nicht hinter Möbeln. Welches Blatt an welche Wand, ist egal.</li></ol>
       <p class="hint">Schiefe oder sehr lange Wand? Dann ein zweites Blatt an diese Wand (mehr Blätter drucken: Feld „Erwartete Wände“ erhöhen).</p>`,
       b: [['Weiter ›', 'next', 1]] },
-    { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum aufnehmen</b>. Dann:</p>
+    { t: 'Raum filmen', h: `<p>Tippe auf <b>📹 Raum messen</b>. Dann:</p>
       <ul><li><b>Herumgehen ist erwünscht!</b> Die App braucht jedes Blatt aus mindestens zwei Richtungen. Abstand 1–3 m.</li><li><b>Nicht zoomen</b> – der Weitwinkel ist richtig. Lieber näher hingehen.</li><li><b>Zollstock auch von oben</b> filmen (daneben stellen, nach unten schauen) – das macht den Maßstab genau.</li><li><b>Langsam schwenken.</b> Du musst nichts auslösen: Sobald das Bild ruhig ist und etwas Neues zeigt, macht die App selbst ein Bild (kurzes Vibrieren).</li></ul>
       <p><b>Die Balken unten</b> zeigen je Blatt den Fortschritt: <span style="color:#c62828">rot</span> = noch nicht gesehen, <span style="color:#b8860b">gelb</span> = teilweise, <span style="color:#2e7d32">grün ✓</span> = fertig. ◀ ● ▶ zeigt, aus welchen Richtungen das Blatt schon gefilmt ist. Oben steht immer, was als Nächstes zu tun ist.</p>
       <p>Sind alle Balken grün, startet die Auswertung <b>von selbst</b>.</p>`,
-      b: [['📹 Raum aufnehmen', 'live'], ['Weiter ›', 'next', 1]] },
+      b: [['📹 Raum messen', 'live'], ['Weiter ›', 'next', 1]] },
     { t: 'Ergebnis', h: `<p>Die App rechnet 1–3 Minuten (Bildschirm anlassen). Dann siehst du jede Wand mit Länge und Genauigkeit, z. B. <b>4,215 m ± 2 mm</b>. Passt alles, kommt der Raum <b>automatisch in den Plan</b>.</p>
       <p>Ist eine Wand <span style="color:#c62828">rot</span> oder klappt die Auswertung nicht, steht dabei, was zu tun ist – meist: noch einmal filmen und dabei mehr Bilder mit <b>zwei Blättern gleichzeitig</b> (in den Ecken) machen.</p>`,
       b: [['Weiter ›', 'next', 1]] },
-    { t: 'Plan und Einreichung', h: `<p><b>3 Plan</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum. „Plan leeren“ löscht alles.</p>
-      <p><b>4 Einreichung</b>: Plankopf ausfüllen und als <b>PDF</b>, <b>DXF</b> (CAD) oder Aufmaßprotokoll ausgeben.</p>
+    { t: 'Plan und Einreichung', h: `<p><b>2 Ergebnis</b>: Räume antippen, um Namen, Fenster, Türen und Wandstärken einzutragen. Ziehen verschiebt einen Raum. „Plan leeren“ löscht alles.</p>
+      <p><b>„📄 Plankopf &amp; Export“</b> (im Reiter Ergebnis): Plankopf ausfüllen und als <b>PDF</b>, <b>DXF</b> (CAD) oder Aufmaßprotokoll ausgeben.</p>
       <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>`,
       b: [['Fertig', 'close'], ['Ohne Blätter? ›', 'next']] },
     { t: 'Ohne Blätter: AR-Messung', h: `<p>Schnell, aber ungenauer (±1–2 cm): <b>📱 AR-Aufmaß starten</b>, Kreis auf eine Wand richten (über den Möbeln), je Wand 2–3 Mal <b>Punkt</b> tippen, dann <b>Nächste Wand</b>, rundherum. Zum Schluss <b>✔ Fertig</b>.</p>

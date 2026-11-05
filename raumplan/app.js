@@ -236,7 +236,7 @@ $('#pgRun').onclick = async () => {
     const isVid = pgFiles.some(f => f.type.startsWith('video'));
     let frames, W, H, video = null, imgs = [];
     if (pgOverride) { ({ frames, W, H } = pgOverride); pgOverride = null; pgLog(`Genauere Auswertung mit ${frames.length} Bildern`); }
-    else if (pgPre && pgPre.files === pgFiles) { pr.value = 0.3; frames = await pgPre.frames(); W = pgPre.W; H = pgPre.H; imgs = pgFiles; pgLog(`Marken schon während der Aufnahme erkannt (${DET.n || 1} Hintergrund-Threads)`); }
+    else if (pgPre && pgPre.files === pgFiles) { pr.value = 0.3; frames = await pgPre.frames(f => { pr.value = f * 0.8; resBusy(`Marken in den Bildern … ${Math.round(f * 100)} %`); }); W = pgPre.W; H = pgPre.H; imgs = pgFiles; pgLog(`Marken schon während der Aufnahme erkannt (${DET.n || 1} Hintergrund-Threads)`); }
     else ({ frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; }));
     if (isVid && !pgOverride) { const all = frames.length; frames = selectStill(frames, W, H); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
@@ -481,7 +481,7 @@ async function liveStart() {
   if (live.ic && live.photo) { try { const pc = await live.ic.getPhotoCapabilities(); if (pc.imageWidth && pc.imageWidth.max) { live.photoW = pc.imageWidth.max; live.camInfo += ` · Fotos ${pc.imageWidth.max}×${pc.imageHeight ? pc.imageHeight.max : '?'}`; } } catch (e) { } }
   const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
   try { live.wake = await navigator.wakeLock?.request('screen'); } catch (e) { }
-  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.bestTot = 0; live.progT = Date.now(); live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
+  pgFiles = []; $('#pgSrc').textContent = ''; live.session = Date.now(); live.visKey = null; live.visIds = null; live.shots = 0; live.pairs = {}; live.seenAny = false; live.bestTot = 0; live.progT = Date.now(); live.G = liveGroups(); live.prev = null; live.doneAt = 0; live.detP = []; live.vidName = null; live.still = []; live.recOn = VID.start(live.stream);
   $('#live').hidden = false; liveCoach([], true, false);
   const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loop = async () => {
@@ -496,7 +496,8 @@ async function liveStart() {
       const shMed = [...live.sh].sort((a, b) => a - b)[live.sh.length >> 1], sharp = live.sh.length < 5 || sh >= 0.7 * shMed;
       // Bewegung: gleiche Marken seit dem letzten Bild (< 4 px je 960 px Breite → kaum Bewegungsunschärfe)
       let mv = 0; if (live.prev) d.forEach(m => { const q = live.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); });
-      live.prev = new Map(d.map(m => [m.id, m.c[0]]));
+      live.prev = new Map(d.map(m => [m.id, m.c[0]])); if (d.length) live.seenAny = true;
+      $('#liveToAR').hidden = live.seenAny || Date.now() - live.session < 4000;
       const steady = mv < 4 * cv.width / 960 && sharp;
       if (steady && d.length && live.recOn) { const ts = (Date.now() - VID.since) / 1000; if (!live.still.length || ts - live.still[live.still.length - 1] >= 0.25) live.still.push(+ts.toFixed(2)); } // ruhige Momente fürs Nachauswerten
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
@@ -547,17 +548,27 @@ function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.get
 async function liveFinish() {
   const vb = VID.stop(); liveStop();
   if (!live.shots) return;
-  pgSetFiles(pgFiles); showTab('auf'); pgAuto = true;
+  pgSetFiles(pgFiles); showTab('auf'); pgAuto = true; resBusy('Die Aufnahme ist fertig – gleich kommt das Ergebnis.');
   const cnt = {}; live.sizes.forEach(z => cnt[z] = (cnt[z] || 0) + 1); const main = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || '0x0', [W, H] = main.split('x').map(Number);
   const keep = live.sizes.map(z => z === main), detP = live.detP.filter((_, k) => keep[k]);
   if (keep.some(k => !k)) { pgFiles = pgFiles.filter((_, k) => keep[k]); pgSetFiles(pgFiles); }
-  pgPre = { files: pgFiles, W, H, frames: () => Promise.all(detP).then(rs => rs.map((r, k) => ({ t: k, fi: k, dets: r.dets }))) };
+  const files = pgFiles.slice();
+  pgPre = { files: pgFiles, W, H, frames: async prog => { // je Bild höchstens 20 s auf den Hintergrund warten, sonst selbst erkennen
+    const out = []; let dead = false;
+    for (let k = 0; k < detP.length; k++) {
+      let r = await Promise.race([detP[k].catch(() => null), new Promise(res => setTimeout(() => res(null), dead ? 0 : 20000))]);
+      if (!r) dead = true; // Hintergrund antwortet nicht → ab jetzt sofort selbst erkennen
+      if (!r || !r.dets) { const b = await createImageBitmap(files[k]), c = document.createElement('canvas'); c.width = b.width; c.height = b.height; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(b, 0, 0); b.close(); r = { dets: MK.detect(toGray(x, c.width, c.height, new Float32Array(c.width * c.height)), c.width, c.height).filter(d => d.res < 0.8) }; }
+      out.push({ t: k, fi: k, dets: r.dets }); prog && prog((k + 1) / detP.length); await tick();
+    }
+    return out; } };
   vb.then(async b => { if (!b || b.size < 1e5) return; const n = `aufnahme-${new Date(live.session).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${b.type.includes('mp4') ? 'mp4' : 'webm'}`; if (await VID.save(n, b)) { live.vidName = n; try { localStorage.setItem('raumplan-still-' + n, JSON.stringify(live.still)); } catch (e) { } vidState(); const r = $('#pgRefineRow'); if (r) r.hidden = false; } });
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
 $('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
+$('#liveToAR').onclick = () => { VID.stop(); liveStop(); $('#arOpen').click(); }; // keine Blätter → AR-Messung
 
 /* ---------- Ergebnis-Bildschirm: Skizze mit allen Wandlängen, klare nächste Schritte ---------- */
 function resSketch(poly, L, sig) {
@@ -568,6 +579,7 @@ function resSketch(poly, L, sig) {
     o += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="700" fill="${bad ? '#c62828' : '#1b5e20'}">${f2(L[i], 3)}</text><text x="${tx}" y="${ty + 16}" text-anchor="middle" font-size="11" fill="#555">Wand ${i + 1}${sig[i] != null ? ' ±' + Math.round(sig[i] * 1000) + ' mm' : ''}</text>`; });
   return o + '</svg>';
 }
+function resBusy(t) { let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); } box.hidden = false; box.onclick = null; box.innerHTML = `<div class="rescard"><h2>⏳ Berechne den Raum …</h2><p>${esc(t || 'Bitte kurz warten.')}</p><progress style="width:100%" max="1" value="${Math.min(1, $('#pgProg').value || 0)}"></progress></div>`; }
 function showResult(res, rec, taken, err) {
   let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
   const ok = !err && res && res.some(d => d.w.ok);
@@ -581,7 +593,7 @@ function showResult(res, rec, taken, err) {
   h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen.</p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
   box.innerHTML = h; box.hidden = false;
   box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
-    if (a === 'take') pgTake(); else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart(); };
+    if (a === 'take') { pgTake(); showTab('plan'); } else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart(); };
 }
 
 /* ---------- Phase 2b: Erkennung im Hintergrund, Video sichern, genauer nachauswerten ---------- */
@@ -591,7 +603,7 @@ const DET = (() => {
   function init() {
     if (pool !== null) return pool;
     try {
-      const n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
+      const n = Math.max(1, Math.min(2, (navigator.hardwareConcurrency || 4) - 1)); // 12-MP-Fotos: höchstens 2 Threads (Speicher)
       pool = Array.from({ length: n }, () => { const w = new Worker('detworker.js'); w.busy = 0; w.onmessage = e => { const p = wait.get(e.data.id); wait.delete(e.data.id); w.busy--; p && (e.data.err ? p.rej(new Error(e.data.err)) : p.res(e.data)); }; w.onerror = () => { pool = []; }; return w; });
     } catch (e) { pool = []; }
     return pool;
@@ -1217,6 +1229,7 @@ function snapRoom(i) {
   });
   if (bx !== null) r.x = +(r.x + bx).toFixed(3); if (by !== null) r.y = +(r.y + by).toFixed(3);
 }
+$('#toProj').onclick = () => showTab('proj'); $('#backPlan').onclick = () => showTab('plan');
 $('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
   const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return alert('Breite und Tiefe in m eingeben (z. B. 4,20).');

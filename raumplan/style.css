@@ -131,3 +131,6 @@ details.more{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}de
 #resUI{position:fixed;inset:0;z-index:80;background:#000a;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
 .rescard{background:var(--card);color:var(--fg);border-radius:14px;padding:14px 16px;max-width:560px;width:100%}.rescard h2{margin:4px 0 8px}.rescard h3{margin:10px 0 4px}
 .ressk{width:100%;max-height:45vh;background:#fff;border-radius:8px;margin:6px 0}.resbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.resbtns button{padding:10px 14px}
+
+.toar{background:#e0672b!important;border-color:#e0672b!important;color:#fff!important;font-size:16px;padding:10px 14px}
+details.more2 summary{cursor:pointer;font-weight:600}
