@@ -2,7 +2,7 @@
 /* Raumplan – 2D-Grundriss aus Handyvideo mit Boden-Referenzrechteck (Homographie). */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const KEY = 'raumplan-v1';
-const APP_VER = 'v41 · 05.11.2026';
+const APP_VER = 'v42 · 05.11.2026';
 const REPO = 'freudenthalerried-cmd/matlab', BRANCH = 'claude/2d-floor-plan-video-0sv7hg';
 // Neue Version da? Jede Version hat einen festen Link (Commit). Die App fragt GitHub nach dem neuesten Commit und zeigt einen Hinweis mit Link.
 (async () => { try {
@@ -771,6 +771,7 @@ function kmRender() {
 KM.onChange(kmRender);
 function kmMsg(t) { $('#kmState').textContent = t || ''; if (live.stream && t) $('#liveKmTxt').textContent = t; }
 function kmListen() { KM.listen((e, err) => { if (err) return kmMsg(err); if (e) { kmMsg(''); navigator.vibrate?.([20, 40, 20]); } }, st => kmMsg(st)); }
+let resLaserCb = null; KM.onChange(L => { if (resLaserCb) try { resLaserCb(L); } catch (e) { } }); // Ergebniskarte bekommt Laserwerte
 async function kmLaser() {
   try {
     const n = await KM.connect(v => { const e = KM.add(v, 'laser'); navigator.vibrate?.(30); kmMsg(`Laser: ${f2(v, 3)} m${e.wall ? ' → ' + e.wall : ''} – jetzt ansagen, was es war (z. B. „Raumhöhe“), oder weitermessen.`); }, st => kmMsg(st));
@@ -981,7 +982,8 @@ function arResult(r, o, tEnd) {
   const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
   const scaleTerm = L => L * (sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.01) * (sc ? sc.k : 1);
   const fit = L0.map((L, i) => Math.sqrt(Math.max(0, r.sigma[i] ** 2 - scaleTerm(L) ** 2)) || 0.003);
-  const A = { km: {}, h: null };
+  const A = { km: {}, h: null, laser: null };
+  resLaserCb = L => { const e = L[L.length - 1]; if (e && e.src === 'laser' && e.t >= tEnd) { A.laser = e.v; draw(); } };
   // gesprochene/gemessene Wandmaße der letzten Stunden der passendsten Wand zuordnen (±8 %)
   KM.list.filter(e => e.t >= t0 && (e.kind === 'wand' || e.kind === 'mass')).forEach(e => { let bi = -1, bd = 0.08; L0.forEach((L, i) => { const d = Math.abs(e.v / L - 1); if (d < bd && A.km[i] == null) { bd = d; bi = i; } }); if (bi >= 0) A.km[bi] = e.v; });
   const calc = () => {
@@ -1008,13 +1010,16 @@ function arResult(r, o, tEnd) {
       <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] / x <= 0.002 ? 'ok' : c.sg[i] / x <= 0.005 ? 'mid' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm · ${f2(c.sg[i] / x * 100, 2)} %</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>
       <p class="hint">Kontrollmaß: bei der Wand auf „📏 eintragen“ tippen und das gemessene Maß eintippen oder ansagen (🎤). Die längste Wand bringt am meisten.</p>
       <p><b>Raumhöhe:</b> ${c.h ? f2(c.h, 3) + ' m' : 'nicht gemessen'} · Genauigkeit ca. ±${Math.round(mx)} mm</p>
+      <p>📏 <b>Laser:</b> <button data-a="laser">${typeof KM !== 'undefined' && KM.connected ? 'verbunden ✓' : 'Laser verbinden'}</button> ${A.laser ? `letzte Messung <b>${f2(A.laser, 3)} m</b> → ${c.L.map((_, i) => `<button data-w="${i}">Wand ${i + 1}</button>`).join(' ')} <button data-w="h">Raumhöhe</button>` : '<span class="hint">Messtaste am Laser drücken, dann hier der Wand zuordnen – das wird das Kontrollmaß</span>'}</p>
       <div class="resbtns"><button data-a="take" class="pri">✔ In Plan übernehmen</button><button data-a="no">Verwerfen</button></div></div>`;
     box.hidden = false;
     box.onclick = e => { const km = e.target.closest('[data-km]'), a = e.target.closest('[data-a]')?.dataset.a;
+      const w = e.target.closest('[data-w]'); if (w) { if (w.dataset.w === 'h') A.h = A.laser; else A.km[+w.dataset.w] = A.laser; A.laser = null; draw(); return; }
+      if (a === 'laser') { kmLaser(); return; }
       const hh = e.target.closest('[data-h]'); if (hh) { editVals('Raumhöhe', [{ k: 'v', label: 'gemessen m (leer = entfernen)', v: A.h }], v => { A.h = v.v || null; draw(); }); return; }
       if (km) { const i = +km.dataset.km; editVals(`Kontrollmaß Wand ${i + 1}`, [{ k: 'v', label: 'gemessen m (leer = entfernen)', v: A.km[i] }], v => { if (v.v) A.km[i] = v.v; else delete A.km[i]; draw(); }); }
-      else if (a === 'no') { if (confirm('Messung verwerfen?')) box.hidden = true; }
-      else if (a === 'take') { box.hidden = true; arTake(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.sg.slice(), c.h, c.m ? `${c.m} Kontrollmaß(e)` : sc ? 'Zollstock' : 'nur Handy – ungenau'); }
+      else if (a === 'no') { if (confirm('Messung verwerfen?')) { box.hidden = true; resLaserCb = null; } }
+      else if (a === 'take') { box.hidden = true; resLaserCb = null; arTake(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.sg.slice(), c.h, c.m ? `${c.m} Kontrollmaß(e)` : sc ? 'Zollstock' : 'nur Handy – ungenau'); }
     };
   };
   draw();

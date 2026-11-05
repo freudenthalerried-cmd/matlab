@@ -63,7 +63,7 @@ const KM = (() => {
     if (!navigator.bluetooth) throw new Error('Bluetooth wird von diesem Browser nicht unterstützt – bitte Chrome am Android-Handy verwenden.');
     dev = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'DISTO' }, { namePrefix: 'Disto' }, { namePrefix: 'GLM' }, { namePrefix: 'PLR' }, { namePrefix: 'Bosch' }], optionalServices: [LEICA.svc, BOSCH.svc] });
     dev.addEventListener('gattserverdisconnected', () => onState && onState('getrennt'));
-    const srv = await dev.gatt.connect(); let ch;
+    const srv = await dev.gatt.connect(); let ch; KMc.connected = true; dev.addEventListener('gattserverdisconnected', () => { KMc.connected = false; });
     try { // Leica DISTO: Entfernung als float32 (m)
       const s = await srv.getPrimaryService(LEICA.svc); ch = await s.getCharacteristic(LEICA.chr);
       ch.addEventListener('characteristicvaluechanged', ev => { const v = ev.target.value.getFloat32(0, true); if (v > 0.05 && v < 300) onValue(+v.toFixed(4)); });
@@ -75,6 +75,7 @@ const KM = (() => {
     await ch.startNotifications(); try { await ch.writeValue(new Uint8Array([0xC0, 0x55, 0x02, 0x01, 0x00, 0x1A])); } catch (e) { }
     onState && onState('Bosch GLM verbunden (experimentell)'); return dev.name;
   }
-  return { parse, describe, add, annotate, remove, clear, listen, connect, get list() { return list; }, onChange: f => subs.push(f), setContext: f => ctx = f, KIND };
+  const KMc = { parse, describe, add, annotate, remove, clear, listen, connect, get list() { return list; }, onChange: f => subs.push(f), setContext: f => ctx = f, KIND, connected: false };
+  return KMc;
 })();
 if (typeof module !== 'undefined') module.exports = KM;
