@@ -148,3 +148,6 @@ details.more2 summary{cursor:pointer;font-weight:600}
 .zst{display:flex;align-items:center;gap:6px;font-size:18px}.zst b{font-size:20px;margin-left:6px}.zd{font-size:22px;line-height:1}.zd small{font-size:11px;vertical-align:top;margin-left:1px}.zl{color:#e3b46b;letter-spacing:-3px}
 .zh{font-size:14px;margin-top:2px}.zh a{color:#8cf;text-decoration:underline}
 .zh2{font-size:16px;line-height:1.3}.zh2 small{font-size:12px;opacity:.85}
+/* Hinweiskarte unten (ersetzt Browser-Alerts) */
+#notice{position:fixed;left:0;right:0;bottom:0;z-index:95;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0)) 12px;pointer-events:none}#notice[hidden]{display:none}
+.ncard{pointer-events:auto;background:#263238;color:#fff;border-radius:12px;padding:12px 14px;max-width:560px;width:100%;display:flex;gap:10px;align-items:flex-start;box-shadow:0 4px 18px #0006;font-size:15px;line-height:1.35}.ncard span{flex:1}.ncard .nx{background:none;border:none;color:inherit;font-size:16px;padding:0 4px;cursor:pointer}

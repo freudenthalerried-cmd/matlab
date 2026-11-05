@@ -5,6 +5,8 @@ const KEY = 'raumplan-v1';
 const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(n) ? n : 0; };
 const f2 = (v, d = 2) => (+v).toFixed(d).replace('.', ',');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Hinweis in der App statt Browser-Alert: Karte unten, schließt sich von selbst (oder ✕)
+function notice(msg, ms) { let b = $('#notice'); if (!b) { b = document.createElement('div'); b.id = 'notice'; document.body.appendChild(b); } const t = String(msg ?? ''); b.innerHTML = `<div class="ncard"><span>${esc(t).replace(/\n/g, '<br>')}</span><button class="nx" aria-label="Schließen">✕</button></div>`; b.hidden = false; b.querySelector('.nx').onclick = () => { b.hidden = true; }; clearTimeout(notice.t); notice.t = setTimeout(() => { b.hidden = true; }, ms || Math.min(20000, 5000 + t.length * 50)); }
 const add = (a, b) => [a[0] + b[0], a[1] + b[1]], mul = (a, k) => [a[0] * k, a[1] * k];
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const R2D = 180 / Math.PI;
@@ -39,7 +41,7 @@ const vid = $('#vid');
 function onFiles(files) {
   for (const f of files) {
     if (f.type.startsWith('video')) vid.src = URL.createObjectURL(f);
-    else if (f.type.startsWith('image')) createImageBitmap(f).then(b => addSnap(b, b.width, b.height, f.name)).catch(() => alert('Bild konnte nicht gelesen werden: ' + f.name));
+    else if (f.type.startsWith('image')) createImageBitmap(f).then(b => addSnap(b, b.width, b.height, f.name)).catch(() => notice('Bild konnte nicht gelesen werden: ' + f.name));
   }
 }
 $('#camIn').onchange = e => onFiles(e.target.files);
@@ -47,7 +49,7 @@ $('#fileIn').onchange = e => onFiles(e.target.files);
 $('#stepB').onclick = () => { vid.pause(); vid.currentTime = Math.max(0, vid.currentTime - 1 / 30); };
 $('#stepF').onclick = () => { vid.pause(); vid.currentTime += 1 / 30; };
 $('#grab').onclick = () => {
-  if (!vid.videoWidth) return alert('Zuerst ein Video laden.');
+  if (!vid.videoWidth) return notice('Zuerst ein Video laden.');
   vid.pause(); addSnap(vid, vid.videoWidth, vid.videoHeight, 'Bild ' + (snaps.length + 1) + ' @' + vid.currentTime.toFixed(1) + ' s');
 };
 function addSnap(src, w, h, name) {
@@ -80,7 +82,7 @@ $('#targets').onclick = () => {
     <text x="105" y="258" font-size="4.2" text-anchor="middle">Mittelpunkt des Kreuzes = Messpunkt. Linien zum Ausrichten am Maßband.</text>
     <text x="105" y="265" font-size="4.2" text-anchor="middle">Flach auflegen (Klebeband an den Rändern), matt drucken, Druckskalierung 100 %.</text></svg></div>`;
   const labs = [['A', 'Ecke A (Ursprung)'], ['B', 'Ecke B (A→B = Breite)'], ['C', 'Ecke C'], ['D', 'Ecke D (B→C = Tiefe)'], ['+', 'Zusatzpunkt'], ['+', 'Zusatzpunkt']];
-  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Zielmarken</title><style>@page{size:A4 portrait;margin:0}body{margin:0}.pg{page-break-after:always}svg{display:block}</style></head><body>${labs.map(l => page(...l)).join('')}<script>onload=()=>setTimeout(()=>print(),300)<\/script></body></html>`);
   w.document.close();
 };
@@ -93,7 +95,7 @@ $('#pgPrint').onclick = () => {
   const lab = ['Boden – Mitte auf Zollstock 0 cm', 'Boden – Mitte auf Zollstock 200 cm', 'Boden', 'Boden'];
   const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: Math.min(n, 90 - from) }, (_, k) => MK.markerSVG(from + k, size, 'Wand')))
     .concat($('#pgConn').checked ? [90, 91, 92, 93].map(id => MK.markerSVG(id, size, 'Verbindung – im Türbereich am Boden liegen lassen')) : []);
-  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
 };
@@ -156,7 +158,7 @@ $('#pgWallSheets').onclick = () => {
   const nw = Math.max(3, Math.min(12, Math.round(num($('#pgWalls').value)) || 4)), from = Math.max(4, Math.min(89 - 4 * nw, Math.round(num($('#pgFrom').value) || 4)));
   const { size, pages } = wallSheetPages(nw, from);
   pgSizeSet(size); layoutSet('wall'); $('#pgN').value = 4 * nw; $('#pgFrom').value = from; if (!$('#pgDist').value) $('#pgDist').value = '2,000';
-  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan – 1 Blatt pro Wand</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
 };
@@ -165,7 +167,7 @@ $('#pgSheet').onclick = () => { // einfach: 4 Boden- + 12 Wandmarken (3 je Wand)
   pgSizeSet(size); layoutSet('single'); $('#pgN').value = 12;
   const lab = ['Boden · auf 0 cm', 'Boden · auf 200 cm', 'Boden', 'Boden'];
   const items = [0, 1, 2, 3].map(i => [i, lab[i]]).concat(Array.from({ length: 12 }, (_, k) => [from + k, 'Wand']));
-  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken (1 Blatt)</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${MK.sheetSVG(items, size)}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
 };
@@ -231,7 +233,7 @@ let devD = null; // DEV
 function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v33', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
 $('#pgRun').onclick = async () => {
   devD = null; // DEV
-  if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
+  if (!pgFiles || !pgFiles.length) return notice('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
   const ob = $('#opBox'); if (ob) ob.remove(); opSt = null;
   const btn = $('#pgRun'), pr = $('#pgProg'); btn.disabled = true; pr.hidden = false; $('#pgLog').textContent = ''; $('#pgRes').innerHTML = '';
   const t0 = performance.now();
@@ -288,7 +290,7 @@ async function loadFrameCanvas(fr) {
 }
 function opStart(ri, wi) {
   const d = pgLast.res[ri], list = PG.framesForWall(pgLast.rec, pgLast.frames, d.w, wi);
-  if (!list.length) return alert('Kein Foto zeigt Marken dieser Wand.');
+  if (!list.length) return notice('Kein Foto zeigt Marken dieser Wand.');
   opSt = { ri, wi, list, k: 0, pts: [], results: [] };
   let box = $('#opBox'); if (!box) { box = document.createElement('div'); box.id = 'opBox'; box.className = 'card'; $('#pgRes').after(box); }
   box.innerHTML = `<h4>Öffnung messen – ${esc(d.name)}, Wand ${wi + 1}</h4>
@@ -395,7 +397,7 @@ function pgTake() {
   });
   const nw = autoWallThickness(); if (nw && T) msg += ` Innenwandstärke(n) aus der Messung gesetzt.`;
   selRoom = first; save(); showTab('plan'); renderPlan(true);
-  if (msg) setTimeout(() => alert(msg), 50);
+  if (msg) setTimeout(() => notice(msg), 50);
 }
 
 /* ---------- Live-Aufnahme mit Coach: nur filmen – die App fotografiert selbst, zeigt je Blatt einen Fortschrittsbalken
@@ -480,9 +482,9 @@ async function liveGrabFull(v) {
   return { blob, bmp: await createImageBitmap(c), W: c.width, H: c.height, photo: false };
 }
 async function liveStart() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return notice('Kamera im Browser nicht verfügbar – bitte Chrome verwenden oder „Fotos / Video wählen“.');
   let cm; try { cm = await CAM.open(); live.stream = cm.stream; if (typeof DEV !== 'undefined') DEV.camInfo(cm.stream); /* DEV */ }
-  catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
+  catch (e) { return notice('Kamera nicht freigegeben: ' + e.message); }
   live.camInfo = cm.info; live.sh = []; live.sizes = []; live.photoFail = 0; live.photoW = 0;
   live.photo = $('#pgPhoto').checked; live.ic = 'ImageCapture' in window ? new ImageCapture(cm.track) : null;
   if (live.ic && live.photo) { try { const pc = await live.ic.getPhotoCapabilities(); if (pc.imageWidth && pc.imageWidth.max) { live.photoW = pc.imageWidth.max; live.camInfo += ` · Fotos ${pc.imageWidth.max}×${pc.imageHeight ? pc.imageHeight.max : '?'}`; } } catch (e) { } }
@@ -724,7 +726,7 @@ async function vidState() {
 }
 // Nachauswertung: Einzelbilder der Aufnahme + alle ruhigen Bilder aus dem Video
 async function pgRefine(name) {
-  const file = await VID.load(name); if (!file) return alert('Video nicht mehr vorhanden.');
+  const file = await VID.load(name); if (!file) return notice('Video nicht mehr vorhanden.');
   const base = pgLast, btn = $('#pgRun'), pr = $('#pgProg'); pr.hidden = false; pgLog('Genauere Auswertung: Video wird gelesen …');
   try {
     let still = null; try { still = JSON.parse(localStorage.getItem('raumplan-still-' + name)); } catch (e) { }
@@ -732,7 +734,7 @@ async function pgRefine(name) {
     const all = frames.length; frames = selectStill(frames, W, H).map(f => ({ ...f, sw: 2.5 })); pgLog(`Video: ${frames.length} ruhige Bilder von ${all} (zählen schwächer als die Einzelfotos – Videokompression)`);
     if (base && base.W === W && base.H === H) frames = base.frames.concat(frames); else pgLog('Einzelbilder haben eine andere Größe – nur Videobilder verwendet.');
     pgPrev = base; pgOverride = { frames, W, H }; btn.click();
-  } catch (e) { pgLog('Fehler: ' + e.message); alert('Genauere Auswertung nicht möglich: ' + e.message); }
+  } catch (e) { pgLog('Fehler: ' + e.message); notice('Genauere Auswertung nicht möglich: ' + e.message); }
 }
 // Vergleich schnelle ↔ genauere Auswertung
 function refineCompare(res) {
@@ -791,15 +793,15 @@ const cal = { stream: null, views: [], timer: null, busy: false, prev: null, las
 function calState() {
   const c = CAM.load();
   $('#calState').innerHTML = c ? `📷 Kamera kalibriert ✓ <span class="hint">(Restfehler ${f2(c.rms, 2)} px, ${c.n} Bilder, ${esc(c.date)}${c.fixedFocus ? '' : ' – Fokus konnte nicht fixiert werden'})</span>`
-    : `📷 Kamera noch nicht kalibriert – <a href="#" id="calLink">jetzt einmalig kalibrieren</a> (2 Minuten, macht die Messung genauer).`;
+    : `📷 Kamera nicht kalibriert – <a href="#" id="calLink">einmalig kalibrieren</a> (2 Minuten; nur für die Marken-Messung wichtig).`;
   const l = $('#calLink'); if (l) l.onclick = e => { e.preventDefault(); calStart(); };
 }
-$('#calPrint').onclick = () => { const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Kalibriertafel</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${CAL.boardSVG()}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); };
+$('#calPrint').onclick = () => { const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.'); w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Kalibriertafel</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block}</style></head><body>${CAL.boardSVG()}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); };
 // Kalibrierung: jedes ruhige, neue Bild wird sofort genommen; ab 4 Bildern wird nach jedem Bild gerechnet und die Genauigkeit angezeigt
 const CAL_GOAL = 0.002; // Brennweite auf ±0,2 % → fertig
 async function calStart() {
-  if (!navigator.mediaDevices) return alert('Kamera im Browser nicht verfügbar.');
-  let cm; try { cm = await CAM.open(); } catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
+  if (!navigator.mediaDevices) return notice('Kamera im Browser nicht verfügbar.');
+  let cm; try { cm = await CAM.open(); } catch (e) { return notice('Kamera nicht freigegeben: ' + e.message); }
   Object.assign(cal, { stream: cm.stream, info: cm.info, fixedFocus: cm.fixedFocus, views: [], sum: [], prev: null, prevT: 0, last: 0, sh: [], W: 0, H: 0, res: null, solving: false });
   const v = $('#calVid'); v.srcObject = cal.stream; await v.play(); $('#calUI').hidden = false;
   const ov = $('#calOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
@@ -863,11 +865,11 @@ function calStop() { clearTimeout(cal.timer); if (cal.stream) cal.stream.getTrac
 function calFinish(W, H) {
   calStop();
   const r = CAL.solve(cal.views, W, H, { min: 5 });
-  if (r.err) return alert('Kalibrierung nicht möglich: ' + r.err + ' Bitte nochmal, dabei die Tafel aus mehr Richtungen filmen.');
-  if (r.rms > 0.8) return alert(`Kalibrierung ungenau (Restfehler ${f2(r.rms, 2)} px). Tafel liegt vielleicht nicht flach oder die Bilder waren unscharf – bitte nochmal.`);
+  if (r.err) return notice('Kalibrierung nicht möglich: ' + r.err + ' Bitte nochmal, dabei die Tafel aus mehr Richtungen filmen.');
+  if (r.rms > 0.8) return notice(`Kalibrierung ungenau (Restfehler ${f2(r.rms, 2)} px). Tafel liegt vielleicht nicht flach oder die Bilder waren unscharf – bitte nochmal.`);
   CAM.save({ it: r.it, W, H, rms: r.rms, n: r.n, date: new Date().toLocaleDateString('de-AT'), fixedFocus: cal.fixedFocus, info: cal.info });
   calState();
-  alert(`Kamera kalibriert ✓\nBrennweite ${r.it[0].toFixed(0)} px, Verzeichnung k1 ${r.it[3].toFixed(3)}, Restfehler ${f2(r.rms, 2)} px aus ${r.n} Bildern.${cal.fixedFocus ? '' : '\nHinweis: Dieses Handy lässt keinen festen Fokus zu – die Kalibrierung gilt dann nur ungefähr.'}`);
+  notice(`Kamera kalibriert ✓\nBrennweite ${r.it[0].toFixed(0)} px, Verzeichnung k1 ${r.it[3].toFixed(3)}, Restfehler ${f2(r.rms, 2)} px aus ${r.n} Bildern.${cal.fixedFocus ? '' : '\nHinweis: Dieses Handy lässt keinen festen Fokus zu – die Kalibrierung gilt dann nur ungefähr.'}`);
 }
 $('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calDone').onclick = () => { if (cal.views.length >= 5) calFinish(cal.W, cal.H); }; calState();
 
@@ -903,8 +905,19 @@ function measureStart() {
   draw(); box.hidden = false;
 }
 function arStart(msg) {
-  const o = { ...modeGet(), z: true }; if (msg) alert(msg);
-  AR.start(r => arResult(r, o, Date.now()), { zollstock: parseLen($('#pgDist').value) || 2 });
+  const o = { ...modeGet(), z: true }; if (msg) notice(msg);
+  if (!navigator.xr) return arNotSupported();
+  navigator.xr.isSessionSupported('immersive-ar').catch(() => false).then(ok => { if (!ok) return arNotSupported(); AR.start(r => arResult(r, o, Date.now()), { zollstock: parseLen($('#pgDist').value) || 2 }); });
+}
+// Kein ARCore (PC, iPhone, altes Handy): verständliche Karte mit den beiden anderen Wegen
+function arNotSupported() {
+  let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
+  box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📱 AR geht auf diesem Gerät nicht</h2>
+    <p>Die Zollstock-Messung braucht <b>Chrome auf einem Android-Handy mit ARCore</b> („Google Play-Dienste für AR“ aus dem Play Store). Am PC oder am iPhone geht sie nicht.</p>
+    <p><b>So kannst du trotzdem messen:</b></p>
+    <div class="row"><button data-r="mk" class="pri">🎯 Mit Marken-Blättern (mm-genau)</button><button data-r="hand">✏ Maße von Hand eintragen</button><button data-r="x">Schließen</button></div>
+    <p class="hint">Marken-Blätter: Blätter drucken, an die Wände kleben, Raum filmen – die App rechnet. Von Hand: Breite und Tiefe eingeben, „+ Rechteckraum“.</p></div>`;
+  box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true; if (a === 'mk') { const d = $('#auf details.more'); if (d) d.open = true; live.autoAR = false; liveStart(); } else if (a === 'hand') { showTab('plan'); setTimeout(() => $('#nW').focus(), 50); } };
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
@@ -957,7 +970,7 @@ function arTake(Q, sg, height, how) {
 
 $('#arOpen').onclick = () => { const o = modeGet(); o.z = $('#arZoll').checked; o.m = 'nein'; modeSet(o); arStart(); };
 $('#arScan').onclick = AR.toggleScan; $('#arZmore').onclick = AR.zMore;
-$('#arExport').onclick = () => { let L = []; try { L = JSON.parse(localStorage.getItem('raumplan-ar-log') || '[]'); } catch (e) { } if (!L.length) return alert('Noch keine AR-Messung gespeichert.'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(L)], { type: 'application/json' })); a.download = `raumplan-ar-daten-${new Date().toISOString().slice(0, 10)}.json`; a.click(); };
+$('#arExport').onclick = () => { let L = []; try { L = JSON.parse(localStorage.getItem('raumplan-ar-log') || '[]'); } catch (e) { } if (!L.length) return notice('Noch keine AR-Messung gespeichert.'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(L)], { type: 'application/json' })); a.download = `raumplan-ar-daten-${new Date().toISOString().slice(0, 10)}.json`; a.click(); };
 $('#arPoint').onclick = AR.point; $('#arNext').onclick = AR.next; $('#arUndo').onclick = AR.undo; $('#arDone').onclick = AR.finish; $('#arCancel').onclick = AR.cancel;
 
 /* ---------- 2 Vermessen ---------- */
@@ -1059,17 +1072,17 @@ mc.addEventListener('click', e => {
   if (!t) return;
   const m = t.trim().toLowerCase().replace(/,/g, '.').split(/\s+/);
   let w = m[0] === 'd' ? [0, parseFloat(m[1])] : m.length > 1 ? [parseFloat(m[0]), parseFloat(m[1])] : [parseFloat(m[0]), 0];
-  if (!w.every(isFinite)) return alert('Eingabe nicht verstanden.');
+  if (!w.every(isFinite)) return notice('Eingabe nicht verstanden.');
   s.refx.push({ p, w: w.map(v => v / 100) }); drawMeas(true);
 });
 $('#kNew').onclick = () => { if (cur && cur.kal[cur.kal.length - 1].length) { cur.kal.push([]); drawMeas(true); } };
 $('#kClr').onclick = () => { if (cur) { cur.kal = [[]]; drawMeas(true); } };
 $('#kRun').onclick = () => {
   if (!cur) return; const r = AG.calibK1(cur.kal, cur.c.width, cur.c.height);
-  if (!r || cur.kal.filter(l => l.length >= 3).length < 2) return alert('Mindestens 2 Linien mit je ≥ 5 Punkten (möglichst lang, nahe am Bildrand) antippen.');
+  if (!r || cur.kal.filter(l => l.length >= 3).length < 2) return notice('Mindestens 2 Linien mit je ≥ 5 Punkten (möglichst lang, nahe am Bildrand) antippen.');
   S.cam = { k1: +r.k1.toFixed(5), W: cur.c.width, H: cur.c.height, rms: r.rms };
   save(); drawMeas(true);
-  alert(`Kamera kalibriert: k1 = ${r.k1.toFixed(4)}, Restabweichung ${r.rms.toFixed(2)} px.${r.rms > 1.5 ? '\nAchtung: Linien evtl. nicht gerade oder ungenau getippt.' : ''}\nGilt für alle Bilder mit ${cur.c.width}×${cur.c.height} px (gleiche Kamera, gleicher Zoom).`);
+  notice(`Kamera kalibriert: k1 = ${r.k1.toFixed(4)}, Restabweichung ${r.rms.toFixed(2)} px.${r.rms > 1.5 ? '\nAchtung: Linien evtl. nicht gerade oder ungenau getippt.' : ''}\nGilt für alle Bilder mit ${cur.c.width}×${cur.c.height} px (gleiche Kamera, gleicher Zoom).`);
 };
 
 function drawMeas(keepInputs) {
@@ -1154,7 +1167,7 @@ function drawMeas(keepInputs) {
 const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
 $('#toMeas').onclick = () => {
-  const R = cur && measure(cur); if (!R) return alert('Referenz und mindestens 2 Punkte nötig.');
+  const R = cur && measure(cur); if (!R) return notice('Referenz und mindestens 2 Punkte nötig.');
   R.d.forEach((v, i) => S.meas.push({ n: `${cur.name} P${i + 1}–P${(i + 1) % cur.pts.length + 1}`, v: +v.toFixed(4), s: R.sd ? +R.sd[i].toFixed(4) : null }));
   save(); listMeas();
 };
@@ -1167,7 +1180,7 @@ function photoObs(R, k0, n) {
   return o;
 }
 $('#toRoom').onclick = () => {
-  const R = cur && measure(cur); if (!R || cur.pts.length < 3 || !R.closed) return alert('Referenz und mindestens 3 Raumecken nötig, „geschlossener Raum“ angehakt.');
+  const R = cur && measure(cur); if (!R || cur.pts.length < 3 || !R.closed) return notice('Referenz und mindestens 3 Raumecken nötig, „geschlossener Raum“ angehakt.');
   const name = prompt('Raumname?', 'Raum ' + (S.rooms.length + 1)); if (name === null) return;
   const r = newRoom(name, [], 0, 0), sk = num(cur.skirt) / 1000;
   // Sockelleiste: Polygon um Leistenstärke nach außen versetzen
@@ -1177,11 +1190,11 @@ $('#toRoom').onclick = () => {
 };
 $('#toExist').onclick = () => {
   const r = S.rooms[$('#tgtRoom').value], R = cur && measure(cur);
-  if (!r || !R) return alert('Raum wählen; Referenz und mindestens 2 Punkte nötig.');
+  if (!r || !R) return notice('Raum wählen; Referenz und mindestens 2 Punkte nötig.');
   const n = r.segs.length, k0 = Math.round(num($('#tgtCorner').value)) - 1;
-  if (k0 < 0 || k0 >= n || cur.pts.length > n || (R.closed && cur.pts.length !== n)) return alert(`Ecken passen nicht: Raum hat ${n} Ecken, Punkte ${cur.pts.length}.`);
+  if (k0 < 0 || k0 >= n || cur.pts.length > n || (R.closed && cur.pts.length !== n)) return notice(`Ecken passen nicht: Raum hat ${n} Ecken, Punkte ${cur.pts.length}.`);
   r.obs = (r.obs || []).concat(photoObs(R, k0, n)); selRoom = S.rooms.indexOf(r); save();
-  alert(`${R.d.length} Strecken und ${R.w.length} Winkel aus „${cur.name}“ zu „${r.name}“ hinzugefügt. Unter „3 Plan“ → „Ausgleichen“.`);
+  notice(`${R.d.length} Strecken und ${R.w.length} Winkel aus „${cur.name}“ zu „${r.name}“ hinzugefügt. Im Reiter „2 Ergebnis“ beim Raum → „Ausgleichen“.`);
 };
 function listMeas() {
   $('#mlist').innerHTML = S.meas.map((m, i) => `<li>${esc(m.n)}: <b>${f2(m.v, 3)} m</b>${m.s ? ` ±${f2(m.s * 1000, 1)} mm` : ''}<button data-d="${i}">×</button></li>`).join('') || '<li class="hint">leer</li>';
@@ -1334,7 +1347,7 @@ function renderPlan(fit) {
   }
   const ar = (svg.clientHeight || 400) / (svg.clientWidth || 600);
   svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.w * ar}`);
-  svg.innerHTML = gridSVG() + planSVG(selRoom) + cutLineSVG() + (S.rooms.length ? '' : `<text x="${vb.x + vb.w / 2}" y="${vb.y + vb.w * ar / 2}" text-anchor="middle" font-size="${vb.w / 30}" fill="#888">Raum anlegen: oben „+ Rechteckraum“ oder unter „2 Vermessen“ → „Punkte → neuer Raum“</text>`);
+  svg.innerHTML = gridSVG() + planSVG(selRoom) + cutLineSVG() + (S.rooms.length ? '' : `<text x="${vb.x + vb.w / 2}" y="${vb.y + vb.w * ar / 2}" text-anchor="middle" font-size="${vb.w / 40}" fill="#888"><tspan x="${vb.x + vb.w / 2}">Noch kein Raum.</tspan><tspan x="${vb.x + vb.w / 2}" dy="1.5em">Oben „+ Rechteckraum“ oder Reiter 1 „Raum messen“</tspan></text>`);
 }
 function gridSVG() {
   const ar = (svg.clientHeight || 400) / (svg.clientWidth || 600), st = vb.w > 3000 ? 500 : 100;
@@ -1494,10 +1507,10 @@ function cutTap(p) { // p in m
   $('#vcut').hidden = false; viewCut(); renderPlan();
 }
 $('#cutBtn').onclick = () => { if (cutMode) { cutMode = 0; $('#cutBtn').textContent = '✂ Schnitt'; $('#cutBtn').classList.remove('pri'); return; } if (S.cut && $('#vcut').hidden) { $('#vcut').hidden = false; viewCut(); return; } cutStart(); };
-$('#toProj').onclick = () => showTab('proj'); $('#show3d').onclick = () => { const el = $('#v3d'); el.hidden = !el.hidden; if (!el.hidden) view3d(); }; $('#showRes').onclick = opBack; $('#backPlan').onclick = () => showTab('plan');
+$('#toProj').onclick = () => showTab('proj'); $('#show3d').onclick = () => { const el = $('#v3d'); el.hidden = !el.hidden; if (!el.hidden) view3d(); }; $('#showRes').onclick = () => { if (pgLast) opBack(); else notice('Noch kein Messergebnis. Zuerst im Reiter „1 Aufmaß“ einen Raum messen – dann erscheint hier die Skizze mit den Genauigkeiten.'); }; $('#backPlan').onclick = () => showTab('plan');
 $('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
-  const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return alert('Breite und Tiefe in m eingeben (z. B. 4,20).');
+  const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return notice('Breite und Tiefe in m eingeben (z. B. 4,20).');
   const r = newRoom($('#nName').value || 'Raum ' + (S.rooms.length + 1), rectSegs(w, d), 0, 0);
   placeFree(r); S.rooms.push(r); selRoom = S.rooms.length - 1; $('#nName').value = $('#nW').value = $('#nD').value = '';
   save(); renderPlan(true); roomPanel();
@@ -1695,7 +1708,7 @@ $('#rpanel').addEventListener('click', e => {
     case 'obsChord': (r.obs = r.obs || []).push({ typ: 'sehne', i: 0, a: 1.5, b: 1.5, c: '', s: 0.0015 }); break;
     case 'obsAng': (r.obs = r.obs || []).push({ typ: 'winkel', i: 0, v: 90, s: 0.5 }); break;
     case 'adjust': doAdjust(r); break;
-    case 'link': { const B = S.rooms[r._link.room]; if (!B || B === r) return alert('Nachbarraum wählen.'); const m = linkRooms(r, B, r._link); if (m) return alert(m); break; }
+    case 'link': { const B = S.rooms[r._link.room]; if (!B || B === r) return notice('Nachbarraum wählen.'); const m = linkRooms(r, B, r._link); if (m) return notice(m); break; }
     case 'flip': r.ops[oi].flip = !r.ops[oi].flip; break;
     case 'aus': r.ops[oi].aus = !r.ops[oi].aus; break;
   }
@@ -1776,7 +1789,7 @@ function download(name, data, type) {
 const fname = ext => (S.project.bv || 'raumplan').replace(/[^\wäöüÄÖÜß-]+/g, '_') + '_' + (S.project.nr || '01') + '.' + ext;
 $('#xSvg').onclick = () => download(fname('svg'), pageSVG(), 'image/svg+xml');
 $('#xPrint').onclick = () => {
-  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  const w = open('', '_blank'); if (!w) return notice('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(fname('pdf'))}</title><style>@page{size:${S.paper} landscape;margin:0}html,body{margin:0}svg{display:block}</style></head><body>${pageSVG()}<script>onload=()=>setTimeout(()=>print(),300)<\/script></body></html>`);
   w.document.close();
 };
@@ -1831,7 +1844,7 @@ $('#xJson').onclick = () => download(fname('json'), ser(), 'application/json');
 $('#xLoad').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   f.text().then(t => { const d = JSON.parse(t); if (!Array.isArray(d.rooms)) throw 0; S = { ...structuredClone(DEF), ...d, project: { ...DEF.project, ...d.project } }; selRoom = null; save(); fillProj(); listMeas(); })
-    .catch(() => alert('Datei ist kein gültiges Raumplan-Projekt.'));
+    .catch(() => notice('Datei ist kein gültiges Raumplan-Projekt.'));
   e.target.value = '';
 };
 $('#xNew').onclick = () => { if (confirm('Neues Projekt beginnen? Alle Räume, Messungen und Angaben werden gelöscht (vorher „Projekt speichern“!).')) { S = structuredClone(DEF); selRoom = null; save(); fillProj(); listMeas(); } };

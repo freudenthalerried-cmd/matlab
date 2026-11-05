@@ -25,20 +25,20 @@
       <h3>Raum messen</h3>
       <ol class="steps">
         <li><b>Zollstock</b> ganz ausgeklappt auf den Boden legen, <b>„📹 Raum messen“</b> tippen und ihn von oben filmen – die App erkennt ihn selbst und nimmt ihn als Maßstab.</li>
-        <li>Dann jede <b>Wand der Reihe nach abtasten</b>, Decke antippen für die Raumhöhe. Die Genauigkeit in % steht laufend oben (grün = gut).</li>
+        <li>Dann jede <b>Raumecke unten anpeilen</b> und „Ecke“ tippen, rundherum bis zur ersten Ecke; zuletzt die Decke für die Raumhöhe. Die Genauigkeit in % steht laufend oben (grün = gut).</li>
         <li>Am Ende eine Wand mit <b>Maßband/Laser</b> als Kontrollmaß eintragen – dann stimmt der Maßstab sicher.</li>
       </ol>
       <div class="row">
         <button id="liveOpen" class="pri big">📹 Raum messen</button>
                 <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
-      <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>
       <details class="more">
         <summary>⚙️ Einstellungen (antippen zum Aufklappen)</summary>
         <div class="row"><button id="liveMk">🎯 Mit Marken-Blättern messen (mm-genau)</button><button id="pgWallSheets">🖨 Blätter drucken</button></div>
+        <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
         <div class="row">
           <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
           <label><input type="checkbox" id="pgPhoto" checked> Fotos in voller Auflösung (genauer, je Bild ca. 1 s ruhig halten)</label>
@@ -85,7 +85,7 @@
       <ol>
         <li>Mit Kreppband ein <b>Referenz-Rechteck</b> am Boden kleben (z.&nbsp;B. 2,00 × 1,00 m, mit Maßband genau abmessen, rechte Winkel über Diagonale prüfen: 2,236 m). Am genauesten: an die 4 Ecken die <b>gedruckten Zielmarken</b> (🎯) legen – deren Kreuzmitte findet die App auf 1/20 Pixel genau; das Rechteck zwischen den Kreuzmitten mit dem Maßband abmessen. Weitere Marken entlang der Kanten (z. B. alle 50 cm) erhöhen die Genauigkeit. Einfaches Kreppband-Kreuz geht auch, ist aber ungenauer.</li>
         <li>Langsam durch den Raum filmen, Kamera leicht nach unten – Referenz-Rechteck <b>und</b> die Raumecken am Boden (Übergang Wand/Boden) sollen gut sichtbar sein.</li>
-        <li><b>Für ±3 mm:</b> Wandlängen mit dem Maßband messen (in ca. 1 m Höhe, über den Möbeln) und je Raum 2 Diagonalen oder Eckwinkel über Sehne – Eingabe unter „3 Plan“ → Raum → „Maßband-Messungen“. Die Fotos liefern Form, Lage und Kontrolle.</li>
+        <li><b>Für ±3 mm:</b> Wandlängen mit dem Maßband messen (in ca. 1 m Höhe, über den Möbeln) und je Raum 2 Diagonalen oder Eckwinkel über Sehne – Eingabe im Reiter „2 Ergebnis“ → Raum antippen → „Maßband-Messungen“. Die Fotos liefern Form, Lage und Kontrolle.</li>
         <li>Für Messungen im Foto: besser <b>Fotos (volle Auflösung)</b> statt Video; wenn Video, dann 4K. Einmalig die Kamera kalibrieren (Modus „Kamera kalibrieren“).</li>
         <li>Pro Raum 1–3 Standbilder übernehmen, auf denen Rechteck und Ecken zu sehen sind. Das Rechteck kann für jedes Bild neu im Raum platziert werden.</li>
       </ol>
