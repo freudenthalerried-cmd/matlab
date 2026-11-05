@@ -652,7 +652,7 @@ function resSketch(poly, L, sig) {
   const P = poly.map(p => [70 + (p[0] - x0) * k, 50 + (p[1] - y0) * k]), cx = P.reduce((a, p) => a + p[0], 0) / P.length, cy = P.reduce((a, p) => a + p[1], 0) / P.length;
   let o = `<svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" class="ressk"><polygon points="${P.map(p => p.join(',')).join(' ')}" fill="#e3f2fd" stroke="#1f3a5f" stroke-width="5"/>`;
   P.forEach((p, i) => { const q = P[(i + 1) % P.length], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = mx - cx, dy = my - cy, n = Math.hypot(dx, dy) || 1, tx = mx + dx / n * 26, ty = my + dy / n * 26, bad = sig[i] == null || sig[i] > 0.005;
-    o += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="700" fill="${bad ? '#c62828' : '#1b5e20'}">${f2(L[i], 3)}</text><text x="${tx}" y="${ty + 16}" text-anchor="middle" font-size="11" fill="#555">Wand ${i + 1}${sig[i] != null ? ' ±' + Math.round(sig[i] * 1000) + ' mm' : ''}</text>`; });
+    o += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="700" fill="${bad ? '#c62828' : '#1b5e20'}">${f2(L[i], 3)} m</text><text x="${tx}" y="${ty + 16}" text-anchor="middle" font-size="11" fill="#555">Wand ${i + 1}${sig[i] != null ? ' ±' + Math.round(sig[i] * 1000) + ' mm' : ''}</text>`; });
   return o + '</svg>';
 }
 function resBusy(t) { let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); } box.hidden = false; box.onclick = null; box.innerHTML = `<div class="rescard"><h2>⏳ Berechne den Raum …</h2><p>${esc(t || 'Bitte kurz warten.')}</p><progress style="width:100%" max="1" value="${Math.min(1, $('#pgProg').value || 0)}"></progress></div>`; }
@@ -670,9 +670,9 @@ function showResult(res, rec, taken, err) {
     if (d.w.warn.length) h += d.w.warn.map(x => `<p class="warn">⚠ ${esc(x)}</p>`).join(''); });
   else h += `<p>${esc(err || 'Es wurden zu wenige Marken erkannt.')}</p><p><b>Was tun?</b></p><ul><li>Jedes Blatt muss auf mehreren Bildern gut zu sehen sein – auch aus der Ecke schräg.</li><li>Den Zollstock mit beiden Bodenblättern mitfilmen, auch kurz von oben.</li><li>In Ecken filmen, damit zwei Blätter gleichzeitig im Bild sind.</li></ul>`;
   if (ok && rec && rec.suspect) h += `<p class="warn">⚠ Ergebnis unsicher: ${esc(rec.suspect)}</p>`;
-  h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen.</p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
+  h += `<p class="hint">Tipp: eine Wand mit dem Maßband nachmessen und vergleichen. <button data-r="share" class="small">📤 Messung an Claude senden</button></p><div class="resbtns">${ok ? (taken ? '<button data-r="plan" class="pri">✔ Im Plan – ansehen</button>' : '<button data-r="take" class="pri">✔ In Plan übernehmen</button>') : ''}<button data-r="again">↻ Neu aufnehmen</button><button data-r="close">Schließen</button></div></div>`;
   box.innerHTML = h; box.hidden = false;
-  box.onclick = e => { const ed = e.target.closest('[data-ed]'); if (ed) return resEdit(ed.dataset.ed, res, rec, taken); const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true;
+  box.onclick = e => { const ed = e.target.closest('[data-ed]'); if (ed) return resEdit(ed.dataset.ed, res, rec, taken); const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; if (a === 'share') { if (typeof DEV !== 'undefined') DEV.shareLast(); return; } box.hidden = true;
     if (a === 'take') { pgTake(); showTab('plan'); } else if (a === 'plan') showTab('plan'); else if (a === 'again') liveStart();
     else if (a === 'op') { const b = e.target.closest('[data-r]'); showTab('auf'); opStart(+b.dataset.ri, +b.dataset.wi); setTimeout(() => $('#opBox') && $('#opBox').scrollIntoView({ behavior: 'smooth' }), 100); } };
   box.querySelectorAll('[data-rh]').forEach(inp => { inp.onclick = e => e.stopPropagation(); inp.onchange = () => { const d = res[+inp.dataset.rh], v = parseLen(inp.value); if (!(v > 1.5 && v < 8)) return; d.kmH = v; if (d.planRoom && S.rooms.includes(d.planRoom)) { d.planRoom.h = +v.toFixed(3); d.planRoom.hSet = true; save(); renderPlan(); } }; });
@@ -910,18 +910,18 @@ function filmStart() {
   let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
   let rh = ''; try { rh = localStorage.getItem('raumplan-rh') || ''; } catch (e) { }
   box.hidden = false; box.innerHTML = `<div class="rescard"><h2>📹 Raum filmen</h2>
-    <p>Zwei Angaben, dann einfach langsam rundherum filmen – nichts antippen.</p>
+    <p><b>Zollstock mit den 2 Bodenblättern</b> ausgeklappt auf den Boden legen (Marken 0/1 bzw. 2/3 = 2,000 m). Das ist der Maßstab. Dann einfach langsam rundherum filmen – nichts antippen.</p>
     <div class="grid">
-      <label>Raumhöhe in m <span class="hint">(einmal mit Zollstock/Laser messen – das ist das Kontrollmaß)</span><input id="fmH" inputmode="decimal" placeholder="z. B. 2,52" value="${esc(rh)}"></label>
+      <label>Raumhöhe in m <span class="hint">(optional – Kontrolle für den Maßstab)</span><input id="fmH" inputmode="decimal" placeholder="z. B. 2,52 oder leer" value="${esc(rh)}"></label>
       <label>Raum rechteckig? <select id="fmRect"><option value="1">Ja – 4 Wände, rechte Winkel</option><option value="0">Nein – L-Form oder mehr Ecken</option></select></label>
       <label><input type="checkbox" id="fmDach"> Dachschrägen vorhanden</label>
     </div>
-    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
+    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Zuerst kurz von oben auf den Zollstock filmen (aus 2–3 Richtungen), dann rundherum. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
     <div class="row"><button data-r="go" class="pri">📹 Filmen starten</button><button data-r="x">Abbrechen</button></div></div>`;
   setTimeout(() => $('#fmH').focus(), 50);
   box.onclick = e => { const act = e.target.closest('[data-r]')?.dataset.r; if (!act) return;
     if (act === 'x') { box.hidden = true; return; }
-    const hv = parseLen($('#fmH').value); if (!(hv > 1.8 && hv < 6)) { notice('Bitte die Raumhöhe in Metern eingeben, z. B. 2,52.'); return; }
+    const hv = parseLen($('#fmH').value) || null; if (hv !== null && !(hv > 1.8 && hv < 6)) { notice('Raumhöhe in Metern, z. B. 2,52 – oder das Feld leer lassen.'); return; }
     try { localStorage.setItem('raumplan-rh', $('#fmH').value); } catch (e) { }
     const opts = { height: hv, rect: $('#fmRect').value === '1', dach: $('#fmDach').checked, name: $('#arName').value.trim() }; box.hidden = true;
     const o = { ...modeGet(), z: false };
@@ -971,8 +971,8 @@ function arResult(r, o, tEnd) {
     const c = calc(), mx = Math.max(...c.sg) * 1000, rel = c.sk * 100;
     let qual, cls;
     if (c.m) { qual = `Maßstab aus ${c.m} Kontrollmaß${c.m > 1 ? 'en' : ''}${sc ? ` (Zollstock wich ${f2(c.zdev, 2)} % ab)` : ''}.`; cls = 'ok'; }
-    else if (sc) { qual = `Maßstab aus ${sc.height ? 'der Raumhöhe' : 'dem Zollstock'} (±${f2(rel, 2)} %). Mit einem Kontrollmaß (Wandlänge) wird es sicherer.`; cls = 'ok'; }
-    else { qual = `⚠ SEHR UNGENAU: weder Zollstock noch Kontrollmaß – nur der Handy-Maßstab (±1–3 %, bei 4 m bis ±${Math.round(40 * 3)} mm). Bitte mindestens eine lange Wand mit Maßband/Laser nachmessen und unten eintragen.`; cls = 'warn'; }
+    else if (sc) { qual = `Maßstab aus ${sc.marker ? 'den Zollstock-Blättern' : sc.height ? 'der Raumhöhe' : 'dem Zollstock'} (±${f2(rel, 2)} %)${r.hChk != null ? ` – Kontrolle Raumhöhe: ${r.hChk >= 0 ? '+' : ''}${f2(r.hChk, 1)} %` : ''}. Mit einem Kontrollmaß (Wandlänge) wird es sicherer.`; cls = Math.abs(r.hChk || 0) > 1.5 ? 'warn' : 'ok'; }
+    else { qual = `⚠ UNGENAU: Zollstock-Blätter nicht erkannt und keine Raumhöhe – nur der Handy-Maßstab (±1–3 %, bei 4 m bis ±${Math.round(40 * 3)} mm). Bitte eine lange Wand mit Maßband/Laser nachmessen und unten eintragen.`; cls = 'warn'; }
     let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
     box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis${r.cover != null ? ` (gefilmt, ${Math.round(r.cover)} % rundherum)` : ' (ohne Marken)'}</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
       <p class="${cls}">${qual}</p>

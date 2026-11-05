@@ -160,3 +160,4 @@ details.menu{position:relative}details.menu summary{list-style:none;cursor:point
 #filmMap{position:fixed;right:10px;bottom:calc(64px + env(safe-area-inset-bottom,0px));width:180px;height:180px;border-radius:10px;border:1px solid #fff6;background:#0008}
 #filmUI .arBtns button.arOk{background:#2e7d32;border-color:#4caf50;font-size:16px;padding:12px 16px}
 #resUI .grid label{font-size:14px;color:var(--fg)}#resUI .grid input,#resUI .grid select{font-size:16px}
+button.small{font-size:13px;padding:4px 8px}

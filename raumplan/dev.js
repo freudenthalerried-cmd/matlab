@@ -4,7 +4,7 @@
    nimmt die tatsächlichen Raummaße (Soll) auf, vergleicht und exportiert alles zur Analyse (sim/dev_analyse.js). */
 const DEV = (() => {
   const LS = 'raumplan-dev';
-  let on = false; try { if (/[?&]dev=1/.test(location.search)) localStorage.setItem(LS, '1'); if (/[?&]dev=0/.test(location.search)) localStorage.removeItem(LS); on = localStorage.getItem(LS) === '1'; } catch (e) { }
+  let on = true; try { if (/[?&]dev=1/.test(location.search)) localStorage.removeItem(LS); if (/[?&]dev=0/.test(location.search)) localStorage.setItem(LS, '0'); on = localStorage.getItem(LS) !== '0'; } catch (e) { } // immer an – jede Messung wird im Hintergrund gesichert
   const cam = {};
   const r4 = v => typeof v === 'number' ? +v.toFixed(4) : v;
   async function root() { try { const r = await navigator.storage.getDirectory(); return await r.getDirectoryHandle('dev', { create: true }); } catch (e) { return null; } }
@@ -86,7 +86,7 @@ const DEV = (() => {
     let box = document.getElementById('devBox');
     if (!on) { if (box) box.remove(); return; }
     if (!box) { box = document.createElement('details'); box.id = 'devBox'; box.className = 'card'; box.open = true; const a = document.getElementById('pgRes'); (a ? a.parentNode : document.body).insertBefore(box, a ? a.nextSibling : null); }
-    const L = await list(); let h = `<summary><b>🛠 Entwicklermodus</b> – ${L.length} Fälle gespeichert</summary><p class="hint">Jede Auswertung wird mit Fotos, Video und allen Erkennungsdaten gespeichert. Tatsächliche Maße eintragen (Zollstock/Laser), dann „📦 Teilen“ → z. B. Google Drive, Ordner „Raumplan-Dev“ – Claude analysiert es dort.</p>`;
+    const L = await list(); let h = `<summary><b>🛠 Entwicklermodus</b> – ${L.length} Fälle gespeichert</summary><p class="hint">Jede Messung wird im Hintergrund mit allen Rohdaten gespeichert (zum Lernen und Nachrechnen). Tatsächliche Maße eintragen (Zollstock/Laser), dann „📦 Teilen“ → z. B. Google Drive, Ordner „Raumplan-Dev“ – Claude analysiert es dort.</p>`;
     for (const n of L.slice(0, 15)) {
       const J = await readJ(n); if (!J) continue; const R = J.res.find(d => d.ok), m = R && J.soll && J.soll.walls ? match(R.lengths, J.soll.walls) : null;
       h += `<div class="devcase" data-n="${n}"><p><b>${n.slice(5).replace(/-(\d\d)-(\d\d)-(\d\d)$/, ' $1:$2')}</b> · ${J.frames.length} Bilder · ${J.bilder.length} Fotos${J.video ? ' · 🎞' : ''} · ${R ? R.lengths.map(fmt).join(' / ') + ' m' : '<span class="warn">kein Ergebnis</span>'}${J.rec && J.rec.rms != null ? ` · rms ${J.rec.rms} px` : ''}</p>
@@ -104,7 +104,7 @@ const DEV = (() => {
     box.querySelectorAll('.devcase button').forEach(b => b.onclick = async () => { const n = b.closest('.devcase').dataset.n, a = b.dataset.a;
       if (a === 'del') { if (!confirm(`Fall ${n} löschen?`)) return; (await root()).removeEntry(n, { recursive: true }); render(); }
       else exportCase(n, a === 'share'); });
-    document.getElementById('devOff').onclick = () => { try { localStorage.removeItem(LS); } catch (e) { } on = false; render(); };
+    document.getElementById('devOff').onclick = () => { try { localStorage.setItem(LS, '0'); } catch (e) { } on = false; render(); };
   }
 
   // ZIP (ohne Kompression) – Fotos/Video sind schon komprimiert
@@ -134,5 +134,6 @@ const DEV = (() => {
   // 5× auf den Titel tippen schaltet um
   let taps = 0, tT = 0; document.addEventListener('click', e => { if (!e.target.closest('h1')) return; const t = Date.now(); taps = t - tT < 600 ? taps + 1 : 1; tT = t; if (taps >= 5) { taps = 0; on = !on; try { on ? localStorage.setItem(LS, '1') : localStorage.removeItem(LS); } catch (x) { } alert('Entwicklermodus ' + (on ? 'EIN' : 'AUS')); render(); } });
   if (on) setTimeout(render, 500);
-  return { get on() { return on; }, capture, camInfo, setVideo, render, diagnose, match, zip, list, readJ };
+  async function shareLast() { if (!last) { const L = await list(); last = L[0] || null; } if (last) exportCase(last, true); }
+  return { get on() { return on; }, capture, camInfo, setVideo, render, diagnose, match, zip, list, readJ, shareLast };
 })();
