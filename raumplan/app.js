@@ -228,7 +228,7 @@ function pgRoomDefs(txt, ids) { // "Name: 4-19" oder "Name: 4-19: 6" (6 Wände e
   return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null, expect: Math.round(num($('#pgWalls').value)) || 0 }];
 }
 let devD = null; // DEV
-function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v29', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
+function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v30', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
 $('#pgRun').onclick = async () => {
   devD = null; // DEV
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
@@ -574,7 +574,7 @@ async function liveFinish() {
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
-$('#liveOpen').onclick = measureStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
+$('#liveMk').onclick = () => { live.autoAR = false; liveStart(); }; $('#liveOpen').onclick = () => arStart(); // direkt ohne Marken: Zollstock filmen → Wände (Marken-Messung nur noch über „Einstellungen“) $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
 $('#liveToAR').onclick = () => { VID.stop(); liveStop(); arStart(); }; // keine Blätter → AR-Messung
 
@@ -903,14 +903,14 @@ function measureStart() {
   draw(); box.hidden = false;
 }
 function arStart(msg) {
-  const o = modeGet(); if (msg) alert(msg);
-  AR.start(r => arResult(r, o, Date.now()), { zollstock: o.z ? (parseLen($('#pgDist').value) || 2) : 0 });
+  const o = { ...modeGet(), z: true }; if (msg) alert(msg);
+  AR.start(r => arResult(r, o, Date.now()), { zollstock: parseLen($('#pgDist').value) || 2 });
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
   const t0 = tEnd - 3 * 3600e3; let Q = r.poly.map(p => [p[0], p[1]]);
   const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
-  const scaleTerm = L => L * (sc ? (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1) : 0.01) * (sc ? sc.k : 1);
+  const scaleTerm = L => L * (sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.01) * (sc ? sc.k : 1);
   const fit = L0.map((L, i) => Math.sqrt(Math.max(0, r.sigma[i] ** 2 - scaleTerm(L) ** 2)) || 0.003);
   const A = { km: {} };
   // gesprochene/gemessene Wandmaße der letzten Stunden der passendsten Wand zuordnen (±8 %)
@@ -919,7 +919,7 @@ function arResult(r, o, tEnd) {
     const ks = Object.entries(A.km).map(([i, v]) => ({ i: +i, r: v / L0[+i] })), m = ks.length;
     let k = 1, sk;
     if (m) { const sw = ks.reduce((a, q) => a + L0[q.i], 0); k = ks.reduce((a, q) => a + q.r * L0[q.i], 0) / sw; const sd = m > 1 ? Math.sqrt(ks.reduce((a, q) => a + (q.r - k) ** 2, 0) / (m - 1)) : 0.002; sk = Math.hypot(0.001 / sw, sd / Math.sqrt(m)); }
-    else sk = sc ? (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1) : 0.015; // nur Handy: WebXR-Maßstab erfahrungsgemäß 1–2 % daneben
+    else sk = sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.015; // nur Handy: WebXR-Maßstab erfahrungsgemäß 1–2 % daneben
     const L = L0.map(x => x * k), sg = L.map((x, i) => Math.hypot(fit[i] * k, x * sk));
     return { k, sk, m, L, sg, h: r.height ? r.height * k : null, zdev: m && sc ? (k - 1) * 100 : null };
   };
@@ -932,7 +932,8 @@ function arResult(r, o, tEnd) {
     let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
     box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis (ohne Marken)</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
       <p class="${cls}">${qual}</p>
-      <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] <= 0.005 ? 'ok' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>
+      <p class="accbig ${c.sk <= 0.002 ? 'ok' : c.sk <= 0.005 ? 'mid' : 'warn'}">Genauigkeit ±${f2(Math.max(...c.sg.map((g, i) => g / c.L[i])) * 100, 2)} %</p>
+      <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] / x <= 0.002 ? 'ok' : c.sg[i] / x <= 0.005 ? 'mid' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm · ${f2(c.sg[i] / x * 100, 2)} %</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>
       <p class="hint">Kontrollmaß: bei der Wand auf „📏 eintragen“ tippen und das gemessene Maß eintippen oder ansagen (🎤). Die längste Wand bringt am meisten.</p>
       <p><b>Raumhöhe:</b> ${c.h ? f2(c.h, 3) + ' m' : 'nicht gemessen'} · Genauigkeit ca. ±${Math.round(mx)} mm</p>
       <div class="resbtns"><button data-a="take" class="pri">✔ In Plan übernehmen</button><button data-a="no">Verwerfen</button></div></div>`;

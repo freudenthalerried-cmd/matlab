@@ -24,14 +24,13 @@
     <div class="card pgcard">
       <h3>Raum messen</h3>
       <ol class="steps">
-        <li><b>„📹 Raum messen“</b> tippen und mit dem Handy durch den Raum gehen.</li>
-        <li><b>Mit Blättern</b> (Zollstock + Wandblätter): die App erkennt sie selbst und misst auf wenige Millimeter. <b>Ohne Blätter:</b> die App bietet die AR-Messung an (ca. ±1 cm).</li>
-        <li>Das <b>Ergebnis</b> erscheint von selbst – mit Skizze und allen Maßen.</li>
+        <li><b>Zollstock</b> ganz ausgeklappt auf den Boden legen, <b>„📹 Raum messen“</b> tippen und ihn von oben filmen – die App erkennt ihn selbst und nimmt ihn als Maßstab.</li>
+        <li>Dann jede <b>Wand der Reihe nach abtasten</b>, Decke antippen für die Raumhöhe. Die Genauigkeit in % steht laufend oben (grün = gut).</li>
+        <li>Am Ende eine Wand mit <b>Maßband/Laser</b> als Kontrollmaß eintragen – dann stimmt der Maßstab sicher.</li>
       </ol>
       <div class="row">
         <button id="liveOpen" class="pri big">📹 Raum messen</button>
-        <button id="pgWallSheets">🖨 Blätter drucken</button>
-        <input id="arName" placeholder="Raumname (optional)" size="14">
+                <input id="arName" placeholder="Raumname (optional)" size="14">
       </div>
       <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
@@ -39,6 +38,7 @@
       <div id="pgRes"></div>
       <details class="more">
         <summary>⚙️ Einstellungen (antippen zum Aufklappen)</summary>
+        <div class="row"><button id="liveMk">🎯 Mit Marken-Blättern messen (mm-genau)</button><button id="pgWallSheets">🖨 Blätter drucken</button></div>
         <div class="row">
           <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
           <label><input type="checkbox" id="pgPhoto" checked> Fotos in voller Auflösung (genauer, je Bild ca. 1 s ruhig halten)</label>
@@ -224,6 +224,7 @@
   </section>
 </main>
 <div id="arUI" hidden>
+  <canvas id="arCv"></canvas>
   <div class="arTop"><span id="arInfo"></span><span class="sp"></span><button id="arCancel">✕</button></div>
   <div id="arMsg" class="arMsg"></div>
   <div id="arDot" class="ardot"></div>

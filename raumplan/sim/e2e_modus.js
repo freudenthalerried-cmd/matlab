@@ -2,12 +2,10 @@
 const {chromium}=require(process.env.NP+'/playwright');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:430,height:900}});const errs=[],al=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>{al.push(d.message());d.accept();});
 await p.goto(process.env.URL);await p.evaluate(()=>{localStorage.clear();localStorage.setItem('raumplan-guide','1');});await p.reload();
-await p.click('#liveOpen');await p.click('#modeUI [data-k="z"][data-v="false"]');await p.click('#modeUI [data-k="k"][data-v="false"]');
-const t1=await p.textContent('#modeUI');await p.click('#modeUI [data-k="k"][data-v="true"]');const t2=await p.textContent('#modeUI');
-await p.click('#modeUI [data-k="m"][data-v="nein"]');await p.click('#mGo');await p.waitForTimeout(300);
-const ok1=/SEHR UNGENAU/.test(t1)&&/Maßstab aus Kontrollmaß/.test(t2)&&al.some(a=>/AR wird auf diesem Gerät/.test(a));console.log('Startabfrage ok:',ok1,'| Modus gespeichert:',await p.evaluate(()=>localStorage.getItem('raumplan-mode')));
+await p.click('#liveOpen');await p.waitForTimeout(500);
+const ok1=al.some(a=>/AR wird auf diesem Gerät/.test(a))&&!(await p.isVisible('#modeUI').catch(()=>false));console.log('Start direkt ohne Abfrage (AR):',ok1);
 // AR-Ergebnis simulieren: Raum 4,20 × 3,60, Handy-Maßstab 2 % zu groß, kein Zollstock
-await p.evaluate(()=>{const k=1.02,P=[[0,0],[4.2,0],[4.2,3.6],[0,3.6]].map(q=>q.map(v=>v*k));arResult({poly:P,sigma:[.045,.04,.045,.04],height:2.6*k,scale:null},modeGet(),Date.now());});
+await p.evaluate(()=>{const k=1.02,P=[[0,0],[4.2,0],[4.2,3.6],[0,3.6]].map(q=>q.map(v=>v*k));arResult({poly:P,sigma:[.045,.04,.045,.04],height:2.6*k,scale:null},{z:false},Date.now());});
 const w1=await p.textContent('#resUI');console.log('ohne Kontrollmaß:',/SEHR UNGENAU/.test(w1),w1.match(/4,284 m/)?'4,284 m':'?');
 await p.click('#resUI [data-km="0"]');await p.fill('#edUI input','4,20');await p.click('#edOk');
 const w2=await p.textContent('#resUI');const ok2=/SEHR UNGENAU/.test(w1)&&!/SEHR UNGENAU/.test(w2)&&/4,200 m/.test(w2)&&/3,600 m/.test(w2)&&/2,600 m/.test(w2);console.log('mit Kontrollmaß korrigiert:',ok2);

@@ -102,6 +102,53 @@ const AR = (() => {
     const K = []; [[0, 1], [2, 3]].forEach(([a, b]) => { if (pos[a] && pos[b]) { const d = Math.hypot(pos[a][0] - pos[b][0], pos[a][1] - pos[b][1]); if (d > 0.5) K.push(len / d); } });
     return { k: K.length ? K.reduce((x, y) => x + y, 0) / K.length : null, n: K.length, cnt, auto: true };
   }
+  // ---- Zollstock ohne Marken: gelben Stab im Kamerabild finden, Enden subpixelgenau, Länge über den Boden → Maßstab ----
+  const isY = (px, j) => { const r = px[j], g = px[j + 1], b = px[j + 2]; return r > 110 && g > 80 && b < 0.62 * Math.min(r, g) && r - b > 50 && g - b > 35; };
+  function rulerFind(px, W, H, flip = true) { // px RGBA; flip: Zeilen von unten (WebGL) → v von oben
+    const s = Math.max(1, Math.round(W / 480)), w = Math.floor(W / s), h = Math.floor(H / s), m = new Uint8Array(w * h);
+    const J = (x, y) => ((flip ? H - 1 - y : y) * W + x) * 4;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) m[y * w + x] = isY(px, J(x * s, y * s)) ? 1 : 0;
+    const m0 = m.slice(); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if (!m0[y * w + x] && (m0[y * w + x - 1] && m0[y * w + x + 1] || m0[(y - 1) * w + x] && m0[(y + 1) * w + x] || m0[(y - 1) * w + x - 1] && m0[(y + 1) * w + x + 1] || m0[(y - 1) * w + x + 1] && m0[(y + 1) * w + x - 1])) m[y * w + x] = 1; // Lücken (Ziffern, Gelenke) schließen
+    for (let it = 0; it < 2; it++) { const mm = m.slice(); for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) if (!mm[y * w + x]) for (const [dx, dy] of [[2, 0], [0, 2], [2, 2], [2, -2]]) if (mm[(y + dy) * w + x + dx] && mm[(y - dy) * w + x - dx]) { m[y * w + x] = 1; break; } }
+    const lab = new Int32Array(w * h), st = []; let best = null, nl = 0;
+    for (let i0 = 0; i0 < w * h; i0++) {
+      if (!m[i0] || lab[i0]) continue; nl++; const P = []; st.push(i0); lab[i0] = nl;
+      while (st.length) { const i = st.pop(), x = i % w, y = (i / w) | 0; P.push(x, y);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; const k = yy * w + xx; if (m[k] && !lab[k]) { lab[k] = nl; st.push(k); } } }
+      const n = P.length / 2; if (n < 30) continue;
+      let mx = 0, my = 0; for (let k = 0; k < P.length; k += 2) { mx += P[k]; my += P[k + 1]; } mx /= n; my /= n;
+      let sxx = 0, syy = 0, sxy = 0; for (let k = 0; k < P.length; k += 2) { const a = P[k] - mx, b = P[k + 1] - my; sxx += a * a; syy += b * b; sxy += a * b; } sxx /= n; syy /= n; sxy /= n;
+      const tr = sxx + syy, dt = Math.sqrt(Math.max(0, (sxx - syy) ** 2 / 4 + sxy * sxy)), l1 = tr / 2 + dt, l2 = Math.max(1e-6, tr / 2 - dt);
+      const len = Math.sqrt(12 * l1); if (l1 / l2 < 60 || len < 0.25 * Math.min(w, h)) continue; // lang und dünn
+      if (!best || len > best.len) { const ang = 0.5 * Math.atan2(2 * sxy, sxx - syy); best = { P, n, mx, my, e: [Math.cos(ang), Math.sin(ang)], len, wid: Math.sqrt(12 * l2) }; }
+    }
+    if (!best) return null;
+    const { P, e } = best, nrm = [-e[1], e[0]]; let t0 = Infinity, t1 = -Infinity;
+    for (let k = 0; k < P.length; k += 2) { const t = (P[k] - best.mx) * e[0] + (P[k + 1] - best.my) * e[1]; if (t < t0) t0 = t; if (t > t1) t1 = t; }
+    const endAt = (tE, dir) => { // Mitte quer zum Stab nahe dem Ende (grob), dann am Vollbild entlang der Achse das letzte gelbe Stück suchen
+      let cx = 0, cy = 0, c = 0; for (let k = 0; k < P.length; k += 2) { const t = (P[k] - best.mx) * e[0] + (P[k + 1] - best.my) * e[1]; if (Math.abs(t - tE) < 2.5 + best.wid) { cx += P[k]; cy += P[k + 1]; c++; } }
+      let p = [(cx / c) * s + 0.5, (cy / c) * s + 0.5]; const hw = Math.max(1, best.wid * s * 0.4), gap = Math.max(3, best.wid * s * 0.8);
+      // Achse nahe dem Ende: Punkte zwischen 3 und 12 Stabbreiten vom Ende → Richtung
+      const fr = t => { let y = 0, a = 0; for (let o = -hw; o <= hw; o += Math.max(0.5, hw / 3)) { const x = Math.round(p[0] + dir * e[0] * t + nrm[0] * o), yy = Math.round(p[1] + dir * e[1] * t + nrm[1] * o); if (x < 0 || yy < 0 || x >= W || yy >= H) continue; a++; if (isY(px, J(x, yy))) y++; } return a ? y / a : 0; };
+      let last = -4 * s; for (let t = -4 * s; t <= 6 * s + best.wid * s; t += 0.5) { if (fr(t) >= 0.35) last = t; else if (t > last + gap) break; }
+      // quer zur Achse mittig setzen (Rand gelb/Boden beidseitig), etwas innerhalb des Endes gemessen
+      const tq = last - Math.max(2, best.wid * s * 0.7), ext = sg => { let o = 0; for (; o < 4 * best.wid * s; o += 0.5) { const x = Math.round(p[0] + dir * e[0] * tq + nrm[0] * o * sg), yy = Math.round(p[1] + dir * e[1] * tq + nrm[1] * o * sg); if (x < 0 || yy < 0 || x >= W || yy >= H || !isY(px, J(x, yy))) break; } return o; };
+      const op = ext(1), om = ext(-1), sh = (op - om) / 2; p = [p[0] + nrm[0] * sh, p[1] + nrm[1] * sh];
+      p = [p[0] + dir * e[0] * (last + 0.25), p[1] + dir * e[1] * (last + 0.25)];
+      const edge = 3 * s; return { p, ok: p[0] > edge && p[1] > edge && p[0] < W - edge && p[1] < H - edge };
+    };
+    const A = endAt(t0, -1), B = endAt(t1, 1);
+    return { a: A.p, b: B.p, okA: A.ok, okB: B.ok, lenPx: Math.hypot(A.p[0] - B.p[0], A.p[1] - B.p[1]), wPx: best.wid * s };
+  }
+  // laufende Maßstabsschätzung aus allen Bildern mit beiden Enden: Median, Streuung → Genauigkeit in %
+  function rulerScale(K) {
+    const k = K.filter(x => x > 0.85 && x < 1.15); if (k.length < 3) return null;
+    const so = [...k].sort((a, b) => a - b), mdn = so[so.length >> 1], mad = med(so.map(x => Math.abs(x - mdn))) || 0.0005;
+    const use = so.filter(x => Math.abs(x - mdn) < 4 * 1.4826 * mad + 1e-4), km = use.reduce((a, x) => a + x, 0) / use.length;
+    const sd = Math.sqrt(use.reduce((a, x) => a + (x - km) ** 2, 0) / Math.max(1, use.length - 1));
+    const stat = sd / Math.sqrt(use.length) / km;
+    return { k: km, n: use.length, stat, sig: Math.hypot(stat, 0.0015), auto: true, ruler: true }; // 0,15 % Restfehler: Bodenebene/Stabdicke
+  }
   // mehrere Lagen (Zollstock umgelegt): Mittel der Faktoren – Tippfehler und Richtungsabhängigkeit mitteln sich heraus
   function scale(zs, len, more = []) {
     if (!(len > 0)) return null; const K = [];
@@ -110,13 +157,23 @@ const AR = (() => {
     return { k, n: K.length, spread: K.length > 1 ? Math.sqrt(K.reduce((s, x) => s + (x - k) ** 2, 0) / (K.length - 1)) : null };
   }
 
+  function drawRuler() { // erkannten Zollstock farbig einzeichnen (grün = beide Enden, gelb = angeschnitten)
+    const c = el('arCv'); if (!c) return; const W = innerWidth, H = innerHeight; if (c.width !== W) c.width = W; if (c.height !== H) c.height = H;
+    const x = c.getContext('2d'); x.clearRect(0, 0, W, H); const rv = st.rv; if (st.phase !== 'z0' || !rv || Date.now() - rv.t > 800) return;
+    const k = Math.max(W / rv.W, H / rv.H), ox = (W - rv.W * k) / 2, oy = (H - rv.H * k) / 2, P = p => [p[0] * k + ox, p[1] * k + oy], a = P(rv.a), b = P(rv.b), ok = rv.okA && rv.okB;
+    x.lineCap = 'round'; x.strokeStyle = ok ? '#00e676cc' : '#ffd600cc'; x.lineWidth = Math.max(6, rv.wPx * k * 0.6); x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke();
+    [[a, rv.okA], [b, rv.okB]].forEach(([p, o]) => { x.fillStyle = o ? '#00e676' : '#ff5252'; x.beginPath(); x.arc(p[0], p[1], 11, 0, 7); x.fill(); x.strokeStyle = '#000'; x.lineWidth = 2; x.stroke(); });
+  }
   function ui(msg) {
     const w = st.walls, cur = w[w.length - 1], h = st.hit, done = w.filter(x => x.length >= 2).length;
     let t;
     if (st.phase === 'z0' || st.phase === 'z1') {
       const e = st.phase === 'z0' ? 0 : 1, n = st.zs[e].length;
       const ac = st.camOk ? autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null) : null;
-      if (st.camOk) t = `<b>Schritt 1 – Zollstock (automatisch):</b> Handy langsam über den Zollstock führen, sodass nacheinander <b>beide Enden mit den Marken</b> gut im Bild sind. Erkannt: Marke 0: ${ac ? ac.cnt[0] || 0 : 0}×, 1: ${ac ? ac.cnt[1] || 0 : 0}×, 2: ${ac ? ac.cnt[2] || 0 : 0}×, 3: ${ac ? ac.cnt[3] || 0 : 0}× ${ac && ac.k ? ([0, 1, 2, 3].every(i => (ac.cnt[i] || 0) >= 30) ? '– <b>Maßstab ✓✓ (beste Genauigkeit)</b>, „Weiter“ tippen.' : '– Maßstab ✓, für beste Genauigkeit weiter über den Zollstock führen (je 30×).') : '(je mind. 15×)'}`;
+      if (st.camOk) { const rs = rulerScale(st.rk), rv = st.rv && Date.now() - st.rv.t < 800 ? st.rv : null;
+        t = `<b>1 · Zollstock</b> (${String(st.zlen.toFixed(3)).replace('.', ',')} m) ganz ausgeklappt auf den Boden legen und <b>von oben</b> filmen – <b>beide Enden</b> im Bild, langsam etwas hin und her gehen.<br>`
+          + (st.floorY.length <= 10 ? '<span class="arY">Boden wird gesucht – Handy langsam bewegen …</span>' : !rv ? '<span class="arR">Zollstock nicht im Bild</span>' : !(rv.okA && rv.okB) ? `<span class="arY">Zollstock gesehen – ${rv.okA || rv.okB ? 'ein Ende' : 'beide Enden'} außerhalb, etwas weiter weg</span>` : '<span class="arG">Zollstock erkannt ✓</span>')
+          + (rs ? ` · ${rs.n} Bilder · Maßstab ±<b class="${rs.sig <= 0.002 ? 'arG' : rs.sig <= 0.004 ? 'arY' : 'arR'}">${(rs.sig * 100).toFixed(2).replace('.', ',')} %</b>` : '') + (ac && ac.k ? ' · Marken am Zollstock ✓' : ''); }
       else t = `<b>Schritt 1 – Zollstock:</b> Kreis genau auf den <b>${e ? 'Ende (200 cm)' : 'Anfang (0 cm)'}</b> des Zollstocks und „Punkt“ tippen${n ? ` (${n}× ✓ – noch 1–2 × für mehr Genauigkeit, dann „Weiter“)` : ''}. Ohne Zollstock: „Überspringen“.`;
     } else t = !h ? 'Handy langsam hin und her bewegen, bis Boden und Wände erkannt sind …'
       : h.kind === 'floor' ? 'Das ist der <b>Boden</b>. Auf eine <b>Wand</b> zielen (über den Möbeln).'
@@ -127,7 +184,11 @@ const AR = (() => {
       : `Wand ${w.length}: ${cur.length} Punkte ✓ – „Nächste Wand“ (der Reihe nach rundherum).`;
     el('arMsg').innerHTML = msg || t;
     const sa = st.camOk ? autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null) : null, sc = sa && sa.k ? sa : scale(st.zs, st.zlen, st.zp);
-    el('arInfo').textContent = `${done} Wände` + (sc ? ` · Maßstab (${sc.auto ? 'Marken automatisch' : sc.n + ' Lage' + (sc.n > 1 ? 'n' : '')}) ${((sc.k - 1) * 100 >= 0 ? '+' : '') + ((sc.k - 1) * 100).toFixed(2).replace('.', ',')} %` : '') + (h ? ` · Abstand ${(h.dist).toFixed(2).replace('.', ',')} m` : '') + (st.ceilY !== null && st.floorY.length ? ` · Höhe ${(st.ceilY - med(st.floorY)).toFixed(2).replace('.', ',')} m` : '');
+    const sr = st.auto || (st.camOk ? rulerScale(st.rk) : null) || sc;
+    if (done >= 3 && Date.now() - st.estT > 800) { st.estT = Date.now(); try { const e = solve(st.walls.filter(x => x.length >= 2), st.zs, st.zlen, st.floorY, st.ceilY, st.zp, st.auto || rulerScale(st.rk)); st.est = e.err ? null : Math.max(...e.sigma.map((s0, i) => s0 / Math.hypot(e.poly[(i + 1) % e.poly.length][0] - e.poly[i][0], e.poly[(i + 1) % e.poly.length][1] - e.poly[i][1]))); } catch (x) { st.est = null; } }
+    const rel = st.est != null ? st.est : sr ? (sr.sig != null ? sr.sig : 0.003) : 0.015, col = rel <= 0.002 ? 'arG' : rel <= 0.005 ? 'arY' : 'arR';
+    el('arInfo').innerHTML = `<b class="${col}">±${(rel * 100).toFixed(2).replace('.', ',')} %</b> · ${done} Wände` + (sr ? ` · Maßstab ${((sr.k - 1) * 100 >= 0 ? '+' : '') + ((sr.k - 1) * 100).toFixed(2).replace('.', ',')} %` : ' · <span class="arR">ohne Zollstock</span>') + (h ? ` · Abstand ${(h.dist).toFixed(2).replace('.', ',')} m` : '') + (st.ceilY !== null && st.floorY.length ? ` · Höhe ${(st.ceilY - med(st.floorY)).toFixed(2).replace('.', ',')} m` : '');
+    drawRuler();
     el('arDot').className = 'ardot ' + (h ? h.kind : '') + (st.scan ? ' scan' : '');
     const zp = st.phase !== 'walls';
     el('arNext').textContent = zp ? (st.zs[st.phase === 'z0' ? 0 : 1].length ? 'Weiter ›' : 'Überspringen ›') : 'Nächste Wand ›';
@@ -147,7 +208,7 @@ const AR = (() => {
     st.s = s;
     const cv = document.createElement('canvas'), gl = cv.getContext('webgl', { xrCompatible: true });
     await s.updateRenderState({ baseLayer: new XRWebGLLayer(s, gl) });
-    st.camOk = false; st.mobs = []; st.grabT = 0; st.camInfo = '';
+    st.camOk = false; st.mobs = []; st.rk = []; st.rv = null; st.grabT = 0; st.camInfo = ''; st.estT = 0; st.est = null;
     let glb = null, fb = null; try { if ((s.enabledFeatures || []).includes('camera-access') && typeof XRWebGLBinding !== 'undefined') { glb = new XRWebGLBinding(s, gl); fb = gl.createFramebuffer(); st.camOk = true; } } catch (e) { }
     const space = await s.requestReferenceSpace('local'), viewer = await s.requestReferenceSpace('viewer');
     let src; try { src = await s.requestHitTestSource({ space: viewer, entityTypes: ['plane', 'point'] }); } catch (e) { src = await s.requestHitTestSource({ space: viewer }); }
@@ -167,6 +228,10 @@ const AR = (() => {
             setTimeout(() => { // Erkennung außerhalb des Render-Takts; Zeilen kommen von unten → umdrehen
               try { const g = new Float32Array(W * H); for (let y = 0; y < H; y++) { const r = (H - 1 - y) * W * 4; for (let x = 0; x < W; x++) { const j = r + x * 4; g[y * W + x] = 0.299 * px[j] + 0.587 * px[j + 1] + 0.114 * px[j + 2]; } }
                 MK.detect(g, W, H, { maxW: W }).filter(m => m.id <= 3 && m.res < 0.8).forEach(m => { const c = markerCenter(m.c); st.mobs.push({ id: m.id, u: c[0], v: c[1], W, H, proj, cam }); });
+                const R = rulerFind(px, W, H); st.rv = R ? { ...R, W, H, t: Date.now() } : null;
+                if (R && R.okA && R.okB && st.floorY.length > 10) { const fy = med(st.floorY) + 0.004, a = pixelToFloor(R.a[0], R.a[1], W, H, proj, cam, fy), b = pixelToFloor(R.b[0], R.b[1], W, H, proj, cam, fy);
+                  if (a && b) { const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 0.3) { st.rk.push(st.zlen / d); if (st.rk.length > 150) st.rk.shift(); st.log.push({ rk: +(st.zlen / d).toFixed(5), pa: R.a.map(v => +v.toFixed(1)), pb: R.b.map(v => +v.toFixed(1)), W, H }); } } }
+                const rs = rulerScale(st.rk); if (rs && st.phase === 'z0' && rs.n >= 15 && rs.stat <= 0.001) { st.auto = rs; st.phase = 'walls'; navigator.vibrate?.([40, 60, 40]); ui(`✅ Zollstock erkannt (${rs.n} Bilder) – Maßstab ${((rs.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert, Genauigkeit ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %. Jetzt die erste Wand abtasten.`); }
                 if (st.mobs.length > 400) st.mobs.splice(0, st.mobs.length - 400); } catch (e) { }
               st.grabBusy = false; }, 0);
           }
@@ -200,7 +265,8 @@ const AR = (() => {
   function zMore() { if (st.phase !== 'z1' || !st.zs[1].length) return; st.zp.push(st.zs); st.zs = [[], []]; st.phase = 'z0'; ui(`Lage ${st.zp.length} gespeichert ✓ – Zollstock an anderer Stelle bzw. in anderer Richtung hinlegen, dann wieder Anfang und Ende antippen.`); }
   function toggleScan() { if (st.phase !== 'walls') return; st.scan = !st.scan; st.last = null; navigator.vibrate?.(st.scan ? 40 : 20); ui(); }
   function next() {
-    if (st.phase === 'z0' && st.camOk) { st.phase = 'walls'; const sa = autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null); st.auto = sa && sa.k ? sa : null; return ui(st.auto ? `Zollstock-Marken ✓ – AR-Maßstab wird um ${((st.auto.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die erste Wand abtasten.` : 'Marken nicht oft genug erkannt – ohne Maßstab weiter.'); }
+    if (st.phase === 'z0' && st.camOk) { st.phase = 'walls'; const sa = autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null), rs = rulerScale(st.rk); st.auto = sa && sa.k ? sa : rs;
+      if (!sa?.k && rs) return ui(`Zollstock ✓ (${rs.n} Bilder) – Maßstab ${((rs.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert, ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %. Jetzt die erste Wand abtasten.`); return ui(st.auto ? `Zollstock ✓ – AR-Maßstab wird um ${((st.auto.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die erste Wand abtasten.` : 'Zollstock nicht erkannt – ohne Zollstock weiter (ungenauer, Kontrollmaß am Ende eintragen!).'); }
     if (st.phase === 'z0') { st.phase = 'z1'; return ui(); }
     if (st.phase === 'z1') { st.phase = 'walls'; const sc = scale(st.zs, st.zlen, st.zp); return ui(sc ? `Zollstock ✓ – AR-Maßstab wird um ${((sc.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die erste Wand abtasten.` : 'Ohne Zollstock weiter – jetzt die erste Wand abtasten.'); }
     const w = st.walls, cur = w[w.length - 1]; if (cur.length < 2) return;
@@ -220,7 +286,7 @@ const AR = (() => {
     const sc = auto && auto.k ? auto : scale(zs, zlen, zp), k = sc ? sc.k : 1, n = g.P.length;
     const P = g.P.map(p => [p[0] * k, p[1] * k]), fy = med(floorY), h = ceilY !== null && fy !== null ? (ceilY - fy) * k : null;
     // Wandlänge i = Ecke i → i+1; Unsicherheit aus Versatz der beiden Nachbarwände (Punktstreuung/√n) und Maßstab
-    const sig = P.map((p, i) => { const a = g.L[(i + n - 1) % n], b = g.L[(i + 1) % n], L = Math.hypot(P[(i + 1) % n][0] - p[0], P[(i + 1) % n][1] - p[1]); return Math.hypot(a.sOff, b.sOff, sc ? L * (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n) : L * 0.01) * k; });
+    const sig = P.map((p, i) => { const a = g.L[(i + n - 1) % n], b = g.L[(i + 1) % n], L = Math.hypot(P[(i + 1) % n][0] - p[0], P[(i + 1) % n][1] - p[1]); return Math.hypot(a.sOff, b.sOff, sc ? L * (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n)) : L * 0.01) * k; });
     return { poly: P, height: h && h > 1.8 && h < 6 ? h : null, rms: Math.max(...g.L.map(l => l.rms)), sigma: sig, scale: sc, lines: g.L.map(l => ({ used: l.used, total: l.total, rms: l.rms, span: l.span })) };
   }
   function finish() {
@@ -232,6 +298,6 @@ const AR = (() => {
     st.done && st.done(r);
   }
   function cancel() { st.s && st.s.end(); }
-  return { start, point, next, undo, finish, cancel, toggleScan, zMore, pixelToFloor, markerCenter, autoScale, inv4, pixelRay, triangulate, fitLine, polygon, solve, scale };
+  return { start, point, next, undo, finish, cancel, toggleScan, zMore, pixelToFloor, markerCenter, autoScale, inv4, pixelRay, triangulate, fitLine, polygon, solve, scale, rulerFind, rulerScale };
 })();
 if (typeof module !== 'undefined') module.exports = AR;
