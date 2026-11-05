@@ -151,3 +151,7 @@ details.more2 summary{cursor:pointer;font-weight:600}
 /* Hinweiskarte unten (ersetzt Browser-Alerts) */
 #notice{position:fixed;left:0;right:0;bottom:0;z-index:95;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0)) 12px;pointer-events:none}#notice[hidden]{display:none}
 .ncard{pointer-events:auto;background:#263238;color:#fff;border-radius:12px;padding:12px 14px;max-width:560px;width:100%;display:flex;gap:10px;align-items:flex-start;box-shadow:0 4px 18px #0006;font-size:15px;line-height:1.35}.ncard span{flex:1}.ncard .nx{background:none;border:none;color:inherit;font-size:16px;padding:0 4px;cursor:pointer}
+/* ⋯ Mehr-Menü im Plan, eingeklappte Bereiche im Raum-Panel */
+details.menu{position:relative}details.menu summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--card);white-space:nowrap}details.menu summary::-webkit-details-marker{display:none}
+.menubox{position:absolute;left:0;top:calc(100% + 4px);max-width:calc(100vw - 32px);z-index:20;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:210px;box-shadow:0 6px 20px #0004}.menubox button{text-align:left}
+#rpanel details.more{margin-top:10px}#andere>.card{margin-top:10px}#andere>p{margin:6px 0 0}

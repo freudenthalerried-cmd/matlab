@@ -909,6 +909,7 @@ function arStart(msg) {
   if (!navigator.xr) return arNotSupported();
   navigator.xr.isSessionSupported('immersive-ar').catch(() => false).then(ok => { if (!ok) return arNotSupported(); AR.start(r => arResult(r, o, Date.now()), { zollstock: parseLen($('#pgDist').value) || 2 }); });
 }
+function openAndere() { const b = $('#andere'); if (b) b.open = true; }
 // Kein ARCore (PC, iPhone, altes Handy): verständliche Karte mit den beiden anderen Wegen
 function arNotSupported() {
   let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
@@ -917,7 +918,7 @@ function arNotSupported() {
     <p><b>So kannst du trotzdem messen:</b></p>
     <div class="row"><button data-r="mk" class="pri">🎯 Mit Marken-Blättern (mm-genau)</button><button data-r="hand">✏ Maße von Hand eintragen</button><button data-r="x">Schließen</button></div>
     <p class="hint">Marken-Blätter: Blätter drucken, an die Wände kleben, Raum filmen – die App rechnet. Von Hand: Breite und Tiefe eingeben, „+ Rechteckraum“.</p></div>`;
-  box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true; if (a === 'mk') { const d = $('#auf details.more'); if (d) d.open = true; live.autoAR = false; liveStart(); } else if (a === 'hand') { showTab('plan'); setTimeout(() => $('#nW').focus(), 50); } };
+  box.onclick = e => { const a = e.target.closest('[data-r]')?.dataset.r; if (!a) return; box.hidden = true; if (a === 'mk') { openAndere(); live.autoAR = false; liveStart(); } else if (a === 'hand') { showTab('plan'); setTimeout(() => $('#nW').focus(), 50); } };
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
@@ -1508,6 +1509,8 @@ function cutTap(p) { // p in m
 }
 $('#cutBtn').onclick = () => { if (cutMode) { cutMode = 0; $('#cutBtn').textContent = '✂ Schnitt'; $('#cutBtn').classList.remove('pri'); return; } if (S.cut && $('#vcut').hidden) { $('#vcut').hidden = false; viewCut(); return; } cutStart(); };
 $('#toProj').onclick = () => showTab('proj'); $('#show3d').onclick = () => { const el = $('#v3d'); el.hidden = !el.hidden; if (!el.hidden) view3d(); }; $('#showRes').onclick = () => { if (pgLast) opBack(); else notice('Noch kein Messergebnis. Zuerst im Reiter „1 Aufmaß“ einen Raum messen – dann erscheint hier die Skizze mit den Genauigkeiten.'); }; $('#backPlan').onclick = () => showTab('plan');
+$('#planMenu').addEventListener('click', e => { if (e.target.closest('button')) $('#planMenu').open = false; });
+document.addEventListener('click', e => { const m = $('#planMenu'); if (m && m.open && !m.contains(e.target)) m.open = false; }); // Menü schließt bei Klick daneben
 $('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
   const w = num($('#nW').value), d = num($('#nD').value); if (!(w > 0 && d > 0)) return notice('Breite und Tiefe in m eingeben (z. B. 4,20).');
@@ -1520,21 +1523,24 @@ function roomPanel() {
   const el = $('#rpanel'), r = S.rooms[selRoom];
   if (!r) { el.innerHTML = '<p class="hint">Raum antippen zum Bearbeiten · Raum ziehen = verschieben (fängt an Nachbarräumen mit Innenwandabstand) · leere Fläche ziehen = Ansicht verschieben.</p>'; return; }
   const n = r.segs.length, wOpt = i => r.segs.map((_, k) => `<option value="${k}" ${k === i ? 'selected' : ''}>${k + 1}</option>`).join('');
+  const po = roomPanel.open || (roomPanel.open = {}), hasPro = !!((r.obs && r.obs.length) || (r.checks && r.checks.length));
   el.innerHTML = `<div class="grid">
     <label>Raumname<input data-k="name" value="${esc(r.name)}"></label>
     <label>Raumhöhe m<input data-k="h" inputmode="decimal" value="${f2(r.h)}"></label>
     <label>Fußboden<input data-k="floor" value="${esc(r.floor)}" placeholder="z. B. Fliesen"></label>
     <label>Status<select data-k="status">${['bestand', 'neu', 'abbruch'].map(s => `<option ${s === r.status ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+  </div>
+  <p id="rstat"></p>
+  <div class="row"><button data-a="rot90">↻ 90°</button><button data-a="dup">Duplizieren</button><button data-a="del" class="danger">Raum löschen</button></div>
+  <details class="more" data-p="tools" ${po.tools ? 'open' : ''}><summary>⚙️ Lage und Werkzeuge (verschieben, drehen, spiegeln)</summary>
+  <div class="grid">
     <label>X m<input data-k="x" inputmode="decimal" value="${f2(r.x)}"></label>
     <label>Y m<input data-k="y" inputmode="decimal" value="${f2(r.y)}"></label>
     <label>Drehung °<input data-k="rot" inputmode="decimal" value="${f2(r.rot, 1)}"></label>
     <label>Bemaßung<select data-k="dims"><option value="1">ein</option><option value="0" ${r.dims === false ? 'selected' : ''}>aus</option></select></label>
   </div>
-  <p id="rstat"></p>
-  <div class="row">
-    <button data-a="rot90">↻ 90°</button><button data-a="mirror">Spiegeln</button><button data-a="ortho">Winkel → 90°</button>
-    <button data-a="close">Letzte Wand schließen</button><button data-a="dup">Duplizieren</button><button data-a="del" class="danger">Löschen</button>
-  </div>
+  <div class="row"><button data-a="mirror">Spiegeln</button><button data-a="ortho">Winkel → 90°</button><button data-a="close">Letzte Wand schließen</button></div>
+  </details>
   <table><tr><th>Wand</th><th>Länge m</th><th>±mm</th><th>Knick °</th><th>Stärke m</th><th></th></tr>
   ${r.segs.map((s, i) => `<tr><td>${i + 1}</td>
     <td><input data-s="${i}" data-f="len" list="measList" inputmode="decimal" value="${f2(s.len, 3)}"></td>
@@ -1557,9 +1563,12 @@ function roomPanel() {
     <td class="hide-s"><button data-a="flip" data-oi="${i}" title="Anschlag links/rechts">⇆</button><button data-a="aus" data-oi="${i}" title="Aufschlag innen/außen">⇅</button></td>
     <td><button data-a="delop" data-oi="${i}" class="danger">×</button></td></tr>`).join('') || '<tr><td colspan="8" class="hint">Keine – bei einer Wand „+ Öffnung“ tippen. Abstand = vom Wandanfang (Ecke mit gleicher Nummer).</td></tr>'}
   </table>
+  <details class="more" data-p="pro" ${(po.pro ?? hasPro) ? 'open' : ''}><summary>🔬 Für Profis: Maßband-Ausgleich, Kontrollmaße, Nachbarraum anschließen</summary>
   ${obsPanel(r)}
   ${checkPanel(r)}
-  ${linkPanel(r)}`;
+  ${linkPanel(r)}
+  </details>`;
+  el.querySelectorAll('details[data-p]').forEach(d => d.addEventListener('toggle', () => { po[d.dataset.p] = d.open; }));
   rstat();
 }
 function checkPanel(r) {

@@ -35,10 +35,16 @@
       <div class="row"><progress id="pgProg" max="1" value="0" hidden></progress><span id="pgSrc" class="hint"></span></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>
+    </div>
+    <details class="card more2" id="andere"><summary>🔧 Andere Messarten (Marken-Blätter, von Hand) und Einstellungen</summary>
+    <p class="small">Für Handys ohne ARCore – oder wenn es millimetergenau werden soll.</p>
+    <div class="card kmcard">
+      <h3>🎯 Mit Marken-Blättern messen <span class="hint">(±1–5 mm, braucht einmalig einen Drucker)</span></h3>
+      <p class="small">Blätter drucken, an jede Wand eines kleben, Zollstock mit den Bodenblättern auf den Boden legen, Raum filmen – die App fotografiert selbst und rechnet.</p>
+      <div class="row"><button id="liveMk" class="pri">🎯 Mit Marken-Blättern messen</button><button id="pgWallSheets">🖨 Blätter drucken</button></div>
+      <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
       <details class="more">
-        <summary>⚙️ Einstellungen (antippen zum Aufklappen)</summary>
-        <div class="row"><button id="liveMk">🎯 Mit Marken-Blättern messen (mm-genau)</button><button id="pgWallSheets">🖨 Blätter drucken</button></div>
-        <div class="row"><span id="calState" class="small"></span><button id="calOpen">🎯 Kamera kalibrieren</button><button id="calPrint">🖨 Kalibriertafel</button></div>
+        <summary>⚙️ Experteneinstellungen für Marken-Blätter</summary>
         <div class="row">
           <label>Gedruckte Vorlage <select id="pgLayout"><option value="wall">1 Blatt pro Wand (80 mm) – empfohlen</option><option value="single">16 Einzelmarken auf 1 Blatt (45 mm)</option><option value="big">Große Einzelmarken (1 pro Blatt)</option></select></label>
           <label><input type="checkbox" id="pgPhoto" checked> Fotos in voller Auflösung (genauer, je Bild ca. 1 s ruhig halten)</label>
@@ -67,7 +73,6 @@
         <p class="small"><b>Gesamtplan aus mehreren Räumen:</b> je Raum eigene Aufnahme, Wandblätter mit anderen Nummern drucken („ab Nr.“, z. B. Raum 2 ab 20), Verbindungsmarken 90–93 im Türbereich liegen lassen und in beiden Aufnahmen mitfilmen.</p>
       </details>
     </div>
-    <details class="card more2"><summary>📏 Kontrollmaße und AR-Messung von Hand starten</summary>
     <div class="card kmcard">
       <h3>📏 Kontrollmaße <span class="hint">(empfohlen: Raumhöhe + eine Wandlänge)</span></h3>
       <p class="small">Während der Aufnahme mit dem Laser messen oder das Maß ansagen, z. B. „Raumhöhe 2,55“ oder „Fenster Küche 1,20 breit“. Die App merkt sich, welche Wand gerade im Bild war, und vergleicht nach der Auswertung.</p>
@@ -79,7 +84,6 @@
       <p class="small">1. Zollstock antippen (Anfang und Ende) → genauer Maßstab. 2. Je Wand „▶ Abtasten“ und den Kreis über die Wand fahren – die App sammelt Punkte und sortiert Möbel aus. Braucht Chrome auf Android mit ARCore. Genauigkeit: wird mit deinen Maßband-Vergleichen ermittelt (erwartet ±5–10 mm mit Zollstock).</p>
       <div class="row"><button id="arOpen">📱 AR-Aufmaß starten</button><label><input type="checkbox" id="arZoll" checked> mit Zollstock als Maßstab</label><button id="arExport">⬇ AR-Daten exportieren</button></div>
     </div>
-    </details>
     <details class="tip">
       <summary>B · Manuell: Fotos antippen (Referenzrechteck am Boden)</summary>
       <ol>
@@ -102,6 +106,7 @@
     </div>
     <h3>Standbilder</h3>
     <div id="snaps" class="snaps"><p class="hint">Noch keine Standbilder.</p></div>
+    </details>
     </details>
   </section>
 
@@ -171,13 +176,15 @@
       <input id="nW" inputmode="decimal" placeholder="Breite m" size="6">
       <input id="nD" inputmode="decimal" placeholder="Tiefe m" size="6">
       <button id="nAdd" class="pri">+ Rechteckraum</button>
-      <button id="planClear" class="danger">🗑 Plan leeren</button>
+    </div>
+    <div class="row">
       <button id="show3d">🧊 3D</button>
       <button id="cutBtn">✂ Schnitt</button>
-      <button id="showRes">📋 Ergebnis</button>
-      <button id="toProj">📄 Plankopf &amp; Export</button>
-      <span class="sp"></span>
-      <button id="zIn">＋</button><button id="zOut">－</button><button id="zFit">Einpassen</button>
+      <button id="toProj" class="pri">📄 Plankopf &amp; Export</button>
+      <details class="menu" id="planMenu"><summary>⋯ Mehr</summary><div class="menubox">
+        <button id="showRes">📋 Letztes Messergebnis</button>
+        <button id="zFit">Einpassen</button><button id="zIn">＋ Vergrößern</button><button id="zOut">－ Verkleinern</button>
+        <button id="planClear" class="danger">🗑 Plan leeren</button></div></details>
     </div>
     <div id="v3d" hidden></div>
     <div id="vcut" hidden></div>

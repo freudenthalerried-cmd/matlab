@@ -30,7 +30,7 @@
       <p class="hint">Den Einreichplan muss in Österreich in der Regel ein Baumeister oder Architekt als Planverfasser unterschreiben.</p>`,
       b: [['Fertig', 'close', 1], ['Andere Messarten ›', 'next']] },
     { t: 'Andere Messarten', h: `<p><b>Kein ARCore am Handy?</b> Oder soll es <b>millimetergenau</b> werden? Dann gibt es zwei Wege:</p>
-      <ul><li><b>🎯 Mit Marken-Blättern</b> (±1–5 mm): gedruckte Blätter an die Wände kleben, Raum filmen, die App rechnet. Braucht einmalig einen Drucker. Zu finden unter „⚙️ Einstellungen“ im Reiter 1.</li>
+      <ul><li><b>🎯 Mit Marken-Blättern</b> (±1–5 mm): gedruckte Blätter an die Wände kleben, Raum filmen, die App rechnet. Braucht einmalig einen Drucker. Zu finden unter „🔧 Andere Messarten“ im Reiter 1.</li>
       <li><b>Von Hand</b>: Breite und Tiefe eintippen, „+ Rechteckraum“ im Reiter 2 – Wände und Winkel dann im Raum anpassen.</li></ul>
       <p class="hint">Die Kamera-Kalibrierung (unter Einstellungen) macht nur die Marken-Messung genauer; für den Zollstock-Weg ist sie nicht nötig.</p>`,
       b: [['🎯 Mit Marken messen', 'mk'], ['Fertig', 'close', 1]] }
@@ -61,7 +61,7 @@
     else if (a === 'back') { i--; render(); }
     else if (a === 'close') close();
     else if (a === 'demo') demo();
-    else if (a === 'mk') { close(); showTab('auf'); const d = document.querySelector('#auf details.more'); if (d) d.open = true; $('#liveMk').click(); }
+    else if (a === 'mk') { close(); showTab('auf'); const b = document.querySelector('#andere'); if (b) b.open = true; $('#liveMk').click(); }
     else { const sel = { live: '#liveOpen', files: '#pgFile', run: '#pgRun', ar: '#arOpen' }[a]; close(); showTab('auf'); if (sel) $(sel).click(); }
   };
   addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
