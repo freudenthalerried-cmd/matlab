@@ -2,7 +2,7 @@
 /* Raumplan – 2D-Grundriss aus Handyvideo mit Boden-Referenzrechteck (Homographie). */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const KEY = 'raumplan-v1';
-const APP_VER = 'v42 · 05.11.2026';
+const APP_VER = 'v43 · 05.11.2026';
 const REPO = 'freudenthalerried-cmd/matlab', BRANCH = 'claude/2d-floor-plan-video-0sv7hg';
 // Neue Version da? Jede Version hat einen festen Link (Commit). Die App fragt GitHub nach dem neuesten Commit und zeigt einen Hinweis mit Link.
 (async () => { try {
@@ -927,7 +927,7 @@ function filmStart() {
       <label>Raum rechteckig? <select id="fmRect"><option value="1">Ja – 4 Wände, rechte Winkel</option><option value="0">Nein – L-Form oder mehr Ecken</option></select></label>
       <label><input type="checkbox" id="fmDach"> Dachschrägen vorhanden</label>
     </div>
-    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Zuerst kurz von oben auf den Zollstock filmen (aus 2–3 Richtungen), dann rundherum. Kontrollmaße (Raumhöhe, eine Wand) kannst du danach beim Ergebnis eintragen – freiwillig. Dachschrägen werden noch nicht automatisch erkannt – der Raum wird in Bodenhöhe gemessen.</p>
+    <p class="hint" id="fmHint">Tipp: Türen schließen, Licht an. Zuerst kurz von oben auf den Zollstock filmen (aus 2–3 Richtungen), dann rundherum. Kontrollmaße (Raumhöhe, eine Wand) kannst du danach beim Ergebnis eintragen – freiwillig. Dachschrägen stören nicht: Der Grundriss kommt vom Boden und vom Wandfuß, die Decke spielt keine Rolle. Kamera dabei leicht nach unten halten, Boden bis zu den Wänden filmen.</p>
     <div class="row"><button data-r="go" class="pri">📹 Filmen starten</button><button data-r="x">Abbrechen</button></div></div>`;
   box.onclick = e => { const act = e.target.closest('[data-r]')?.dataset.r; if (!act) return;
     if (act === 'x') { box.hidden = true; return; }
