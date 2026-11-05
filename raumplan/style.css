@@ -139,3 +139,4 @@ details.more2 summary{cursor:pointer;font-weight:600}
 
 /* DEV */ .devcase{border-top:1px solid var(--line);padding-top:6px;margin-top:6px} .devcase ul{margin:4px 0 6px 18px}
 #edUI{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}#edUI[hidden]{display:none}#edUI .rescard{max-width:420px;width:100%}.ed{cursor:pointer}#psvg text.ed{fill:#0b4fa8}li.ed,td.ed b{color:#0b4fa8;text-decoration:underline dotted}
+#modeUI{position:fixed;inset:0;z-index:85;background:#000a;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}#modeUI[hidden]{display:none}#modeUI .rescard{max-width:520px;width:100%}.mq{margin:10px 0}.mq .row{margin-top:4px}

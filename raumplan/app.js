@@ -228,7 +228,7 @@ function pgRoomDefs(txt, ids) { // "Name: 4-19" oder "Name: 4-19: 6" (6 Wände e
   return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null, expect: Math.round(num($('#pgWalls').value)) || 0 }];
 }
 let devD = null; // DEV
-function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v28', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
+function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v29', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
 $('#pgRun').onclick = async () => {
   devD = null; // DEV
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
@@ -505,6 +505,7 @@ async function liveStart() {
       let mv = 0; if (live.prev) d.forEach(m => { const q = live.prev.get(m.id); if (q) mv = Math.max(mv, Math.hypot(m.c[0][0] - q[0], m.c[0][1] - q[1])); });
       live.prev = new Map(d.map(m => [m.id, m.c[0]])); if (d.length) live.seenAny = true;
       $('#liveToAR').hidden = live.seenAny || Date.now() - live.session < 4000;
+      if (live.autoAR && !live.seenAny && Date.now() - live.session > 8000) { live.autoAR = false; live.busy = false; VID.stop(); liveStop(); return arStart('Keine Marken im Bild – ich messe ohne Marken weiter (AR).'); } // selbst erkannt: keine Blätter
       const steady = mv < 4 * cv.width / 960 && sharp;
       if (steady && d.length && live.recOn) { const ts = (Date.now() - VID.since) / 1000; if (!live.still.length || ts - live.still[live.still.length - 1] >= 0.25) live.still.push(+ts.toFixed(2)); } // ruhige Momente fürs Nachauswerten
       // Nutzen eines Bilds: neuer Blickwinkel, zu wenige Bilder eines Blatts, neue Verbindung zwischen Blättern
@@ -573,9 +574,9 @@ async function liveFinish() {
   $('#pgRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('#pgRun').click();
 }
-$('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
+$('#liveOpen').onclick = measureStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = () => { VID.stop(); liveStop(); };
 $('#liveDone').onclick = liveFinish;
-$('#liveToAR').onclick = () => { VID.stop(); liveStop(); $('#arOpen').click(); }; // keine Blätter → AR-Messung
+$('#liveToAR').onclick = () => { VID.stop(); liveStop(); arStart(); }; // keine Blätter → AR-Messung
 
 /* ---------- 3D-Ansicht (isometrisch, „Puppenhaus“): Wände mit Raumhöhe, Fenster/Türen, Maße der Öffnungen ---------- */
 function view3d() {
@@ -871,16 +872,88 @@ function calFinish(W, H) {
 $('#calOpen').onclick = calStart; $('#calClose').onclick = calStop; $('#calDone').onclick = () => { if (cal.views.length >= 5) calFinish(cal.W, cal.H); }; calState();
 
 /* ---------- AR-Aufmaß (ar.js) → Raum im Plan ---------- */
-$('#arOpen').onclick = () => AR.start(r => {
-  const { poly, height, rms, sigma, scale } = r; let Q = poly.map(p => [p[0], p[1]]), sg = sigma.slice();
+/* ---------- Messart wählen: Zollstock? Marken? Kontrollmaß? → Marken-Messung oder AR (mit Zollstock / Kontrollmaß / nur Handy) ---------- */
+const MODEKEY = 'raumplan-mode';
+function modeGet() { try { return { z: true, m: 'auto', k: true, ...JSON.parse(localStorage.getItem(MODEKEY) || '{}') }; } catch (e) { return { z: true, m: 'auto', k: true }; } }
+function modeSet(o) { try { localStorage.setItem(MODEKEY, JSON.stringify(o)); } catch (e) { } }
+function modeText(o) {
+  if (o.m === 'ja') return ['🎯 Marken-Messung', 'ok', 'genaueste Methode, ca. ±1–3 mm je Wand'];
+  const ar = o.m === 'auto' ? 'Erst Marken suchen – findet die Kamera keine, geht es automatisch ohne Marken (AR) weiter. ' : '';
+  if (o.z && o.k) return ['📏 AR mit Zollstock + Kontrollmaß', 'ok', ar + 'ohne Marken: ca. ±0,2–0,4 % (bei 4 m ±1 cm)'];
+  if (o.z) return ['📏 AR mit Zollstock', 'ok', ar + 'ohne Marken: ca. ±0,3–0,5 % (bei 4 m ±1–2 cm). Ein Kontrollmaß macht es sicherer.'];
+  if (o.k) return ['📐 AR, Maßstab aus Kontrollmaß', 'warn', ar + 'ohne Marken: ca. ±0,5 % – nach der Messung eine lange Wand mit Maßband/Laser messen.'];
+  return ['📱 Nur Handy', 'warn', ar + '⚠ Ohne Zollstock und ohne Kontrollmaß ist das Ergebnis SEHR UNGENAU (±1–3 %, bei 4 m bis ±12 cm) – nur als Skizze, nicht für einen Einreichplan.'];
+}
+function measureStart() {
+  const o = modeGet(); let box = $('#modeUI'); if (!box) { box = document.createElement('div'); box.id = 'modeUI'; document.body.appendChild(box); }
+  const q = (k, t, opts) => `<div class="mq"><b>${t}</b><div class="row">${opts.map(([v, l]) => `<button data-k="${k}" data-v="${v}" class="${String(o[k]) === String(v) ? 'pri' : ''}">${l}</button>`).join('')}</div></div>`;
+  const draw = () => { const [t, cls, d] = modeText(o);
+    box.innerHTML = `<div class="rescard"><h2>📹 Raum messen</h2>
+      ${q('z', '1. Hast du einen Zollstock (2 m) dabei?', [[true, 'Ja'], [false, 'Nein']])}
+      ${o.z ? `<p class="small">Zollstock ganz ausklappen und gerade auf den Boden legen. Länge <input id="mzLen" inputmode="decimal" size="6" value="${esc($('#pgDist').value || '2,000')}"> m</p>` : ''}
+      ${q('m', '2. Sind Marken-Blätter an den Wänden?', [['ja', 'Ja'], ['nein', 'Nein'], ['auto', 'Selbst erkennen']])}
+      ${q('k', '3. Kannst du eine Wand mit Maßband oder Laser nachmessen (Kontrollmaß)?', [[true, 'Ja'], [false, 'Nein']])}
+      <p class="${cls}"><b>${t}</b><br>${d}</p>
+      <div class="resbtns"><button id="mGo" class="pri big">▶ Los</button><button id="mNo">Abbrechen</button></div></div>`;
+    box.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; o[k] = v === 'true' ? true : v === 'false' ? false : v; draw(); });
+    const zl = $('#mzLen'); if (zl) zl.onchange = () => { $('#pgDist').value = zl.value; };
+    $('#mNo').onclick = () => { box.hidden = true; };
+    $('#mGo').onclick = () => { modeSet(o); box.hidden = true; live.autoAR = o.m === 'auto'; if (o.m === 'nein') arStart(); else liveStart(); };
+  };
+  draw(); box.hidden = false;
+}
+function arStart(msg) {
+  const o = modeGet(); if (msg) alert(msg);
+  AR.start(r => arResult(r, o, Date.now()), { zollstock: o.z ? (parseLen($('#pgDist').value) || 2) : 0 });
+}
+// AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
+function arResult(r, o, tEnd) {
+  const t0 = tEnd - 3 * 3600e3; let Q = r.poly.map(p => [p[0], p[1]]);
+  const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
+  const scaleTerm = L => L * (sc ? (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1) : 0.01) * (sc ? sc.k : 1);
+  const fit = L0.map((L, i) => Math.sqrt(Math.max(0, r.sigma[i] ** 2 - scaleTerm(L) ** 2)) || 0.003);
+  const A = { km: {} };
+  // gesprochene/gemessene Wandmaße der letzten Stunden der passendsten Wand zuordnen (±8 %)
+  KM.list.filter(e => e.t >= t0 && (e.kind === 'wand' || e.kind === 'mass')).forEach(e => { let bi = -1, bd = 0.08; L0.forEach((L, i) => { const d = Math.abs(e.v / L - 1); if (d < bd && A.km[i] == null) { bd = d; bi = i; } }); if (bi >= 0) A.km[bi] = e.v; });
+  const calc = () => {
+    const ks = Object.entries(A.km).map(([i, v]) => ({ i: +i, r: v / L0[+i] })), m = ks.length;
+    let k = 1, sk;
+    if (m) { const sw = ks.reduce((a, q) => a + L0[q.i], 0); k = ks.reduce((a, q) => a + q.r * L0[q.i], 0) / sw; const sd = m > 1 ? Math.sqrt(ks.reduce((a, q) => a + (q.r - k) ** 2, 0) / (m - 1)) : 0.002; sk = Math.hypot(0.001 / sw, sd / Math.sqrt(m)); }
+    else sk = sc ? (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1) : 0.015; // nur Handy: WebXR-Maßstab erfahrungsgemäß 1–2 % daneben
+    const L = L0.map(x => x * k), sg = L.map((x, i) => Math.hypot(fit[i] * k, x * sk));
+    return { k, sk, m, L, sg, h: r.height ? r.height * k : null, zdev: m && sc ? (k - 1) * 100 : null };
+  };
+  const draw = () => {
+    const c = calc(), mx = Math.max(...c.sg) * 1000, rel = c.sk * 100;
+    let qual, cls;
+    if (c.m) { qual = `Maßstab aus ${c.m} Kontrollmaß${c.m > 1 ? 'en' : ''}${sc ? ` (Zollstock wich ${f2(c.zdev, 2)} % ab)` : ''}.`; cls = 'ok'; }
+    else if (sc) { qual = `Maßstab aus dem Zollstock (±${f2(rel, 2)} %). Mit einem Kontrollmaß wird es sicherer.`; cls = 'ok'; }
+    else { qual = `⚠ SEHR UNGENAU: weder Zollstock noch Kontrollmaß – nur der Handy-Maßstab (±1–3 %, bei 4 m bis ±${Math.round(40 * 3)} mm). Bitte mindestens eine lange Wand mit Maßband/Laser nachmessen und unten eintragen.`; cls = 'warn'; }
+    let box = $('#resUI'); if (!box) { box = document.createElement('div'); box.id = 'resUI'; document.body.appendChild(box); }
+    box.innerHTML = `<div class="rescard"><h2>${c.m || sc ? '✅' : '⚠'} Ergebnis (ohne Marken)</h2>${resSketch(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.L, c.sg)}
+      <p class="${cls}">${qual}</p>
+      <table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±</th><th>Kontrollmaß</th></tr>${c.L.map((x, i) => `<tr><td>${i + 1}</td><td><b>${f2(x, 3)} m</b></td><td class="${c.sg[i] <= 0.005 ? 'ok' : 'warn'}">${f2(c.sg[i] * 1000, 0)} mm</td><td class="ed" data-km="${i}">${A.km[i] != null ? `<b>${f2(A.km[i], 3)} m</b> ✏` : '📏 eintragen'}</td></tr>`).join('')}</table>
+      <p class="hint">Kontrollmaß: bei der Wand auf „📏 eintragen“ tippen und das gemessene Maß eintippen oder ansagen (🎤). Die längste Wand bringt am meisten.</p>
+      <p><b>Raumhöhe:</b> ${c.h ? f2(c.h, 3) + ' m' : 'nicht gemessen'} · Genauigkeit ca. ±${Math.round(mx)} mm</p>
+      <div class="resbtns"><button data-a="take" class="pri">✔ In Plan übernehmen</button><button data-a="no">Verwerfen</button></div></div>`;
+    box.hidden = false;
+    box.onclick = e => { const km = e.target.closest('[data-km]'), a = e.target.closest('[data-a]')?.dataset.a;
+      if (km) { const i = +km.dataset.km; editVals(`Kontrollmaß Wand ${i + 1}`, [{ k: 'v', label: 'gemessen m (leer = entfernen)', v: A.km[i] }], v => { if (v.v) A.km[i] = v.v; else delete A.km[i]; draw(); }); }
+      else if (a === 'no') { if (confirm('Messung verwerfen?')) box.hidden = true; }
+      else if (a === 'take') { box.hidden = true; arTake(Q.map(p => [p[0] * c.k, p[1] * c.k]), c.sg.slice(), c.h, c.m ? `${c.m} Kontrollmaß(e)` : sc ? 'Zollstock' : 'nur Handy – ungenau'); }
+    };
+  };
+  draw();
+}
+function arTake(Q, sg, height, how) {
   const rm = newRoom($('#arName').value || 'Raum ' + (S.rooms.length + 1), [], 0, 0); Object.assign(rm, fromPoly(Q, rm));
   if (rm.segs.reduce((s, g) => s + g.turn, 0) < 0) { Q = Q.reverse(); sg = sg.reverse(); sg.push(sg.shift()); Object.assign(rm, fromPoly(Q, rm)); } // Umlaufsinn wie im Plan
   if (height) rm.h = +height.toFixed(3);
-  rm.adj = { wallSigma: sg, cornerMax: 0, s0: 1, red: 0, warn: [], v: [], ar: true };
+  rm.adj = { wallSigma: sg, cornerMax: 0, s0: 1, red: 0, warn: how.includes('ungenau') ? ['Maßstab nur vom Handy – ungenau'] : [], v: [], ar: true, how };
   S.rooms = S.rooms.filter(q => !q.demo); rm.x = 0; rm.y = 0; placeFree(rm); S.rooms.push(rm); selRoom = S.rooms.length - 1; $('#arName').value = ''; save(); showTab('plan');
-  const mx = Math.max(...sg) * 1000;
-  setTimeout(() => alert(`Raum übernommen: ${rm.segs.length} Wände, Genauigkeit ca. ±${Math.round(mx)} mm${scale ? ` (Maßstab mit Zollstock um ${f2((scale.k - 1) * 100, 2)} % korrigiert)` : ' – ohne Zollstock-Maßstab'}${height ? ', Raumhöhe ' + f2(height) + ' m' : ''}.\nBitte eine Wand mit dem Maßband nachmessen und als Kontrollmaß eintragen – so lernen wir, wie genau AR bei dir wirklich ist.`), 50);
-}, { zollstock: $('#arZoll').checked ? (parseLen($('#pgDist').value) || 2) : 0 });
+}
+
+$('#arOpen').onclick = () => { const o = modeGet(); o.z = $('#arZoll').checked; o.m = 'nein'; modeSet(o); arStart(); };
 $('#arScan').onclick = AR.toggleScan; $('#arZmore').onclick = AR.zMore;
 $('#arExport').onclick = () => { let L = []; try { L = JSON.parse(localStorage.getItem('raumplan-ar-log') || '[]'); } catch (e) { } if (!L.length) return alert('Noch keine AR-Messung gespeichert.'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(L)], { type: 'application/json' })); a.download = `raumplan-ar-daten-${new Date().toISOString().slice(0, 10)}.json`; a.click(); };
 $('#arPoint').onclick = AR.point; $('#arNext').onclick = AR.next; $('#arUndo').onclick = AR.undo; $('#arDone').onclick = AR.finish; $('#arCancel').onclick = AR.cancel;

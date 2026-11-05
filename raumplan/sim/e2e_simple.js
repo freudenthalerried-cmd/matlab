@@ -6,7 +6,7 @@ const ctx=await b.newContext({permissions:['camera']});const p=await ctx.newPage
 if(mode==='haengt')await p.addInitScript(()=>{window.Worker=class{postMessage(){}};}); // Worker, der nie antwortet
 await p.goto(process.env.URL);await p.evaluate(()=>localStorage.setItem('raumplan-guide','1'));await p.reload();
 console.log('Reiter:',(await p.$$eval('nav button',b=>b.map(x=>x.textContent))).join(' | '));
-await p.click('#liveOpen');await p.waitForSelector('#live',{state:'visible'});
+await p.click('#liveOpen');await p.click('#mGo');await p.waitForSelector('#live',{state:'visible'});
 if(mode==='ohneMarken'){await p.waitForTimeout(6000);console.log('ohne Marken → AR-Knopf sichtbar:',await p.isVisible('#liveToAR'));}
 else{const t=Date.now();await p.waitForSelector('#live',{state:'hidden',timeout:150000}).catch(async()=>{await p.click('#liveDone');});const t1=Date.now();
  await p.waitForFunction(()=>/Ergebnis|nicht möglich/.test(document.querySelector('#resUI')?.textContent||'')&&!/Berechne/.test(document.querySelector('#resUI').textContent),null,{timeout:300000});
