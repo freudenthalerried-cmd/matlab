@@ -1207,7 +1207,7 @@ function renderPlan(fit) {
   }
   const ar = (svg.clientHeight || 400) / (svg.clientWidth || 600);
   svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.w * ar}`);
-  svg.innerHTML = gridSVG() + planSVG(selRoom) + (S.rooms.length ? '' : `<text x="${vb.x + vb.w / 2}" y="${vb.y + vb.w * ar / 2}" text-anchor="middle" font-size="${vb.w / 30}" fill="#888">Raum anlegen: oben „+ Rechteckraum“ oder unter „2 Vermessen“ → „Punkte → neuer Raum“</text>`);
+  svg.innerHTML = gridSVG() + planSVG(selRoom) + cutLineSVG() + (S.rooms.length ? '' : `<text x="${vb.x + vb.w / 2}" y="${vb.y + vb.w * ar / 2}" text-anchor="middle" font-size="${vb.w / 30}" fill="#888">Raum anlegen: oben „+ Rechteckraum“ oder unter „2 Vermessen“ → „Punkte → neuer Raum“</text>`);
 }
 function gridSVG() {
   const ar = (svg.clientHeight || 400) / (svg.clientWidth || 600), st = vb.w > 3000 ? 500 : 100;
@@ -1219,6 +1219,7 @@ function gridSVG() {
 function svgPt(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
 svg.addEventListener('pointerdown', e => {
   const g = e.target.closest('.room'), p = svgPt(e);
+  if (cutMode) { cutTap([p.x / 100, -p.y / 100]); return; }
   if (g) {
     const i = +g.dataset.i; if (selRoom !== i) { selRoom = i; roomPanel(); }
     drag = { i, p, x: S.rooms[i].x, y: S.rooms[i].y, moved: false };
@@ -1256,6 +1257,115 @@ function snapRoom(i) {
   });
   if (bx !== null) r.x = +(r.x + bx).toFixed(3); if (by !== null) r.y = +(r.y + by).toFixed(3);
 }
+/* ---------- Schnitt: Schnittlinie im Plan → Schnittansicht (kotiert) ---------- */
+const SLAB = 0.25; // Deckenstärke m (Darstellung)
+let cutMode = 0, cutA = null;
+function cutGeom() { // -> {R:[rects], V:[ansicht-rects], D:[dims], T:[texts], u0,u1,z0,z1} in Schnittkoordinaten (u entlang A→B, z Höhe)
+  const c = S.cut; if (!c) return null;
+  const A = c.a, Lc = dist(c.a, c.b); if (Lc < 0.1) return null;
+  const d = [(c.b[0] - A[0]) / Lc, (c.b[1] - A[1]) / Lc], v = [-d[1], d[0]]; // Blickrichtung: links von A→B (A links im Schnittbild)
+  const U = p => (p[0] - A[0]) * d[0] + (p[1] - A[1]) * d[1], Vd = p => (p[0] - A[0]) * v[0] + (p[1] - A[1]) * v[1];
+  const hit = (p, q) => { // Schnitt Linie A→B mit Strecke p→q: {u, s (0..1 auf p→q)}
+    const e = [q[0] - p[0], q[1] - p[1]], den = d[0] * e[1] - d[1] * e[0]; if (Math.abs(den) < 1e-9) return null;
+    const w = [p[0] - A[0], p[1] - A[1]], u = (w[0] * e[1] - w[1] * e[0]) / den, s = (w[0] * d[1] - w[1] * d[0]) / den;
+    return { u, s };
+  };
+  const R = [], V = [], D = [], T = [];
+  S.rooms.forEach(r => {
+    if (r.segs.length < 3) return; const g = geo(r), n = g.P.length, h = r.h || 2.6, col = STC[r.status] || '#444';
+    const cuts = [];
+    g.E.forEach((e, i) => {
+      const hi = hit(e.p, e.q); if (!hi || hi.s < -1e-6 || hi.s > 1 + 1e-6) return;
+      const ho = hit(g.O[i], g.O[(i + 1) % n]); const uo = ho ? ho.u : hi.u;
+      if (Math.max(hi.u, uo) < 0 || Math.min(hi.u, uo) > Lc) return;
+      const sw = hi.s * e.L, op = (r.ops || []).find(o => o.wall === i && sw >= o.pos - 1e-6 && sw <= o.pos + o.w + 1e-6);
+      cuts.push({ ui: hi.u, uo, op, i });
+    });
+    cuts.sort((a, b) => a.ui - b.ui);
+    const iv = [];
+    for (let k = 0; k + 1 < cuts.length; k++) { const um = (cuts[k].ui + cuts[k + 1].ui) / 2, pm = add(A, mul(d, um)); if (inPoly(pm, g.P)) iv.push([cuts[k].ui, cuts[k + 1].ui]); }
+    if (!iv.length) return;
+    iv.forEach(([a, b]) => { // Raum: Decke, Raumhöhe, lichte Breite, Name
+      R.push({ u0: a, u1: b, z0: h, z1: h + SLAB, k: 'decke' });
+      D.push({ a: [a, -SLAB - 0.5], b: [b, -SLAB - 0.5], L: b - a });
+      D.push({ a: [a + 0.35, 0], b: [a + 0.35, h], L: h, vert: 1 });
+      T.push({ p: [(a + b) / 2, h * 0.62], s: r.name, size: 3, bold: 1 }, { p: [(a + b) / 2, h * 0.62 - 0.32], s: `RH ${f2(h)} m`, size: 2.2 });
+    });
+    cuts.forEach(cu => { // geschnittene Wände (mit Öffnungen)
+      const a = Math.min(cu.ui, cu.uo), b = Math.max(cu.ui, cu.uo), top = h + SLAB, o = cu.op;
+      if (!o) { R.push({ u0: a, u1: b, z0: 0, z1: top, k: 'wand', col }); return; }
+      const z0 = o.type === 'fenster' ? (o.brh || 0) : 0, z1 = Math.min(z0 + o.h, h);
+      if (z0 > 0) R.push({ u0: a, u1: b, z0: 0, z1: z0, k: 'wand', col });
+      R.push({ u0: a, u1: b, z0: z1, z1: top, k: 'wand', col });
+      R.push({ u0: a, u1: b, z0, z1, k: o.type === 'fenster' ? 'glas' : 'tuer' });
+      const out = cu.ui < cu.uo ? 1 : -1, x = (out > 0 ? b : a) + out * 0.45; // Höhenkoten außen an der Wand
+      const zs = o.type === 'fenster' ? [0, z0, z1, h] : [0, z1, h];
+      for (let k = 0; k + 1 < zs.length; k++) if (zs[k + 1] - zs[k] > 0.005) D.push({ a: [x, zs[k]], b: [x, zs[k + 1]], L: zs[k + 1] - zs[k], vert: 1, lab: o.type === 'fenster' ? ['BRH', 'FE', ''][k] : ['T', ''][k] });
+    });
+    g.E.forEach((e, i) => { // Ansicht: Öffnungen in Wänden hinter der Schnittlinie, die zum Betrachter zeigen
+      if (e.n[0] * v[0] + e.n[1] * v[1] > -0.7 || Vd(mid(e.p, e.q)) <= 0) return;
+      (r.ops || []).filter(o => o.wall === i && !o.pair).forEach(o => {
+        const p0 = add(e.p, mul(e.d, o.pos)), p1 = add(p0, mul(e.d, o.w)); let a = Math.min(U(p0), U(p1)), b = Math.max(U(p0), U(p1));
+        if (!iv.some(([x0, x1]) => a >= x0 - 0.01 && b <= x1 + 0.01)) return;
+        const z0 = o.type === 'fenster' ? (o.brh || 0) : 0; V.push({ u0: a, u1: b, z0, z1: Math.min(z0 + o.h, h), k: o.type, lab: `${o.type === 'fenster' ? 'FE' : o.type === 'tuer' ? 'T' : 'DG'} ${Math.round(o.w * 100)}/${Math.round(o.h * 100)}` });
+      });
+    });
+  });
+  if (!R.length) return { empty: true, name: c.name || 'A' };
+  const us = R.flatMap(q => [q.u0, q.u1]), u0 = Math.min(...us) - 0.3, u1 = Math.max(...us) + 0.3, zt = Math.max(...R.map(q => q.z1));
+  R.unshift({ u0, u1, z0: -SLAB, z1: 0, k: 'boden' });
+  const ux = Math.min(u0, ...D.filter(m => m.vert).map(m => m.a[0])) - mm(5) / 100;
+  T.push({ p: [ux, 0.02], s: '±0,00', size: 2.2, end: 1 }, { p: [(u0 + u1) / 2, -SLAB - 1.25], s: `Schnitt ${c.name || 'A'}–${c.name || 'A'}`, size: 4, bold: 1 });
+  return { R, V, D, T, u0: Math.min(u0 - 1.2, ux - 1), u1: Math.max(u1, ...D.map(m => m.a[0])) + 1.2, z0: -SLAB - 1.6, z1: zt + 0.5, name: c.name || 'A' };
+}
+function cutSVG(G) { // Planeinheiten wie planSVG: [u, z] → T()
+  let o = '<g font-family="Arial,Helvetica,sans-serif">';
+  const rect = (q, fill, w = .35, extra = '') => `<path d="M${[[q.u0, q.z0], [q.u1, q.z0], [q.u1, q.z1], [q.u0, q.z1]].map(T).join('L')}Z" fill="${fill}" stroke="#000" stroke-width="${mm(w).toFixed(2)}" ${extra}/>`;
+  G.R.forEach(q => {
+    if (q.k === 'boden' || q.k === 'decke') o += rect(q, '#cfcfcf', .25);
+    else if (q.k === 'wand') o += rect(q, q.col || '#444');
+    else if (q.k === 'glas') { o += rect(q, '#fff', .25); const m = (q.u0 + q.u1) / 2, dw = (q.u1 - q.u0) * 0.08; o += line([m - dw, q.z0], [m - dw, q.z1], .18) + line([m + dw, q.z0], [m + dw, q.z1], .18); }
+    else o += rect(q, '#fff', .25);
+  });
+  G.V.forEach(q => { o += rect(q, 'none', .18); if (q.k === 'fenster') o += line([(q.u0 + q.u1) / 2, q.z0], [(q.u0 + q.u1) / 2, q.z1], .13); o += txt([(q.u0 + q.u1) / 2, q.z1 + 0.12], q.lab, 2); });
+  G.D.forEach(m => {
+    const tk = mm(1.3) / 100, t1 = [tk, tk], dir = m.vert ? [0, 1] : [1, 0], nrm = m.vert ? [-1, 0] : [0, 1];
+    o += line(m.a, m.b, .18) + line(add(m.a, t1), add(m.a, mul(t1, -1)), .35) + line(add(m.b, t1), add(m.b, mul(t1, -1)), .35);
+    const p = add(mid(m.a, m.b), mul(nrm, mm(2.2) / 100));
+    o += dimTxt(p, m.L, m.vert ? -90 : 0);
+    if (m.lab) o += txt(add(p, mul(dir, -mm(5.5) / 100)), m.lab, 1.8, m.vert ? -90 : 0);
+  });
+  G.T.forEach(t => o += txt(t.p, t.s, t.size, 0, `${t.bold ? 'font-weight="bold"' : ''}${t.end ? ' text-anchor="end"' : ''}`).replace(t.end ? 'text-anchor="middle" ' : '\0', ''));
+  return o + '</g>';
+}
+function cutLineSVG() { // Schnittlinie im Grundriss
+  const c = S.cut; if (!c) return ''; const L = dist(c.a, c.b); if (L < 0.1) return '';
+  const d = [(c.b[0] - c.a[0]) / L, (c.b[1] - c.a[1]) / L], v = [-d[1], d[0]], ex = mm(4) / 100, a = add(c.a, mul(d, -ex)), b = add(c.b, mul(d, ex)), nm = c.name || 'A';
+  let o = line(a, b, .5, '#000', `stroke-dasharray="${mm(6)} ${mm(1.5)} ${mm(1)} ${mm(1.5)}"`);
+  [a, b].forEach((p, j) => { const tip = add(p, mul(v, mm(5) / 100)); o += line(p, tip, .5) + `<path d="M${[tip, add(add(tip, mul(v, -mm(2) / 100)), mul(d, mm(1) / 100)), add(add(tip, mul(v, -mm(2) / 100)), mul(d, -mm(1) / 100))].map(T).join('L')}Z"/>` + txt(add(p, mul(d, (j ? 1 : -1) * mm(3) / 100)), nm, 3.5, 0, 'font-weight="bold"'); });
+  return o;
+}
+function viewCut() {
+  const el = $('#vcut'), G = cutGeom();
+  if (!S.cut) { el.innerHTML = '<p class="hint">Noch keine Schnittlinie – „✂ Schnitt“ tippen, dann im Plan zwei Punkte antippen.</p>'; return; }
+  const btn = '<div class="row"><button id="cutFlip">⇆ Blickrichtung</button><button id="cutNew">✂ neu setzen</button><button id="cutDel" class="danger">Schnitt entfernen</button></div>';
+  if (!G || G.empty) el.innerHTML = '<p class="hint">Die Schnittlinie schneidet keinen Raum.</p>' + btn;
+  else el.innerHTML = `<svg class="v3d" xmlns="http://www.w3.org/2000/svg" viewBox="${G.u0 * 100} ${-G.z1 * 100} ${(G.u1 - G.u0) * 100} ${(G.z1 - G.z0) * 100}">${cutSVG(G)}</svg>${btn}`;
+  $('#cutFlip').onclick = () => { S.cut = { ...S.cut, a: S.cut.b, b: S.cut.a }; save(); renderPlan(); viewCut(); };
+  $('#cutNew').onclick = () => cutStart();
+  $('#cutDel').onclick = () => { S.cut = null; save(); $('#vcut').hidden = true; renderPlan(); };
+}
+function cutStart() { cutMode = 1; cutA = null; $('#cutBtn').textContent = '✂ 1. Punkt antippen …'; $('#cutBtn').classList.add('pri'); }
+function cutTap(p) { // p in m
+  if (cutMode === 1) { cutA = p; cutMode = 2; $('#cutBtn').textContent = '✂ 2. Punkt antippen …'; return; }
+  let b = p; const ang = Math.atan2(b[1] - cutA[1], b[0] - cutA[0]) * R2D, L = dist(cutA, b), sn = Math.round(ang / 90) * 90;
+  if (Math.abs(ang - sn) < 8) b = add(cutA, [L * Math.cos(sn / R2D), L * Math.sin(sn / R2D)]); // fast waagrecht/senkrecht → gerade
+  cutMode = 0; $('#cutBtn').textContent = '✂ Schnitt'; $('#cutBtn').classList.remove('pri');
+  if (L < 0.2) return renderPlan();
+  S.cut = { a: cutA.map(v => +v.toFixed(3)), b: b.map(v => +v.toFixed(3)), name: S.cut?.name || 'A' }; save();
+  $('#vcut').hidden = false; viewCut(); renderPlan();
+}
+$('#cutBtn').onclick = () => { if (cutMode) { cutMode = 0; $('#cutBtn').textContent = '✂ Schnitt'; $('#cutBtn').classList.remove('pri'); return; } if (S.cut && $('#vcut').hidden) { $('#vcut').hidden = false; viewCut(); return; } cutStart(); };
 $('#toProj').onclick = () => showTab('proj'); $('#show3d').onclick = () => { const el = $('#v3d'); el.hidden = !el.hidden; if (!el.hidden) view3d(); }; $('#showRes').onclick = opBack; $('#backPlan').onclick = () => showTab('plan');
 $('#planClear').onclick = () => { if (!S.rooms.length || !confirm(`Alle ${S.rooms.length} Räume aus dem Plan löschen?`)) return; S.rooms = []; selRoom = null; save(); renderPlan(true); roomPanel(); };
 $('#nAdd').onclick = () => {
@@ -1487,12 +1597,19 @@ function pageSVG() {
   const [PW, PH] = PAPER[S.paper] || PAPER.A3, k = 10 / S.scale, P = S.project;
   const b = allBB(), m = 1.2, bw = (b.x1 - b.x0 + 2 * m) * 100 * k, bh = (b.y1 - b.y0 + 2 * m) * 100 * k;
   const ax0 = 25, ay0 = 15, ax1 = PW - 15, ay1 = PH - 80;
-  const fits = bw <= ax1 - ax0 && bh <= ay1 - ay0;
-  $('#fitMsg').innerHTML = fits ? '' : `<span class="warn">Plan passt bei 1:${S.scale} nicht auf ${S.paper} – größeres Blatt oder Maßstab wählen.</span>`;
-  const tx = (ax0 + ax1) / 2 - ((b.x0 + b.x1) / 2) * 100 * k, ty = (ay0 + ay1) / 2 + ((b.y0 + b.y1) / 2) * 100 * k;
+  const G = cutGeom(), cg = G && !G.empty ? G : null, sw = cg ? (cg.u1 - cg.u0) * 100 * k : 0, sh = cg ? (cg.z1 - cg.z0) * 100 * k : 0;
+  const AW = ax1 - ax0, AH = ay1 - ay0, side = cg && bw + sw <= AW && Math.max(bh, sh) <= AH, stack = cg && !side && bh + sh <= AH && Math.max(bw, sw) <= AW;
+  const fits = cg ? side || stack : bw <= AW && bh <= AH;
+  $('#fitMsg').innerHTML = fits ? '' : `<span class="warn">${cg ? 'Grundriss + Schnitt passen' : 'Plan passt'} bei 1:${S.scale} nicht auf ${S.paper} – größeres Blatt oder Maßstab wählen.</span>`;
+  const pcx = side ? ax0 + bw / 2 + (AW - bw - sw) / 3 : (ax0 + ax1) / 2, pcy = stack ? ay0 + bh / 2 + (AH - bh - sh) / 3 : (ay0 + ay1) / 2;
+  const tx = pcx - ((b.x0 + b.x1) / 2) * 100 * k, ty = pcy + ((b.y0 + b.y1) / 2) * 100 * k;
   let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${PW}mm" height="${PH}mm" viewBox="0 0 ${PW} ${PH}" font-family="Arial,Helvetica,sans-serif">`;
   o += `<rect width="${PW}" height="${PH}" fill="#fff"/><rect x="20" y="10" width="${PW - 30}" height="${PH - 20}" fill="none" stroke="#000" stroke-width=".5"/>`;
-  o += `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k})">${planSVG(null)}</g>`;
+  o += `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k})">${planSVG(null)}${cutLineSVG()}</g>`;
+  if (cg) { // Schnitt neben bzw. unter dem Grundriss
+    const scx = side ? ax1 - sw / 2 - (AW - bw - sw) / 3 : (ax0 + ax1) / 2, scy = stack ? ay1 - sh / 2 - (AH - bh - sh) / 3 : (ay0 + ay1) / 2;
+    o += `<g transform="translate(${(scx - (cg.u0 + cg.u1) / 2 * 100 * k).toFixed(2)} ${(scy + (cg.z0 + cg.z1) / 2 * 100 * k).toFixed(2)}) scale(${k})">${cutSVG(cg)}</g>`;
+  }
   // Nordpfeil
   o += `<g transform="translate(${PW - 30} 30) rotate(${num(P.nord)})"><circle r="9" fill="none" stroke="#000" stroke-width=".3"/><path d="M0,-9 L4,6 L0,3 L-4,6Z" fill="#000"/><text y="-11" font-size="4" text-anchor="middle">N</text></g>`;
   // Maßstabsleiste 0–5 m
@@ -1549,6 +1666,16 @@ $('#xDxf').onclick = () => {
     tx(g.c, r.name, 0.25, 'TEXT'); tx(add(g.c, [0, -0.35]), f2(g.area) + ' m2', 0.2, 'TEXT');
     g.E.forEach(e => tx(add(mid(e.p, e.q), mul(e.n, e.t + 0.4)), dimStr(e.L), 0.18, 'MASS', -rdAngle(e.d)));
   });
+  const G = cutGeom();
+  if (S.cut) { const L2 = dist(S.cut.a, S.cut.b), d = [(S.cut.b[0] - S.cut.a[0]) / L2, (S.cut.b[1] - S.cut.a[1]) / L2], v = [-d[1], d[0]]; ln(add(S.cut.a, mul(d, -0.4)), add(S.cut.b, mul(d, 0.4)), 'SCHNITTLINIE'); [S.cut.a, S.cut.b].forEach(p => { ln(p, add(p, mul(v, 0.5)), 'SCHNITTLINIE'); tx(add(p, mul(v, -0.3)), S.cut.name || 'A', 0.35, 'SCHNITTLINIE'); }); }
+  if (G && !G.empty) { // Schnitt unter dem Grundriss (gleicher Maßstab, z nach oben)
+    const B = allBB(), ox = B.x0 - G.u0, oy = B.y0 - 1.5 - G.z1, P2 = (u, z) => [u + ox, z + oy];
+    const rc = (q, lay) => { const c = [P2(q.u0, q.z0), P2(q.u1, q.z0), P2(q.u1, q.z1), P2(q.u0, q.z1)]; c.forEach((p, i) => ln(p, c[(i + 1) % 4], lay)); };
+    G.R.forEach(q => rc(q, q.k === 'wand' ? 'SCHNITT_WAND' : q.k === 'glas' || q.k === 'tuer' ? 'SCHNITT_OEFFNUNG' : 'SCHNITT_DECKE'));
+    G.V.forEach(q => rc(q, 'ANSICHT'));
+    G.D.forEach(m => { ln(P2(...m.a), P2(...m.b), 'SCHNITT_MASS'); tx(add(P2(...mid(m.a, m.b)), m.vert ? [-0.2, 0] : [0, 0.15]), dimStr(m.L), 0.18, 'SCHNITT_MASS', m.vert ? 90 : 0); });
+    G.T.forEach(t => tx(P2(...t.p), t.s, t.size > 3 ? 0.3 : 0.18, 'TEXT'));
+  }
   const dxf = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', '6', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES', ...L, '0', 'ENDSEC', '0', 'EOF'].join('\r\n');
   download(fname('dxf'), dxf, 'application/dxf');
 };

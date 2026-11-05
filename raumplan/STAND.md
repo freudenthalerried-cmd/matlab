@@ -42,5 +42,6 @@ Siehe `KONZEPT-1MM.md` (Weg zu 1 mm Genauigkeit).
 - 2 Reiter (Aufmaß / Ergebnis), Marken-Selbsterkennung, sonst AR-Angebot.
 - Ergebnis-Overlay: Skizze, Wandlängen ±mm, Raumhöhe eintragen, „📐 Fenster/Tür“ je Wand (2 Ecken im Foto), Öffnungsliste.
 - 🧊 3D-Ansicht (isometrisch, `view3d()` in app.js) mit Fenstern/Türen B/H in cm.
-- Offen: Schnitt (Schnittlinie im Plan → Ansicht mit Raumhöhe, Parapet, Fensterhöhen), Raumhöhe aus Video, Test am S23/S25, Phasen 3–6 laut PLAN.md.
+- ✂ Schnitt (05.11.): im Plan „✂ Schnitt“ → 2 Punkte tippen (fängt waagrecht/senkrecht) → Schnittansicht mit Decke/Boden, Wänden, Fenster (BRH/FE-Kette), Tür, RH und lichter Breite kotiert, Ansicht von Öffnungen dahinter; ⇆ Blickrichtung; auch auf PDF-Seite (neben/unter Grundriss) und im DXF (Layer SCHNITT_*). `cutGeom()/cutSVG()` in app.js. Test: `sim/e2e_schnitt.js`.
+- Offen: Raumhöhe aus Video, Test am S23/S25, Phasen 3–6 laut PLAN.md.
 - Tests: `python3 -m http.server 8766` in raumplan/, dann `NP=/opt/node-tools/node_modules Y4M=<sheets8.y4m> URL=http://127.0.0.1:8766/index.html node sim/e2e_speed.js` (y4m mit `sim/make_y4m.js` erzeugen).
