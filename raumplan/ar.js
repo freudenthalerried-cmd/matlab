@@ -102,67 +102,109 @@ const AR = (() => {
     const K = []; [[0, 1], [2, 3]].forEach(([a, b]) => { if (pos[a] && pos[b]) { const d = Math.hypot(pos[a][0] - pos[b][0], pos[a][1] - pos[b][1]); if (d > 0.5) K.push(len / d); } });
     return { k: K.length ? K.reduce((x, y) => x + y, 0) / K.length : null, n: K.length, cnt, auto: true };
   }
-  // ---- Zollstock ohne Marken: gelben Stab im Kamerabild finden, Enden subpixelgenau, Länge über den Boden → Maßstab ----
+  // ---- Zollstock ohne Marken: Stab im Kamerabild finden (gelb, weiß, Naturholz oder gelernte Farbe), Enden subpixelgenau, Gelenke als Takt ----
   const hsv = (r, g, b) => { const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, mx ? d / mx : 0, mx / 255]; };
-  // Farbmodelle: gelb lackiert, weiß, Naturholz – oder die am Zollstock gelernte Farbe
+  // Farbmodelle auf Farbton/Sättigung (h, s, v) – damit Schatten, Abendlicht und Blitz die Erkennung nicht kippen
   const COLS = {
-    gelb: (r, g, b) => r > 110 && g > 80 && b < 0.62 * Math.min(r, g) && r - b > 50 && g - b > 35,
-    weiss: (r, g, b) => Math.min(r, g, b) > 175 && Math.max(r, g, b) - Math.min(r, g, b) < 40,
-    holz: (r, g, b) => { const [h, sa, v] = hsv(r, g, b); return h >= 18 && h <= 48 && sa >= 0.3 && sa <= 0.65 && v >= 0.6; }
+    gelb: (h, s, v) => h >= 38 && h <= 70 && s >= 0.45 && v >= 0.22,
+    weiss: (h, s, v) => s <= 0.18 && v >= 0.5, // zusätzlich: deutlich heller als der Boden (siehe rulerFind)
+    holz: (h, s, v) => h >= 18 && h <= 48 && s >= 0.35 && s <= 0.7 && v >= 0.3 // zusätzlich: heller als der Boden (siehe rulerFind)
   };
-  function colModel(c) { return (r, g, b) => { const [h, sa, v] = hsv(r, g, b), dh = Math.min(Math.abs(h - c[0]), 360 - Math.abs(h - c[0])); return (c[1] < 0.12 ? sa < c[1] + 0.12 : dh < 10 && Math.abs(sa - c[1]) < 0.1) && Math.abs(v - c[2]) < 0.08; }; }
+  function colModel(c) { return (h, sa, v) => { const dh = Math.min(Math.abs(h - c[0]), 360 - Math.abs(h - c[0])); return (c[1] < 0.12 ? sa < c[1] + 0.12 : dh < 12 && Math.abs(sa - c[1]) < 0.14) && Math.abs(v - c[2]) < 0.2; }; }
   function learnColor(px, W, H, u, v, flip = true) { const R = [], G = [], B = []; for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const x = Math.round(u) + dx, y = Math.round(v) + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue; const j = ((flip ? H - 1 - y : y) * W + x) * 4; R.push(px[j]); G.push(px[j + 1]); B.push(px[j + 2]); } return R.length ? hsv(med(R), med(G), med(B)) : null; }
-  let isYf = COLS.gelb; const isY = (px, j) => isYf(px[j], px[j + 1], px[j + 2]);
-  function rulerFind(px, W, H, flip = true, col = null) { // mehrere Farbmodelle probieren → längster dünner Stab
-    const L = col ? [['gelernt', colModel(col)]] : Object.entries(COLS); let best = null;
-    for (const [name, f] of L) { isYf = f; const R = rulerFind1(px, W, H, flip); if (R && R.lenPx / R.wPx >= 35 && (!best || R.lenPx > best.lenPx)) best = { ...R, col: name }; }
+  let isYf = COLS.gelb; const isY = (px, j) => { const c = hsv(px[j], px[j + 1], px[j + 2]); return isYf(c[0], c[1], c[2]); };
+  function pca(P) { // Hauptachse einer Punktwolke (x,y,x,y,…) → Mitte, Richtung, Länge, Breite
+    const n = P.length / 2; let mx = 0, my = 0; for (let k = 0; k < P.length; k += 2) { mx += P[k]; my += P[k + 1]; } mx /= n; my /= n;
+    let sxx = 0, syy = 0, sxy = 0; for (let k = 0; k < P.length; k += 2) { const a = P[k] - mx, b = P[k + 1] - my; sxx += a * a; syy += b * b; sxy += a * b; } sxx /= n; syy /= n; sxy /= n;
+    const tr = sxx + syy, dt = Math.sqrt(Math.max(0, (sxx - syy) ** 2 / 4 + sxy * sxy)), l1 = tr / 2 + dt, l2 = Math.max(1e-6, tr / 2 - dt), ang = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+    return { P, n, mx, my, e: [Math.cos(ang), Math.sin(ang)], len: Math.sqrt(12 * l1), wid: Math.sqrt(12 * l2), l1, l2 };
+  }
+  function rulerFind(px, W, H, flip = true, col = null) { // px RGBA; flip: Zeilen von unten (WebGL) → v von oben. Alle Farbmodelle in einem Durchlauf, längster passender Stab gewinnt
+    const s = Math.max(1, Math.round(W / 640)), w = Math.floor(W / s), h = Math.floor(H / s);
+    const J = (x, y) => ((flip ? H - 1 - y : y) * W + x) * 4;
+    const Hh = new Float32Array(w * h), Ss = new Float32Array(w * h), Vv = new Float32Array(w * h), hist = new Int32Array(64);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const j = J(x * s, y * s), c = hsv(px[j], px[j + 1], px[j + 2]), k = y * w + x; Hh[k] = c[0]; Ss[k] = c[1]; Vv[k] = c[2]; hist[Math.min(63, (c[2] * 64) | 0)]++; }
+    let acc = 0, vmed = 0.5; for (let i = 0; i < 64; i++) { acc += hist[i]; if (acc >= w * h / 2) { vmed = (i + 0.5) / 64; break; } } // Median-Helligkeit ≈ Boden
+    const models = col ? [['gelernt', colModel(col)]] : [['gelb', COLS.gelb], ['weiss', (hh, sa, v) => COLS.weiss(hh, sa, v) && v >= vmed + 0.12], ['holz', (hh, sa, v) => COLS.holz(hh, sa, v) && v >= vmed + 0.12]];
+    let best = null, bestF = null;
+    for (const [name, f] of models) {
+      const m = new Uint8Array(w * h); let cnt = 0; for (let k = 0; k < w * h; k++) if (f(Hh[k], Ss[k], Vv[k])) { m[k] = 1; cnt++; }
+      if (cnt < 30 || cnt > w * h * 0.6) continue; // nichts oder (fast) alles – kein Stab
+      isYf = f; const R = rulerFrom(m, w, h, s, px, W, H, J);
+      if (R && R.lenPx / R.wPx >= 35 && R.tex >= 0.02 && R.tex <= 0.55 && (!best || R.lenPx > best.lenPx)) { best = { ...R, col: name }; bestF = f; }
+    }
+    isYf = bestF || COLS.gelb;
     return best;
   }
-  function rulerFind1(px, W, H, flip = true) { // px RGBA; flip: Zeilen von unten (WebGL) → v von oben
-    const s = Math.max(1, Math.round(W / 480)), w = Math.floor(W / s), h = Math.floor(H / s), m = new Uint8Array(w * h);
-    const J = (x, y) => ((flip ? H - 1 - y : y) * W + x) * 4;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) m[y * w + x] = isY(px, J(x * s, y * s)) ? 1 : 0;
+  function rulerFrom(m, w, h, s, px, W, H, J) { // m: Farbmaske im Raster s → Stab mit Enden (Vollbild), Struktur (Ziffern/Gelenke) und Gelenkpunkten
     { const mj = m.slice(); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { let c = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) c += mj[(y + dy) * w + x + dx]; m[y * w + x] = c >= 4 ? 1 : 0; } } // Einzelpixel (Bodenmaserung) weg
     const m0 = m.slice(); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if (!m0[y * w + x] && (m0[y * w + x - 1] && m0[y * w + x + 1] || m0[(y - 1) * w + x] && m0[(y + 1) * w + x] || m0[(y - 1) * w + x - 1] && m0[(y + 1) * w + x + 1] || m0[(y - 1) * w + x + 1] && m0[(y + 1) * w + x - 1])) m[y * w + x] = 1; // Lücken (Ziffern, Gelenke) schließen
     for (let it = 0; it < 2; it++) { const mm = m.slice(); for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) if (!mm[y * w + x]) for (const [dx, dy] of [[2, 0], [0, 2], [2, 2], [2, -2]]) if (mm[(y + dy) * w + x + dx] && mm[(y - dy) * w + x - dx]) { m[y * w + x] = 1; break; } }
-    const lab = new Int32Array(w * h), st = []; let best = null, nl = 0;
+    const lab = new Int32Array(w * h), st = [], C = []; let nl = 0;
     for (let i0 = 0; i0 < w * h; i0++) {
       if (!m[i0] || lab[i0]) continue; nl++; const P = []; st.push(i0); lab[i0] = nl;
       while (st.length) { const i = st.pop(), x = i % w, y = (i / w) | 0; P.push(x, y);
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; const k = yy * w + xx; if (m[k] && !lab[k]) { lab[k] = nl; st.push(k); } } }
-      const n = P.length / 2; if (n < 30) continue;
-      let mx = 0, my = 0; for (let k = 0; k < P.length; k += 2) { mx += P[k]; my += P[k + 1]; } mx /= n; my /= n;
-      let sxx = 0, syy = 0, sxy = 0; for (let k = 0; k < P.length; k += 2) { const a = P[k] - mx, b = P[k + 1] - my; sxx += a * a; syy += b * b; sxy += a * b; } sxx /= n; syy /= n; sxy /= n;
-      const tr = sxx + syy, dt = Math.sqrt(Math.max(0, (sxx - syy) ** 2 / 4 + sxy * sxy)), l1 = tr / 2 + dt, l2 = Math.max(1e-6, tr / 2 - dt);
-      const len = Math.sqrt(12 * l1); if (l1 / l2 < 60 || len < 0.25 * Math.min(w, h)) continue; // lang und dünn
-      if (!best || len > best.len) { const ang = 0.5 * Math.atan2(2 * sxy, sxx - syy); best = { P, n, mx, my, e: [Math.cos(ang), Math.sin(ang)], len, wid: Math.sqrt(12 * l2) }; }
+      if (P.length / 2 < 20) continue; const c = pca(P);
+      if (c.l1 / c.l2 < 12 || c.len < 0.08 * Math.min(w, h)) continue; // Teilstück: länglich genug
+      C.push(c);
+    }
+    if (!C.length) return null;
+    C.sort((a, b) => b.len - a.len);
+    // kollineare Teilstücke zusammenfügen (Schatten, Fuß oder Kabel quer über dem Stab trennen die Maske)
+    const used = new Uint8Array(C.length); let best = null;
+    for (let i = 0; i < C.length; i++) {
+      if (used[i]) continue; used[i] = 1; let cur = C[i], P = cur.P;
+      for (let it = 0; it < 2; it++) for (let j = 0; j < C.length; j++) {
+        if (used[j]) continue; const c = C[j], nrm = [-cur.e[1], cur.e[0]];
+        const off = Math.abs((c.mx - cur.mx) * nrm[0] + (c.my - cur.my) * nrm[1]), along = Math.abs((c.mx - cur.mx) * cur.e[0] + (c.my - cur.my) * cur.e[1]);
+        if (off < 1.5 * cur.wid + 1.5 && Math.abs(cur.e[0] * c.e[0] + cur.e[1] * c.e[1]) > 0.995 && along < (cur.len + c.len) / 2 + 0.6 * cur.len) { used[j] = 1; P = P.concat(c.P); cur = pca(P); }
+      }
+      if (cur.l1 / cur.l2 < 60 || cur.len < 0.25 * Math.min(w, h)) continue; // lang und dünn
+      if (!best || cur.len > best.len) best = cur;
     }
     if (!best) return null;
     const { P, e } = best, nrm = [-e[1], e[0]]; let t0 = Infinity, t1 = -Infinity;
     for (let k = 0; k < P.length; k += 2) { const t = (P[k] - best.mx) * e[0] + (P[k + 1] - best.my) * e[1]; if (t < t0) t0 = t; if (t > t1) t1 = t; }
-    const endAt = (tE, dir) => { // Mitte quer zum Stab nahe dem Ende (grob), dann am Vollbild entlang der Achse das letzte gelbe Stück suchen
+    const endAt = (tE, dir) => { // Mitte quer zum Stab nahe dem Ende (grob), dann am Vollbild entlang der Achse das letzte farbige Stück suchen
       let cx = 0, cy = 0, c = 0; for (let k = 0; k < P.length; k += 2) { const t = (P[k] - best.mx) * e[0] + (P[k + 1] - best.my) * e[1]; if (Math.abs(t - tE) < 2.5 + best.wid) { cx += P[k]; cy += P[k + 1]; c++; } }
       let p = [(cx / c) * s + 0.5, (cy / c) * s + 0.5]; const hw = Math.max(1, best.wid * s * 0.4), gap = Math.max(3, best.wid * s * 0.8);
-      // Achse nahe dem Ende: Punkte zwischen 3 und 12 Stabbreiten vom Ende → Richtung
       const fr = t => { let y = 0, a = 0; for (let o = -hw; o <= hw; o += Math.max(0.5, hw / 3)) { const x = Math.round(p[0] + dir * e[0] * t + nrm[0] * o), yy = Math.round(p[1] + dir * e[1] * t + nrm[1] * o); if (x < 0 || yy < 0 || x >= W || yy >= H) continue; a++; if (isY(px, J(x, yy))) y++; } return a ? y / a : 0; };
-      const t0s = -(12 * s + 2 * best.wid * s); let last = t0s; for (let t = t0s; t <= 6 * s + best.wid * s; t += 0.5) { if (fr(t) >= 0.35) last = t; else if (t > last + gap) break; }
-      // quer zur Achse mittig setzen (Rand gelb/Boden beidseitig), etwas innerhalb des Endes gemessen
-      const tq = last - Math.max(2, best.wid * s * 0.7), ext = sg => { let o = 0; for (; o < 4 * best.wid * s; o += 0.5) { const x = Math.round(p[0] + dir * e[0] * tq + nrm[0] * o * sg), yy = Math.round(p[1] + dir * e[1] * tq + nrm[1] * o * sg); if (x < 0 || yy < 0 || x >= W || yy >= H || !isY(px, J(x, yy))) break; } return o; };
-      const op = ext(1), om = ext(-1), sh = (op - om) / 2; p = [p[0] + nrm[0] * sh, p[1] + nrm[1] * sh];
+      const t0s = -(12 * s + 2 * best.wid * s), tMax = 6 * s + best.wid * s, scan = (from, thr) => { let last = from; for (let t = from; t <= tMax; t += 0.5) { if (fr(t) >= thr) last = t; else if (t > last + gap) break; } return last; };
+      let last = scan(t0s, 0.2); // grob: auch Ziffern/Gelenke am Ende überbrücken
+      // quer zur Achse mittig setzen: breiteste Stelle aus mehreren Schnitten kurz vor dem Ende (Ziffern stören so nicht)
+      const ext = (tq, sg) => { let o = 0; for (; o < 4 * best.wid * s; o += 0.5) { const x = Math.round(p[0] + dir * e[0] * tq + nrm[0] * o * sg), yy = Math.round(p[1] + dir * e[1] * tq + nrm[1] * o * sg); if (x < 0 || yy < 0 || x >= W || yy >= H || !isY(px, J(x, yy))) break; } return o; };
+      let op = 0, om = 0; for (let k = 1; k <= 4; k++) { const tq = last - k * Math.max(2, best.wid * s * 0.7); op = Math.max(op, ext(tq, 1)); om = Math.max(om, ext(tq, -1)); }
+      const sh = (op - om) / 2; p = [p[0] + nrm[0] * sh, p[1] + nrm[1] * sh];
+      last = scan(last - 8 * s, 0.35); // fein, jetzt mittig im Stab
       p = [p[0] + dir * e[0] * (last + 0.25), p[1] + dir * e[1] * (last + 0.25)];
       const edge = 3 * s; return { p, ok: p[0] > edge && p[1] > edge && p[0] < W - edge && p[1] < H - edge };
     };
-    const A = endAt(t0, -1), B = endAt(t1, 1);
-    return { a: A.p, b: B.p, okA: A.ok, okB: B.ok, lenPx: Math.hypot(A.p[0] - B.p[0], A.p[1] - B.p[1]), wPx: best.wid * s };
+    const A = endAt(t0, -1), B = endAt(t1, 1), lenPx = Math.hypot(A.p[0] - B.p[0], A.p[1] - B.p[1]), wPx = best.wid * s;
+    if (Math.abs(lenPx / (best.len * s) - 1) > 0.25) return null; // Endsuche und Maske widersprechen sich → kein Stab
+    // Struktur entlang der Achse (Vollbild): Anteil farbiger Pixel quer zum Stab je Stelle → Ziffern/Gelenke = Einbrüche.
+    // Ein Zollstock hat sie (Ziffern alle cm, Gelenke alle 20 cm), ein Kabel, eine Fuge oder eine Sockelleiste nicht.
+    const N = Math.max(60, Math.min(2500, Math.round(lenPx))), ea = [(B.p[0] - A.p[0]) / lenPx, (B.p[1] - A.p[1]) / lenPx], hw = Math.max(1, wPx * 0.4), prof = new Float32Array(N);
+    const full = new Uint8Array(N), hj = Math.max(1, wPx * 0.35); // full: Einbruch reicht bis an beide Ränder (Gelenk), nicht nur Mitte (Ziffer)
+    for (let i = 0; i < N; i++) { const t = (i + 0.5) / N * lenPx; let y = 0, a = 0; for (let o = -hw; o <= hw; o += Math.max(0.5, hw / 3)) { const x = Math.round(A.p[0] + ea[0] * t - ea[1] * o), yy = Math.round(A.p[1] + ea[1] * t + ea[0] * o); if (x < 0 || yy < 0 || x >= W || yy >= H) continue; a++; if (isY(px, J(x, yy))) y++; } prof[i] = a ? y / a : 1;
+      if (prof[i] < 0.3) { let ey = 0; for (const o of [-hj, hj]) { const x = Math.round(A.p[0] + ea[0] * t - ea[1] * o), yy = Math.round(A.p[1] + ea[1] * t + ea[0] * o); if (x >= 0 && yy >= 0 && x < W && yy < H && isY(px, J(x, yy))) ey++; } full[i] = ey === 0 ? 1 : 0; } }
+    let dark = 0; for (let i = 0; i < N; i++) if (prof[i] < 0.6) dark++; const tex = dark / N;
+    // Gelenke: Einbrüche über die ganze Breite, kurz (keine Schatten/Füße), gleichmäßiger Abstand – nur bei breitem Stab (≥ 10 px) verlässlich
+    let J0 = [], run = null; for (let i = 0; i <= N; i++) { const d = i < N && full[i]; if (d && !run) run = [i, i]; else if (d) run[1] = i; else if (run) { if (run[1] - run[0] + 1 <= Math.max(2, 0.03 * N)) J0.push((run[0] + run[1] + 1) / 2 / N * lenPx); run = null; } }
+    let joints = [];
+    if (J0.length >= 3 && wPx >= 10) { const D = []; for (let i = 1; i < J0.length; i++) D.push(J0[i] - J0[i - 1]); const d1 = [...D].sort((a, b) => a - b)[D.length >> 1], Pq = D.map(d => d / Math.max(1, Math.round(d / d1))), dm = [...Pq].sort((a, b) => a - b)[Pq.length >> 1]; // Takt = Median der Abstände, Vielfache = übersehene Gelenke, Bruchteile = Fehlerkennung
+      const keep = new Uint8Array(J0.length); for (let i = 1; i < J0.length; i++) if (Math.abs(Pq[i - 1] / dm - 1) < 0.15) { keep[i - 1] = 1; keep[i] = 1; }
+      joints = J0.filter((_, i) => keep[i]).map(t => [A.p[0] + ea[0] * t, A.p[1] + ea[1] * t]); if (joints.length < 3) joints = []; }
+    return { a: A.p, b: B.p, okA: A.ok, okB: B.ok, lenPx, wPx, tex, joints };
   }
   // laufende Maßstabsschätzung aus allen Bildern mit beiden Enden: Median, Streuung → Genauigkeit in %
-  function rulerScale(K) {
+  function rulerScale(K, res = 0.0015) {
     const k = K.filter(x => x > 0.85 && x < 1.15); if (k.length < 3) return null;
     const so = [...k].sort((a, b) => a - b), mdn = so[so.length >> 1], mad = med(so.map(x => Math.abs(x - mdn))) || 0.0005;
     const use = so.filter(x => Math.abs(x - mdn) < 4 * 1.4826 * mad + 1e-4), km = use.reduce((a, x) => a + x, 0) / use.length;
     const sd = Math.sqrt(use.reduce((a, x) => a + (x - km) ** 2, 0) / Math.max(1, use.length - 1));
     const stat = sd / Math.sqrt(use.length) / km;
-    return { k: km, n: use.length, stat, sig: Math.hypot(stat, 0.0015), auto: true, ruler: true }; // 0,15 % Restfehler: Bodenebene/Stabdicke
+    return { k: km, n: use.length, stat, sig: Math.hypot(stat, res), auto: true, ruler: true }; // 0,15 % Restfehler: Bodenebene/Stabdicke (Gelenke: 0,3 %)
   }
   // ---- Zollstock-Enden einzeln sammeln (dürfen in verschiedenen Bildern sein): Boden-Ende über die Bodenebene, sonst räumlich angepeilt (Wand) ----
   const rayDist = (r, X) => { const w = [X[0] - r.o[0], X[1] - r.o[1], X[2] - r.o[2]], t = w[0] * r.d[0] + w[1] * r.d[1] + w[2] * r.d[2]; return Math.hypot(w[0] - t * r.d[0], w[1] - t * r.d[1], w[2] - t * r.d[2]); };
@@ -199,8 +241,8 @@ const AR = (() => {
       if (k > 0.85 && k < 1.15 && (!best || E[i].c.n + E[j].c.n > best.m)) { const stat = Math.hypot(a.s, b.s) / d; best = { k, n: Math.min(E[i].c.n, E[j].c.n), m: E[i].c.n + E[j].c.n, stat, sig: Math.hypot(stat, 0.0015), auto: true, ruler: true, wall: !a.floor || !b.floor, na: E[i].c.n, nb: E[j].c.n }; } }
     return best;
   }
-  const curScale = () => endsScale() || rulerScale(st.rk);
-  const _test = { get st() { return st; }, feedAim, cornerTap, undo: () => undo(), finish: () => finish(), startCorners(done) { Object.assign(st, { phase: 'walls', corners: [], walls: [[]], aimH: [], closed: false, last: null, log: [], floorY: Array(20).fill(0), zs: [[], []], zp: [], zlen: 2, ceilY: null, auto: { k: 1, n: 20, sig: 0.002, auto: true }, done, s: null }); }, get ends() { return st.ends; }, reset(zlen, fy) { st.zlen = zlen; st.ends = []; st.rk = []; st.floorY = fy === null ? [] : Array(20).fill(fy); }, endObs, endsScale };
+  const curScale = () => endsScale() || rulerScale(st.rk) || rulerScale(st.rj || [], 0.003);
+  const _test = { get st() { return st; }, feedAim, cornerTap, undo: () => undo(), finish: () => finish(), startCorners(done) { Object.assign(st, { phase: 'walls', corners: [], walls: [[]], aimH: [], closed: false, last: null, log: [], floorY: Array(20).fill(0), zs: [[], []], zp: [], zlen: 2, ceilY: null, auto: { k: 1, n: 20, sig: 0.002, auto: true }, done, s: null }); }, get ends() { return st.ends; }, reset(zlen, fy) { st.zlen = zlen; st.ends = []; st.rk = []; st.rj = []; st.floorY = fy === null ? [] : Array(20).fill(fy); }, endObs, endsScale };
   // mehrere Lagen (Zollstock umgelegt): Mittel der Faktoren – Tippfehler und Richtungsabhängigkeit mitteln sich heraus
   function scale(zs, len, more = []) {
     if (!(len > 0)) return null; const K = [];
@@ -262,7 +304,7 @@ const AR = (() => {
       : st.scan ? `🔵 <b>Wand ${w.length} wird abgetastet</b> – Kreis langsam über die ganze Wand fahren (hin und her, oben und unten, über den Möbeln). ${cur.length} Punkte.`
       : cur.length < 2 ? `<b>Wand ${w.length}:</b> „▶ Abtasten“ tippen und den Kreis über die Wand fahren – oder einzelne Punkte setzen.`
       : `Wand ${w.length}: ${cur.length} Punkte ✓ – „Nächste Wand“ (der Reihe nach rundherum).`;
-    el('arMsg').innerHTML = msg || t; const cr = el('arColR'); if (cr) cr.onclick = () => { st.col = null; st.rk = []; try { localStorage.removeItem('raumplan-zcol'); } catch (e) { } ui('Farbe zurückgesetzt – gelb, weiß und Holz werden automatisch probiert.'); };
+    el('arMsg').innerHTML = msg || t; const cr = el('arColR'); if (cr) cr.onclick = () => { st.col = null; st.rk = []; st.rj = []; try { localStorage.removeItem('raumplan-zcol'); } catch (e) { } ui('Farbe zurückgesetzt – gelb, weiß und Holz werden automatisch probiert.'); };
     const sa = st.camOk ? autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null) : null, sc = sa && sa.k ? sa : scale(st.zs, st.zlen, st.zp);
     const sr = st.auto || (st.camOk ? curScale() : null) || sc;
     if (done >= 3 && Date.now() - st.estT > 800) { st.estT = Date.now(); try { const e = solve(st.walls.filter(x => x.length >= 2), st.zs, st.zlen, st.floorY, st.ceilY, st.zp, st.auto || curScale()); st.est = e.err ? null : Math.max(...e.sigma.map((s0, i) => s0 / Math.hypot(e.poly[(i + 1) % e.poly.length][0] - e.poly[i][0], e.poly[(i + 1) % e.poly.length][1] - e.poly[i][1]))); } catch (x) { st.est = null; } }
@@ -292,7 +334,7 @@ const AR = (() => {
     st.s = s;
     const cv = document.createElement('canvas'), gl = cv.getContext('webgl', { xrCompatible: true });
     await s.updateRenderState({ baseLayer: new XRWebGLLayer(s, gl) });
-    st.camOk = false; st.mobs = []; st.rk = []; st.ends = []; st.corners = []; st.aimH = []; st.aim = null; st.closed = false; st.walls = [[]]; try { st.col = JSON.parse(localStorage.getItem('raumplan-zcol') || 'null'); } catch (e) { st.col = null; } st.rv = null; st.grabT = 0; st.camInfo = ''; st.estT = 0; st.est = null;
+    st.camOk = false; st.mobs = []; st.rk = []; st.rj = []; st.ends = []; st.corners = []; st.aimH = []; st.aim = null; st.closed = false; st.walls = [[]]; try { st.col = JSON.parse(localStorage.getItem('raumplan-zcol') || 'null'); } catch (e) { st.col = null; } st.rv = null; st.grabT = 0; st.camInfo = ''; st.estT = 0; st.est = null;
     let glb = null, fb = null; try { if ((s.enabledFeatures || []).includes('camera-access') && typeof XRWebGLBinding !== 'undefined') { glb = new XRWebGLBinding(s, gl); fb = gl.createFramebuffer(); st.camOk = true; } } catch (e) { }
     const space = await s.requestReferenceSpace('local'), viewer = await s.requestReferenceSpace('viewer');
     let src; try { src = await s.requestHitTestSource({ space: viewer, entityTypes: ['plane', 'point'] }); } catch (e) { src = await s.requestHitTestSource({ space: viewer }); }
@@ -319,7 +361,8 @@ const AR = (() => {
                 if (R) { const fy = st.floorY.length > 10 ? med(st.floorY) + 0.004 : null, cpos = [cam[12], cam[13], cam[14]];
                   [[R.a, R.okA], [R.b, R.okB]].forEach(([q, ok]) => { if (!ok) return; const ray = pixelRay(q[0], q[1], W, H, proj, cam), fl = fy !== null ? pixelToFloor(q[0], q[1], W, H, proj, cam, fy) : null; endObs({ ray, fl, cam: cpos }); });
                   if (R.okA && R.okB && fy !== null) { const a = pixelToFloor(R.a[0], R.a[1], W, H, proj, cam, fy), b = pixelToFloor(R.b[0], R.b[1], W, H, proj, cam, fy); if (a && b) { const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 0.3) { st.rk.push(st.zlen / d); if (st.rk.length > 150) st.rk.shift(); } } }
-                  st.log.push({ pa: R.a.map(v => +v.toFixed(1)), pb: R.b.map(v => +v.toFixed(1)), ok: [R.okA, R.okB], W, H, col: R.col }); }
+                  if (R.joints && R.joints.length >= 3 && fy !== null) { const F = R.joints.map(q => pixelToFloor(q[0], q[1], W, H, proj, cam, fy)), Dj = []; for (let i = 1; i < F.length; i++) if (F[i - 1] && F[i]) Dj.push(Math.hypot(F[i][0] - F[i - 1][0], F[i][1] - F[i - 1][1])); if (Dj.length >= 2) { const dm = med(Dj), Kj = Dj.filter(d => Math.abs(d / dm - 1) < 0.15).map(d => 0.2 / d); if (Kj.length >= 2) { st.rj = st.rj || []; st.rj.push(med(Kj)); if (st.rj.length > 150) st.rj.shift(); } } } // Gelenke alle 20 cm: Maßstab auch bei angeschnittenem Ende, unabhängig von Endkappen
+                  st.log.push({ pa: R.a.map(v => +v.toFixed(1)), pb: R.b.map(v => +v.toFixed(1)), ok: [R.okA, R.okB], W, H, col: R.col, tex: +R.tex.toFixed(2), j: R.joints.length }); }
                 const rs = curScale(); if (rs && st.phase === 'z0' && rs.n >= 10 && rs.stat <= 0.001) { st.auto = rs; st.phase = 'walls'; navigator.vibrate?.([40, 60, 40]); ui(`✅ Zollstock ✓ ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %`); }
                 if (st.mobs.length > 400) st.mobs.splice(0, st.mobs.length - 400); } catch (e) { }
               st.grabBusy = false; }, 0);
@@ -347,7 +390,7 @@ const AR = (() => {
     const h = st.hit;
     if (st.phase === 'z0' && st.camOk && st.lastPx && !st.col) { // Kreis auf den Zollstock → dessen Farbe lernen
       const { px, W, H } = st.lastPx, k = Math.max(innerWidth / W, innerHeight / H), u = (innerWidth / 2 - (innerWidth - W * k) / 2) / k, v = (innerHeight / 2 - (innerHeight - H * k) / 2) / k, c = learnColor(px, W, H, u, v);
-      if (c) { st.col = c; st.rk = []; try { localStorage.setItem('raumplan-zcol', JSON.stringify(c)); } catch (e) { } navigator.vibrate?.(30); return ui(`Zollstock-Farbe gelernt ✓ (Farbton ${Math.round(c[0])}°, Sättigung ${Math.round(c[1] * 100)} %) – jetzt beide Enden ins Bild.`); }
+      if (c) { st.col = c; st.rk = []; st.rj = []; try { localStorage.setItem('raumplan-zcol', JSON.stringify(c)); } catch (e) { } navigator.vibrate?.(30); return ui(`Zollstock-Farbe gelernt ✓ (Farbton ${Math.round(c[0])}°, Sättigung ${Math.round(c[1] * 100)} %) – jetzt beide Enden ins Bild.`); }
     }
     if (!h) return;
     if (st.phase === 'z0' || st.phase === 'z1') { st.zs[st.phase === 'z0' ? 0 : 1].push(h.p); st.log.push({ z: st.phase, p: h.p }); navigator.vibrate?.(30); return ui(); }
