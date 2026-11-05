@@ -200,7 +200,7 @@ const AR = (() => {
     return best;
   }
   const curScale = () => endsScale() || rulerScale(st.rk);
-  const _test = { get ends() { return st.ends; }, reset(zlen, fy) { st.zlen = zlen; st.ends = []; st.rk = []; st.floorY = fy === null ? [] : Array(20).fill(fy); }, endObs, endsScale };
+  const _test = { get st() { return st; }, feedAim, cornerTap, undo: () => undo(), finish: () => finish(), startCorners(done) { Object.assign(st, { phase: 'walls', corners: [], walls: [[]], aimH: [], closed: false, last: null, log: [], floorY: Array(20).fill(0), zs: [[], []], zp: [], zlen: 2, ceilY: null, auto: { k: 1, n: 20, sig: 0.002, auto: true }, done, s: null }); }, get ends() { return st.ends; }, reset(zlen, fy) { st.zlen = zlen; st.ends = []; st.rk = []; st.floorY = fy === null ? [] : Array(20).fill(fy); }, endObs, endsScale };
   // mehrere Lagen (Zollstock umgelegt): Mittel der Faktoren – Tippfehler und Richtungsabhängigkeit mitteln sich heraus
   function scale(zs, len, more = []) {
     if (!(len > 0)) return null; const K = [];
@@ -209,9 +209,28 @@ const AR = (() => {
     return { k, n: K.length, spread: K.length > 1 ? Math.sqrt(K.reduce((s, x) => s + (x - k) ** 2, 0) / (K.length - 1)) : null };
   }
 
+  const wallPts = i => st.closed ? st.walls[i] : st.walls[i + 1]; // Punkte der Wand Ecke i → i+1
+  function missing() { // was fehlt noch? (laufend ausgewertet)
+    const m = [], n = st.corners.length;
+    if (!(st.auto && st.auto.k)) m.push('📏');
+    if (st.phase === 'walls' || st.phase === 'h') { for (let i = 0; i < (st.closed ? n : n - 1); i++) { const w = wallPts(i); if (!w || w.length < 6) m.push(`Wand ${i + 1}: Kante`); } if (!st.closed) m.push(n < 3 ? `⌞ ${n}/≥4` : '↩ Ecke 1'); }
+    if (st.ceilY === null) m.push('RH');
+    return m;
+  }
+  function drawPlan(x, W, H) { // Ecken (grün, nummeriert), Wände (gelb), gesammelte Kantenpunkte (blau), Zielpunkt
+    if (!st.ov || (st.phase !== 'walls' && st.phase !== 'h') || !st.floorY.length) return; const fy = med(st.floorY);
+    const pr = (p, y = fy) => { const c = mulv(st.ov.P, mulv(st.ov.V, [p[0], y, p[1], 1])); if (c[3] <= 0.05) return null; return [(c[0] / c[3] + 1) / 2 * W, (1 - c[1] / c[3]) / 2 * H]; };
+    x.lineWidth = 2; x.fillStyle = '#29b6f6'; st.walls.forEach(w => w.forEach(p => { const q = pr(p); if (q) x.fillRect(q[0] - 1.5, q[1] - 1.5, 3, 3); }));
+    const C = st.corners, seq = C.concat(st.closed ? [C[0]] : st.aim ? [st.aim] : []);
+    for (let i = 0; i + 1 < seq.length; i++) { const a = pr(seq[i]), b = pr(seq[i + 1]); if (!a || !b) continue; const w = wallPts(i), np = w ? w.length : 0, live = !st.closed && i === C.length - 1;
+      x.strokeStyle = live ? '#ffffffcc' : np >= 15 ? '#00e676' : np >= 6 ? '#ffd600' : '#ff5252'; x.lineWidth = 5; x.setLineDash(live ? [10, 8] : []); x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke(); }
+    x.setLineDash([]);
+    C.forEach((p, i) => { const q = pr(p); if (!q) return; x.fillStyle = '#00e676'; x.beginPath(); x.arc(q[0], q[1], 13, 0, 7); x.fill(); x.fillStyle = '#000'; x.font = 'bold 14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(i + 1), q[0], q[1] + 1); });
+    if (st.ceilY !== null) C.forEach(p => { const a = pr(p), b = pr(p, st.ceilY); if (a && b) { x.strokeStyle = '#29b6f6'; x.lineWidth = 2; x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke(); } });
+  }
   function drawRuler() { // erkannten Zollstock farbig einzeichnen (grün = beide Enden, gelb = angeschnitten)
     const c = el('arCv'); if (!c) return; const W = innerWidth, H = innerHeight; if (c.width !== W) c.width = W; if (c.height !== H) c.height = H;
-    const x = c.getContext('2d'); x.clearRect(0, 0, W, H); const rv = st.rv; if (st.phase !== 'z0' || !rv || Date.now() - rv.t > 800) return;
+    const x = c.getContext('2d'); x.clearRect(0, 0, W, H); drawPlan(x, W, H); const rv = st.rv; if (st.phase !== 'z0' || !rv || Date.now() - rv.t > 800) return;
     const k = Math.max(W / rv.W, H / rv.H), ox = (W - rv.W * k) / 2, oy = (H - rv.H * k) / 2, P = p => [p[0] * k + ox, p[1] * k + oy], a = P(rv.a), b = P(rv.b), ok = rv.okA && rv.okB;
     x.lineCap = 'round'; x.strokeStyle = ok ? '#00e676cc' : '#ffd600cc'; x.lineWidth = Math.max(6, rv.wPx * k * 0.6); x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke();
     [[a, rv.okA], [b, rv.okB]].forEach(([p, o]) => { x.fillStyle = o ? '#00e676' : '#ff5252'; x.beginPath(); x.arc(p[0], p[1], 11, 0, 7); x.fill(); x.strokeStyle = '#000'; x.lineWidth = 2; x.stroke(); });
@@ -229,6 +248,13 @@ const AR = (() => {
           + `<div><div class="zst">${dot(nA)}<span class="zl">━━</span>${dot(nB)} ${rs ? `<b class="${rs.sig <= 0.002 ? 'arG' : rs.sig <= 0.004 ? 'arY' : 'arR'}">±${(rs.sig * 100).toFixed(2).replace('.', ',')} %</b>` : ''}</div><div class="zh">${hint}${rv ? ` <small>(${rv.col})</small>` : ''}</div>`
           + `${!rv && Date.now() - st.t0 > 6000 ? '<div class="zh"><small>nicht erkannt? ◎ auf den Zollstock → „Punkt“</small></div>' : ''}${st.col ? '<div class="zh"><small><a id="arColR">Farbe zurücksetzen</a></small></div>' : ''}</div></div>`; }
       else t = `<b>Schritt 1 – Zollstock:</b> Kreis genau auf den <b>${e ? 'Ende (200 cm)' : 'Anfang (0 cm)'}</b> des Zollstocks und „Punkt“ tippen${n ? ` (${n}× ✓ – noch 1–2 × für mehr Genauigkeit, dann „Weiter“)` : ''}. Ohne Zollstock: „Überspringen“.`;
+    } else if (st.phase === 'walls' || st.phase === 'h') {
+      const n = st.corners.length, pic = (b, x) => `<div class="zrow"><svg viewBox="0 0 60 60" class="zpic">${b}</svg><div class="zh2">${x}</div></div>`;
+      const corner = '<path d="M6 44 L30 54 L54 44" stroke="#e3b46b" stroke-width="3" fill="none"/><path d="M30 54 V8 M6 44 V4 M54 44 V4" stroke="#fff" stroke-width="2" fill="none"/>';
+      t = st.floorY.length <= 10 ? pic('<rect x="18" y="8" width="24" height="40" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M8 54 H52" stroke="#e3b46b" stroke-width="3"/><path d="M6 28 l6 -4 v8z M54 28 l-6 -4 v8z" fill="#fff"/>', '📱 ↔ langsam bewegen – Boden suchen')
+        : st.phase === 'h' ? pic('<path d="M8 10 H52 M30 10 V54 M8 54 H52" stroke="#fff" stroke-width="2" fill="none"/><circle cx="30" cy="10" r="5" fill="#29b6f6"/><path d="M30 46 V18 M24 24 l6 -8 l6 8" stroke="#29b6f6" stroke-width="3" fill="none"/>', `◎ auf Kante <b>Wand/Decke</b> → 📍${st.ceilY !== null ? ` <b class="arG">RH ${((st.ceilY - med(st.floorY)) * (st.auto ? st.auto.k : 1)).toFixed(2).replace('.', ',')} m</b>` : ''}`)
+        : !n ? pic(corner + '<circle cx="30" cy="54" r="5" fill="#00e676"/>', '◎ auf eine <b>Ecke unten</b> → 📍')
+        : pic(corner + `<circle cx="30" cy="54" r="4" fill="#00e676"/><circle cx="54" cy="44" r="4" fill="#ffd600"/><path d="M33 52 L50 45" stroke="#00e676" stroke-width="3" stroke-dasharray="3 3"/>`, `◎ an der <b>Bodenkante</b> entlang ➜ nächste Ecke → 📍 <small>(Ecke ${n}${n >= 3 ? ' · zurück zur 1. Ecke = Raum zu' : ''})</small>`);
     } else t = !h ? 'Handy langsam hin und her bewegen, bis Boden und Wände erkannt sind …'
       : h.kind === 'floor' ? 'Das ist der <b>Boden</b>. Auf eine <b>Wand</b> zielen (über den Möbeln).'
       : h.kind === 'flat' ? 'Das ist eine <b>waagrechte Fläche</b> (Tisch?). Auf die Wand darüber zielen.'
@@ -241,14 +267,18 @@ const AR = (() => {
     const sr = st.auto || (st.camOk ? curScale() : null) || sc;
     if (done >= 3 && Date.now() - st.estT > 800) { st.estT = Date.now(); try { const e = solve(st.walls.filter(x => x.length >= 2), st.zs, st.zlen, st.floorY, st.ceilY, st.zp, st.auto || curScale()); st.est = e.err ? null : Math.max(...e.sigma.map((s0, i) => s0 / Math.hypot(e.poly[(i + 1) % e.poly.length][0] - e.poly[i][0], e.poly[(i + 1) % e.poly.length][1] - e.poly[i][1]))); } catch (x) { st.est = null; } }
     const rel = st.est != null ? st.est : sr ? (sr.sig != null ? sr.sig : 0.003) : 0.015, col = rel <= 0.002 ? 'arG' : rel <= 0.005 ? 'arY' : 'arR';
-    el('arInfo').innerHTML = `<b class="${col}">±${(rel * 100).toFixed(2).replace('.', ',')} %</b> · ${done} Wände` + (sr ? ` · Maßstab ${((sr.k - 1) * 100 >= 0 ? '+' : '') + ((sr.k - 1) * 100).toFixed(2).replace('.', ',')} %` : ' · <span class="arR">ohne Zollstock</span>') + (h ? ` · Abstand ${(h.dist).toFixed(2).replace('.', ',')} m` : '') + (st.ceilY !== null && st.floorY.length ? ` · Höhe ${(st.ceilY - med(st.floorY)).toFixed(2).replace('.', ',')} m` : '');
+    const sec = Math.round((Date.now() - st.t0) / 1000), mi = missing();
+    el('arInfo').innerHTML = `<span class="${sec <= 60 ? '' : 'arY'}">⏱ ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}</span> · <b class="${col}">±${(rel * 100).toFixed(2).replace('.', ',')} %</b> · ${mi.length ? `<span class="arY">fehlt: ${mi.join(' · ')}</span>` : '<span class="arG">alles da ✓</span>'}<span hidden>` + (sr ? ` · Maßstab ${((sr.k - 1) * 100 >= 0 ? '+' : '') + ((sr.k - 1) * 100).toFixed(2).replace('.', ',')} %` : ' · <span class="arR">ohne Zollstock</span>') + (h ? ` · Abstand ${(h.dist).toFixed(2).replace('.', ',')} m` : '') + (st.ceilY !== null && st.floorY.length ? ` · Höhe ${(st.ceilY - med(st.floorY)).toFixed(2).replace('.', ',')} m` : '') + '</span>';
     drawRuler();
     el('arDot').className = 'ardot ' + (h ? h.kind : '') + (st.scan ? ' scan' : '');
-    const zp = st.phase !== 'walls';
+    const zp = st.phase !== 'walls' && st.phase !== 'h';
     el('arNext').textContent = zp ? (st.zs[st.phase === 'z0' ? 0 : 1].length ? 'Weiter ›' : 'Überspringen ›') : 'Nächste Wand ›';
-    el('arNext').disabled = !zp && cur.length < 2;
-    el('arScan').hidden = zp; el('arZmore').hidden = st.phase !== 'z1' || !st.zs[1].length; el('arScan').textContent = st.scan ? '⏸ Stopp' : '▶ Abtasten';
-    el('arDone').disabled = done < 3;
+    el('arNext').disabled = false;
+    if (st.phase === 'walls') { el('arNext').textContent = '✔ Raum zu'; el('arNext').disabled = st.corners.length < 3; }
+    if (st.phase === 'h') el('arNext').textContent = st.ceilY !== null ? '✔ Fertig' : 'ohne Höhe ›';
+    el('arPoint').textContent = st.phase === 'walls' ? '📍 Ecke' : st.phase === 'h' ? '📍 Decke' : 'Punkt';
+    el('arScan').hidden = true; el('arZmore').hidden = st.phase !== 'z1' || !st.zs[1].length; el('arScan').textContent = st.scan ? '⏸ Stopp' : '▶ Abtasten';
+    el('arDone').disabled = st.phase === 'walls' ? st.corners.length < 3 : st.phase === 'h' ? false : done < 3; el('arDone').hidden = st.phase === 'walls' || st.phase === 'z0' || st.phase === 'z1';
   }
 
   async function start(onDone, opts = {}) {
@@ -262,7 +292,7 @@ const AR = (() => {
     st.s = s;
     const cv = document.createElement('canvas'), gl = cv.getContext('webgl', { xrCompatible: true });
     await s.updateRenderState({ baseLayer: new XRWebGLLayer(s, gl) });
-    st.camOk = false; st.mobs = []; st.rk = []; st.ends = []; try { st.col = JSON.parse(localStorage.getItem('raumplan-zcol') || 'null'); } catch (e) { st.col = null; } st.rv = null; st.grabT = 0; st.camInfo = ''; st.estT = 0; st.est = null;
+    st.camOk = false; st.mobs = []; st.rk = []; st.ends = []; st.corners = []; st.aimH = []; st.aim = null; st.closed = false; st.walls = [[]]; try { st.col = JSON.parse(localStorage.getItem('raumplan-zcol') || 'null'); } catch (e) { st.col = null; } st.rv = null; st.grabT = 0; st.camInfo = ''; st.estT = 0; st.est = null;
     let glb = null, fb = null; try { if ((s.enabledFeatures || []).includes('camera-access') && typeof XRWebGLBinding !== 'undefined') { glb = new XRWebGLBinding(s, gl); fb = gl.createFramebuffer(); st.camOk = true; } } catch (e) { }
     const space = await s.requestReferenceSpace('local'), viewer = await s.requestReferenceSpace('viewer');
     let src; try { src = await s.requestHitTestSource({ space: viewer, entityTypes: ['plane', 'point'] }); } catch (e) { src = await s.requestHitTestSource({ space: viewer }); }
@@ -271,6 +301,9 @@ const AR = (() => {
       if (!st.s) return; s.requestAnimationFrame(frame);
       const bl = s.renderState.baseLayer; gl.bindFramebuffer(gl.FRAMEBUFFER, bl.framebuffer); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
       const vp = f.getViewerPose(space); if (!vp) return; const cp = vp.transform.position; st.cam = cp;
+      { const v0 = vp.views[0], P0 = Float64Array.from(v0.projectionMatrix), M0 = Float64Array.from(v0.transform.matrix); st.ov = { P: P0, V: Float64Array.from(v0.transform.inverse.matrix) };
+        const fy = st.floorY.length > 10 ? med(st.floorY) : null; st.aim = null; st.aimRay = pixelRay(0.5, 0.5, 1, 1, P0, M0);
+        if (fy !== null) { const a = pixelToFloor(0.5, 0.5, 1, 1, P0, M0, fy); if (a && Math.hypot(a[0] - cp.x, a[1] - cp.z) < 8) feedAim(a, t); } }
       if (st.camOk && st.phase !== 'walls' && t - st.grabT > 180 && !st.grabBusy) {
         const view = vp.views[0];
         try {
@@ -287,21 +320,21 @@ const AR = (() => {
                   [[R.a, R.okA], [R.b, R.okB]].forEach(([q, ok]) => { if (!ok) return; const ray = pixelRay(q[0], q[1], W, H, proj, cam), fl = fy !== null ? pixelToFloor(q[0], q[1], W, H, proj, cam, fy) : null; endObs({ ray, fl, cam: cpos }); });
                   if (R.okA && R.okB && fy !== null) { const a = pixelToFloor(R.a[0], R.a[1], W, H, proj, cam, fy), b = pixelToFloor(R.b[0], R.b[1], W, H, proj, cam, fy); if (a && b) { const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 0.3) { st.rk.push(st.zlen / d); if (st.rk.length > 150) st.rk.shift(); } } }
                   st.log.push({ pa: R.a.map(v => +v.toFixed(1)), pb: R.b.map(v => +v.toFixed(1)), ok: [R.okA, R.okB], W, H, col: R.col }); }
-                const rs = curScale(); if (rs && st.phase === 'z0' && rs.n >= 10 && rs.stat <= 0.001) { st.auto = rs; st.phase = 'walls'; navigator.vibrate?.([40, 60, 40]); ui(`✅ Zollstock ✓ – Maßstab ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %. Jetzt die Wände.`); }
+                const rs = curScale(); if (rs && st.phase === 'z0' && rs.n >= 10 && rs.stat <= 0.001) { st.auto = rs; st.phase = 'walls'; navigator.vibrate?.([40, 60, 40]); ui(`✅ Zollstock ✓ ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %`); }
                 if (st.mobs.length > 400) st.mobs.splice(0, st.mobs.length - 400); } catch (e) { }
               st.grabBusy = false; }, 0);
           }
         } catch (e) { st.camOk = false; }
       }
       const r = f.getHitTestResults(src)[0], pose = r && r.getPose(space);
-      if (!pose) { st.hit = null; return ui(); }
+      if (!pose) { st.hit = null; return ui(); } // (Bodenpunkt der Bildmitte kommt aus der Bodenebene, nicht vom Treffer)
       const p = pose.transform.position, q = pose.transform.orientation;
       const ny = 1 - 2 * (q.x * q.x + q.z * q.z); // y-Achse der Trefferfläche = Flächennormale
       let kind = Math.abs(ny) < 0.5 ? 'wall' : ny > 0 ? (p.y < cp.y - 1.0 ? 'floor' : 'flat') : 'ceil'; // flat = Tisch, Kommode …
       if (kind === 'floor') { st.floorY.push(p.y); if (st.floorY.length > 300) st.floorY.shift(); }
       st.hit = { p: [p.x, p.y, p.z], kind, dist: Math.hypot(p.x - cp.x, p.y - cp.y, p.z - cp.z) };
       // automatisches Abtasten: nur Wandtreffer, alle 2 cm ein Punkt, nicht zu nah (Messrauschen) und nicht zu weit
-      if (st.scan && kind === 'wall' && st.hit.dist > 0.4 && st.hit.dist < 5) {
+      if (false) {
         const l = st.last; if (!l || Math.hypot(p.x - l[0], p.y - l[1], p.z - l[2]) > 0.02) { st.walls[st.walls.length - 1].push([p.x, p.z]); st.last = [p.x, p.y, p.z]; st.log.push({ t: Math.round(t), w: st.walls.length - 1, p: [+p.x.toFixed(4), +p.y.toFixed(4), +p.z.toFixed(4)], c: [+cp.x.toFixed(3), +cp.y.toFixed(3), +cp.z.toFixed(3)] }); }
       }
       ui();
@@ -318,26 +351,59 @@ const AR = (() => {
     }
     if (!h) return;
     if (st.phase === 'z0' || st.phase === 'z1') { st.zs[st.phase === 'z0' ? 0 : 1].push(h.p); st.log.push({ z: st.phase, p: h.p }); navigator.vibrate?.(30); return ui(); }
+    if (st.phase === 'walls') return cornerTap();
+    if (st.phase === 'h') return heightTap();
     if (!h) return;
     if (h.kind === 'ceil') { st.ceilY = h.p[1]; navigator.vibrate?.(30); return ui('Raumhöhe gesetzt ✓ – weiter mit den Wänden.'); }
     if (h.kind === 'floor' || h.kind === 'flat') return ui('Das ist keine Wand – bitte auf eine <b>Wand</b> zielen (über den Möbeln).');
     st.walls[st.walls.length - 1].push([h.p[0], h.p[2]]); st.log.push({ w: st.walls.length - 1, p: h.p, tap: 1 }); navigator.vibrate?.(20);
     ui();
   }
+  function feedAim(a, t) { // Bodenpunkt der Bildmitte: für Ecken mitteln, zwischen den Ecken entlang der Bodenkante sammeln
+    st.aim = a; st.aimH.push(a); if (st.aimH.length > 8) st.aimH.shift();
+    if (st.phase === 'walls' && st.corners.length && !st.closed) { const l = st.last; if (!l || Math.hypot(a[0] - l[0], a[1] - l[1]) > 0.02) { st.walls[st.walls.length - 1].push(a.slice()); st.last = a.slice(); st.log.push({ t: Math.round(t), w: st.walls.length - 1, a: a.map(v => +v.toFixed(4)) }); } }
+  }
+  // Ecke (unten, Boden/Wand/Wand) anpeilen: Mittel der letzten Bodenpunkte der Bildmitte
+  function cornerTap() {
+    if (st.aimH.length < 3) return ui('📱 Boden noch nicht erkannt – Handy langsam bewegen');
+    const c = [med(st.aimH.map(p => p[0])), med(st.aimH.map(p => p[1]))], C = st.corners;
+    if (C.length >= 3 && Math.hypot(c[0] - C[0][0], c[1] - C[0][1]) < 0.3) return closeRoom();
+    if (C.length) st.walls[st.walls.length - 1].push(c);
+    C.push(c); st.walls.push([c]); st.last = c; st.log.push({ corner: C.length - 1, p: c.map(v => +v.toFixed(4)) }); navigator.vibrate?.(35); ui();
+  }
+  function closeRoom() {
+    const C = st.corners; if (C.length < 3) return; const W = st.walls; W[W.length - 1].push(C[0]);
+    st.walls = W.slice(1).filter(w => w.length >= 2); // Wand i = Ecke i → Ecke i+1 (mit Punkten entlang der Bodenkante)
+    st.closed = true; st.phase = 'h'; navigator.vibrate?.([40, 60, 40]); ui();
+  }
+  // Raumhöhe: Bildmitte auf die Kante Wand/Decke → Schnitt der Sichtlinie mit der nächsten Wandebene
+  function heightTap() {
+    const r = st.aimRay, fy = st.floorY.length ? med(st.floorY) : null; if (!r || fy === null) return;
+    const g = polygon(st.walls); if (g.err) return; let best = null;
+    g.P.forEach((p, i) => { const q = g.P[(i + 1) % g.P.length], d = [q[0] - p[0], q[1] - p[1]], L = Math.hypot(...d), n = [-d[1] / L, d[0] / L], den = r.d[0] * n[0] + r.d[2] * n[1]; if (Math.abs(den) < 1e-6) return;
+      const t = ((p[0] - r.o[0]) * n[0] + (p[1] - r.o[2]) * n[1]) / den; if (t <= 0.3) return; const X = [r.o[0] + r.d[0] * t, r.o[1] + r.d[1] * t, r.o[2] + r.d[2] * t], u = ((X[0] - p[0]) * d[0] + (X[2] - p[1]) * d[1]) / L;
+      if (u > -0.1 && u < L + 0.1 && (!best || t < best.t)) best = { t, y: X[1] }; });
+    if (!best || best.y - fy < 1.8 || best.y - fy > 6) return ui('◎ genau auf die Kante <b>Wand/Decke</b>');
+    st.hs = st.hs || []; st.hs.push(best.y); st.ceilY = med(st.hs); navigator.vibrate?.(30); ui();
+  }
   function zMore() { if (st.phase !== 'z1' || !st.zs[1].length) return; st.zp.push(st.zs); st.zs = [[], []]; st.phase = 'z0'; ui(`Lage ${st.zp.length} gespeichert ✓ – Zollstock an anderer Stelle bzw. in anderer Richtung hinlegen, dann wieder Anfang und Ende antippen.`); }
   function toggleScan() { if (st.phase !== 'walls') return; st.scan = !st.scan; st.last = null; navigator.vibrate?.(st.scan ? 40 : 20); ui(); }
   function next() {
     if (st.phase === 'z0' && st.camOk && st.zs[0].length && !curScale()) { st.phase = 'z1'; return ui('Anfang gesetzt ✓ – jetzt den Kreis auf das Ende des Zollstocks und „Punkt“.'); }
     if (st.phase === 'z0' && st.camOk) { st.phase = 'walls'; const sa = autoScale(st.mobs, st.zlen, st.floorY.length ? med(st.floorY) : null), rs = curScale(); st.auto = sa && sa.k ? sa : rs;
-      if (!sa?.k && rs) return ui(`Zollstock ✓ (${rs.n} Bilder) – Maßstab ${((rs.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert, ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %. Jetzt die erste Wand abtasten.`); return ui(st.auto ? `Zollstock ✓ – AR-Maßstab wird um ${((st.auto.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die erste Wand abtasten.` : 'Zollstock nicht erkannt – ohne Zollstock weiter (ungenauer, Kontrollmaß am Ende eintragen!).'); }
+      if (!sa?.k && rs) return ui(`Zollstock ✓ (${rs.n} Bilder) – Maßstab ${((rs.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert, ±${(rs.sig * 100).toFixed(2).replace('.', ',')} %. Jetzt die Ecken.`); return ui(st.auto ? `Zollstock ✓ – AR-Maßstab wird um ${((st.auto.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die Ecken.` : 'Zollstock nicht erkannt – ohne Zollstock weiter (ungenauer, Kontrollmaß am Ende eintragen!).'); }
     if (st.phase === 'z0') { st.phase = 'z1'; return ui(); }
-    if (st.phase === 'z1') { st.phase = 'walls'; const sc = scale(st.zs, st.zlen, st.zp); return ui(sc ? `Zollstock ✓ – AR-Maßstab wird um ${((sc.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die erste Wand abtasten.` : 'Ohne Zollstock weiter – jetzt die erste Wand abtasten.'); }
+    if (st.phase === 'z1') { st.phase = 'walls'; const sc = scale(st.zs, st.zlen, st.zp); return ui(sc ? `Zollstock ✓ – AR-Maßstab wird um ${((sc.k - 1) * 100).toFixed(2).replace('.', ',')} % korrigiert. Jetzt die Ecken.` : 'Ohne Zollstock weiter – jetzt die Ecken.'); }
+    if (st.phase === 'walls') return closeRoom();
+    if (st.phase === 'h') return finish();
     const w = st.walls, cur = w[w.length - 1]; if (cur.length < 2) return;
     st.scan = false;
     if (w.length >= 2) { const a = fitLine(w[w.length - 2]), b = fitLine(cur); const ang = Math.acos(Math.min(1, Math.abs(a.d[0] * b.d[0] + a.d[1] * b.d[1]))) * 57.3; if (ang < 10) return ui(`Wand ${w.length} ist fast parallel zur vorigen – gleiche Wand? Dann „Rückgängig“ tippen.`); }
     w.push([]); ui(`Wand ${w.length - 1} gespeichert ✓ – jetzt die nächste Wand (der Reihe nach rundherum).`);
   }
   function undo() {
+    if (st.phase === 'h') { st.hs = []; st.ceilY = null; return ui(); }
+    if (st.phase === 'walls') { if (!st.corners.length) return ui(); st.corners.pop(); st.walls.pop(); if (st.corners.length) st.walls[st.walls.length - 1].pop(); else st.walls = [[]]; st.last = null; return ui('↶'); }
     if (st.phase !== 'walls') { const z = st.zs[st.phase === 'z0' ? 0 : 1]; z.pop(); return ui(); }
     const w = st.walls, cur = w[w.length - 1];
     if (cur.length) { cur.splice(st.scan || cur.length > 20 ? 0 : cur.length - 1); st.scan = false; } else if (w.length > 1) w.pop(); // abgetastete Wand ganz neu
@@ -353,10 +419,12 @@ const AR = (() => {
     return { poly: P, height: h && h > 1.8 && h < 6 ? h : null, rms: Math.max(...g.L.map(l => l.rms)), sigma: sig, scale: sc, lines: g.L.map(l => ({ used: l.used, total: l.total, rms: l.rms, span: l.span })) };
   }
   function finish() {
+    if (st.phase === 'walls' && !st.closed) { if (st.corners.length < 3) return; closeRoom(); }
     const walls = st.walls.filter(x => x.length >= 2); if (walls.length < 3) return;
     const r = solve(walls, st.zs, st.zlen, st.floorY, st.ceilY, st.zp, st.auto); if (r.err) return ui(r.err);
     // Rohdaten merken (letzte 5 Messungen) – für Vergleich mit Maßband und Verbesserungen
     try { const L = JSON.parse(localStorage.getItem('raumplan-ar-log') || '[]'); L.push({ t: st.t0, zlen: st.zlen, zs: st.zs, zp: st.zp, floorY: med(st.floorY), ceilY: st.ceilY, walls, log: st.log.slice(-4000), result: { poly: r.poly, sigma: r.sigma, scale: r.scale } }); localStorage.setItem('raumplan-ar-log', JSON.stringify(L.slice(-5))); } catch (e) { }
+    r.raw = { walls, corners: st.corners, zlen: st.zlen, auto: st.auto || null, ends: (st.ends || []).map(c => ({ n: c.n, X: c.X, fl: c.fl.length })), floorY: med(st.floorY), ceilY: st.ceilY, log: st.log.slice(-3000) };
     st.s && st.s.end();
     st.done && st.done(r);
   }

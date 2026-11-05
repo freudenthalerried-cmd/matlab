@@ -228,7 +228,7 @@ function pgRoomDefs(txt, ids) { // "Name: 4-19" oder "Name: 4-19: 6" (6 Wände e
   return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null, expect: Math.round(num($('#pgWalls').value)) || 0 }];
 }
 let devD = null; // DEV
-function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v32', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
+function devCap(o) { if (typeof DEV === 'undefined' || !DEV.on) return; DEV.capture({ ...o, version: 'raumplan-v33', calib: o.W ? CAM.forSize(o.W, o.H) : null, layout: layoutGet(), printK: printK(), log: $('#pgLog').textContent, km: KM.list, still: live.still, video: live.vidName }); } // DEV
 $('#pgRun').onclick = async () => {
   devD = null; // DEV
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
@@ -908,6 +908,7 @@ function arStart(msg) {
 }
 // AR-Ergebnis: Kontrollmaße (gesprochen/Laser/getippt) setzen den Maßstab; ohne Zollstock und Kontrollmaß deutliche Warnung
 function arResult(r, o, tEnd) {
+  if (typeof DEV !== 'undefined' && DEV.on) { const n = r.poly.length; DEV.capture({ source: 'ar', frames: [], imgs: [], ar: r.raw || null, rec: null, res: [{ name: 'AR', w: { ok: true, lengths: r.poly.map((p, i) => dist(p, r.poly[(i + 1) % n])), sigma: r.sigma, groups: r.poly.map(() => []), poly: r.poly, height: r.height, warn: [] }, ops: [] }], version: 'raumplan-v33', log: '', km: KM.list }); } // DEV
   const t0 = tEnd - 3 * 3600e3; let Q = r.poly.map(p => [p[0], p[1]]);
   const n = Q.length, L0 = Q.map((p, i) => dist(p, Q[(i + 1) % n])), sc = r.scale;
   const scaleTerm = L => L * (sc ? (sc.sig != null ? sc.sig : (sc.auto ? 0.001 : 0.003) / Math.sqrt(sc.n || 1)) : 0.01) * (sc ? sc.k : 1);

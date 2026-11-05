@@ -32,7 +32,7 @@ const DEV = (() => {
         rec: rec ? { ok: rec.ok, msg: rec.msg, nImg: rec.nImg, ids: rec.ids, rms: r4(rec.res && rec.res.rms), it: rec.res && rec.res.it.map(r4), dropped: rec.dropped, suspect: rec.suspect || null,
           pts: rec.res && rec.kU ? Object.fromEntries([...rec.kU.entries()].map(([id, q]) => [id, [0, 1, 2, 3].map(c => rec.res.pts[4 * q + c].map(r4))])) : null } : null,
         res: (o.res || []).map(d => ({ name: d.name, ok: d.w.ok, msg: d.w.msg, lengths: d.w.lengths, sigma: d.w.sigma, groups: d.w.groups, poly: d.w.poly, height: d.w.height, hSig: d.w.hSig, warn: d.w.warn, ops: d.ops || [] })),
-        soll: null, notiz: ''
+        ar: o.ar || null, soll: null, notiz: ''
       };
       const dir = await caseDir(name, true); if (!dir) return;
       const imgs = (o.imgs || []).filter(f => f && f.type && f.type.startsWith('image'));
@@ -63,7 +63,7 @@ const DEV = (() => {
     if (J.rec && J.rec.rms > 0.6) out.push(`Bildfehler ${J.rec.rms} px zu hoch → Fehlsichtungen oder bewegte Blätter/Kamera (Bewegungsunschärfe, Rolling Shutter).`);
     if (J.rec && J.rec.suspect) out.push('Rekonstruktion unsicher: ' + J.rec.suspect);
     const rare = Object.entries(seen).filter(([, n]) => n < 3).map(([id]) => id); if (rare.length) out.push(`Marken in weniger als 3 Bildern gesehen: ${rare.join(', ')} → diese Wände sind schwach bestimmt.`);
-    ['0', '1'].forEach(id => { if (!seen[id]) out.push(`Bodenmarke ${id} (Zollstock-Maßstab) nie erkannt → Maßstab fehlt.`); });
+    if (J.quelle !== 'ar') ['0', '1'].forEach(id => { if (!seen[id]) out.push(`Bodenmarke ${id} (Zollstock-Maßstab) nie erkannt → Maßstab fehlt.`); });
     const dups = J.frames.reduce((a, f) => a + f.dets.filter(d => d.dup).length, 0); if (dups) out.push(`${dups}× gleiche Marken-ID an zwei Stellen im Bild → doppelt gedrucktes Blatt?`);
     if (J.soll && J.soll.walls && R) {
       const m = match(R.lengths, J.soll.walls);
@@ -75,6 +75,7 @@ const DEV = (() => {
       }
       if (J.soll.h && R.height) out.push(`Raumhöhe: gemessen ${R.height.toFixed(3)} m, tatsächlich ${J.soll.h.toFixed(3)} m (${((R.height - J.soll.h) * 1000).toFixed(0)} mm).`);
     }
+    if (J.ar) { const a = J.ar; out.push(`AR: ${a.corners ? a.corners.length : 0} Ecken, Kantenpunkte je Wand ${(a.walls || []).map(w => w.length).join('/')}, Maßstab ${a.auto ? `Zollstock ${((a.auto.k - 1) * 100).toFixed(2)} % (±${((a.auto.sig || 0) * 100).toFixed(2)} %)` : 'ohne Zollstock'}, Zollstock-Bilder ${(a.log || []).filter(l => l.pa).length}.`); if ((a.walls || []).some(w => w.length < 6)) out.push('Wand mit wenigen Kantenpunkten – an der Bodenkante entlangfahren, nicht quer durch den Raum.'); }
     if (!out.length) out.push(J.soll ? 'Keine Auffälligkeit gefunden.' : 'Tatsächliche Maße eintragen, dann wird verglichen.');
     return out;
   }
