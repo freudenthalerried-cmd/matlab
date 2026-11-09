@@ -164,6 +164,17 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:8px 16px 28px}
       <p class="msg" id="lMsg" aria-live="polite"></p>
     </form>
     <p class="hint">Passwort vergessen? Auf <a href="https://www.semsportal.com" target="_blank" rel="noopener">semsportal.com</a> „Passwort vergessen“ wählen. Die Mail kommt an die Adresse, mit der die Anlage angelegt wurde.</p>
+    <p class="hint"><b>Ohne Konto, direkt vom Wechselrichter:</b> Zuhause läuft das Programm „Sonnenstand lokal“ am PC. Öffne dort <b>http://PC-Adresse:8080</b> (steht in der App-Zentrale), dann braucht es keine Anmeldung.</p>
+  </section>
+
+  <section id="v-local" class="card" hidden>
+    <h2>Wechselrichter verbinden <small>einmalig, dann läuft alles von selbst</small></h2>
+    <p class="hint">Das Programm am PC liest den Wechselrichter direkt im Heimnetz. Dafür muss der WLAN-Stick des Wechselrichters im Heim-WLAN sein (nicht nur sein eigener Hotspot „Solar-WiFi“). Dann hier „Suchen“ drücken oder die IP eintragen.</p>
+    <div class="row"><input id="locIp" placeholder="IP des Wechselrichters, z. B. 192.168.1.50" style="flex:1 1 220px" autocomplete="off"><button id="locSearch">Suchen</button></div>
+    <div class="tarif" style="margin-top:8px"><label>Anlagenleistung kWp (optional)<input id="locKwp" type="number" step="0.1" min="0" inputmode="decimal"></label><label>Speicher kWh (optional)<input id="locKwh" type="number" step="0.1" min="0" inputmode="decimal"></label></div>
+    <div class="row" style="margin-top:10px"><button class="pri" id="locSave">Verbinden und speichern</button><button id="locClose" hidden>Schließen</button></div>
+    <p class="msg" id="locMsg" aria-live="polite"></p>
+    <p class="hint" id="locStatus"></p>
   </section>
 
   <div id="v-app" hidden>
@@ -230,7 +241,7 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:8px 16px 28px}
       <label><input type="checkbox" id="sFlipBat"> Batterie-Vorzeichen umdrehen (wenn Laden und Entladen vertauscht angezeigt werden)</label>
       <label><input type="checkbox" id="sFlipGrid"> Netz-Vorzeichen umdrehen (wenn Einspeisung und Bezug vertauscht angezeigt werden)</label>
       <p class="hint" id="sInfo"></p>
-      <div class="row"><button id="bCache">Zwischenspeicher leeren</button><button id="bLogout" class="ghost" style="color:var(--warn)">Abmelden</button><button id="bSettingsClose">Schließen</button></div>
+      <div class="row"><button id="bLocal" hidden>Wechselrichter-Verbindung</button><button id="bCache">Zwischenspeicher leeren</button><button id="bLogout" class="ghost" style="color:var(--warn)">Abmelden</button><button id="bSettingsClose">Schließen</button></div>
     </section>
   </div>
 
@@ -294,7 +305,14 @@ const SEMS={
   OK:new Set(['0','00000']), EXPIRED:new Set(['100002','C0602']), RATE:'GY0429',
 };
 const SESSION_KEY='sonnenstand.session', CACHE_KEY='sonnenstand.cache', SET_KEY='sonnenstand.settings';
-let session=null;      // {mode:'plus'|'classic'|'demo', account, pwdHash, pwd?, token, api, keep}
+let session=null;      // {mode:'plus'|'classic'|'demo'|'local', account, pwdHash, pwd?, token, api, keep}
+let localStatus=null;  // Antwort von api/setup, wenn die Seite vom lokalen Programm ausgeliefert wird
+async function detectLocal(){
+  if(!/^https?:$/.test(location.protocol)||/githack|github|claude\.ai/.test(location.host))return null;
+  try{const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),3000);const r=await fetch('api/setup',{signal:ctl.signal,cache:'no-store'});clearTimeout(t);if(!r.ok)return null;const j=await r.json();return j&&j.local?j:null;}catch{return null;}
+}
+async function lapi(path,opt){const r=await fetch(path,{cache:'no-store',...(opt||{})});let b=null;try{b=await r.json();}catch{}
+  if(!r.ok){throw new Error((b&&b.error)||('Programm meldet Fehler '+r.status));}return b;}
 let settings=store.get(SET_KEY,{flipBat:false,flipGrid:false,buy:null,sell:null});
 function saveSession(){if(!session)return;const s={...session};const str=JSON.stringify(s);try{if(session.keep){localStorage.setItem(SESSION_KEY,str);sessionStorage.removeItem(SESSION_KEY);}else{sessionStorage.setItem(SESSION_KEY,str);localStorage.removeItem(SESSION_KEY);}}catch{}}
 function loadSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null');}catch{return null;}}
@@ -350,6 +368,7 @@ const ITEMS={proSystemTotalStats:'pv',proConsumStats:'last',proPurchaseStats:'be
 const data={
   async stations(){
     if(session.mode==='demo')return DEMO.stations();
+    if(session.mode==='local'){const st=localStatus||await lapi('api/setup');localStatus=st;return st.configured?[{id:'local',name:st.model||'Wechselrichter',status:st.error?-1:1}]:[];}
     if(session.mode==='classic'){
       let d=null;try{d=await call('/v3/PowerStation/GetPowerStationIdByOwner',{method:'POST',body:{}});}catch{}
       const list=Array.isArray(d)?d:(d&&Array.isArray(d.list)?d.list:[]);
@@ -365,12 +384,14 @@ const data={
     const k='info|'+sid;const c=cGet(k);if(c)return c;
     let v={};
     if(session.mode==='demo')v=DEMO.info();
+    else if(session.mode==='local'){try{v=await lapi('api/info');}catch{}cSet(k,v,60e3);return v;}
     else if(session.mode==='plus'){try{const d=await call('/sems-plant/api/app/v2/stations/basic/info',{method:'POST',query:{stationId:sid},body:{}})||{};
       v={name:d.name,created:d.createTime?String(d.createTime).slice(0,10):null,pvKwp:d.pvCapacity!=null?Number(d.pvCapacity):null,batKwh:d.batteryCapacity!=null?Number(d.batteryCapacity):null,onGrid:d.gridStatus==null?null:Number(d.gridStatus)===1,tz:d.timeZone};}catch{}}
     cSet(k,v,24*H);return v;
   },
   async flow(sid){
     if(session.mode==='demo')return DEMO.flow();
+    if(session.mode==='local'){const f=await lapi('api/flow');if(settings.flipGrid&&f.netz!=null)f.netz=-f.netz;if(settings.flipBat&&f.bat!=null)f.bat=-f.bat;return f;}
     if(session.mode==='classic'){const m=await classicMonitor(sid);return m.flow;}
     const f=await call('/sems-plant/api/stations/flow',{query:{stationId:sid}})||{};
     const n=x=>x==null||x===''?null:Number(x);
@@ -383,6 +404,7 @@ const data={
     const k=`stats|${sid}|${dimension}|${from}|${to}`;const c=cGet(k);if(c)return c;
     let rows;
     if(session.mode==='demo')rows=DEMO.stats(dimension,from,to);
+    else if(session.mode==='local')rows=await lapi(`api/stats?dim=${dimension}&from=${from}&to=${to}`);
     else if(session.mode==='classic')rows=[];
     else{
       const d=await call('/sems-plant/api/stations/statistics',{method:'POST',body:{stationId:sid,isReport:false,items:Object.keys(ITEMS),dimension,startTime:from+' 00:00:00',endTime:to+' 23:59:59'}})||{};
@@ -391,13 +413,14 @@ const data={
       rows=[...map.values()].sort((a,b)=>a.p.localeCompare(b.p));
     }
     const today=iso(new Date());const closed=to<today&&!(dimension==='month'&&to.slice(0,7)>=today.slice(0,7))&&!(dimension==='year'&&to.slice(0,4)>=today.slice(0,4));
-    cSet(k,rows,closed?D30:10*60e3);return rows;
+    cSet(k,rows,closed?D30:(session.mode==='local'?45e3:10*60e3));return rows;
   },
   /* Minutenkurve eines Tages → {t:[Date], pv:[],last:[],bat:[],netz:[],soc:[]} */
   async curve(sid,date){
     const k=`curve|${sid}|${date}`;const c=cGet(k);if(c){c.t=c.t.map(x=>new Date(x));return c;}
     let out;
     if(session.mode==='demo')out=DEMO.curve(date);
+    else if(session.mode==='local'){const c=await lapi('api/curve?date='+date);out={t:(c.t||[]).map(x=>new Date(x)),pv:c.pv||[],last:(c.last||[]).map(v=>v==null?null:Math.abs(v)),bat:(c.bat||[]).map(v=>v==null||!settings.flipBat?v:-v),netz:(c.netz||[]).map(v=>v==null||!settings.flipGrid?v:-v),soc:c.soc||[]};}
     else if(session.mode==='classic')out=await classicCurve(sid,date);
     else{
       const tz=new Date(date+'T12:00:00').getTimezoneOffset()/60;
@@ -408,10 +431,11 @@ const data={
       const rows=[...m.values()].sort((a,b)=>a.tp.localeCompare(b.tp));
       out={t:rows.map(r=>new Date(r.tp.replace(' ','T'))),pv:rows.map(r=>r.pv??null),last:rows.map(r=>r.last??null),bat:rows.map(r=>r.bat??null),netz:rows.map(r=>r.netz??null),soc:rows.map(r=>r.soc??null)};
     }
-    const closed=date<iso(new Date());cSet(k,{...out,t:out.t.map(x=>x.toISOString())},closed?D30:5*60e3);return out;
+    const closed=date<iso(new Date());cSet(k,{...out,t:out.t.map(x=>x.toISOString())},closed?D30:(session.mode==='local'?45e3:5*60e3));return out;
   },
   async devices(sid){
     if(session.mode==='demo')return DEMO.devices();
+    if(session.mode==='local')return await lapi('api/devices');
     if(session.mode==='classic'){const m=await classicMonitor(sid);return m.devices;}
     const d=await call('/sems-plant/api/stations/device/all-status',{query:{stationId:sid}})||{};
     const devs=[];
@@ -477,23 +501,47 @@ function showTab(t){S.tab=t;$$('.tabs [role=tab]').forEach(b=>b.setAttribute('ar
   if(t==='uebersicht')loadOverview();if(t==='diagramme')loadChart();if(t==='geraete')loadDevices();if(t==='auswertung')loadEval();}
 
 async function start(){
-  session=loadSession();
+  localStatus=await detectLocal();
+  if(localStatus){session={mode:'local',account:'lokal',keep:false};}
+  else{session=loadSession();}
   const demo=location.hash==='#demo';
-  if(demo){session={mode:'demo',account:'demo',keep:false};}
+  if(demo&&!localStatus){session={mode:'demo',account:'demo',keep:false};}
   if(!session){$('#v-login').hidden=false;return;}
   $('#v-login').hidden=true;$('#v-app').hidden=false;$('#bRefresh').hidden=false;$('#bSettings').hidden=false;
   if(session.mode==='demo')setStatus('Demo-Daten','demo');else setStatus('Verbinde …');
+  if(session.mode==='local'){
+    $('#bLogout').hidden=true;
+    if(!localStatus.configured){$('#v-app').hidden=true;showLocalSetup(true);setStatus('Nicht eingerichtet','off');return;}
+    if(localStatus.demo)setStatus('Demo-Daten (lokal)','demo');
+  }
   try{
     S.stations=await data.stations();
     if(!S.stations.length){msg('In diesem Konto ist keine Anlage sichtbar. Prüfe in der SEMS-App, ob die Anlage deinem Konto zugeordnet ist (sonst beim Installateur nachfragen).','err');setStatus('Keine Anlage','off');return;}
     const sel=$('#station');sel.innerHTML=S.stations.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');sel.hidden=S.stations.length<2;
     S.sid=store.get('sonnenstand.sid',null);if(!S.stations.some(s=>s.id===S.sid))S.sid=S.stations[0].id;sel.value=S.sid;
     S.info=await data.info(S.sid);
-    const st=S.stations.find(s=>s.id===S.sid);if(session.mode!=='demo')setStatus(st&&Number(st.status)===1?'Online':st&&Number(st.status)===0?'Offline':'Verbunden',st&&Number(st.status)===1?'on':st&&Number(st.status)===0?'off':'');
+    const st=S.stations.find(s=>s.id===S.sid);
+    if(session.mode==='local'&&!localStatus.demo)setStatus(localStatus.error?'Lokal · keine Verbindung':'Lokal · '+(localStatus.inverter||'verbunden'),localStatus.error?'off':'on');
+    else if(session.mode!=='demo'&&session.mode!=='local')setStatus(st&&Number(st.status)===1?'Online':st&&Number(st.status)===0?'Offline':'Verbunden',st&&Number(st.status)===1?'on':st&&Number(st.status)===0?'off':'');
     const h=location.hash.replace('#','');showTab(['uebersicht','diagramme','geraete','auswertung'].includes(h)?h:'uebersicht');
   }catch(e){fail(e);}
 }
 function fail(e){console.error(e);const t=e&&e.message||String(e);msg(t,'err');if(e instanceof SemsError&&SEMS.EXPIRED.has(e.code)){logout();}}
+
+/* Lokaler Modus: Wechselrichter-Adresse einrichten (Programm am PC) */
+function showLocalSetup(first){const v=$('#v-local');v.hidden=false;$('#locClose').hidden=!!first;$('#locIp').value=(localStatus&&localStatus.inverter&&localStatus.inverter!=='demo')?localStatus.inverter:'';$('#locKwp').value=localStatus&&localStatus.pvKwp||'';$('#locKwh').value=localStatus&&localStatus.batKwh||'';$('#locMsg').textContent='';
+  $('#locStatus').textContent=localStatus?(localStatus.configured?`Verbunden mit ${localStatus.model||'Wechselrichter'} (${localStatus.inverter})${localStatus.lastOk?' · letzte Messung '+TF.format(new Date(localStatus.lastOk)):''}${localStatus.error?' · Fehler: '+localStatus.error:''}`:'Noch kein Wechselrichter verbunden.')+(localStatus&&localStatus.lan_url?` · Am Handy im Heimnetz: ${localStatus.lan_url}`:''):'';
+  if(localStatus&&localStatus.fixed){$('#locSave').disabled=true;$('#locMsg').textContent='Die Quelle wurde beim Start des Programms fest vorgegeben.';}
+  v.scrollIntoView({behavior:'smooth',block:'start'});}
+$('#locClose').onclick=()=>{$('#v-local').hidden=true;};
+$('#locSearch').onclick=async()=>{const b=$('#locSearch'),m=$('#locMsg');b.disabled=true;m.className='msg';m.textContent='Suche im Heimnetz (bis 10 s) …';
+  try{const r=await lapi('api/setup/search',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});if(r.inverter){$('#locIp').value=r.inverter;m.className='msg ok';m.textContent='Gefunden: '+r.inverter+'. Jetzt „Verbinden und speichern“.';}else{m.className='msg err';m.textContent='Nichts gefunden. Ist der WLAN-Stick im Heim-WLAN? Sonst die IP aus dem Router eintragen.';}}
+  catch(e){m.className='msg err';m.textContent=e.message;}finally{b.disabled=false;}};
+$('#locSave').onclick=async()=>{const b=$('#locSave'),m=$('#locMsg');b.disabled=true;m.className='msg';m.textContent='Verbinde mit dem Wechselrichter …';
+  try{const body={inverter:$('#locIp').value.trim()};if($('#locKwp').value)body.pvKwp=Number($('#locKwp').value);if($('#locKwh').value)body.batKwh=Number($('#locKwh').value);
+    localStatus=await lapi('api/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});cache={};store.set(CACHE_KEY,cache);
+    m.className='msg ok';m.textContent='Verbunden. Die Aufzeichnung läuft ab jetzt.';$('#v-local').hidden=true;start();}
+  catch(e){m.className='msg err';m.textContent=e.message;}finally{b.disabled=false;}};
 function logout(){clearSession();session=null;location.hash='';location.reload();}
 
 /* Anmeldung */
@@ -514,7 +562,11 @@ $('#station').onchange=e=>{S.sid=e.target.value;store.set('sonnenstand.sid',S.si
 $('#bRefresh').onclick=()=>{const t=iso(new Date());Object.keys(cache).forEach(k=>{if(k.includes(t)||k.includes('|info|')||k.includes('classic|'))delete cache[k];});store.set(CACHE_KEY,cache);showTab(S.tab);};
 $$('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h==='demo'&&(!session||session.mode!=='demo')){start();return;}if(session&&['uebersicht','diagramme','geraete','auswertung'].includes(h)&&h!==S.tab)showTab(h);});
-$('#bSettings').onclick=()=>{const p=$('#t-settings');p.hidden=!p.hidden;$('#sFlipBat').checked=!!settings.flipBat;$('#sFlipGrid').checked=!!settings.flipGrid;$('#sInfo').textContent=session?`Konto: ${session.account} · Zugang: ${session.mode==='plus'?'SEMS+ (aktuell)':session.mode==='classic'?'SEMS klassisch (eingeschränkt: keine Diagramme)':'Demo'} · Zwischenspeicher: ${Object.keys(cache).length} Einträge`:'';};
+$('#bSettings').onclick=()=>{const p=$('#t-settings');p.hidden=!p.hidden;$('#sFlipBat').checked=!!settings.flipBat;$('#sFlipGrid').checked=!!settings.flipGrid;
+  $('#sInfo').textContent=session?(session.mode==='local'?`Zugang: direkt vom Wechselrichter (Programm am PC${localStatus&&localStatus.version?' v'+localStatus.version:''})${localStatus&&localStatus.inverter?' · '+localStatus.inverter:''}${localStatus&&localStatus.lan_url?' · Handy: '+localStatus.lan_url:''}`:`Konto: ${session.account} · Zugang: ${session.mode==='plus'?'SEMS+ (aktuell)':session.mode==='classic'?'SEMS klassisch (eingeschränkt: keine Diagramme)':'Demo'}`)+` · Zwischenspeicher: ${Object.keys(cache).length} Einträge`:'';
+  $('#bLocal').hidden=!(session&&session.mode==='local');
+  if(!p.hidden&&session&&session.mode==='local')lapi('api/setup').then(s=>{localStatus=s;}).catch(()=>{});};
+$('#bLocal').onclick=()=>{$('#t-settings').hidden=true;showLocalSetup(false);};
 $('#bSettingsClose').onclick=()=>{$('#t-settings').hidden=true;};
 $('#sFlipBat').onchange=e=>{settings.flipBat=e.target.checked;store.set(SET_KEY,settings);cache={};store.set(CACHE_KEY,cache);showTab(S.tab);};
 $('#sFlipGrid').onchange=e=>{settings.flipGrid=e.target.checked;store.set(SET_KEY,settings);cache={};store.set(CACHE_KEY,cache);showTab(S.tab);};
@@ -644,7 +696,7 @@ async function loadDevices(){
   $('#devs').innerHTML='<p class="hint">Lade Geräte …</p>';
   try{const devs=await data.devices(S.sid);$('#devCount').textContent=devs.length+' Geräte';
     if(!devs.length){$('#devs').innerHTML='<div class="empty">Keine Geräte gemeldet.</div>';return;}
-    $('#devs').innerHTML=devs.map(d=>{const [sl,sc]=DSTAT(d.status);const rows=[['Typ',DTYPE[d.type]||d.type],['Modell',d.model],['Seriennummer',d.sn],['Leistung jetzt',d.pac!=null?fmtKw(d.pac):null],['Batterie',d.soc!=null?fmtPct(d.soc)+(d.pbat!=null?(d.pbat>0.01?' · entlädt ':d.pbat<-0.01?' · lädt ':'')+(Math.abs(d.pbat)>0.01?fmtKw(Math.abs(d.pbat)):''):''):null],['Heute',d.eday!=null?fmtKwh(d.eday):null],['Gesamt',d.etotal!=null?fmtKwh(d.etotal):null],['Temperatur',d.temp!=null?fmtN(d.temp,1)+' °C':null],['Netzspannung',d.vac!=null?fmtN(d.vac,0)+' V':null]].filter(r=>r[1]);
+    $('#devs').innerHTML=devs.map(d=>{const [sl,sc]=DSTAT(d.status);const rows=[['Typ',DTYPE[d.type]||d.type],['Modell',d.model],['Seriennummer',d.sn],['Leistung jetzt',d.pac!=null?fmtKw(d.pac):null],['Batterie',d.soc!=null?fmtPct(d.soc)+(d.pbat!=null?(d.pbat>0.01?' · entlädt ':d.pbat<-0.01?' · lädt ':'')+(Math.abs(d.pbat)>0.01?fmtKw(Math.abs(d.pbat)):''):''):null],['Heute',d.eday!=null?fmtKwh(d.eday):null],['Gesamt',d.etotal!=null?fmtKwh(d.etotal):null],['Heute geladen',d.laden_heute!=null?fmtKwh(d.laden_heute):null],['Heute entladen',d.entladen_heute!=null?fmtKwh(d.entladen_heute):null],['Einspeisung gesamt',d.einsp_gesamt!=null?fmtKwh(d.einsp_gesamt):null],['Bezug gesamt',d.bezug_gesamt!=null?fmtKwh(d.bezug_gesamt):null],['Temperatur',d.temp!=null?fmtN(d.temp,1)+' °C':null],['Netzspannung',d.vac!=null?fmtN(d.vac,0)+' V':null],['Firmware',d.firmware&&d.firmware!=='demo'?d.firmware:null]].filter(r=>r[1]);
       return `<div class="dev"><div class="t"><span>${esc(d.name)}</span><span class="pill ${sc}">${esc(sl)}</span></div><dl>${rows.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>`;}).join('');
   }catch(e){$('#devs').innerHTML='';fail(e);}
 }
