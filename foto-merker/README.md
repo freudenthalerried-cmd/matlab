@@ -11,6 +11,9 @@ Papier fotografieren → Text wird erkannt → automatisch in Rubriken (Rechnung
 - Optional Claude-KI (eigener API-Schlüssel): bessere Erkennung inkl. Handschrift, Titel/Zusammenfassung, Fragen in normaler Sprache
 - Ordneransicht nach Rubrik (mit Anzahl, Absendern, Summe), Unterfilter nach Absender, Liste nach Monat gruppiert
 - Zuordnung: gewichtete Schlüsselwörter + Absender-Erkennung; „Zu prüfen"-Ordner für neue Dokumente; lernt aus Korrekturen (Absender → Rubrik)
+- Übersicht oben: offene Rechnungen (Summe), fällig in 14 Tagen, ⭐ wichtig, Belege des Jahres
+- Rechnungen „bezahlt/offen“, Zahlungsdaten aus Zahlschein-QR (Android) oder IBAN aus dem Text (mit Prüfziffer) zum Kopieren
+- Kassenbon → Erinnerung „Gewährleistung endet“ (2 Jahre), Papierkorb (30 Tage), Backup-Erinnerung nach 30 Tagen
 - Mehrseitige Dokumente (Seiten nachfotografieren), Drehen, Scan-Filter (Papier weiß)
 - PDF-Export (einzeln oder ganze Auswahl, z. B. „alle Rechnungen 2026“ für den Steuerberater), Teilen als PDF
 - Summen der Beträge nach Jahr/Rubrik, CSV-Export (Excel)
