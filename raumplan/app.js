@@ -2,7 +2,7 @@
 /* Raumplan – 2D-Grundriss aus Handyvideo mit Boden-Referenzrechteck (Homographie). */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const KEY = 'raumplan-v1';
-const APP_VER = 'v43 · 05.11.2026';
+const APP_VER = 'v44 · 09.11.2026';
 const REPO = 'freudenthalerried-cmd/matlab', BRANCH = 'claude/2d-floor-plan-video-0sv7hg';
 // Neue Version da? Jede Version hat einen festen Link (Commit). Die App fragt GitHub nach dem neuesten Commit und zeigt einen Hinweis mit Link.
 (async () => { try {

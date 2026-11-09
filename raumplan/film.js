@@ -123,7 +123,7 @@ const FILM = (() => {
     for (let k = 0; k < W * H; k++) m[k] = cnt[k] >= 2 ? 1 : 0;
     const dil = (src, r) => { const o = new Uint8Array(W * H); for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { let v = 0; for (let dj = -r; dj <= r && !v; dj++) for (let di = -r; di <= r; di++) { const ii = i + di, jj = j + dj; if (ii >= 0 && jj >= 0 && ii < W && jj < H && src[jj * W + ii]) { v = 1; break; } } o[j * W + i] = v; } return o; };
     const ero = (src, r) => { const o = new Uint8Array(W * H); for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { let v = 1; for (let dj = -r; dj <= r && v; dj++) for (let di = -r; di <= r; di++) { const ii = i + di, jj = j + dj; if (!(ii >= 0 && jj >= 0 && ii < W && jj < H && src[jj * W + ii])) { v = 0; break; } } o[j * W + i] = v; } return o; };
-    let M = ero(dil(m, 2), 2); // Schließen: Lücken bis 20 cm füllen
+    let M = dil(ero(ero(dil(m, 2), 2), 1), 1); // Schließen (Lücken bis 20 cm füllen), dann Öffnen (dünne Auswüchse durch Rauschen weg)
     // Zusammenhang mit der Raummitte; Innenlöcher füllen (Flutung von außen)
     const cu = rot(center[0], center[1]), ci = Math.max(0, Math.min(W - 1, Math.floor((cu[0] - u0) / cell))), cj = Math.max(0, Math.min(H - 1, Math.floor((cu[1] - v0) / cell)));
     const lab = new Uint8Array(W * H), st = []; { let s0 = cj * W + ci; if (!M[s0]) { let best = -1, bd = 1e9; for (let k = 0; k < W * H; k++) if (M[k]) { const d = Math.hypot(k % W - ci, (k / W | 0) - cj); if (d < bd) { bd = d; best = k; } } if (best < 0) return { err: 'Keine Bodenfläche gefunden.' }; s0 = best; }
@@ -141,13 +141,13 @@ const FILM = (() => {
     // vereinfachen (Douglas-Peucker 12 cm), dann Kanten auf waagrecht/senkrecht, gleichgerichtete Nachbarn zusammenlegen, kurze Versätze (< 25 cm) entfernen
     const dist = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], L2 = dx * dx + dz * dz || 1e-9, t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / L2)); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dz); };
     let s0 = 0; for (let i = 1; i < Q.length; i++) if (Math.hypot(Q[i][0] - cu[0], Q[i][1] - cu[1]) > Math.hypot(Q[s0][0] - cu[0], Q[s0][1] - cu[1])) s0 = i; const Qc = Q.slice(s0).concat(Q.slice(0, s0)); Qc.push(Qc[0]);
-    const idx = [0]; (function run(i0, i1) { let bi = -1, bd = 0; for (let i = i0 + 1; i < i1; i++) { const d = dist(Qc[i], Qc[i0], Qc[i1]); if (d > bd) { bd = d; bi = i; } } if (bd > 0.12) { run(i0, bi); idx.push(bi); run(bi, i1); } })(0, Qc.length - 1);
+    const idx = [0]; (function run(i0, i1) { let bi = -1, bd = 0; for (let i = i0 + 1; i < i1; i++) { const d = dist(Qc[i], Qc[i0], Qc[i1]); if (d > bd) { bd = d; bi = i; } } if (bd > 0.15) { run(i0, bi); idx.push(bi); run(bi, i1); } })(0, Qc.length - 1);
     let V = idx.map(i => Qc[i]); // Eckpunkte (offen, letzter ≠ erster)
     // Kanten klassifizieren (H: v konstant, V: u konstant) und als Linien {dir, pos, len} führen
     let Ls = []; for (let i = 0; i < V.length; i++) { const a = V[i], b = V[(i + 1) % V.length], du = Math.abs(b[0] - a[0]), dv = Math.abs(b[1] - a[1]); Ls.push(du >= dv ? { dir: 'H', pos: (a[1] + b[1]) / 2, len: du } : { dir: 'V', pos: (a[0] + b[0]) / 2, len: dv }); }
     const mergeSame = () => { for (let it = 0; it < 100 && Ls.length > 4; it++) { let done = true; for (let i = 0; i < Ls.length; i++) { const j = (i + 1) % Ls.length; if (Ls[i].dir === Ls[j].dir) { const a = Ls[i], b = Ls[j], tot = a.len + b.len || 1; Ls[i] = { dir: a.dir, pos: (a.pos * a.len + b.pos * b.len) / tot, len: tot }; Ls.splice(j, 1); done = false; break; } } if (done) break; } };
     mergeSame();
-    for (let it = 0; it < 100 && Ls.length > 4; it++) { let si = -1; for (let i = 0; i < Ls.length; i++) if (Ls[i].len < 0.25 && (si < 0 || Ls[i].len < Ls[si].len)) si = i; if (si < 0) break;
+    for (let it = 0; it < 100 && Ls.length > 4; it++) { const lim = Ls.length > 8 ? 0.5 : 0.35; let si = -1; for (let i = 0; i < Ls.length; i++) if (Ls[i].len < lim && (si < 0 || Ls[i].len < Ls[si].len)) si = i; if (si < 0) break; // Versätze: < 35 cm weg, bei vielen Wänden < 50 cm
       const p = (si - 1 + Ls.length) % Ls.length, q = (si + 1) % Ls.length, a = Ls[p], b = Ls[q]; if (a.dir !== b.dir) { Ls.splice(si, 1); mergeSame(); continue; } // Versatz: beide Nachbarn gleichgerichtet → zu einer Linie
       const tot = a.len + b.len || 1, ml = { dir: a.dir, pos: (a.pos * a.len + b.pos * b.len) / tot, len: tot }; const keep = Ls.filter((_, i) => i !== si && i !== p && i !== q); const ins = Math.min(p, q, si); keep.splice(ins > keep.length ? keep.length : ins, 0, ml); Ls = keep; mergeSame(); }
     if (Ls.length < 4 || Ls.some((l, i) => l.dir === Ls[(i + 1) % Ls.length].dir)) return { err: 'Umriss nicht eindeutig – bitte noch einmal langsam rundherum filmen, Kamera leicht nach unten.' };
