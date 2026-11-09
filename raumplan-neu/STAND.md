@@ -1,16 +1,13 @@
-# Raumplan neu: Bodenaufmaß
+# Raumplan Versuch
 
-Stand 09.11.2026, nach Vorgabe von Stefan: **vorerst nur Boden, Zollstock liegt einmal mittig im Raum, kein Umlegen.**
+Stand 09.11.2026, Vorgabe von Stefan: **keine Ecken von Hand, Wand für Wand, mehrere Blickwinkel, Möbel dürfen verdecken, es ist eine Versuchs-App.** Sie zeigt die errechnete Wandlänge, Stefan sagt, ob sie passt. Zollstock liegt mittig im Raum.
 Der Ordner `raumplan/` (altes Filmen) bleibt unverändert.
 
-**Verfahren:** Zollstock mit den 2 Bodenblättern (4 Marken 80 mm, 2000 × 155 mm) mittig im Raum. Je Raumecke ein Foto, das beide Blätter und die Ecke zeigt, am besten von zwei Stellen. Die 16 Markenecken ergeben je Foto die Abbildung Foto → Boden in mm. Alle Fotos liegen im selben Bodensystem, dieselbe Ecke wird automatisch zusammengeführt (unter 25 cm) und nach Unsicherheit gewichtet.
+**Verfahren:** Jedes Foto mit beiden Blättern wird über die 16 Markenecken auf den Boden umgerechnet (Raster 2 cm). Nur was auf dem Boden liegt, bleibt aus allen Blickwinkeln an derselben Stelle, Möbelkanten und Wände nicht. Aus der gemeinsamen Bodenfläche entsteht der Umriss. Die Wand ist die fernste gerade Kante in Blickrichtung, die Enden sind die Schnittpunkte mit den Seitenwänden. Verdeckte Stücke werden so überbrückt. Kern: `viewMap`, `supportMap`, `wallFromViews` in `core.js`.
 
-**Dateien:** `core.js` (Erkennung, Abbildung, `roomFromPins`, Prüfungen, ohne DOM), `app.js` (Bedienung), `druck.html` (Blätter), `sim/` (Vergleich, Renderer, Tests).
+**Tests (gerenderte 12-MP-Fotos, 2 Räume mit Möbeln, stark gemusterter Boden):** ab 3 Fotos Fehler 2 bis 8 cm. Mit 2 Fotos einmal über 1 m daneben, darum verlangt die App mindestens 3.
 
-**Prüfungen:** Der Zollstock muss im Umriss liegen, sonst Warnung. Markenkante muss 80 mm ergeben. Abweichung derselben Ecke zwischen Fotos über 5 cm wird gemeldet.
-
-**Genauigkeit (Simulation):** Zollstock in Raummitte, 8 Fotos, 0,6×: Median ca. 3,5 cm, 90 % ca. 9 cm. Mit 1× passt das Bild nur in rund jedem vierten Raum. Zum Vergleich Zollstock mittig an der Wand, je Wand umgelegt: 6 mm / 19 mm. Der Code dafür ist in der Git-Geschichte (Commit f2db5dc).
-**Gerenderte Fotos (2 Räume, 8 Wände, Tippfehler simuliert):** Median 25 mm, Maximum 49 mm.
-
-**Am Handy noch ungetestet:** Live-Kamera, 0,6×-Umschaltung, echte Fotos, Verzeichnung des Weitwinkels. Fälle kommen über „An Claude senden“ als `fall-*.json`.
-Test am PC: `index.html?demo=1` braucht Testfotos in `demo/` (nicht im Repo, `sim/render2.py`).
+**Ungetestet:** echte Fotos, einfarbige Böden (dort gibt es kaum Bodenkanten, Rückfall auf reine Kanten ist eingebaut, aber nicht geprüft), Live-Kamera und 0,6× am S25. Sockelleisten sind nicht eingerechnet.
+Rückmeldung: „Passt / Passt nicht“ und echtes Maß, „An Claude senden“ als `fall-*.json` (Drive „Raumplan-Dev“).
+Ältere Stände in der Git-Geschichte: Wandfoto f2db5dc, Ecken antippen dc6c116.
+Test am PC: `index.html?demo=1` braucht Testfotos in `demo/` (nicht im Repo, `sim/render3.py`).
