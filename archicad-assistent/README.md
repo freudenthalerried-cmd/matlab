@@ -11,7 +11,15 @@ und das kostenlose **Tapir-Add-On**. Archicad wird nicht nachgebaut oder veränd
 Vor jeder Änderung fragt der Assistent nach, und in Archicad lässt sich alles mit **Strg+Z** rückgängig machen
 (beim ersten Test prüfen).
 
-## Einrichtung (einmalig, Windows oder Mac)
+## Schnellstart Windows
+
+1. **Tapir-Add-On** für deine Archicad-Version installieren:
+   <https://github.com/ENZYME-APD/tapir-archicad-automation/releases>, danach Archicad neu starten.
+2. **`installieren.bat`** doppelklicken. Sie sucht Python (und bietet sonst die Installation an),
+   installiert das Programm, fragt einmal nach dem API-Key und legt `starten.bat` an.
+3. Archicad mit einem Projekt öffnen und **`starten.bat`** doppelklicken.
+
+## Einrichtung von Hand (Windows oder Mac)
 
 1. **Archicad 27, 28 oder 29** starten und ein Projekt öffnen.
 2. **Tapir-Add-On** installieren: <https://github.com/ENZYME-APD/tapir-archicad-automation/releases>
