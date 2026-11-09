@@ -225,14 +225,14 @@ async function claude(content, max = 1200) {
 const b64 = blob => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result.split(',')[1]); f.readAsDataURL(blob); });
 async function aiAnalyze(doc) {
   const prompt = `Analysiere dieses fotografierte Dokument (ggf. mehrere Seiten; Österreich, heute ist ${today()}). Antworte NUR mit JSON:
-{"title":"kurzer Titel (max 6 Wörter, z.B. 'Stromrechnung Energie AG Okt 2026')","category":"genau eine aus: ${cats.join(' | ')}","sender":"Absender kurz (Firma/Behörde/Person, z.B. 'Energie AG', 'Finanzamt Linz') oder null","text":"vollständiger Text des Dokuments","summary":"1-2 Sätze Kerninhalt","docDate":"YYYY-MM-DD oder null","amount":Zahl in EUR oder null,"due":"YYYY-MM-DD für Frist/Termin/Garantieende/Zahlungsziel oder null","dueNote":"worum es beim Termin geht oder null","repeat":"yearly bei jährlich wiederkehrender Frist (Versicherung, Pickerl, Wartung), monthly bei monatlich, sonst null","tags":["max 5 Stichworte"]}`;
+{"title":"kurzer Titel (max 6 Wörter, z.B. 'Stromrechnung Energie AG Okt 2026')","category":"genau eine aus: ${cats.join(' | ')}","sender":"Absender kurz (Firma/Behörde/Person, z.B. 'Energie AG', 'Finanzamt Linz') oder null","text":"vollständiger Text des Dokuments","summary":"1-2 Sätze Kerninhalt","docDate":"YYYY-MM-DD oder null","amount":Zahl in EUR oder null,"due":"YYYY-MM-DD für Frist/Termin/Garantieende/Zahlungsziel oder null","dueNote":"worum es beim Termin geht oder null","repeat":"yearly bei jährlich wiederkehrender Frist (Versicherung, Pickerl, Wartung), monthly bei monatlich, sonst null","paid":true wenn bereits bezahlt (Kassenbon, Vermerk bezahlt) sonst false,"tags":["max 5 Stichworte"]}`;
   const content = [];
   for (const b of [doc.img, ...(doc.more || [])].slice(0, 8)) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: await b64(b) } });
   content.push({ type: 'text', text: prompt });
   const out = await claude(content, 4000);
   const j = JSON.parse(out.slice(out.indexOf('{'), out.lastIndexOf('}') + 1));
   Object.assign(doc, {
-    title: j.title || doc.title, sender: j.sender || doc.sender, conf: 'KI', alts: [], checked: false, category: cats.includes(j.category) ? j.category : doc.category,
+    title: j.title || doc.title, sender: j.sender || doc.sender, conf: 'KI', alts: [], checked: false, paid: !!j.paid || !!doc.paid, category: cats.includes(j.category) ? j.category : doc.category,
     text: j.text || doc.text, summary: j.summary || '', amount: j.amount ?? doc.amount,
     tags: Array.isArray(j.tags) ? j.tags.join(', ') : doc.tags, ai: true
   });
@@ -287,10 +287,11 @@ async function work() {
 async function processDoc(doc) {
   if (doc.lat != null && !doc.place) doc.place = await placeName(doc.lat, doc.lon);
   if (key() && S.get('autoAi', true)) {
-    try { await aiAnalyze(doc); doc.status = 'ok'; return; } catch (e) { toast('KI-Fehler: ' + e.message + ' – nutze lokale Erkennung'); }
+    try { await aiAnalyze(doc); await detectPay(doc); doc.status = 'ok'; return; } catch (e) { toast('KI-Fehler: ' + e.message + ' – nutze lokale Erkennung'); }
   }
   doc.text = await ocrAll(doc);
   autoFill(doc);
+  await detectPay(doc);
   doc.status = 'ok';
 }
 function autoFill(doc) {
@@ -300,6 +301,12 @@ function autoFill(doc) {
   if (doc.amount == null) doc.amount = findAmount(doc.text);
   const fut = findDates(doc.text).filter(d => d >= today());
   if (!doc.due && fut.length) { doc.due = fut[0]; doc.dueNote = 'Datum im Dokument gefunden – bitte prüfen'; }
+  const t = doc.text || '';
+  if (/\b(bezahlt|beglichen|zahlung erhalten|betrag erhalten|bar gegeben)\b/i.test(t) && !/nicht bezahlt|noch offen|mahnung|zahlungserinnerung/i.test(t)) doc.paid = true;
+  if (!doc.due && doc.category === 'Kassenbon/Garantie' && doc.date) {
+    const d = new Date(doc.date); d.setFullYear(d.getFullYear() + 2);
+    if (d.toISOString().slice(0, 10) >= today()) { doc.due = d.toISOString().slice(0, 10); doc.dueNote = 'Gewährleistung endet (2 Jahre ab Kauf)'; }
+  }
 }
 
 /* ---------- Suche ---------- */
@@ -314,16 +321,68 @@ function score(doc, q) {
 }
 function filtered() {
   const q = $('#q').value.trim();
-  return docs.filter(d => !filterCat || (filterCat === CHECK ? needsCheck(d) : d.category === filterCat)).filter(d => !filterSender || d.sender === filterSender)
+  return docs.filter(d => !filterCat || matchF(d)).filter(d => !filterSender || d.sender === filterSender)
     .map(d => [d, score(d, q)]).filter(x => x[1] > 0)
     .sort((a, b) => q ? b[1] - a[1] : (b[0].date || '').localeCompare(a[0].date || '')).map(x => x[0]);
 }
 
 /* ---------- Anzeige ---------- */
 const needsCheck = d => !d.checked && d.status !== 'neu';
+const STAR = '__star', OPEN = '__open';
+const isOpen = d => d.category === 'Rechnung' && !d.paid;
+const matchF = d => filterCat === CHECK ? needsCheck(d) : filterCat === STAR ? d.star : filterCat === OPEN ? isOpen(d) : d.category === filterCat;
+const sumOf = l => l.reduce((a, d) => a + (+d.amount || 0), 0);
+function statsHtml(open, stars) {
+  const y = String(new Date().getFullYear()), yr = docs.filter(d => (d.date || '').startsWith(y) && d.amount);
+  const soon = docs.filter(d => d.due && !d.dueDone && (new Date(d.due) - new Date(today())) / 864e5 <= 14);
+  const t = (c, ic, n, sub) => `<button class="stat" data-c="${c}"><span>${ic} ${n}</span><small>${sub}</small></button>`;
+  return `<div class="stats">${t(OPEN, '💶', open.length, open.length ? 'offen · ' + eur(sumOf(open)) : 'offene Rechnungen')}${t('__due', '⏰', soon.length, 'fällig in 14 Tagen')}${t(STAR, '⭐', stars.length, 'wichtig')}${t('__year', '📅', eur(sumOf(yr)), 'Belege ' + y)}</div>`;
+}
+let trash = [];
+async function loadAll() {
+  const all = await dbAll(), lim = Date.now() - 30 * 864e5;
+  for (const d of all.filter(d => d.deleted && new Date(d.deleted) < lim)) await dbDel(d.id);
+  docs = all.filter(d => !d.deleted).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  trash = all.filter(d => d.deleted && new Date(d.deleted) >= lim).sort((a, b) => b.deleted.localeCompare(a.deleted));
+  renderTrash();
+}
+function renderTrash() {
+  $('#trash').innerHTML = trash.length ? trash.map(d => `<div class="row trow"><span>${esc(d.title)} <small class="mut">gelöscht ${fmtD(d.deleted)}</small></span><button data-restore="${d.id}">Wiederherstellen</button><button class="del" data-purge="${d.id}">Endgültig</button></div>`).join('') : '<p class="mut">Leer.</p>';
+}
+/* ---------- Zahlungsdaten: EPC-QR (Zahlschein) oder IBAN aus dem Text ---------- */
+function ibanOk(s) { let m = 0; for (const ch of s.slice(4) + s.slice(0, 4)) { const v = /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55); for (const c of v) m = (m * 10 + +c) % 97; } return m === 1; }
+const fmtIban = s => s.replace(/(.{4})/g, '$1 ').trim();
+async function detectPay(doc) {
+  if ('BarcodeDetector' in window) {
+    try {
+      const det = new BarcodeDetector({ formats: ['qr_code'] });
+      for (const b of [doc.img, ...(doc.more || [])]) for (const c of await det.detect(await createImageBitmap(b))) {
+        const l = c.rawValue.split(/\r?\n/);
+        if (l[0] === 'BCD' && l[6]) {
+          doc.pay = { qr: true, name: l[5] || '', iban: l[6].replace(/\s/g, '').toUpperCase(), amount: l[7] ? parseFloat(l[7].replace(/^EUR/, '')) || null : null, ref: l[9] || l[10] || '' };
+          if (doc.amount == null && doc.pay.amount) doc.amount = doc.pay.amount;
+          return;
+        }
+      }
+    } catch {}
+  }
+  if (doc.pay?.qr) return;
+  for (const x of (doc.text || '').toUpperCase().match(/\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){11,30}/g) || []) {
+    const s = x.replace(/\s/g, '');
+    for (let n = Math.min(s.length, 34); n >= 15; n--) { const c = s.slice(0, n); if (c.startsWith('AT') && n !== 20) continue; if (ibanOk(c)) { doc.pay = { qr: false, name: doc.sender || '', iban: c, amount: doc.amount, ref: '' }; return; } }
+  }
+}
+function payHtml(d) {
+  const p = d.pay; if (!p || !p.iban) return '';
+  return `<div class="card"><b>💳 Zahlungsdaten</b>${p.qr ? ' <span class="badge">aus QR-Code</span>' : ''}
+    ${p.name ? `<div>Empfänger: ${esc(p.name)}</div>` : ''}<div>IBAN: <b>${esc(fmtIban(p.iban))}</b><button class="sm" data-copy="${esc(p.iban)}">kopieren</button></div>
+    ${p.amount ? `<div>Betrag: ${eur(p.amount)}<button class="sm" data-copy="${String(p.amount).replace('.', ',')}">kopieren</button></div>` : ''}
+    ${p.ref ? `<div>Verwendungszweck: ${esc(p.ref)}<button class="sm" data-copy="${esc(p.ref)}">kopieren</button></div>` : ''}
+    <p class="mut">In der Banking-App einfügen.${p.qr ? '' : ' IBAN aus dem Text gelesen (Prüfziffer stimmt) – trotzdem kurz vergleichen.'}</p></div>`;
+}
 function cardItem(d) {
   return `<div class="item" data-id="${d.id}"><img loading="lazy" src="${url(d, 'thumb')}" alt=""><div><b>${esc(d.title)}</b>
-    <span class="badge">${icon(d.category)} ${esc(d.category)}</span>${needsCheck(d) ? '<span class="badge warn">prüfen</span>' : ''}${d.due && !d.dueDone ? '⏰' : ''}${d.more?.length ? ' 📑' + (d.more.length + 1) : ''}${d.status === 'neu' ? ' ⏳' : ''}
+    <span class="badge">${icon(d.category)} ${esc(d.category)}</span>${d.star ? '⭐' : ''}${isOpen(d) ? '<span class="badge open">offen</span>' : ''}${needsCheck(d) ? '<span class="badge warn">prüfen</span>' : ''}${d.due && !d.dueDone ? '⏰' : ''}${d.more?.length ? ' 📑' + (d.more.length + 1) : ''}${d.status === 'neu' ? ' ⏳' : ''}
     ${d.sender ? `<div class="mut one">${esc(d.sender)}</div>` : ''}<div class="mut">${fmtD(d.date)}${d.amount ? ' · ' + eur(d.amount) : ''}</div></div></div>`;
 }
 function folderTile(c, ic, name, list, warn) {
@@ -333,27 +392,29 @@ function folderTile(c, ic, name, list, warn) {
     <span class="mut one">${snd.length ? esc(snd.slice(0, 3).join(', ')) + (snd.length > 3 ? ' …' : '') : 'zuletzt ' + fmtD(latest)}</span>${sum ? `<span class="mut">${eur(sum)}</span>` : ''}</button>`;
 }
 function render() {
-  const counts = {}, chk = docs.filter(needsCheck), q = $('#q').value.trim();
+  const counts = {}, chk = docs.filter(needsCheck), stars = docs.filter(d => d.star), open = docs.filter(isOpen), q = $('#q').value.trim();
   docs.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-  if (filterCat && filterCat !== CHECK && !counts[filterCat]) filterCat = '';
-  if (filterCat === CHECK && !chk.length) filterCat = '';
+  if (filterCat && !filterCat.startsWith('__') && !counts[filterCat]) filterCat = '';
+  if ((filterCat === CHECK && !chk.length) || (filterCat === STAR && !stars.length)) filterCat = '';
   $('#cats').innerHTML = `<button class="chip ${filterCat ? '' : 'on'}" data-c="">Alle (${docs.length})</button>` +
     (chk.length ? `<button class="chip warn ${filterCat === CHECK ? 'on' : ''}" data-c="${CHECK}">🔎 Zu prüfen (${chk.length})</button>` : '') +
+    (open.length ? `<button class="chip ${filterCat === OPEN ? 'on' : ''}" data-c="${OPEN}">💶 Offen (${open.length})</button>` : '') +
+    (stars.length ? `<button class="chip ${filterCat === STAR ? 'on' : ''}" data-c="${STAR}">⭐ Wichtig (${stars.length})</button>` : '') +
     cats.filter(c => counts[c]).map(c => `<button class="chip ${filterCat === c ? 'on' : ''}" data-c="${esc(c)}">${icon(c)} ${esc(c)} (${counts[c]})</button>`).join('');
   let sub = '';
-  if (filterCat && filterCat !== CHECK) {
+  if (filterCat && !filterCat.startsWith('__')) {
     const sc = {}; docs.filter(d => d.category === filterCat && d.sender).forEach(d => sc[d.sender] = (sc[d.sender] || 0) + 1);
     const ss = Object.entries(sc).sort((a, b) => b[1] - a[1]);
     if (ss.length) sub = `<button class="chip sm ${filterSender ? '' : 'on'}" data-s="">alle Absender</button>` + ss.map(([s, n]) => `<button class="chip sm ${filterSender === s ? 'on' : ''}" data-s="${esc(s)}">${esc(s)} (${n})</button>`).join('');
   }
   $('#subs').innerHTML = sub;
   const f = filtered(), folders = view === 'ordner' && !filterCat && !q && docs.length;
-  $('#count').textContent = docs.length ? (folders ? `${docs.length} Dokument(e) · ${Object.keys(counts).length} Rubrik(en)` : `${f.length} Dokument(e)`) : '';
+  $('#count').textContent = docs.length ? (folders ? `${docs.length} Dokument(e) · ${Object.keys(counts).length} Rubrik(en)` : `${f.length} Dokument(e)${filterCat === OPEN ? ' · offen ' + eur(sumOf(f)) : ''}`) : '';
   $('#viewBtn').textContent = view === 'ordner' ? '☰ Liste' : '📁 Ordner';
   $('#checkAll').classList.toggle('hide', filterCat !== CHECK);
   $('#sums').innerHTML = sumsOpen ? sumsHtml(f) : '';
   if (!docs.length) $('#list').innerHTML = '<p class="mut">Noch leer. Unten auf „Fotografieren" tippen oder vorhandene Fotos importieren.</p>';
-  else if (folders) $('#list').innerHTML = (chk.length ? folderTile(CHECK, '🔎', 'Zu prüfen', chk, true) : '') + cats.filter(c => counts[c]).map(c => folderTile(c, icon(c), c, docs.filter(d => d.category === c))).join('');
+  else if (folders) $('#list').innerHTML = statsHtml(open, stars) + (chk.length ? folderTile(CHECK, '🔎', 'Zu prüfen', chk, true) : '') + cats.filter(c => counts[c]).map(c => folderTile(c, icon(c), c, docs.filter(d => d.category === c))).join('');
   else {
     let last = '', html = '';
     for (const d of f) { if (!q) { const m = monthLabel(d.date); if (m !== last) { html += `<h3 class="grp">${m}</h3>`; last = m; } } html += cardItem(d); }
@@ -364,7 +425,9 @@ function render() {
 function renderDue() {
   const open = docs.filter(d => d.due && !d.dueDone).sort((a, b) => a.due.localeCompare(b.due));
   const soon = open.filter(d => (new Date(d.due) - new Date(today())) / 864e5 <= 7);
-  $('#dueBanner').innerHTML = soon.length ? `<div class="banner">⏰ ${soon.length} Erinnerung(en) in den nächsten 7 Tagen: ${soon.slice(0, 3).map(d => `<b>${esc(d.title)}</b> (${fmtD(d.due)})`).join(', ')}</div>` : '';
+  const lb = S.get('lastBackup', ''), age = lb ? Math.floor((Date.now() - new Date(lb)) / 864e5) : null;
+  $('#dueBanner').innerHTML = (soon.length ? `<div class="banner">⏰ ${soon.length} Erinnerung(en) in den nächsten 7 Tagen: ${soon.slice(0, 3).map(d => `<b>${esc(d.title)}</b> (${fmtD(d.due)})`).join(', ')}</div>` : '') +
+    (docs.length >= 5 && (age === null || age > 30) ? `<div class="banner">💾 ${age === null ? 'Noch kein Backup' : `Letztes Backup vor ${age} Tagen`} – die Daten liegen nur auf diesem Gerät. <button class="sm" id="bkNow">Jetzt sichern</button></div>` : '');
   $('#dueList').innerHTML = open.length ? open.map(d => `<div class="card item" data-id="${d.id}" style="padding:12px">
     <b>${fmtD(d.due)} – ${esc(d.title)}${d.repeat ? ' 🔁' : ''}</b><div class="mut">${esc(d.dueNote || d.category)}${d.due < today() ? ' · <span style="color:var(--warn)">überfällig</span>' : ''}</div></div>`).join('')
     : '<p class="mut">Keine offenen Erinnerungen. Im Dokument ein Datum bei „Erinnerung" setzen.</p>';
@@ -398,9 +461,11 @@ function openDoc(id, keep) {
         <div><label>Absender</label><input id="f_sender" list="senderList" value="${esc(d.sender)}" placeholder="z.B. Energie AG"></div>
       </div>
       <datalist id="senderList">${[...new Set(docs.map(x => x.sender).filter(Boolean))].map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+      <div class="row flags"><label><input type="checkbox" id="f_star" ${d.star ? 'checked' : ''}> ⭐ wichtig</label>${d.category === 'Rechnung' ? `<label><input type="checkbox" id="f_paid" ${d.paid ? 'checked' : ''}> ✓ bezahlt</label>` : ''}</div>
       ${needsCheck(d) ? `<p class="hint">${d.conf === 'sicher' ? '✓ Automatisch zugeordnet' : d.conf === 'KI' ? '🤖 Von KI zugeordnet' : '⚠ Unsicher zugeordnet'} – passt das? Mit „Speichern" bestätigen, die App merkt sich Absender und Rubrik.</p>` : ''}
       ${needsCheck(d) && d.alts?.length ? `<div class="chips">${d.alts.filter(c => cats.includes(c)).map(c => `<button class="chip" data-alt="${esc(c)}">${icon(c)} ${esc(c)}</button>`).join('')}</div>` : ''}
     </div>
+    ${payHtml(d)}
     <label>Titel</label><input id="f_title" value="${esc(d.title)}">
     <div class="row">
       <div><label>Datum</label><input type="date" id="f_date" value="${(d.date || '').slice(0, 10)}"></div>
@@ -429,6 +494,7 @@ function openDoc(id, keep) {
   $('#ics').onclick = () => { readForm(); icsFor(cur); };
   $('#reOcr').onclick = () => redo(false);
   $('#reAi').onclick = () => redo(true);
+  document.querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast('Kopiert: ' + b.dataset.copy); } catch { toast(b.dataset.copy, 6000); } });
   document.querySelectorAll('[data-alt]').forEach(b => b.onclick = () => {
     $('#f_cat').value = b.dataset.alt; dirty.f_cat = b.dataset.alt;
     document.querySelectorAll('[data-alt]').forEach(x => x.classList.toggle('on', x === b));
@@ -450,8 +516,9 @@ function openDoc(id, keep) {
     else toast('Teilen wird hier nicht unterstützt');
   };
   $('#del').onclick = async () => {
-    if (!confirm(`„${d.title}" wirklich löschen?`)) return;
-    await dbDel(d.id); dropUrls(d.id); docs = docs.filter(x => x.id !== d.id); closeDoc(); render(); toast('Gelöscht');
+    if (!confirm(`„${d.title}" in den Papierkorb? (30 Tage wiederherstellbar)`)) return;
+    d.deleted = new Date().toISOString(); await dbPut(d);
+    docs = docs.filter(x => x.id !== d.id); trash.unshift(d); renderTrash(); closeDoc(); render(); toast('In den Papierkorb verschoben');
   };
 }
 function readForm() {
@@ -462,7 +529,7 @@ function readForm() {
     date: $('#f_date').value ? new Date($('#f_date').value).toISOString() : cur.date,
     amount: a === '' || isNaN(+a) ? null : +a, tags: $('#f_tags').value, due: $('#f_due').value,
     dueNote: $('#f_dueNote').value, dueDone: $('#f_done').checked, notes: $('#f_notes').value, text: $('#f_text').value,
-    repeat: $('#f_repeat').value
+    repeat: $('#f_repeat').value, star: $('#f_star').checked, paid: $('#f_paid') ? $('#f_paid').checked : cur.paid
   });
   if (cur.dueDone && cur.repeat && cur.due) {
     cur.due = nextDue(cur.due, cur.repeat); cur.dueDone = false;
@@ -475,6 +542,7 @@ async function redo(ai) {
   toast(ai ? 'KI analysiert …' : 'Texterkennung …', 60000);
   try {
     if (ai) await aiAnalyze(d); else { d.text = await ocrAll(d); autoFill(d); }
+    await detectPay(d);
     await dbPut(d); render(); openDoc(d.id); toast('Fertig');
   } catch (e) { toast('Fehler: ' + e.message, 5000); }
 }
@@ -611,7 +679,7 @@ async function exportAll() {
   for (const d of docs) out.push({ ...d, img: await b64(d.img), thumb: await b64(d.thumb), more: await Promise.all((d.more || []).map(b64)) });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'fotomerker', v: 1, cats, docs: out })], { type: 'application/json' }));
-  a.download = `fotomerker-backup-${today()}.json`; a.click(); toast('Backup heruntergeladen');
+  a.download = `fotomerker-backup-${today()}.json`; a.click(); S.set('lastBackup', new Date().toISOString()); renderDue(); toast('Backup heruntergeladen');
 }
 async function importAll(file) {
   try {
@@ -621,7 +689,7 @@ async function importAll(file) {
     let n = 0;
     for (const d of j.docs) { if (docs.some(x => x.id === d.id)) continue; d.img = await blob(d.img); d.thumb = await blob(d.thumb); d.more = await Promise.all((d.more || []).map(blob)); await dbPut(d); n++; }
     if (j.cats) { cats = [...new Set([...cats, ...j.cats])]; S.set('cats', cats); }
-    docs = (await dbAll()).sort((a, b) => (b.date || '').localeCompare(a.date || '')); render(); toast(`${n} Dokument(e) importiert`);
+    await loadAll(); render(); toast(`${n} Dokument(e) importiert`);
   } catch (e) { toast('Import fehlgeschlagen: ' + e.message, 5000); }
 }
 
@@ -633,6 +701,16 @@ $('#gal').onchange = e => { addFiles(e.target.files, false); e.target.value = ''
 $('#q').oninput = () => { showTab('archiv'); render(); };
 $('#cats').onclick = e => { const b = e.target.closest('[data-c]'); if (b) { filterCat = b.dataset.c; filterSender = ''; render(); } };
 $('#subs').onclick = e => { const b = e.target.closest('[data-s]'); if (b) { filterSender = b.dataset.s; render(); } };
+$('#dueBanner').addEventListener('click', e => { if (e.target.id === 'bkNow') exportAll(); });
+$('#trash').onclick = async e => {
+  const r = e.target.dataset.restore, p = e.target.dataset.purge;
+  if (r) { const d = trash.find(x => x.id === r); delete d.deleted; await dbPut(d); trash = trash.filter(x => x !== d); docs.push(d); docs.sort((a, b) => (b.date || '').localeCompare(a.date || '')); render(); renderTrash(); toast('Wiederhergestellt'); }
+  if (p) { if (!confirm('Endgültig löschen? Das kann nicht rückgängig gemacht werden.')) return; await dbDel(p); dropUrls(p); trash = trash.filter(x => x.id !== p); renderTrash(); toast('Endgültig gelöscht'); }
+};
+$('#list').addEventListener('click', e => {
+  const s = e.target.closest('.stat');
+  if (s) { const c = s.dataset.c; if (c === '__due') showTab('termine'); else if (c === '__year') { sumsOpen = true; render(); } else { filterCat = c; filterSender = ''; render(); scrollTo(0, 0); } }
+});
 $('#list').addEventListener('click', e => { const b = e.target.closest('.folder'); if (b) { filterCat = b.dataset.c; filterSender = ''; render(); scrollTo(0, 0); } });
 $('#viewBtn').onclick = () => { view = view === 'ordner' ? 'liste' : 'ordner'; S.set('view', view); if (view === 'ordner') { filterCat = ''; filterSender = ''; } render(); };
 $('#checkAll').onclick = async () => {
@@ -690,7 +768,7 @@ function setupHints() {
 /* ---------- Start ---------- */
 (async () => {
   setupHints();
-  docs = (await dbAll()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  await loadAll();
   render();
   takeShared();
   docs.filter(d => d.status === 'neu').forEach(d => queue.push(d.id)); work();

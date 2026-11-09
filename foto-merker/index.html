@@ -49,6 +49,13 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:14px;display:none;z-index:20;max-width:90vw}
 .ans{white-space:pre-wrap}
 .hide{display:none!important}
+.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:4px}@media (min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;text-align:left;min-width:0}.stat span{font-size:18px;font-weight:700;white-space:nowrap}.stat small{color:var(--mut);font-size:12px}
+.badge.open{background:#fde4df;color:#a33a26}
+.flags{margin-top:8px}.flags label{display:flex;align-items:center;gap:6px;margin:0;color:var(--fg);font-size:14px}.flags input{width:auto}
+button.sm{padding:3px 8px;font-size:12px;margin-left:6px}
+.trow{align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}.trow>span{flex:2 1 160px}.trow>button{flex:0 0 auto;padding:6px 10px;font-size:13px}
+@media (prefers-color-scheme:dark){.badge.open{background:#3d1f19;color:#f0a493}}
 .chip.sm{font-size:12px;padding:4px 9px}.chip.warn:not(.on){border-color:#e0a030}
 .badge.warn{background:#fff1d6;color:#8a5a00}
 .grp{grid-column:1/-1;margin:10px 0 0;font-size:14px;color:var(--mut);font-weight:600}
@@ -119,6 +126,11 @@ a{color:var(--acc)}
       <p class="mut">Komma-getrennt. Wird für Auswahl und KI-Zuordnung verwendet.</p>
       <textarea id="catEdit"></textarea>
       <div class="row" style="margin-top:8px"><button id="saveCats">Speichern</button></div>
+    </div>
+    <div class="card">
+      <b>🗑️ Papierkorb</b>
+      <p class="mut">Gelöschte Dokumente bleiben 30 Tage hier und lassen sich wiederherstellen.</p>
+      <div id="trash"></div>
     </div>
     <div class="card">
       <b>Sicherung</b>
