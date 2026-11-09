@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sonnenstand">
+<title>Sonnenstand</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: schmale Kopfleiste mit Anlage und Status, darunter vier Reiter wie in der SEMS-App
+   (Übersicht · Diagramme · Geräte · Auswertung); Kennzahlen zuerst, Details darunter. */
+:root{
+  --bg:#f3f2ec;--panel:#fcfcfb;--ink:#1c2420;--mut:#5f6b66;--line:#d6dad3;--soft:#e9ebe5;
+  --acc:#0e6b63;--acc-ink:#ffffff;--sun:#e0a21a;--warn:#b3261e;--ok:#2a8a5c;
+  --pv:#b37a00;--last:#2f5fd0;--bat:#2a8a5c;--netz:#8c3fa8;--soc:#6b7a74;
+  --f-head:"Barlow Condensed","Arial Narrow",sans-serif;--f-body:"Barlow",system-ui,sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141917;--panel:#1c2320;--ink:#e6ece8;--mut:#9aa8a1;--line:#2d3833;--soft:#242d29;
+  --acc:#5fbf98;--acc-ink:#0d1512;--sun:#f0bd4a;--warn:#ff8a80;--ok:#5fc48f;
+  --pv:#bf880c;--last:#5a80e0;--bat:#3a9c66;--netz:#a866c4;--soc:#8a9790;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141917;--panel:#1c2320;--ink:#e6ece8;--mut:#9aa8a1;--line:#2d3833;--soft:#242d29;
+  --acc:#5fbf98;--acc-ink:#0d1512;--sun:#f0bd4a;--warn:#ff8a80;--ok:#5fc48f;
+  --pv:#bf880c;--last:#5a80e0;--bat:#3a9c66;--netz:#a866c4;--soc:#8a9790;color-scheme:dark}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body);min-height:100%}
+[hidden]{display:none!important}
+img{max-width:100%}
+button,input,select{font:inherit;color:var(--ink)}
+button{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer;font-weight:600;font-size:14px}
+button.pri{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+button.ghost{background:transparent}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+input,select{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0;width:100%}
+a{color:var(--acc)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+header .wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:8px;font:700 24px/1 var(--f-head);letter-spacing:.01em;margin-right:auto}
+.brand svg{width:26px;height:26px}
+#station{width:auto;max-width:46vw;padding:6px 8px}
+.pill{font:500 12px var(--f-mono);border:1px solid var(--line);border-radius:99px;padding:3px 9px;color:var(--mut);white-space:nowrap}
+.pill.on{color:var(--ok);border-color:var(--ok)}
+.pill.off{color:var(--warn);border-color:var(--warn)}
+.pill.demo{color:var(--ink);background:color-mix(in srgb,var(--sun) 28%,transparent);border-color:var(--sun)}
+.icon{padding:6px 9px;font-size:16px;line-height:1}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:4px;overflow-x:auto}
+.tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;padding:10px 12px;color:var(--mut);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--acc)}
+main .wrap{display:flex;flex-direction:column;gap:14px;padding-block:14px 40px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h2{margin:0 0 10px;font:700 19px/1.1 var(--f-head);letter-spacing:.03em;text-transform:uppercase;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h2 small{font:400 12.5px var(--f-mono);color:var(--mut);text-transform:none;letter-spacing:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.kpi .l{font:500 12px var(--f-mono);color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font:700 28px/1.1 var(--f-head);font-variant-numeric:tabular-nums;margin-top:4px;overflow-wrap:anywhere}
+.kpi .v small{font:500 14px var(--f-body);color:var(--mut)}
+.kpi .s{font-size:12.5px;color:var(--mut);margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1.3fr;gap:14px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:7px 12px;color:var(--mut)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:500 13px var(--f-body);padding:4px 10px;border-radius:99px;display:inline-flex;gap:6px;align-items:center;color:var(--mut)}
+.chip i{width:10px;height:10px;border-radius:2px;background:var(--c);display:inline-block}
+.chip[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+.nav{display:inline-flex;align-items:center;gap:4px}
+.nav .lbl{font:600 16px var(--f-head);min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
+.nav input[type=date]{width:auto;padding:6px 8px;font:inherit}
+.chart{width:100%;min-height:240px;position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.axis text{fill:var(--mut);font:11px var(--f-mono)}
+.axis line,.grid line{stroke:var(--line)}
+.zero{stroke:var(--mut);stroke-width:1}
+.ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.ar{opacity:.22}
+.cursor{stroke:var(--mut);stroke-dasharray:3 3}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font:12.5px var(--f-body);padding:7px 9px;border-radius:7px;display:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.tip b{font-family:var(--f-mono);font-weight:500}
+.tip .r{display:flex;justify-content:space-between;gap:14px}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);font-weight:600;font-size:12.5px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.hint{color:var(--mut);font-size:13.5px;margin:0}
+.msg{font-size:14px;margin:0}.msg.err{color:var(--warn)}.msg.ok{color:var(--ok)}
+.login{max-width:440px;margin:28px auto 0;display:flex;flex-direction:column;gap:12px}
+.login h1{font:700 40px/1 var(--f-head);margin:0;text-wrap:balance}
+.login h1 small{display:block;font:500 13px var(--f-mono);color:var(--mut);letter-spacing:.04em;text-transform:uppercase;margin-top:8px}
+.login label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.login .chk{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.login .chk input{width:auto}
+.flow svg{width:100%;height:auto;display:block}
+.flow .node circle{fill:var(--panel);stroke-width:3}
+.flow text{fill:var(--ink);font:13px var(--f-body);text-anchor:middle}
+.flow .val{font:600 14px var(--f-head);font-variant-numeric:tabular-nums}
+.flow .sub{fill:var(--mut);font:11px var(--f-mono)}
+.flow .fl{fill:none;stroke-width:3;stroke-dasharray:8 8}
+.flow .fl.on{animation:dash 1s linear infinite}
+.flow .fl.rev{animation-direction:reverse}
+.flow .fl.off{stroke:var(--line)!important;stroke-dasharray:none}
+@keyframes dash{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion:reduce){.flow .fl.on{animation:none}}
+.devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.dev{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dev .t{font:700 17px var(--f-head);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.dev dl{display:grid;grid-template-columns:max-content 1fr;gap:3px 10px;margin:0;font-size:13.5px}
+.dev dt{color:var(--mut);font:12px var(--f-mono);padding-top:2px}.dev dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#plantInfo{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0;font-size:14px;border:0;padding:0}
+#plantInfo dt{color:var(--mut);font:12px var(--f-mono);padding-top:2px}#plantInfo dd{margin:0;overflow-wrap:anywhere}
+.split{display:flex;flex-direction:column;gap:6px}
+.split .bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--soft)}
+.split .bar span{display:block;height:100%}
+.split .lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.split .lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.split .lg b{color:var(--ink);font-variant-numeric:tabular-nums}
+.tarif{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tarif label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+.delta{font:500 12.5px var(--f-mono)}
+.delta.up{color:var(--ok)}.delta.dn{color:var(--warn)}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:8px 16px 28px}
+.empty{padding:22px;text-align:center;color:var(--mut);border:1px dashed var(--line);border-radius:10px}
+.settings{display:flex;flex-direction:column;gap:10px}
+.settings label{display:flex;gap:8px;align-items:center;font-size:14px}
+.settings label input[type=checkbox]{width:auto}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="var(--sun)"/><g stroke="var(--sun)" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></g></svg>Sonnenstand</div>
+    <select id="station" aria-label="Anlage" hidden></select>
+    <span id="status" class="pill" hidden>…</span>
+    <button id="bRefresh" class="icon" title="Aktualisieren" aria-label="Aktualisieren" hidden>⟳</button>
+    <button id="bSettings" class="icon" title="Einstellungen" aria-label="Einstellungen" hidden>⚙</button>
+  </div>
+</header>
+
+<main><div class="wrap">
+
+  <section id="v-login" class="login" hidden>
+    <h1>Sonnenstand<small>GoodWe-Wechselrichter · SEMS-Daten · eigene Auswertung</small></h1>
+    <p class="hint">Melde dich mit deinem SEMS-Portal-Konto an (gleiche E-Mail und gleiches Passwort wie in der SEMS-App). Die Anmeldung geht direkt von deinem Gerät zu GoodWe, es läuft kein fremder Server dazwischen.</p>
+    <form id="fLogin" class="login" style="margin:0">
+      <label>E-Mail<input id="lMail" type="email" autocomplete="username" required placeholder="name@beispiel.at"></label>
+      <label>Passwort<input id="lPwd" type="password" autocomplete="current-password" required></label>
+      <label class="chk"><input id="lKeep" type="checkbox" checked> Auf diesem Gerät angemeldet bleiben</label>
+      <div class="row"><button class="pri" type="submit" id="bLogin">Anmelden</button><button type="button" id="bDemo">Demo ansehen</button></div>
+      <p class="msg" id="lMsg" aria-live="polite"></p>
+    </form>
+    <p class="hint">Passwort vergessen? Auf <a href="https://www.semsportal.com" target="_blank" rel="noopener">semsportal.com</a> „Passwort vergessen“ wählen. Die Mail kommt an die Adresse, mit der die Anlage angelegt wurde.</p>
+  </section>
+
+  <div id="v-app" hidden>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="uebersicht" aria-selected="true">Übersicht</button>
+      <button role="tab" data-tab="diagramme" aria-selected="false">Diagramme</button>
+      <button role="tab" data-tab="geraete" aria-selected="false">Geräte</button>
+      <button role="tab" data-tab="auswertung" aria-selected="false">Auswertung</button>
+    </nav>
+    <p class="msg" id="appMsg" aria-live="polite" hidden></p>
+
+    <section id="t-uebersicht" role="tabpanel">
+      <div class="kpis" id="kpis"></div>
+      <div class="two" style="margin-top:14px">
+        <div class="card flow"><h2>Energiefluss <small id="flowTime"></small></h2><div id="flow"></div></div>
+        <div class="card"><h2>Heute <small id="todayLbl"></small></h2><div class="chart" id="todayChart"></div><div class="split" id="todaySplit" style="margin-top:10px"></div></div>
+      </div>
+    </section>
+
+    <section id="t-diagramme" role="tabpanel" hidden>
+      <div class="card">
+        <div class="row between">
+          <div class="seg" id="range">
+            <button data-r="day" aria-pressed="true">Tag</button><button data-r="month" aria-pressed="false">Monat</button><button data-r="year" aria-pressed="false">Jahr</button><button data-r="total" aria-pressed="false">Gesamt</button>
+          </div>
+          <div class="nav"><button class="icon" id="navPrev" aria-label="Zurück">‹</button><span class="lbl" id="navLbl"></span><button class="icon" id="navNext" aria-label="Weiter">›</button><input type="date" id="navDate" aria-label="Datum wählen"></div>
+        </div>
+        <div class="chips" id="series" style="margin-top:10px"></div>
+        <div class="chart" id="mainChart" style="margin-top:8px"></div>
+        <div class="chart" id="socChart" style="min-height:0"></div>
+        <div class="kpis" id="chartKpis" style="margin-top:10px"></div>
+        <div class="row" style="margin-top:10px"><button id="bTable">Tabelle anzeigen</button><button id="bCsv">CSV herunterladen</button><span class="hint" id="chartHint"></span></div>
+        <div class="scroll" id="chartTable" hidden style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <section id="t-geraete" role="tabpanel" hidden>
+      <div class="card"><h2>Anlage</h2><dl id="plantInfo"></dl></div>
+      <div class="card" style="margin-top:14px"><h2>Geräte <small id="devCount"></small></h2><div class="devs" id="devs"></div></div>
+    </section>
+
+    <section id="t-auswertung" role="tabpanel" hidden>
+      <div class="card">
+        <div class="row between">
+          <select id="evalRange" style="width:auto">
+            <option value="7">Letzte 7 Tage</option><option value="30" selected>Letzte 30 Tage</option><option value="month">Dieser Monat</option><option value="lastmonth">Letzter Monat</option><option value="year">Dieses Jahr</option><option value="lastyear">Letztes Jahr</option>
+          </select>
+          <span class="hint" id="evalLbl"></span>
+        </div>
+        <div class="kpis" id="evalKpis" style="margin-top:12px"></div>
+      </div>
+      <div class="two" style="margin-top:14px">
+        <div class="card"><h2>Wohin ging der Strom?</h2><div class="split" id="evalPv"></div><h2 style="margin-top:16px">Woher kam der Strom?</h2><div class="split" id="evalLoad"></div></div>
+        <div class="card"><h2>Geld <small>eigene Tarife, bleiben auf dem Gerät</small></h2>
+          <div class="tarif"><label>Strompreis Bezug (ct/kWh)<input id="tBuy" type="number" step="0.1" min="0" inputmode="decimal"></label><label>Einspeisetarif (ct/kWh)<input id="tSell" type="number" step="0.1" min="0" inputmode="decimal"></label></div>
+          <div class="kpis" id="evalMoney" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><h2>Tage im Zeitraum</h2><div class="chart" id="evalChart"></div><div class="row" style="margin-top:10px"><button id="bEvalCsv">CSV aller Tage</button><span class="hint">Bester und schwächster Tag sind in den Kennzahlen oben.</span></div></div>
+    </section>
+
+    <section id="t-settings" class="card settings" hidden>
+      <h2>Einstellungen</h2>
+      <label><input type="checkbox" id="sFlipBat"> Batterie-Vorzeichen umdrehen (wenn Laden und Entladen vertauscht angezeigt werden)</label>
+      <label><input type="checkbox" id="sFlipGrid"> Netz-Vorzeichen umdrehen (wenn Einspeisung und Bezug vertauscht angezeigt werden)</label>
+      <p class="hint" id="sInfo"></p>
+      <div class="row"><button id="bCache">Zwischenspeicher leeren</button><button id="bLogout" class="ghost" style="color:var(--warn)">Abmelden</button><button id="bSettingsClose">Schließen</button></div>
+    </section>
+  </div>
+
+</div></main>
+<div class="tip" id="tip"></div>
+<footer>Sonnenstand · liest nur, ändert nichts am Wechselrichter · Daten aus dem GoodWe-SEMS-Portal</footer>
+
+<script>
+'use strict';
+/* ---------- Hilfen ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NF=(d)=>new Intl.NumberFormat('de-AT',{maximumFractionDigits:d,minimumFractionDigits:d});
+const fmtN=(v,d=1)=>v==null||isNaN(v)?'–':NF(d).format(v);
+const fmtKwh=v=>v==null||isNaN(v)?'–':Math.abs(v)>=10000?fmtN(v/1000,2)+' MWh':fmtN(v,Math.abs(v)<10?2:1)+' kWh';
+const fmtKw=v=>v==null||isNaN(v)?'–':Math.abs(v)<1?fmtN(v*1000,0)+' W':fmtN(v,2)+' kW';
+const fmtPct=v=>v==null||isNaN(v)?'–':fmtN(v,0)+' %';
+const fmtEur=v=>v==null||isNaN(v)?'–':NF(2).format(v)+' €';
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const parseIso=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d||1);};
+const MON=['Jän','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const MONL=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DF=new Intl.DateTimeFormat('de-AT',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+const TF=new Intl.DateTimeFormat('de-AT',{hour:'2-digit',minute:'2-digit'});
+const sum=a=>a.reduce((s,v)=>s+(v||0),0);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch{return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}},del(k){try{localStorage.removeItem(k);}catch{}}};
+
+/* MD5 (für den SEMS+-Passwort-Hash: base64(md5_hex(passwort))) */
+function md5(str){
+  const u=unescape(encodeURIComponent(str)),n=u.length;
+  const S=[7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  const K=[];for(let i=0;i<64;i++)K[i]=Math.floor(Math.abs(Math.sin(i+1))*4294967296)>>>0;
+  const w=new Array((((n+8)>>6)+1)*16).fill(0);
+  for(let i=0;i<n;i++)w[i>>2]|=u.charCodeAt(i)<<((i%4)*8);
+  w[n>>2]|=0x80<<((n%4)*8);w[w.length-2]=(n*8)>>>0;w[w.length-1]=Math.floor(n*8/4294967296);
+  let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;
+  const rotl=(x,c)=>(x<<c)|(x>>>(32-c));
+  for(let j=0;j<w.length;j+=16){
+    let A=a0,B=b0,C=c0,D=d0;
+    for(let i=0;i<64;i++){
+      let F,g;
+      if(i<16){F=(B&C)|(~B&D);g=i;}else if(i<32){F=(D&B)|(~D&C);g=(5*i+1)%16;}else if(i<48){F=B^C^D;g=(3*i+5)%16;}else{F=C^(B|~D);g=(7*i)%16;}
+      F=(F+A+K[i]+w[j+g])>>>0;A=D;D=C;C=B;B=(B+rotl(F,S[i]))>>>0;
+    }
+    a0=(a0+A)>>>0;b0=(b0+B)>>>0;c0=(c0+C)>>>0;d0=(d0+D)>>>0;
+  }
+  const hex=x=>{let s='';for(let i=0;i<4;i++)s+=((x>>>(i*8))&255).toString(16).padStart(2,'0');return s;};
+  return hex(a0)+hex(b0)+hex(c0)+hex(d0);
+}
+async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+
+/* ---------- SEMS+-Zugang (das Portal hinter der SEMS-App) ---------- */
+const SEMS={
+  LOGIN:'https://semsplus.goodwe.com/web/sems/sems-user/api/v1/auth/cross-login',
+  GATEWAY:'https://eu-gateway.semsportal.com/web/sems',
+  LEGACY_LOGIN:'https://www.semsportal.com/api/v3/Common/CrossLogin',
+  LEGACY_API:'https://eu.semsportal.com/api',
+  OK:new Set(['0','00000']), EXPIRED:new Set(['100002','C0602']), RATE:'GY0429',
+};
+const SESSION_KEY='sonnenstand.session', CACHE_KEY='sonnenstand.cache', SET_KEY='sonnenstand.settings';
+let session=null;      // {mode:'plus'|'classic'|'demo', account, pwdHash, pwd?, token, api, keep}
+let settings=store.get(SET_KEY,{flipBat:false,flipGrid:false,buy:null,sell:null});
+function saveSession(){if(!session)return;const s={...session};const str=JSON.stringify(s);try{if(session.keep){localStorage.setItem(SESSION_KEY,str);sessionStorage.removeItem(SESSION_KEY);}else{sessionStorage.setItem(SESSION_KEY,str);localStorage.removeItem(SESSION_KEY);}}catch{}}
+function loadSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null');}catch{return null;}}
+function clearSession(){try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);}catch{}}
+async function signature(tok){const ms=Date.now();const d=await sha256hex(`${ms}@${tok.uid||''}@${tok.token||''}`);return btoa(`${d}@${ms}`);}
+class SemsError extends Error{constructor(code,msg){super(msg||('SEMS-Fehler '+code));this.code=String(code);}}
+
+async function loginPlus(account,pwdHash){
+  const headers={'Content-Type':'application/json','Accept':'application/json',
+    'Token':JSON.stringify({uid:'',timestamp:0,token:'',client:'semsPlusWeb',version:'',language:'de'}),'X-Signature':await signature({})};
+  const r=await fetch(SEMS.LOGIN,{method:'POST',headers,body:JSON.stringify({account,pwd:pwdHash,agreement:1,isChinese:false,isLocal:false})});
+  const b=await r.json();
+  if(!SEMS.OK.has(String(b.code))||!b.data||typeof b.data!=='object')throw new SemsError(b.code,b.msg||b.errorMsg||b.description);
+  const api=(typeof b.api==='string'&&b.api.startsWith('https://'))?b.api.replace(/\/$/,''):(b.data.api&&String(b.data.api).startsWith('https://')?String(b.data.api).replace(/\/$/,''):SEMS.GATEWAY);
+  return {token:b.data,api};
+}
+async function loginClassic(account,pwd){
+  const headers={'Content-Type':'application/json','Accept':'application/json','Token':JSON.stringify({version:'v2.1.0',client:'ios',language:'en'})};
+  const r=await fetch(SEMS.LEGACY_LOGIN,{method:'POST',headers,body:JSON.stringify({account,pwd})});
+  const b=await r.json();
+  if(!SEMS.OK.has(String(b.code))||!b.data||typeof b.data!=='object')throw new SemsError(b.code,b.msg);
+  return {token:b.data,api:(typeof b.api==='string'&&b.api.startsWith('https://')?b.api:SEMS.LEGACY_API).replace(/\/$/,'')};
+}
+let relogging=null;
+async function call(path,{method='GET',body=null,query=null,retry=true}={}){
+  if(!session||session.mode==='demo')throw new Error('Nicht angemeldet');
+  const url=new URL(session.api+path);if(query)Object.entries(query).forEach(([k,v])=>url.searchParams.set(k,v));
+  const headers={'Content-Type':'application/json','Accept':'application/json','Token':JSON.stringify(session.token)};
+  if(session.mode==='plus')headers['X-Signature']=await signature(session.token);
+  let r;try{r=await fetch(url,{method,headers,body:body!=null?JSON.stringify(body):undefined});}catch(e){throw new Error('Keine Verbindung zu GoodWe (Internet prüfen).');}
+  if(r.status===429)throw new SemsError('GY0429','GoodWe bremst gerade (zu viele Anfragen). In einer Minute nochmal.');
+  let b;try{b=await r.json();}catch{throw new Error('Unerwartete Antwort von GoodWe ('+r.status+').');}
+  const code=String(b.code);
+  if(SEMS.OK.has(code))return b.data;
+  if(SEMS.EXPIRED.has(code)&&retry){
+    relogging=relogging||(async()=>{const l=session.mode==='plus'?await loginPlus(session.account,session.pwdHash):await loginClassic(session.account,session.pwd);session.token=l.token;session.api=l.api;saveSession();})();
+    try{await relogging;}finally{relogging=null;}
+    return call(path,{method,body,query,retry:false});
+  }
+  if(code===SEMS.RATE)throw new SemsError(code,'GoodWe bremst gerade (zu viele Anfragen). In einer Minute nochmal.');
+  throw new SemsError(code,b.msg||b.errorMsg||b.description||('Fehler '+code));
+}
+
+/* Zwischenspeicher: abgeschlossene Tage/Monate/Jahre ändern sich nicht mehr */
+let cache=store.get(CACHE_KEY,{});
+function cKey(k){return (session?session.account+'|':'')+k;}
+function cGet(k){const e=cache[cKey(k)];return e&&e.t>Date.now()?e.v:undefined;}
+function cSet(k,v,ttlMs){cache[cKey(k)]={v,t:Date.now()+ttlMs};const ks=Object.keys(cache);if(ks.length>400)ks.slice(0,ks.length-400).forEach(x=>delete cache[x]);store.set(CACHE_KEY,cache);}
+const H=36e5, D30=30*864e5;
+
+/* ---------- Datenschicht (SEMS+ normalisiert) ---------- */
+const ITEMS={proSystemTotalStats:'pv',proConsumStats:'last',proPurchaseStats:'bezug',proGridStats:'einsp',proSelfConsumStats:'eigen',proCharStats:'laden',proDischarStats:'entladen'};
+const data={
+  async stations(){
+    if(session.mode==='demo')return DEMO.stations();
+    if(session.mode==='classic'){
+      let d=null;try{d=await call('/v3/PowerStation/GetPowerStationIdByOwner',{method:'POST',body:{}});}catch{}
+      const list=Array.isArray(d)?d:(d&&Array.isArray(d.list)?d.list:[]);
+      const out=list.map(x=>typeof x==='string'?{id:x,name:'Anlage'}:{id:x.powerstation_id||x.id||x.pw_id,name:x.stationname||x.name||'Anlage',capacity:Number(x.capacity)||null,status:x.status});
+      if(!out.length&&session.stationId)out.push({id:session.stationId,name:'Anlage'});
+      return out;
+    }
+    const d=await call('/sems-plant/api/portal/stations/page',{method:'POST',body:{current:1,size:100}});
+    const list=(d&&(d.dataList||d.records||d.list))||[];
+    return list.map(x=>({id:String(x.id),name:x.name||x.stationName||x.id,capacity:x.installedPower!=null?Number(x.installedPower):null,status:x.status,tz:x.timeZone})).filter(x=>x.id);
+  },
+  async info(sid){
+    const k='info|'+sid;const c=cGet(k);if(c)return c;
+    let v={};
+    if(session.mode==='demo')v=DEMO.info();
+    else if(session.mode==='plus'){try{const d=await call('/sems-plant/api/app/v2/stations/basic/info',{method:'POST',query:{stationId:sid},body:{}})||{};
+      v={name:d.name,created:d.createTime?String(d.createTime).slice(0,10):null,pvKwp:d.pvCapacity!=null?Number(d.pvCapacity):null,batKwh:d.batteryCapacity!=null?Number(d.batteryCapacity):null,onGrid:d.gridStatus==null?null:Number(d.gridStatus)===1,tz:d.timeZone};}catch{}}
+    cSet(k,v,24*H);return v;
+  },
+  async flow(sid){
+    if(session.mode==='demo')return DEMO.flow();
+    if(session.mode==='classic'){const m=await classicMonitor(sid);return m.flow;}
+    const f=await call('/sems-plant/api/stations/flow',{query:{stationId:sid}})||{};
+    const n=x=>x==null||x===''?null:Number(x);
+    let grid=n(f.pGrid),bat=n(f.pBat);
+    if(settings.flipGrid&&grid!=null)grid=-grid; if(settings.flipBat&&bat!=null)bat=-bat;
+    return {pv:n(f.pSystem!=null?f.pSystem:f.pAc),last:f.pConsum==null?null:Math.abs(Number(f.pConsum)),netz:grid,bat,soc:n(f.soc),time:f.refreshTime||f.time||null};
+  },
+  /* Energiestatistik: dimension day|month|year, from/to im selben Kalenderjahr → [{p:'2026-11-09',pv,last,bezug,einsp,eigen,laden,entladen}] */
+  async stats(sid,dimension,from,to){
+    const k=`stats|${sid}|${dimension}|${from}|${to}`;const c=cGet(k);if(c)return c;
+    let rows;
+    if(session.mode==='demo')rows=DEMO.stats(dimension,from,to);
+    else if(session.mode==='classic')rows=[];
+    else{
+      const d=await call('/sems-plant/api/stations/statistics',{method:'POST',body:{stationId:sid,isReport:false,items:Object.keys(ITEMS),dimension,startTime:from+' 00:00:00',endTime:to+' 23:59:59'}})||{};
+      const map=new Map();
+      for(const s of (d.dataList||[])){const f=ITEMS[s.item];if(!f)continue;for(const pt of (s.statisticsList||[])){if(!pt||pt.date==null)continue;const p=String(pt.date).slice(0,dimension==='day'?10:dimension==='month'?7:4);const row=map.get(p)||{p};const v=pt.val==null||pt.val===''?null:Number(pt.val);row[f]=v==null||isNaN(v)?null:v;map.set(p,row);}}
+      rows=[...map.values()].sort((a,b)=>a.p.localeCompare(b.p));
+    }
+    const today=iso(new Date());const closed=to<today&&!(dimension==='month'&&to.slice(0,7)>=today.slice(0,7))&&!(dimension==='year'&&to.slice(0,4)>=today.slice(0,4));
+    cSet(k,rows,closed?D30:10*60e3);return rows;
+  },
+  /* Minutenkurve eines Tages → {t:[Date], pv:[],last:[],bat:[],netz:[],soc:[]} */
+  async curve(sid,date){
+    const k=`curve|${sid}|${date}`;const c=cGet(k);if(c){c.t=c.t.map(x=>new Date(x));return c;}
+    let out;
+    if(session.mode==='demo')out=DEMO.curve(date);
+    else if(session.mode==='classic')out=await classicCurve(sid,date);
+    else{
+      const tz=new Date(date+'T12:00:00').getTimezoneOffset()/60;
+      const d=await call('/sems-plant/api/v1/hems/power/statisticsAndPreV2',{method:'POST',body:{stationId:sid,items:['pSystem','pConsum','pBat','pGrid','soc'],timeScale:1,timeZone:tz,startTime:date+' 00:00:00',endTime:date+' 23:59:59'}})||{};
+      const F={pSystem:'pv',pConsum:'last',pBat:'bat',pGrid:'netz',soc:'soc'};const m=new Map();
+      for(const s of (d.dataList||[])){const f=F[s.item];if(!f)continue;for(const pt of (s.powerData||[])){if(!pt||!pt.tp)continue;const r=m.get(pt.tp)||{tp:pt.tp};let v=pt.power==null||pt.power===''?null:Number(pt.power);if(v!=null&&isNaN(v))v=null;
+        if(v!=null){if(f==='last')v=Math.abs(v);if(f==='netz'&&settings.flipGrid)v=-v;if(f==='bat'&&settings.flipBat)v=-v;}r[f]=v;m.set(pt.tp,r);}}
+      const rows=[...m.values()].sort((a,b)=>a.tp.localeCompare(b.tp));
+      out={t:rows.map(r=>new Date(r.tp.replace(' ','T'))),pv:rows.map(r=>r.pv??null),last:rows.map(r=>r.last??null),bat:rows.map(r=>r.bat??null),netz:rows.map(r=>r.netz??null),soc:rows.map(r=>r.soc??null)};
+    }
+    const closed=date<iso(new Date());cSet(k,{...out,t:out.t.map(x=>x.toISOString())},closed?D30:5*60e3);return out;
+  },
+  async devices(sid){
+    if(session.mode==='demo')return DEMO.devices();
+    if(session.mode==='classic'){const m=await classicMonitor(sid);return m.devices;}
+    const d=await call('/sems-plant/api/stations/device/all-status',{query:{stationId:sid}})||{};
+    const devs=[];
+    for(const g of (d.deviceDetailList||[])){for(const st of (g.statusDetailList||[])){const det=st.detailMap||{};for(const sn of (st.snList||[])){const x=det[sn]||{};devs.push({sn,name:x.name||sn,type:g.deviceType,status:st.status,sub:x.subtype});}}}
+    let models={};try{const p=await call('/sems-plant/api/web/device/station/page',{method:'POST',body:{stationId:sid,current:1,size:100}});for(const r of ((p&&(p.dataList||p.records))||[]))if(r.sn)models[r.sn]={model:r.model,brand:r.brand};}catch{}
+    for(const dv of devs){Object.assign(dv,models[dv.sn]||{});
+      if(['INVERTER','ENERGY_STORAGE_INTEGRATED_CABINET','BATTERY_RACK','SMART_METER'].includes(dv.type)){
+        const q={deviceType:dv.type,pwId:sid};
+        try{const tel=factors(await call(`/sems-plant/api/equipments/${encodeURIComponent(dv.sn)}/telemetry`,{query:q}));dv.pac=num(tel.pAc);dv.temp=num(tel.Temperature??tel.temperature??tel.batSysTemp);dv.vac=num(tel.Vac??tel['PHASE-A:Vac']);dv.soc=num(tel.soc??tel.SOC);dv.pbat=num(tel.pBat);}catch{}
+        try{const cnt=factors(await call(`/sems-plant/api/equipments/${encodeURIComponent(dv.sn)}/telecounting`,{query:q}));dv.eday=num(cnt.proPvStatsToday);dv.etotal=num(cnt.proPvStatsTotal);}catch{}
+      }}
+    return devs;
+  }
+};
+const num=x=>x==null||x===''||isNaN(Number(x))?null:Number(x);
+function factors(groups){const o={};for(const g of (groups||[]))for(const f of (g.factors||[]))if(f&&f.code)o[f.code]=f.data;return o;}
+/* Klassische API (ältere Konten): nur Übersicht und Geräte */
+async function classicMonitor(sid){
+  const k='classic|'+sid;const c=cGet(k);if(c)return c;
+  const d=await call('/v2/PowerStation/GetMonitorDetailByPowerstationId',{method:'POST',body:{powerStationId:sid}})||{};
+  const pf=d.powerflow||{},kpi=d.kpi||{},pn=s=>{if(s==null)return null;const m=String(s).match(/-?[\d.]+/);return m?Number(m[0]):null;};
+  const flow={pv:pn(pf.pv),last:pn(pf.load),netz:pf.gridStatus===-1?-Math.abs(pn(pf.grid)||0):pn(pf.grid),bat:pf.betteryStatus===-1?-Math.abs(pn(pf.bettery)||0):pn(pf.bettery),soc:pn(pf.soc),time:(d.info||{}).time||null,kpi:{today:num(kpi.power),month:num(kpi.month_generation),total:num(kpi.total_power)}};
+  const devices=(d.inverter||[]).map(i=>({sn:i.sn,name:i.name||i.sn,type:'INVERTER',status:i.status,model:(i.invert_full||{}).model_type,pac:num((i.d||{}).pac)!=null?num(i.d.pac)/1000:null,temp:num((i.d||{}).tempperature),eday:num((i.d||{}).eDay),etotal:num((i.d||{}).eTotal)}));
+  const v={flow,devices};cSet(k,v,4*60e3);return v;
+}
+async function classicCurve(sid,date){
+  const d=await call('/v2/Charts/GetPlantPowerChart',{method:'POST',body:{id:sid,date,full_script:false}})||{};
+  const lines=d.lines||[];const pick=re=>lines.find(l=>re.test((l.key||'')+' '+(l.label||'')));
+  const base=pick(/PCurve_Power_PV|pv/i)||lines[0];if(!base)return {t:[],pv:[],last:[],bat:[],netz:[],soc:[]};
+  const t=(base.xy||[]).map(p=>new Date(date+'T'+p.x+':00'));const ser=l=>l?(l.xy||[]).map(p=>num(p.y)):t.map(()=>null);
+  return {t,pv:ser(base).map(v=>v==null?null:v/1000),last:ser(pick(/Load/i)).map(v=>v==null?null:v/1000),bat:ser(pick(/Battery/i)).map(v=>v==null?null:v/1000),netz:ser(pick(/Meter|Grid/i)).map(v=>v==null?null:v/1000),soc:ser(pick(/SOC/i))};
+}
+
+/* ---------- Demo-Daten (deterministisch, 9,9 kWp mit 10-kWh-Speicher) ---------- */
+const DEMO={
+  rnd(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>(s=s*16807%2147483647)/2147483646;},
+  stations(){return [{id:'demo',name:'Musterhaus Ried (Demo)',capacity:9.9,status:1}];},
+  info(){return {name:'Musterhaus Ried (Demo)',created:'2021-06-01',pvKwp:9.9,batKwh:10,onGrid:true};},
+  dayFactor(d){const doy=(d-new Date(d.getFullYear(),0,0))/864e5;const season=0.55+0.45*Math.cos((doy-172)/365*2*Math.PI);const r=this.rnd(d.getFullYear()*1000+doy)();return season*(0.35+0.65*r);},
+  curve(date){const d=parseIso(date);const f=this.dayFactor(d);const r=this.rnd(d.getDate()*31+d.getMonth());const out={t:[],pv:[],last:[],bat:[],netz:[],soc:[]};let soc=35;const now=new Date();const isToday=date===iso(now);
+    for(let m=0;m<1440;m++){const h=m/60;const t=new Date(d);t.setMinutes(m);if(isToday&&t>now)break;
+      const sun=Math.max(0,Math.sin((h-6.5)/11*Math.PI));const pv=9.9*f*Math.pow(sun,1.3)*(0.85+0.3*r());
+      const last=0.35+(h>6&&h<9?0.9:0)+(h>17&&h<22?1.4:0)+0.3*r()+(m%211<7?1.8:0);
+      let bat=0;if(pv>last&&soc<100){bat=-Math.min(pv-last,3.3);soc=Math.min(100,soc-bat/60*10);}else if(pv<last&&soc>10){bat=Math.min(last-pv,3.0);soc=Math.max(10,soc-bat/60*10);}
+      const netz=pv+bat-last;out.t.push(t);out.pv.push(+pv.toFixed(3));out.last.push(+last.toFixed(3));out.bat.push(+bat.toFixed(3));out.netz.push(+netz.toFixed(3));out.soc.push(+soc.toFixed(0));}
+    return out;},
+  dayTotals(d){const c=this.curve(iso(d));const kwh=a=>sum(a)/60;const pv=kwh(c.pv),last=kwh(c.last),einsp=kwh(c.netz.map(v=>Math.max(0,v))),bezug=kwh(c.netz.map(v=>Math.max(0,-v)));return {pv:+pv.toFixed(2),last:+last.toFixed(2),einsp:+einsp.toFixed(2),bezug:+bezug.toFixed(2),eigen:+(pv-einsp).toFixed(2),laden:+kwh(c.bat.map(v=>Math.max(0,-v))).toFixed(2),entladen:+kwh(c.bat.map(v=>Math.max(0,v))).toFixed(2)};},
+  stats(dim,from,to){const rows=[];const today=new Date();const a=parseIso(from),b=parseIso(to);
+    if(dim==='day'){for(let d=new Date(a);d<=b&&d<=today;d=addDays(d,1))rows.push({p:iso(d),...this.dayTotals(d)});}
+    else if(dim==='month'){for(let m=new Date(a.getFullYear(),a.getMonth(),1);m<=b&&m<=today;m.setMonth(m.getMonth()+1)){const r={p:`${m.getFullYear()}-${pad(m.getMonth()+1)}`,pv:0,last:0,einsp:0,bezug:0,eigen:0,laden:0,entladen:0};for(let d=new Date(m);d.getMonth()===m.getMonth()&&d<=today;d=addDays(d,1)){const t=this.dayTotals(d);for(const k in t)r[k]+=t[k];}for(const k in r)if(k!=='p')r[k]=+r[k].toFixed(1);rows.push(r);}}
+    else{for(let y=a.getFullYear();y<=b.getFullYear()&&y<=today.getFullYear();y++){if(y<2021)continue;const f=0.9+0.2*this.rnd(y)();const r={p:String(y),pv:+(9900*f*(y===today.getFullYear()?(today-new Date(y,0,1))/(366*864e5):1)).toFixed(0)};r.last=+(r.pv*0.62).toFixed(0);r.einsp=+(r.pv*0.52).toFixed(0);r.eigen=r.pv-r.einsp;r.bezug=+(r.last-r.eigen+r.pv*0.1).toFixed(0);r.laden=+(r.pv*0.2).toFixed(0);r.entladen=+(r.laden*0.92).toFixed(0);rows.push(r);}}
+    return rows;},
+  flow(){const c=this.curve(iso(new Date()));const i=c.t.length-1;if(i<0)return {pv:0,last:0.4,netz:-0.4,bat:0,soc:40,time:new Date().toISOString()};return {pv:c.pv[i],last:c.last[i],netz:c.netz[i],bat:c.bat[i],soc:c.soc[i],time:c.t[i].toISOString()};},
+  devices(){const f=this.flow();const t=this.dayTotals(new Date());return [{sn:'9010KETU22AW0001',name:'GW10K-ET',type:'INVERTER',status:1,model:'GW10K-ET',pac:f.pv,temp:38.5,vac:231.4,eday:t.pv,etotal:48213},{sn:'LX U5.4-L-01',name:'Lynx Home U',type:'BATTERY_RACK',status:1,model:'LX U5.4-L ×2',soc:f.soc,pbat:f.bat,temp:24},{sn:'GM3000-0001',name:'Smart Meter',type:'SMART_METER',status:1,model:'GM3000'}];}
+};
+
+/* ---------- Zustand und Anzeige ---------- */
+const S={stations:[],sid:null,info:{},tab:'uebersicht',range:'day',date:new Date(),seriesOn:{pv:true,last:true,netz:false,bat:false},chartRows:null,chartCurve:null,evalRows:null,evalPrev:null,timer:null,fromYear:null};
+const SER={pv:{l:'PV-Erzeugung',c:'--pv'},last:{l:'Verbrauch',c:'--last'},netz:{l:'Netz (+Einspeisung / −Bezug)',c:'--netz'},bat:{l:'Batterie (+Entladen / −Laden)',c:'--bat'},einsp:{l:'Einspeisung',c:'--netz'},bezug:{l:'Netzbezug',c:'--netz'},eigen:{l:'Eigenverbrauch',c:'--pv'},laden:{l:'Batterie laden',c:'--bat'},entladen:{l:'Batterie entladen',c:'--bat'}};
+function msg(text,kind){const e=$('#appMsg');if(!text){e.hidden=true;return;}e.hidden=false;e.className='msg '+(kind||'');e.textContent=text;}
+function setStatus(txt,cls){const e=$('#status');e.hidden=false;e.className='pill '+(cls||'');e.textContent=txt;}
+function showTab(t){S.tab=t;$$('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['uebersicht','diagramme','geraete','auswertung'].forEach(x=>$('#t-'+x).hidden=x!==t);$('#t-settings').hidden=true;if(location.hash!=='#'+t)history.replaceState(null,'','#'+t);
+  if(t==='uebersicht')loadOverview();if(t==='diagramme')loadChart();if(t==='geraete')loadDevices();if(t==='auswertung')loadEval();}
+
+async function start(){
+  session=loadSession();
+  const demo=location.hash==='#demo';
+  if(demo){session={mode:'demo',account:'demo',keep:false};}
+  if(!session){$('#v-login').hidden=false;return;}
+  $('#v-login').hidden=true;$('#v-app').hidden=false;$('#bRefresh').hidden=false;$('#bSettings').hidden=false;
+  if(session.mode==='demo')setStatus('Demo-Daten','demo');else setStatus('Verbinde …');
+  try{
+    S.stations=await data.stations();
+    if(!S.stations.length){msg('In diesem Konto ist keine Anlage sichtbar. Prüfe in der SEMS-App, ob die Anlage deinem Konto zugeordnet ist (sonst beim Installateur nachfragen).','err');setStatus('Keine Anlage','off');return;}
+    const sel=$('#station');sel.innerHTML=S.stations.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');sel.hidden=S.stations.length<2;
+    S.sid=store.get('sonnenstand.sid',null);if(!S.stations.some(s=>s.id===S.sid))S.sid=S.stations[0].id;sel.value=S.sid;
+    S.info=await data.info(S.sid);
+    const st=S.stations.find(s=>s.id===S.sid);if(session.mode!=='demo')setStatus(st&&Number(st.status)===1?'Online':st&&Number(st.status)===0?'Offline':'Verbunden',st&&Number(st.status)===1?'on':st&&Number(st.status)===0?'off':'');
+    const h=location.hash.replace('#','');showTab(['uebersicht','diagramme','geraete','auswertung'].includes(h)?h:'uebersicht');
+  }catch(e){fail(e);}
+}
+function fail(e){console.error(e);const t=e&&e.message||String(e);msg(t,'err');if(e instanceof SemsError&&SEMS.EXPIRED.has(e.code)){logout();}}
+function logout(){clearSession();session=null;location.hash='';location.reload();}
+
+/* Anmeldung */
+$('#fLogin').onsubmit=async e=>{e.preventDefault();const mail=$('#lMail').value.trim(),pwd=$('#lPwd').value,m=$('#lMsg'),b=$('#bLogin');b.disabled=true;m.className='msg';m.textContent='Anmeldung läuft …';
+  try{
+    let s;
+    try{const hash=btoa(md5(pwd));const l=await loginPlus(mail,hash);s={mode:'plus',account:mail,pwdHash:hash,token:l.token,api:l.api};}
+    catch(e1){
+      if(e1 instanceof SemsError&&/100005|incorrect/i.test(e1.code+' '+e1.message)){throw new Error('E-Mail oder Passwort stimmen nicht. Tipp: „Passwort vergessen“ auf semsportal.com.');}
+      try{const l=await loginClassic(mail,pwd);s={mode:'classic',account:mail,pwd,token:l.token,api:l.api};}
+      catch(e2){throw new Error(e2 instanceof SemsError?('Anmeldung abgelehnt ('+e2.code+'): '+e2.message):'Keine Verbindung zu GoodWe. Internet prüfen und nochmal versuchen.');}
+    }
+    s.keep=$('#lKeep').checked;session=s;saveSession();m.className='msg ok';m.textContent='Angemeldet.';location.hash='';start();
+  }catch(err){m.className='msg err';m.textContent=err.message;}
+  finally{b.disabled=false;}};
+$('#bDemo').onclick=()=>{location.hash='#demo';start();};
+$('#station').onchange=e=>{S.sid=e.target.value;store.set('sonnenstand.sid',S.sid);S.chartRows=null;S.evalRows=null;data.info(S.sid).then(i=>{S.info=i;showTab(S.tab);});};
+$('#bRefresh').onclick=()=>{const t=iso(new Date());Object.keys(cache).forEach(k=>{if(k.includes(t)||k.includes('|info|')||k.includes('classic|'))delete cache[k];});store.set(CACHE_KEY,cache);showTab(S.tab);};
+$$('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h==='demo'&&(!session||session.mode!=='demo')){start();return;}if(session&&['uebersicht','diagramme','geraete','auswertung'].includes(h)&&h!==S.tab)showTab(h);});
+$('#bSettings').onclick=()=>{const p=$('#t-settings');p.hidden=!p.hidden;$('#sFlipBat').checked=!!settings.flipBat;$('#sFlipGrid').checked=!!settings.flipGrid;$('#sInfo').textContent=session?`Konto: ${session.account} · Zugang: ${session.mode==='plus'?'SEMS+ (aktuell)':session.mode==='classic'?'SEMS klassisch (eingeschränkt: keine Diagramme)':'Demo'} · Zwischenspeicher: ${Object.keys(cache).length} Einträge`:'';};
+$('#bSettingsClose').onclick=()=>{$('#t-settings').hidden=true;};
+$('#sFlipBat').onchange=e=>{settings.flipBat=e.target.checked;store.set(SET_KEY,settings);cache={};store.set(CACHE_KEY,cache);showTab(S.tab);};
+$('#sFlipGrid').onchange=e=>{settings.flipGrid=e.target.checked;store.set(SET_KEY,settings);cache={};store.set(CACHE_KEY,cache);showTab(S.tab);};
+$('#bCache').onclick=()=>{cache={};store.set(CACHE_KEY,cache);showTab(S.tab);};
+$('#bLogout').onclick=logout;
+
+/* ---------- Übersicht ---------- */
+async function loadOverview(){
+  clearTimeout(S.timer);msg('');
+  const today=iso(new Date()),y=today.slice(0,4),m=today.slice(0,7);
+  try{
+    const [flow,dayRows,monRows,curve]=await Promise.all([data.flow(S.sid),data.stats(S.sid,'day',today,today),data.stats(S.sid,'month',y+'-01-01',today),data.curve(S.sid,today)]);
+    const yearRows=await totalRows();
+    const d=dayRows[0]||{},mon=monRows.find(r=>r.p===m)||{};
+    const total=yearRows.length?sum(yearRows.map(r=>r.pv)):null;
+    const kpiToday=d.pv??(flow.kpi&&flow.kpi.today)??null;
+    const kpis=[
+      {l:'Aktuelle Leistung',v:fmtKw(flow.pv),s:S.info.pvKwp?`${fmtN(flow.pv/S.info.pvKwp*100,0)} % von ${fmtN(S.info.pvKwp,1)} kWp`:''},
+      {l:'Heute erzeugt',v:fmtKwh(kpiToday),s:d.last!=null?`Verbrauch ${fmtKwh(d.last)}`:''},
+      {l:MONL[Number(m.slice(5))-1],v:fmtKwh(mon.pv??(flow.kpi&&flow.kpi.month)),s:mon.einsp!=null?`Einspeisung ${fmtKwh(mon.einsp)}`:''},
+      {l:'Gesamt seit Start',v:fmtKwh(total??(flow.kpi&&flow.kpi.total)),s:S.info.created?`seit ${parseIso(S.info.created).toLocaleDateString('de-AT')}`:''},
+    ];
+    if(flow.soc!=null)kpis.push({l:'Batterie',v:fmtPct(flow.soc),s:flow.bat==null?'':flow.bat>0.02?`entlädt ${fmtKw(flow.bat)}`:flow.bat<-0.02?`lädt ${fmtKw(-flow.bat)}`:'Ruhe'});
+    $('#kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="l">${esc(k.l)}</div><div class="v">${esc(k.v)}</div>${k.s?`<div class="s">${esc(k.s)}</div>`:''}</div>`).join('');
+    renderFlow(flow);
+    $('#todayLbl').textContent=DF.format(new Date());
+    lineChart($('#todayChart'),curve,['pv','last'],{height:190,fullDay:true});
+    renderSplit($('#todaySplit'),d);
+    if(document.visibilityState==='visible'&&S.tab==='uebersicht')S.timer=setTimeout(()=>{if(S.tab==='uebersicht'){delete cache[cKey(`curve|${S.sid}|${today}`)];loadOverview();}},60000);
+  }catch(e){fail(e);}
+}
+async function totalRows(){
+  const y=new Date().getFullYear();let from=S.info.created?Number(S.info.created.slice(0,4)):null;
+  const rows=[];let empty=0;
+  for(let yr=y;yr>=(from||2010);yr--){const r=await data.stats(S.sid,'year',yr+'-01-01',yr+'-12-31');const row=r.find(x=>x.p===String(yr))||r[0];
+    if(row&&row.pv!=null&&row.pv>0){rows.unshift({...row,p:String(yr)});empty=0;}else{if(!from){empty++;if(empty>=2)break;}}}
+  return rows;
+}
+function renderFlow(f){
+  const W=360,H=250,P={pv:[180,42],haus:[300,135],netz:[180,222],bat:[60,135]};const mid=[180,135];
+  const c=k=>css(k);
+  const line=(a,b,col,p,rev)=>`<path class="fl ${p==null||Math.abs(p)<0.01?'off':'on'} ${rev?'rev':''}" d="M${a[0]} ${a[1]} L${b[0]} ${b[1]}" stroke="${col}"/>`;
+  const node=(k,label,val,sub,col)=>`<g class="node"><circle cx="${P[k][0]}" cy="${P[k][1]}" r="34" stroke="${col}"/><text x="${P[k][0]}" y="${P[k][1]-8}">${esc(label)}</text><text class="val" x="${P[k][0]}" y="${P[k][1]+9}">${esc(val)}</text>${sub?`<text class="sub" x="${P[k][0]}" y="${P[k][1]+24}">${esc(sub)}</text>`:''}</g>`;
+  const netz=f.netz,bat=f.bat;
+  $('#flow').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Energiefluss">
+    ${line(P.pv,mid,c('--pv'),f.pv)}${line(mid,P.haus,c('--last'),f.last)}
+    ${netz==null?line(mid,P.netz,c('--netz'),null):netz>=0?line(mid,P.netz,c('--netz'),netz):line(P.netz,mid,c('--netz'),netz)}
+    ${bat==null?line(P.bat,mid,c('--bat'),null):bat>=0?line(P.bat,mid,c('--bat'),bat):line(mid,P.bat,c('--bat'),bat)}
+    <circle cx="${mid[0]}" cy="${mid[1]}" r="5" fill="${c('--mut')}"/>
+    ${node('pv','PV',fmtKw(f.pv),S.info.pvKwp?fmtN(S.info.pvKwp,1)+' kWp':'',c('--pv'))}
+    ${node('haus','Haus',fmtKw(f.last),'',c('--last'))}
+    ${node('netz','Netz',fmtKw(netz==null?null:Math.abs(netz)),netz==null?'':netz>0.01?'Einspeisung':netz<-0.01?'Bezug':'ausgeglichen',c('--netz'))}
+    ${node('bat','Batterie',f.soc==null&&bat==null?'–':f.soc!=null?fmtPct(f.soc):fmtKw(Math.abs(bat)),bat==null?'':bat>0.01?'entlädt '+fmtKw(bat):bat<-0.01?'lädt '+fmtKw(-bat):'Ruhe',c('--bat'))}
+  </svg>`;
+  $('#flowTime').textContent=f.time?'Stand '+(isNaN(new Date(f.time))?f.time:TF.format(new Date(f.time))):'';
+}
+function renderSplit(el,d){
+  if(!d||d.pv==null){el.innerHTML='<p class="hint">Für heute liegen noch keine Tageswerte vor.</p>';return;}
+  const eigen=d.eigen??(d.pv-(d.einsp||0)),einsp=d.einsp||0,bezug=d.bezug||0,last=d.last??(eigen+bezug);
+  const bar=(parts)=>{const tot=sum(parts.map(p=>p.v))||1;return `<div class="bar">${parts.map(p=>`<span style="width:${p.v/tot*100}%;background:${css(p.c)}" title="${esc(p.l)}"></span>`).join('')}</div><div class="lg">${parts.map(p=>`<span><i style="background:${css(p.c)}"></i>${esc(p.l)} <b>${fmtKwh(p.v)}</b> (${fmtPct(p.v/tot*100)})</span>`).join('')}</div>`;};
+  el.innerHTML=`<div><div class="hint">Erzeugung ${fmtKwh(d.pv)}</div>${bar([{l:'selbst verbraucht',v:Math.max(0,eigen),c:'--pv'},{l:'eingespeist',v:einsp,c:'--netz'}])}</div>
+  <div style="margin-top:8px"><div class="hint">Verbrauch ${fmtKwh(last)}</div>${bar([{l:'aus PV/Speicher',v:Math.max(0,last-bezug),c:'--pv'},{l:'aus dem Netz',v:bezug,c:'--netz'}])}</div>`;
+}
+
+/* ---------- Diagramme ---------- */
+function rangeLabel(){const d=S.date;if(S.range==='day')return DF.format(d);if(S.range==='month')return MONL[d.getMonth()]+' '+d.getFullYear();if(S.range==='year')return String(d.getFullYear());return 'Alle Jahre';}
+function navStep(n){const d=new Date(S.date);if(S.range==='day')d.setDate(d.getDate()+n);else if(S.range==='month')d.setMonth(d.getMonth()+n);else if(S.range==='year')d.setFullYear(d.getFullYear()+n);else return;if(d>new Date())return;S.date=d;loadChart();}
+$('#navPrev').onclick=()=>navStep(-1);$('#navNext').onclick=()=>navStep(1);
+$('#navDate').onchange=e=>{if(e.target.value){S.date=parseIso(e.target.value);loadChart();}};
+$('#range').onclick=e=>{const b=e.target.closest('[data-r]');if(!b)return;S.range=b.dataset.r;$$('#range button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));loadChart();};
+$('#series').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;S.seriesOn[b.dataset.s]=!S.seriesOn[b.dataset.s];if(!Object.values(S.seriesOn).some(Boolean))S.seriesOn[b.dataset.s]=true;drawChart();};
+$('#bTable').onclick=()=>{const t=$('#chartTable');t.hidden=!t.hidden;$('#bTable').textContent=t.hidden?'Tabelle anzeigen':'Tabelle ausblenden';};
+$('#bCsv').onclick=()=>{if(S.range==='day'&&S.chartCurve){const c=S.chartCurve;download(`sonnenstand_${iso(S.date)}_minuten.csv`,['Zeit;PV kW;Verbrauch kW;Netz kW (+Einspeisung);Batterie kW (+Entladen);SOC %',...c.t.map((t,i)=>[TF.format(t),c.pv[i],c.last[i],c.netz[i],c.bat[i],c.soc[i]].map(csvNum).join(';'))].join('\n'));}
+  else if(S.chartRows)download(`sonnenstand_${S.range}_${rangeLabel().replace(/\W+/g,'_')}.csv`,rowsCsv(S.chartRows));};
+const csvNum=v=>v==null?'':String(v).replace('.',',');
+const rowsCsv=rows=>['Zeitraum;PV kWh;Verbrauch kWh;Einspeisung kWh;Netzbezug kWh;Eigenverbrauch kWh;Batterie laden kWh;Batterie entladen kWh',...rows.map(r=>[r.p,r.pv,r.last,r.einsp,r.bezug,r.eigen,r.laden,r.entladen].map(csvNum).join(';'))].join('\n');
+function download(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+text],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+async function loadChart(){
+  msg('');$('#navLbl').textContent=rangeLabel();$('#navDate').value=iso(S.date);$('#navDate').hidden=S.range==='total';$('#navPrev').disabled=$('#navNext').disabled=S.range==='total';
+  const keys=S.range==='day'?['pv','last','netz','bat']:['pv','last','einsp','bezug','eigen','laden','entladen'];
+  if(S.range!=='day'){for(const k of ['einsp','bezug','eigen','laden','entladen'])if(S.seriesOn[k]==null)S.seriesOn[k]=false;}
+  $('#series').innerHTML=keys.map(k=>`<button class="chip" data-s="${k}" aria-pressed="${!!S.seriesOn[k]}" style="--c:${css(SER[k].c)}"><i></i>${esc(SER[k].l)}</button>`).join('');
+  $('#mainChart').innerHTML='<p class="hint">Lade …</p>';$('#socChart').innerHTML='';$('#chartKpis').innerHTML='';$('#chartTable').innerHTML='';
+  try{
+    if(S.range==='day'){const d=iso(S.date);S.chartCurve=await data.curve(S.sid,d);S.chartRows=await data.stats(S.sid,'day',d,d);}
+    else if(S.range==='month'){const y=S.date.getFullYear(),m=S.date.getMonth();const from=iso(new Date(y,m,1)),to=iso(new Date(y,m+1,0));S.chartRows=fillDays(await data.stats(S.sid,'day',from,to),from,to);S.chartCurve=null;}
+    else if(S.range==='year'){const y=S.date.getFullYear();S.chartRows=fillMonths(await data.stats(S.sid,'month',y+'-01-01',y+'-12-31'),y);S.chartCurve=null;}
+    else{S.chartRows=await totalRows();S.chartCurve=null;}
+    drawChart();
+  }catch(e){$('#mainChart').innerHTML='';fail(e);}
+}
+function fillDays(rows,from,to){const m=new Map(rows.map(r=>[r.p,r]));const out=[];const today=iso(new Date());for(let d=parseIso(from);iso(d)<=to;d=addDays(d,1)){const p=iso(d);if(p>today)break;out.push(m.get(p)||{p});}return out;}
+function fillMonths(rows,y){const m=new Map(rows.map(r=>[r.p,r]));const out=[];const now=new Date();for(let i=0;i<12;i++){if(y===now.getFullYear()&&i>now.getMonth())break;const p=`${y}-${pad(i+1)}`;out.push(m.get(p)||{p});}return out;}
+function drawChart(){
+  const on=k=>!!S.seriesOn[k];
+  if(S.range==='day'){
+    const c=S.chartCurve;if(!c||!c.t.length){$('#mainChart').innerHTML='<div class="empty">Für diesen Tag gibt es keine Minutenwerte.</div>';$('#chartHint').textContent='';return;}
+    lineChart($('#mainChart'),c,['pv','last','netz','bat'].filter(on),{height:260,fullDay:true,legend:false});
+    if(c.soc.some(v=>v!=null))socChart($('#socChart'),c);else $('#socChart').innerHTML='';
+    const r=(S.chartRows||[])[0]||{};const peak=Math.max(...c.pv.filter(v=>v!=null),0);const pi=c.pv.indexOf(peak);
+    $('#chartKpis').innerHTML=kpiHtml([{l:'Erzeugung',v:fmtKwh(r.pv)},{l:'Verbrauch',v:fmtKwh(r.last)},{l:'Einspeisung',v:fmtKwh(r.einsp)},{l:'Netzbezug',v:fmtKwh(r.bezug)},{l:'Spitze',v:fmtKw(peak),s:pi>=0?'um '+TF.format(c.t[pi]):''}]);
+    $('#chartHint').textContent='Minutenwerte aus dem SEMS-Portal · Linie berühren für Werte';
+    $('#chartTable').innerHTML=tableHtml(['Zeit','PV kW','Verbrauch kW','Netz kW','Batterie kW','SOC %'],c.t.map((t,i)=>i%15===0?[TF.format(t),fmtN(c.pv[i],2),fmtN(c.last[i],2),fmtN(c.netz[i],2),fmtN(c.bat[i],2),fmtN(c.soc[i],0)]:null).filter(Boolean));
+  }else{
+    const rows=S.chartRows||[];if(!rows.length){$('#mainChart').innerHTML='<div class="empty">Keine Daten für diesen Zeitraum.</div>';return;}
+    const keys=['pv','last','einsp','bezug','eigen','laden','entladen'].filter(on);
+    const cats=rows.map(r=>S.range==='month'?String(Number(r.p.slice(8))):S.range==='year'?MON[Number(r.p.slice(5))-1]:r.p);
+    barChart($('#mainChart'),cats,keys.map(k=>({k,l:SER[k].l,c:SER[k].c,v:rows.map(r=>r[k]??null)})),{height:260,tipLabel:i=>S.range==='month'?DF.format(parseIso(rows[i].p)):S.range==='year'?MONL[Number(rows[i].p.slice(5))-1]+' '+rows[i].p.slice(0,4):rows[i].p});
+    $('#socChart').innerHTML='';
+    const tot=k=>sum(rows.map(r=>r[k]));const best=rows.reduce((b,r)=>(r.pv||0)>(b.pv||0)?r:b,{});
+    const unit=S.range==='month'?'Tag':S.range==='year'?'Monat':'Jahr';
+    $('#chartKpis').innerHTML=kpiHtml([{l:'Erzeugung',v:fmtKwh(tot('pv')),s:S.info.pvKwp?fmtN(tot('pv')/S.info.pvKwp,0)+' kWh je kWp':''},{l:'Verbrauch',v:fmtKwh(tot('last'))},{l:'Einspeisung',v:fmtKwh(tot('einsp'))},{l:'Netzbezug',v:fmtKwh(tot('bezug'))},{l:'Eigenverbrauchsquote',v:fmtPct(tot('pv')?(tot('pv')-tot('einsp'))/tot('pv')*100:null)},{l:'Autarkie',v:fmtPct(tot('last')?(tot('last')-tot('bezug'))/tot('last')*100:null)},{l:'Bester '+unit,v:fmtKwh(best.pv),s:best.p?(S.range==='month'?DF.format(parseIso(best.p)):S.range==='year'?MONL[Number(best.p.slice(5))-1]:best.p):''}]);
+    $('#chartHint').textContent='Balken berühren für Werte';
+    $('#chartTable').innerHTML=tableHtml(['Zeitraum','PV kWh','Verbrauch kWh','Einspeisung kWh','Netzbezug kWh','Eigenverbrauch kWh','Laden kWh','Entladen kWh'],rows.map(r=>[r.p,fmtN(r.pv),fmtN(r.last),fmtN(r.einsp),fmtN(r.bezug),fmtN(r.eigen),fmtN(r.laden),fmtN(r.entladen)]));
+  }
+}
+const kpiHtml=ks=>ks.map(k=>`<div class="kpi"><div class="l">${esc(k.l)}</div><div class="v">${esc(k.v)}</div>${k.s?`<div class="s">${esc(k.s)}</div>`:''}</div>`).join('');
+const tableHtml=(head,rows)=>`<table><thead><tr>${head.map((h,i)=>`<th class="${i?'n':''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'n':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+
+/* ---------- Geräte ---------- */
+const DTYPE={INVERTER:'Wechselrichter',BATTERY_RACK:'Batterie',SMART_METER:'Zähler',DONGLE:'WLAN-Stick',EV_CHARGER:'Wallbox',ENERGY_STORAGE_INTEGRATED_CABINET:'Speichersystem',HEAT_PUMP:'Wärmepumpe'};
+const DSTAT=s=>{s=Number(s);return s===1?['In Betrieb','on']:s===0?['Standby','']:s===-1?['Offline','off']:s===2?['Störung','off']:['Status '+s,''];};
+async function loadDevices(){
+  msg('');const st=S.stations.find(s=>s.id===S.sid)||{};
+  const facts=[['Name',st.name],['Leistung',S.info.pvKwp?fmtN(S.info.pvKwp,2)+' kWp':st.capacity?fmtN(st.capacity,2)+' kWp':null],['Speicher',S.info.batKwh?fmtN(S.info.batKwh,1)+' kWh':null],['In Betrieb seit',S.info.created?parseIso(S.info.created).toLocaleDateString('de-AT'):null],['Netz',S.info.onGrid==null?null:S.info.onGrid?'verbunden':'getrennt'],['Anlagen-ID',S.sid]].filter(f=>f[1]);
+  $('#plantInfo').innerHTML=facts.map(f=>`<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join('');
+  $('#devs').innerHTML='<p class="hint">Lade Geräte …</p>';
+  try{const devs=await data.devices(S.sid);$('#devCount').textContent=devs.length+' Geräte';
+    if(!devs.length){$('#devs').innerHTML='<div class="empty">Keine Geräte gemeldet.</div>';return;}
+    $('#devs').innerHTML=devs.map(d=>{const [sl,sc]=DSTAT(d.status);const rows=[['Typ',DTYPE[d.type]||d.type],['Modell',d.model],['Seriennummer',d.sn],['Leistung jetzt',d.pac!=null?fmtKw(d.pac):null],['Batterie',d.soc!=null?fmtPct(d.soc)+(d.pbat!=null?(d.pbat>0.01?' · entlädt ':d.pbat<-0.01?' · lädt ':'')+(Math.abs(d.pbat)>0.01?fmtKw(Math.abs(d.pbat)):''):''):null],['Heute',d.eday!=null?fmtKwh(d.eday):null],['Gesamt',d.etotal!=null?fmtKwh(d.etotal):null],['Temperatur',d.temp!=null?fmtN(d.temp,1)+' °C':null],['Netzspannung',d.vac!=null?fmtN(d.vac,0)+' V':null]].filter(r=>r[1]);
+      return `<div class="dev"><div class="t"><span>${esc(d.name)}</span><span class="pill ${sc}">${esc(sl)}</span></div><dl>${rows.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>`;}).join('');
+  }catch(e){$('#devs').innerHTML='';fail(e);}
+}
+
+/* ---------- Auswertung ---------- */
+function evalRange(v){const t=new Date();t.setHours(0,0,0,0);let a,b,pa,pb;
+  if(v==='month'){a=new Date(t.getFullYear(),t.getMonth(),1);b=t;pa=new Date(t.getFullYear(),t.getMonth()-1,1);pb=new Date(t.getFullYear(),t.getMonth(),0);}
+  else if(v==='lastmonth'){a=new Date(t.getFullYear(),t.getMonth()-1,1);b=new Date(t.getFullYear(),t.getMonth(),0);pa=new Date(t.getFullYear(),t.getMonth()-2,1);pb=new Date(t.getFullYear(),t.getMonth()-1,0);}
+  else if(v==='year'){a=new Date(t.getFullYear(),0,1);b=t;pa=new Date(t.getFullYear()-1,0,1);pb=new Date(t.getFullYear()-1,t.getMonth(),t.getDate());}
+  else if(v==='lastyear'){a=new Date(t.getFullYear()-1,0,1);b=new Date(t.getFullYear()-1,11,31);pa=new Date(t.getFullYear()-2,0,1);pb=new Date(t.getFullYear()-2,11,31);}
+  else{const n=Number(v);b=t;a=addDays(t,-(n-1));pb=addDays(a,-1);pa=addDays(pb,-(n-1));}
+  return {a,b,pa,pb};}
+async function daysBetween(a,b){/* Jahresgrenzen einzeln abfragen */const out=[];for(let y=a.getFullYear();y<=b.getFullYear();y++){const from=iso(y===a.getFullYear()?a:new Date(y,0,1)),to=iso(y===b.getFullYear()?b:new Date(y,11,31));out.push(...await data.stats(S.sid,'day',from,to));}return fillDays(out,iso(a),iso(b));}
+$('#evalRange').onchange=loadEval;
+['tBuy','tSell'].forEach(id=>{const e=$('#'+id);e.value=settings[id==='tBuy'?'buy':'sell']??'';e.oninput=()=>{settings[id==='tBuy'?'buy':'sell']=e.value===''?null:Number(e.value);store.set(SET_KEY,settings);renderMoney();};});
+async function loadEval(){
+  msg('');const {a,b,pa,pb}=evalRange($('#evalRange').value);$('#evalLbl').textContent=`${a.toLocaleDateString('de-AT')} – ${b.toLocaleDateString('de-AT')}`;
+  $('#evalKpis').innerHTML='<p class="hint">Lade …</p>';
+  try{
+    const [rows,prev]=await Promise.all([daysBetween(a,b),daysBetween(pa,pb)]);S.evalRows=rows;S.evalPrev=prev;
+    const T=rs=>{const t={pv:0,last:0,einsp:0,bezug:0,laden:0,entladen:0,n:0};for(const r of rs){if(r.pv==null)continue;t.n++;for(const k of ['pv','last','einsp','bezug','laden','entladen'])t[k]+=r[k]||0;}t.eigen=Math.max(0,t.pv-t.einsp);t.eq=t.pv?t.eigen/t.pv*100:null;t.aut=t.last?(t.last-t.bezug)/t.last*100:null;return t;};
+    const t=T(rows),p=T(prev);
+    const delta=(x,y,inv)=>{if(!y||x==null)return '';const d=(x-y)/y*100;const up=inv?d<0:d>0;return `<span class="delta ${up?'up':'dn'}">${d>0?'+':''}${fmtN(d,0)} % zur Vorperiode</span>`;};
+    const best=rows.reduce((m,r)=>(r.pv||0)>(m.pv||0)?r:m,{}),worst=rows.filter(r=>r.pv!=null).reduce((m,r)=>r.pv<(m.pv??Infinity)?r:m,{});
+    $('#evalKpis').innerHTML=kpiHtml([
+      {l:'Erzeugung',v:fmtKwh(t.pv),s:delta(t.pv,p.pv)},{l:'Verbrauch',v:fmtKwh(t.last),s:delta(t.last,p.last,true)},
+      {l:'Einspeisung',v:fmtKwh(t.einsp),s:delta(t.einsp,p.einsp)},{l:'Netzbezug',v:fmtKwh(t.bezug),s:delta(t.bezug,p.bezug,true)},
+      {l:'Eigenverbrauchsquote',v:fmtPct(t.eq),s:'Anteil der PV-Erzeugung, der im Haus blieb'},{l:'Autarkie',v:fmtPct(t.aut),s:'Anteil des Verbrauchs ohne Netz'},
+      {l:'Ø Erzeugung je Tag',v:fmtKwh(t.n?t.pv/t.n:null),s:t.n+' Tage mit Daten'},{l:'Spezifischer Ertrag',v:S.info.pvKwp&&t.pv?fmtN(t.pv/S.info.pvKwp,0)+' kWh/kWp':'–',s:S.info.pvKwp?'bezogen auf '+fmtN(S.info.pvKwp,1)+' kWp':'Anlagenleistung unbekannt'},
+      {l:'Bester Tag',v:fmtKwh(best.pv),s:best.p?DF.format(parseIso(best.p)):''},{l:'Schwächster Tag',v:fmtKwh(worst.pv),s:worst.p?DF.format(parseIso(worst.p)):''},
+      ...(t.laden?[{l:'Batterie',v:fmtKwh(t.entladen)+' entladen',s:fmtKwh(t.laden)+' geladen'+(t.laden&&t.entladen<=t.laden?' · Wirkungsgrad '+fmtPct(t.entladen/t.laden*100):'')}]:[]),
+    ].map(k=>({...k,s:k.s||''})));
+    $('#evalKpis').querySelectorAll('.kpi .s').forEach(e=>{if(e.textContent.includes('Vorperiode'))e.innerHTML=e.textContent.replace(/^(.*)(zur Vorperiode)$/,(m,a2,b2)=>`<span class="delta ${a2.startsWith('+')?'up':'dn'}">${esc(a2)}${esc(b2)}</span>`);});
+    const bar=(parts)=>{const tot=sum(parts.map(p=>p.v))||1;return `<div class="bar">${parts.map(p=>`<span style="width:${p.v/tot*100}%;background:${css(p.c)}"></span>`).join('')}</div><div class="lg">${parts.map(p=>`<span><i style="background:${css(p.c)}"></i>${esc(p.l)} <b>${fmtKwh(p.v)}</b> (${fmtPct(p.v/tot*100)})</span>`).join('')}</div>`;};
+    $('#evalPv').innerHTML=bar([{l:'selbst verbraucht (direkt oder über Speicher)',v:t.eigen,c:'--pv'},{l:'ins Netz eingespeist',v:t.einsp,c:'--netz'}]);
+    $('#evalLoad').innerHTML=bar([{l:'aus eigener PV / Speicher',v:Math.max(0,t.last-t.bezug),c:'--pv'},{l:'aus dem Netz bezogen',v:t.bezug,c:'--netz'}]);
+    S.evalTot=t;renderMoney();
+    const cats=rows.map(r=>r.p.slice(8)+'.'+r.p.slice(5,7));
+    barChart($('#evalChart'),cats,[{k:'pv',l:'PV-Erzeugung',c:'--pv',v:rows.map(r=>r.pv??null)},{k:'last',l:'Verbrauch',c:'--last',v:rows.map(r=>r.last??null)}],{height:220,tipLabel:i=>DF.format(parseIso(rows[i].p))});
+  }catch(e){$('#evalKpis').innerHTML='';fail(e);}
+}
+function renderMoney(){const t=S.evalTot;if(!t)return;const buy=settings.buy,sell=settings.sell;
+  if(buy==null&&sell==null){$('#evalMoney').innerHTML='<p class="hint">Trage deine Tarife ein (stehen auf der Stromrechnung), dann rechnet die App Ersparnis und Einspeiseerlös aus.</p>';return;}
+  const saved=buy!=null?t.eigen*buy/100:null,earned=sell!=null?t.einsp*sell/100:null,cost=buy!=null?t.bezug*buy/100:null;
+  $('#evalMoney').innerHTML=kpiHtml([{l:'Gespart (nicht gekauft)',v:fmtEur(saved),s:buy!=null?fmtKwh(t.eigen)+' × '+fmtN(buy,1)+' ct':''},{l:'Einspeiseerlös',v:fmtEur(earned),s:sell!=null?fmtKwh(t.einsp)+' × '+fmtN(sell,1)+' ct':''},{l:'PV-Nutzen gesamt',v:fmtEur((saved||0)+(earned||0))},{l:'Stromkosten (Bezug)',v:fmtEur(cost)}]);}
+$('#bEvalCsv').onclick=()=>{if(S.evalRows)download(`sonnenstand_tage_${$('#evalLbl').textContent.replace(/\W+/g,'_')}.csv`,rowsCsv(S.evalRows));};
+
+/* ---------- Diagramm-Bausteine (SVG, eine Achse, Tooltip) ---------- */
+const tip=$('#tip');
+function showTip(x,y,html){tip.innerHTML=html;tip.style.display='block';const r=tip.getBoundingClientRect();let L=x+14,T=y-r.height-10;if(L+r.width>innerWidth-8)L=x-r.width-14;if(T<8)T=y+14;tip.style.left=L+'px';tip.style.top=T+'px';}
+function hideTip(){tip.style.display='none';}
+function niceMax(v){if(!(v>0))return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;const m=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10;return m*p;}
+function niceStep(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p;}
+const charts=new Map();
+function sizeOf(el){return Math.max(280,el.clientWidth||el.parentElement.clientWidth||600);}
+function lineChart(el,c,keys,opt){
+  charts.set(el,()=>lineChart(el,c,keys,opt));
+  const W=sizeOf(el),H=opt.height||240,L=46,R=10,T=14,B=28;
+  const ser=keys.map(k=>({k,l:SER[k].l,col:css(SER[k].c),v:c[k]||[]}));
+  if(!c.t.length){el.innerHTML='<div class="empty">Keine Werte.</div>';return;}
+  const day=new Date(c.t[0]);day.setHours(0,0,0,0);const x0=day.getTime(),x1=opt.fullDay?x0+864e5:c.t[c.t.length-1].getTime();
+  let mx=0,mn=0;ser.forEach(s=>s.v.forEach(v=>{if(v!=null){mx=Math.max(mx,v);mn=Math.min(mn,v);}}));
+  const top=niceMax(mx||1),bot=mn<0?-niceMax(-mn):0;const step=niceStep((top-bot)/4);
+  const X=t=>L+(t-x0)/(x1-x0)*(W-L-R),Y=v=>T+(top-v)/(top-bot)*(H-T-B);
+  let g='';for(let v=Math.ceil(bot/step)*step;v<=top+1e-9;v+=step){const y=Y(v);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="${Math.abs(v)<1e-9?'zero':''}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${fmtN(v,step<1?1:0)}</text>`;}
+  let xa='';for(let h=0;h<=24;h+=opt.fullDay?(W<480?6:3):6){const t=x0+h*36e5;if(t>x1)break;xa+=`<text x="${X(t)}" y="${H-8}" text-anchor="middle">${pad(h%24)}:00</text>`;}
+  const path=(s,area)=>{let d='',open=false,start=null,last=null;for(let i=0;i<c.t.length;i++){const v=s.v[i];if(v==null){if(open&&area){d+=` L${X(last)} ${Y(0)} Z`;}open=false;continue;}const x=X(c.t[i].getTime()),y=Y(v);if(!open){d+=area?` M${x} ${Y(0)} L${x} ${y}`:` M${x} ${y}`;open=true;start=x;}else d+=` L${x} ${y}`;last=c.t[i].getTime();}if(open&&area)d+=` L${X(last)} ${Y(0)} Z`;return d;};
+  const pv=ser.find(s=>s.k==='pv');
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Leistungsverlauf"><g class="grid axis">${g}${xa}</g>
+    ${pv?`<path class="ar" d="${path(pv,true)}" fill="${pv.col}"/>`:''}
+    ${ser.map(s=>`<path class="ln" d="${path(s)}" stroke="${s.col}"/>`).join('')}
+    <line class="cursor" id="cur" x1="0" x2="0" y1="${T}" y2="${H-B}" style="display:none"/>
+    <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg>
+    ${keys.length>1&&opt.legend!==false?`<div class="chips" style="margin-top:6px">${ser.map(s=>`<span class="chip" style="--c:${s.col};border:0;padding-left:0"><i></i>${esc(s.l)}</span>`).join('')}</div>`:''}`;
+  const svg=el.querySelector('svg'),cur=svg.querySelector('#cur');
+  const move=e=>{const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W;if(px<L||px>W-R){hideTip();cur.style.display='none';return;}const t=x0+(px-L)/(W-L-R)*(x1-x0);let lo=0,hi=c.t.length-1;while(lo<hi){const m=(lo+hi)>>1;if(c.t[m].getTime()<t)lo=m+1;else hi=m;}const i=lo>0&&Math.abs(c.t[lo-1]-t)<Math.abs(c.t[lo]-t)?lo-1:lo;
+    cur.setAttribute('x1',X(c.t[i].getTime()));cur.setAttribute('x2',X(c.t[i].getTime()));cur.style.display='';
+    showTip(e.clientX,e.clientY,`<div><b>${TF.format(c.t[i])}</b></div>${ser.map(s=>`<div class="r"><span><i style="background:${s.col}"></i>${esc(s.l.split(' (')[0])}</span><b>${fmtKw(s.v[i])}</b></div>`).join('')}${c.soc&&c.soc[i]!=null?`<div class="r"><span><i style="background:${css('--soc')}"></i>Batterie</span><b>${fmtPct(c.soc[i])}</b></div>`:''}`);};
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerdown',move);svg.addEventListener('pointerleave',()=>{hideTip();cur.style.display='none';});
+}
+function socChart(el,c){
+  charts.set(el,()=>socChart(el,c));
+  const W=sizeOf(el),H=70,L=46,R=10,T=6,B=4;const day=new Date(c.t[0]);day.setHours(0,0,0,0);const x0=day.getTime(),x1=x0+864e5;
+  const X=t=>L+(t-x0)/(x1-x0)*(W-L-R),Y=v=>T+(100-v)/100*(H-T-B);
+  let d='',open=false;for(let i=0;i<c.t.length;i++){const v=c.soc[i];if(v==null){open=false;continue;}d+=`${open?' L':' M'}${X(c.t[i].getTime())} ${Y(v)}`;open=true;}
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ladestand der Batterie"><g class="grid axis"><line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}"/><line x1="${L}" x2="${W-R}" y1="${Y(100)}" y2="${Y(100)}"/><text x="${L-6}" y="${Y(100)+4}" text-anchor="end">100</text><text x="${L-6}" y="${Y(0)+2}" text-anchor="end">0 %</text></g><path class="ln" d="${d}" stroke="${css('--soc')}"/><text class="axis" x="${W-R}" y="${T+10}" text-anchor="end" style="fill:var(--mut);font:11px var(--f-mono)">Batterie-Ladestand</text></svg>`;
+}
+function barChart(el,cats,series,opt){
+  charts.set(el,()=>barChart(el,cats,series,opt));
+  const W=sizeOf(el),H=opt.height||240,L=46,R=10,T=14,B=28;const n=cats.length,k=series.length;
+  if(!n||!k){el.innerHTML='<div class="empty">Nichts ausgewählt.</div>';return;}
+  const ser=series.map(s=>({...s,col:css(s.c)}));
+  let mx=0;ser.forEach(s=>s.v.forEach(v=>{if(v!=null)mx=Math.max(mx,v);}));
+  const top=niceMax(mx||1),step=niceStep(top/4);
+  const Y=v=>T+(top-v)/top*(H-T-B),gw=(W-L-R)/n,bw=Math.max(2,(gw*0.72-(k-1)*2)/k);
+  let g='';for(let v=0;v<=top+1e-9;v+=step){const y=Y(v);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="${v===0?'zero':''}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${fmtN(v,step<1?1:0)}</text>`;}
+  const every=Math.ceil(n/(W<480?8:16));
+  let xa='';cats.forEach((c2,i)=>{if(i%every===0||n<=12)xa+=`<text x="${L+gw*(i+0.5)}" y="${H-8}" text-anchor="middle">${esc(c2)}</text>`;});
+  let bars='';ser.forEach((s,j)=>{s.v.forEach((v,i)=>{if(v==null)return;const x=L+gw*i+gw*0.14+j*(bw+2),y=Y(v),h=Math.max(0,Y(0)-y);const r=Math.min(4,bw/2,h);bars+=`<path d="M${x} ${Y(0)} V${y+r} a${r} ${r} 0 0 1 ${r} -${r} h${bw-2*r} a${r} ${r} 0 0 1 ${r} ${r} V${Y(0)} Z" fill="${s.col}" data-i="${i}"/>`;});});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Balkendiagramm"><g class="grid axis">${g}${xa}</g>${bars}<rect id="hl" x="0" y="${T}" width="${gw}" height="${H-T-B}" fill="var(--ink)" opacity="0" /></svg>
+    <div class="chips" style="margin-top:6px">${ser.map(s=>`<span class="chip" style="--c:${s.col};border:0;padding-left:0"><i></i>${esc(s.l)}</span>`).join('')}</div>`;
+  const svg=el.querySelector('svg'),hl=svg.querySelector('#hl');
+  const move=e=>{const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W;const i=Math.floor((px-L)/gw);if(i<0||i>=n){hideTip();hl.setAttribute('opacity','0');return;}hl.setAttribute('x',L+gw*i);hl.setAttribute('opacity','0.06');
+    showTip(e.clientX,e.clientY,`<div><b>${esc(opt.tipLabel?opt.tipLabel(i):cats[i])}</b></div>${ser.map(s=>`<div class="r"><span><i style="background:${s.col}"></i>${esc(s.l)}</span><b>${fmtKwh(s.v[i])}</b></div>`).join('')}`);};
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerdown',move);svg.addEventListener('pointerleave',()=>{hideTip();hl.setAttribute('opacity','0');});
+}
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{charts.forEach((fn,el)=>{if(el.isConnected&&!el.closest('[hidden]'))fn();});},150);});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&session&&S.tab==='uebersicht')loadOverview();});
+
+start();
+</script>
+</body>
+</html>
