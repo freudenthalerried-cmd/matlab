@@ -38,6 +38,7 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
 #auto.on{border-color:var(--ok);color:var(--ok)}
 /* Prüfen */
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#map{position:absolute;right:10px;top:calc(10px + env(safe-area-inset-top));width:150px;height:150px;border-radius:10px;pointer-events:none}
 #revTop{position:absolute;left:0;right:0;top:0;padding:calc(8px + env(safe-area-inset-top)) 14px 6px;background:linear-gradient(#000c,#0000);text-shadow:0 1px 3px #000;pointer-events:none}
 #revLen{font-size:30px;font-weight:800;line-height:1.1}
 #revWarn{color:var(--warn);font-size:15px;font-weight:600}
@@ -64,7 +65,7 @@ svg text{font-family:inherit}
   <div class="mut" id="ver"></div>
   <div class="card">
     <button class="main big" id="newRoom">＋ Raum messen</button>
-    <div class="mut" style="margin-top:10px">Du brauchst nur das Handy und den Zollstock mit den zwei Blättern.</div>
+    <div class="mut" style="margin-top:10px">Handy und Zollstock mit den zwei Blättern. Der Zollstock bleibt mittig im Raum liegen.</div>
   </div>
   <div id="rooms"></div>
   <div class="row" style="margin-top:14px">
@@ -76,33 +77,25 @@ svg text{font-family:inherit}
 <main id="setup" class="scr" hidden>
   <h2>Neuer Raum</h2>
   <label class="mut">Name</label><input id="rName" autocomplete="off">
-  <div class="card">
-    <b>Grundriss</b>
-    <div class="row" style="margin-top:8px">
-      <button id="shapeRect" class="main">▭ Rechteck</button>
-      <button id="shapeFree">⌐ Andere Form</button>
-    </div>
-  </div>
-  <button id="setupBack">Zurück</button>
+  <div class="row" style="margin-top:14px"><button id="setupBack">Zurück</button><button id="setupGo" class="main">Los</button></div>
 </main>
 
 <main id="guide" class="scr" hidden>
   <h2>So funktioniert's</h2>
-  <svg viewBox="0 0 340 140" width="100%" style="background:#20262e;border-radius:12px" role="img" aria-label="Zollstock mit zwei Blättern mittig an der Wand, Handy gegenüber">
-    <rect x="0" y="0" width="340" height="46" fill="#3a434e"/><rect x="0" y="46" width="340" height="94" fill="#262d36"/>
-    <rect x="96" y="49" width="150" height="4" fill="#ffd166"/>
-    <rect x="88" y="53" width="20" height="28" fill="#fff"/><rect x="92" y="57" width="12" height="9" fill="#000"/><rect x="92" y="69" width="12" height="9" fill="#000"/>
-    <rect x="234" y="53" width="20" height="28" fill="#fff"/><rect x="238" y="57" width="12" height="9" fill="#000"/><rect x="238" y="69" width="12" height="9" fill="#000"/>
-    <rect x="160" y="108" width="24" height="16" rx="3" fill="#4da3ff"/>
-    <path d="M166 108 L12 46 M178 108 L328 46" stroke="#4da3ff" stroke-dasharray="4 4"/>
-    <text x="170" y="30" text-anchor="middle" fill="#fff" font-size="13">Wand</text>
+  <svg viewBox="0 0 340 140" width="100%" style="background:#20262e;border-radius:12px" role="img" aria-label="Zollstock mittig im Raum, Handy zielt über ihn auf eine Raumecke">
+    <rect x="30" y="10" width="280" height="120" fill="#262d36" stroke="#4da3ff" stroke-width="2"/>
+    <rect x="110" y="63" width="120" height="4" fill="#ffd166"/>
+    <rect x="102" y="67" width="18" height="24" fill="#fff"/><rect x="105" y="70" width="12" height="8" fill="#000"/><rect x="105" y="81" width="12" height="8" fill="#000"/>
+    <rect x="220" y="67" width="18" height="24" fill="#fff"/><rect x="223" y="70" width="12" height="8" fill="#000"/><rect x="223" y="81" width="12" height="8" fill="#000"/>
+    <rect x="262" y="108" width="24" height="14" rx="3" fill="#4da3ff"/>
+    <path d="M268 110 L38 18" stroke="#4da3ff" stroke-dasharray="4 4"/><circle cx="36" cy="16" r="6" fill="none" stroke="#ff5a5a" stroke-width="2"/>
   </svg>
   <ol class="steps">
-    <li><b>Zollstock ganz aufklappen</b> und ungefähr <b>mittig an die Wand</b> auf den Boden legen.</li>
-    <li>Handy <b>quer</b> halten, zur gegenüberliegenden Wand gehen, bis <b>beide Ecken und beide Blätter</b> im Bild sind. Die App löst selbst aus.</li>
-    <li>Die zwei Punkte auf die <b>Wandecken am Boden</b> ziehen, fertig. Dann die nächste Wand im Uhrzeigersinn.</li>
+    <li><b>Zollstock ganz aufklappen</b> und ungefähr <b>mittig im Raum</b> auf den Boden legen. Er bleibt dort liegen.</li>
+    <li>Handy <b>quer</b> halten und zurückgehen, bis <b>beide Blätter und eine Raumecke am Boden</b> im Bild sind. Reicht der Platz nicht: <b>0,6×</b>.</li>
+    <li>Im Foto die <b>Ecke am Boden antippen</b>. So jede Raumecke, am besten von zwei Stellen.</li>
   </ol>
-  <div class="mut">Kein Antippen während des Filmens, keine Punktwolke. Jede Länge kommt aus dem Foto und dem Zollstock im selben Bild.</div>
+  <div class="mut">Alle Fotos beziehen sich auf den liegenden Zollstock. Darum darf er sich nicht bewegen.</div>
   <div class="row" style="margin-top:14px"><button class="main" id="guideGo">Verstanden</button></div>
 </main>
 
@@ -115,7 +108,9 @@ svg text{font-family:inherit}
   <div id="camBot">
     <button id="camClose">✕</button>
     <button id="auto" class="on">Automatik an</button>
+    <button id="wide" hidden>1×</button>
     <button id="shot" aria-label="Foto aufnehmen"></button>
+    <button id="camDone" class="ok" hidden>Raum fertig</button>
     <button id="pick">Foto-App</button>
     <input id="file" type="file" accept="image/*" capture="environment" hidden>
   </div>
@@ -123,13 +118,14 @@ svg text{font-family:inherit}
 
 <section id="rev" hidden>
   <canvas id="cv"></canvas>
+  <canvas id="map" aria-label="Draufsicht"></canvas>
   <div id="revTop"><div id="revTitle" class="mut" style="color:#fff"></div><div id="revLen"></div><div id="revWarn"></div></div>
   <div id="revBot">
     <div class="row" id="skirt" hidden><b>Sockelleiste?</b><button data-v="0">keine</button><button data-v="15">1,5 cm</button><button data-v="20">2 cm</button></div>
     <div class="row">
       <button id="revRedo">↻ Neu</button>
-      <button id="revMore">Ecke fehlt</button>
-      <button id="revOk" class="ok">✔ Stimmt</button>
+      <button id="revDel" hidden>Punkt löschen</button>
+      <button id="revOk" class="ok">✔ Übernehmen</button>
     </div>
   </div>
 </section>
@@ -138,8 +134,8 @@ svg text{font-family:inherit}
   <h2 id="resName"></h2>
   <div id="resHint"></div>
   <div class="card"><div id="sketch"></div><div id="resArea" style="text-align:center;font-weight:700;font-size:20px;margin-top:6px"></div></div>
-  <div class="card"><b>Wände</b> <span class="mut">Kontrollmaß freiwillig eintragen</span><div id="wallList" style="margin-top:6px"></div></div>
-  <div class="row"><button id="resSave" class="main">Speichern</button><button id="resMore">Weitere Wand</button></div>
+  <div class="card"><b>Wände</b> <span class="mut">Kontrollmaß freiwillig</span><div id="wallList" style="margin-top:6px"></div></div>
+  <div class="row"><button id="resSave" class="main">Speichern</button><button id="resMore">Noch ein Foto</button></div>
   <div class="row" style="margin-top:10px"><button id="resPrint">PDF / Drucken</button><button id="resDxf">DXF</button><button id="resSend">📤 An Claude senden</button></div>
   <button id="resHome" style="margin-top:10px">Zur Übersicht</button>
 </main>

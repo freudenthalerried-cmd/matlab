@@ -176,12 +176,33 @@ const RP = (() => {
     return { a: refine(L), b: refine(R), by, up, Lv, Rv };
   }
 
+
+  // ---------- Bodenaufmaß: Zollstock bleibt in der Mitte ----------
+  function locateBest(g, W, H) { let loc = locate(findQuads(g, W, H)); if ((!loc.ok || loc.ids.length < 4) && W > 2600) { const l2 = locate(findQuads(g, W, H, { maxW: W })); if (l2.ok && (!loc.ok || l2.ids.length > loc.ids.length || l2.rms < loc.rms)) loc = l2; } return loc; }
+  function cornerSnap(g, W, H, p, win = 8, maxShift = 7) { // Punkt auf den genauen Kantenschnitt ziehen (Eckensuche über Bildgradienten)
+    let q = [p[0], p[1]];
+    for (let it = 0; it < 8; it++) { let a = 0, b = 0, c = 0, u = 0, v = 0; for (let dy = -win; dy <= win; dy++) for (let dx = -win; dx <= win; dx++) { const x = q[0] + dx, y = q[1] + dy, gx = (bil(g, W, H, x + 1, y) - bil(g, W, H, x - 1, y)) / 2, gy = (bil(g, W, H, x, y + 1) - bil(g, W, H, x, y - 1)) / 2; if (Number.isNaN(gx) || Number.isNaN(gy)) continue; a += gx * gx; b += gx * gy; c += gy * gy; u += gx * gx * x + gx * gy * y; v += gx * gy * x + gy * gy * y; }
+      const det = a * c - b * b; if (det < 1e-3 || Math.min(a, c) < 200) return [p[0], p[1]]; const nx = (c * u - b * v) / det, ny = (a * v - b * u) / det, sh = Math.hypot(nx - q[0], ny - q[1]); q = [nx, ny]; if (Math.hypot(q[0] - p[0], q[1] - p[1]) > maxShift) return [p[0], p[1]]; if (sh < 0.05) break; }
+    return q; }
+  function pinSigma(loc, q, n = 24) { const sm = Math.max(0.3, loc.rms), src = loc.pts.map(a => a.px), dst = loc.pts.map(a => a.mm), R = []; for (let k = 0; k < n; k++) { const S = src.map(p => [p[0] + randn() * sm, p[1] + randn() * sm]), H = fitH(S, dst); if (!H) continue; R.push(apply(H, [q[0] + randn() * 1.5, q[1] + randn() * 1.5])); } if (R.length < 6) return 40; const mx = R.reduce((s, p) => s + p[0], 0) / R.length, my = R.reduce((s, p) => s + p[1], 0) / R.length; return Math.sqrt(R.reduce((s, p) => s + (p[0] - mx) ** 2 + (p[1] - my) ** 2, 0) / (R.length - 1)); }
+  const inside = (p, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > p[1]) !== (P[j][1] > p[1]) && p[0] < (P[j][0] - P[i][0]) * (p[1] - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; };
+  function offsetPoly(P, t) { if (!t) return P; const n = P.length, area = P.reduce((s, p, i) => s + p[0] * P[(i + 1) % n][1] - P[(i + 1) % n][0] * p[1], 0), sg = area > 0 ? 1 : -1, L = []; for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = dy / l * sg, ny = -dx / l * sg; L.push({ p: [a[0] + nx * t, a[1] + ny * t], d: [dx / l, dy / l] }); }
+    return P.map((_, i) => { const a = L[(i + n - 1) % n], b = L[i], den = a.d[0] * b.d[1] - a.d[1] * b.d[0]; if (Math.abs(den) < 0.05) return [b.p[0], b.p[1]]; const s = ((b.p[0] - a.p[0]) * b.d[1] - (b.p[1] - a.p[1]) * b.d[0]) / den; return [a.p[0] + a.d[0] * s, a.p[1] + a.d[1] * s]; }); }
+  // alle angetippten Ecken: nahe Punkte (< 25 cm) sind dieselbe Ecke, Umriss im Kreis um den Zollstock
+  function roomFromPins(pins, skirt = 0) { const C = []; for (const q of pins) { let b = null, bd = 250; for (const c of C) { const d = Math.hypot(c.x - q.f[0], c.y - q.f[1]); if (d < bd) { bd = d; b = c; } } if (b) { b.P.push(q); b.x = b.P.reduce((s, p) => s + p.f[0], 0) / b.P.length; b.y = b.P.reduce((s, p) => s + p.f[1], 0) / b.P.length; } else C.push({ x: q.f[0], y: q.f[1], P: [q] }); }
+    const med = a => { const s = a.slice().sort((x, y) => x - y), n = s.length; return n % 2 ? s[n >> 1] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+    const corners = C.map(c => { const w = c.P.map(p => 1 / Math.max(5, p.s || 15) ** 2), W = w.reduce((s, v) => s + v, 0), x = c.P.reduce((s, p, i) => s + p.f[0] * w[i], 0) / W, y = c.P.reduce((s, p, i) => s + p.f[1] * w[i], 0) / W, spread = Math.max(0, ...c.P.map(p => Math.hypot(p.f[0] - x, p.f[1] - y))), sig = Math.sqrt(1 / W); return { p: [x, y], n: c.P.length, spread, sig }; }).sort((a, b) => Math.atan2(a.p[1] - 147, a.p[0] - 1000) - Math.atan2(b.p[1] - 147, b.p[0] - 1000));
+    const raw = corners.map(c => c.p), poly = raw.length > 2 ? offsetPoly(raw, skirt) : raw, walls = [], problems = [];
+    for (let i = 0; i < poly.length && poly.length > 2; i++) { const a = poly[i], b = poly[(i + 1) % poly.length]; walls.push({ L: Math.hypot(a[0] - b[0], a[1] - b[1]), sig: Math.hypot(corners[i].sig, corners[(i + 1) % poly.length].sig) }); }
+    if (poly.length > 2) { const outside = Object.values(CENTERS).filter(p => !inside(p, poly)).length; if (outside) problems.push('Der Zollstock läge außerhalb dieses Umrisses. Eine Ecke sitzt falsch oder eine Raumecke fehlt noch.'); }
+    return { corners, poly, walls, area: poly.length > 2 ? polyArea(poly) / 1e6 : 0, problems }; }
+
   // ---------- Raum aus den Wänden ----------
   function roomRect(w) { const a = w[0], b = w[1], c = w[2], d = w[3], breite = c ? (a + c) / 2 : a, tiefe = d ? (b + d) / 2 : b, diff = [c ? Math.abs(a - c) : null, d ? Math.abs(b - d) : null]; return { poly: [[0, 0], [breite, 0], [breite, tiefe], [0, tiefe]], area: breite * tiefe / 1e6, breite, tiefe, diff }; }
   function roomOrtho(walls) { // Wände im Uhrzeigersinn mit Abbiegung rechts/links, rechtwinklig; Schlussfehler wird verteilt
     let dir = 0, x = 0, y = 0; const P = [[0, 0]], D = [[1, 0], [0, 1], [-1, 0], [0, -1]]; for (const q of walls) { x += D[dir][0] * q.L; y += D[dir][1] * q.L; P.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; }
     const dx = P[P.length - 1][0], dy = P[P.length - 1][1], gap = Math.hypot(dx, dy); let sumAbs = walls.reduce((s, q) => s + q.L, 0); dir = 0; x = 0; y = 0; const Q = [[0, 0]]; for (const q of walls) { const u = D[dir], f = q.L / sumAbs; x += u[0] * q.L - dx * f; y += u[1] * q.L - dy * f; Q.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; } Q.pop(); return { poly: Q, gap, area: polyArea(Q) / 1e6 };
   }
-  return { MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
+  return { locateBest, cornerSnap, pinSigma, roomFromPins, offsetPoly, inside, MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
 })();
 if (typeof module !== 'undefined') module.exports = RP;
