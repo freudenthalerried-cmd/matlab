@@ -1,0 +1,49 @@
+// Ende-zu-Ende: synthetische Videobilder (Raytracing) -> Markenerkennung -> Bündelausgleich -> Wände -> Raummaße
+const BA=require('../ba.js'),MK=require('../marker.js'),PG=require('../pg.js'),AG=require('../ausgleich.js'),g=AG.gauss;
+const L=+(process.env.RL||4.2),B=+(process.env.RB||3.6),HZ=2.6,MS=+(process.env.MS||0.16),W=+(process.env.IW||1920),H=Math.round(W*(process.env.ASPECT==="4:3"?3/4:9/16)),NF=+(process.env.NF||60);
+const it=[0.78*W,W/2+2,H/2-3,0.02,-0.005];
+// Szene: Blätter (A4) mit Marke; u rechts, v unten (wie gedruckt), v×u zeigt zum Betrachter
+const sheets=[];const add=(id,c,u,v)=>sheets.push({id,c,u,v});
+const SD=+(process.env.SD||3);add(0,[0.9,1.3,0],[1,0,0],[0,-1,0]);add(1,[0.9+SD,1.3,0],[1,0,0],[0,-1,0]);if(process.env.FLOOR2){add(2,[0.9,1.455,0],[1,0,0],[0,-1,0]);add(3,[0.9+SD,1.455,0],[1,0,0],[0,-1,0]);sheets.forEach(q=>{q.pw=0.105;q.ph=0.0775;});}else{add(2,[2.2,2.6,0],[1,0,0],[0,-1,0]);add(3,[2.2,0.6,0],[1,0,0],[0,-1,0]);}
+let id=4;const walls=[[[0,0],[L,0]],[[L,0],[L,B]],[[L,B],[0,B]],[[0,B],[0,0]]];
+if(process.env.SHEET){ // 1 A4-Blatt je Wand: 4 Marken in den Blattecken (Mitten ±55 mm waagrecht, ±98,5 mm senkrecht), Blatt bei Wandposition SHEET (0..1) in 1,3 m Höhe
+ const tps=String(process.env.SHEET).split(',').map(Number);walls.forEach(([a,b],w)=>tps.forEach(tp=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0],t=tp+(w%2?.07:-.07);(process.env.SL==='2big'?[[0,1],[0,-1]]:[[-1,1],[1,1],[-1,-1],[1,-1]]).forEach(([sx,sy])=>{const big=process.env.SL==='2big',dy=big?0.07:0.0985,dx=0.055,c=[a[0]+d[0]*t,a[1]+d[1]*t,1.3+sy*dy];add(id++,[c[0]+u[0]*sx*dx,c[1]+u[1]*sx*dx,c[2]],u,[0,0,-1]);sheets[sheets.length-1].pw=big?0.105:dx;sheets[sheets.length-1].ph=big?0.07:dy;});}));
+}else walls.forEach(([a,b])=>{const d=[b[0]-a[0],b[1]-a[1]],n=Math.hypot(...d),u=[-d[0]/n,-d[1]/n,0];const KW=+(process.env.KW||4);for(let k=0;k<KW;k++){const t=.12+.76*k/(KW-1),z=[1.2,1.7,.8,1.4][k];add(id++,[a[0]+d[0]*t,a[1]+d[1]*t,z],u,[0,0,-1]);}});
+// Wandmarken 1 mm vor der Wand (Papier/Kleber) – realistischer Versatz
+sheets.forEach(s=>{if(s.id>=4){const n=[s.v[1]*s.u[2]-s.v[2]*s.u[1],s.v[2]*s.u[0]-s.v[0]*s.u[2],s.v[0]*s.u[1]-s.v[1]*s.u[0]];s.c=s.c.map((v,q)=>v+n[q]*0.0003);}});
+function shade(P,surf){for(const s of sheets){const d=[P[0]-s.c[0],P[1]-s.c[1],P[2]-s.c[2]],nn=[s.u[1]*s.v[2]-s.u[2]*s.v[1],s.u[2]*s.v[0]-s.u[0]*s.v[2],s.u[0]*s.v[1]-s.u[1]*s.v[0]];
+  if(Math.abs(d[0]*nn[0]+d[1]*nn[1]+d[2]*nn[2])>0.002)continue;const a=d[0]*s.u[0]+d[1]*s.u[1]+d[2]*s.u[2],b=d[0]*s.v[0]+d[1]*s.v[1]+d[2]*s.v[2];
+  if(Math.abs(a)>(s.pw||0.105)||Math.abs(b)>(s.ph||0.1485))continue;if(Math.abs(a)>=MS/2||Math.abs(b)>=MS/2)return 225;
+  const G=MK.G,k=Math.floor((a+MS/2)/(MS/G)),r=Math.floor((b+MS/2)/(MS/G));if(r===0||r===G-1||k===0||k===G-1)return 25;return (MK.DICT[s.id]>>>((r-1)*MK.N+(k-1))&1)?25:225;}
+ if(process.env.WIN&&surf===3&&P[0]>1.3&&P[0]<2.5&&P[2]>0.9&&P[2]<2.3)return 45; // Fenster in Wand y=B
+ return surf===4?95+15*Math.sin(P[0]*23)*Math.sin(P[1]*19):surf===5?200:160+8*Math.sin(P[2]*7);}
+function render(cam,w=0){const R0=BA.rodr(cam),C=[0,1,2].map(q=>-(R0[q]*cam[3]+R0[3+q]*cam[4]+R0[6+q]*cam[5])),img=new Float32Array(W*H);let R=R0;
+ for(let y=0;y<H;y++){if(w){const a=w*(y-H/2)/H*0.03,ca=Math.cos(a),sa=Math.sin(a),Q=[ca,0,sa,0,1,0,-sa,0,ca];R=[0,1,2,3,4,5,6,7,8].map(k=>{const i=Math.floor(k/3),j=k%3;return Q[3*i]*R0[j]+Q[3*i+1]*R0[3+j]+Q[3*i+2]*R0[6+j];});}
+ for(let x=0;x<W;x++){let acc=0;for(const [ox,oy] of [[.25,.25],[.75,.25],[.25,.75],[.75,.75]]){
+  const xd=(x+ox-it[1])/it[0],yd=(y+oy-it[2])/it[0];let xu=xd,yu=yd;for(let k=0;k<6;k++){const r2=xu*xu+yu*yu,d=1+it[3]*r2+it[4]*r2*r2;xu=xd/d;yu=yd/d;}
+  const dir=[R[0]*xu+R[3]*yu+R[6],R[1]*xu+R[4]*yu+R[7],R[2]*xu+R[5]*yu+R[8]];let tb=1e9,sf=-1;
+  [[0,0],[0,L],[1,0],[1,B],[2,0],[2,HZ]].forEach(([ax,v],k)=>{if(Math.abs(dir[ax])<1e-12)return;const t=(v-C[ax])/dir[ax];if(t>1e-6&&t<tb){tb=t;sf=k;}});
+  const P=[C[0]+dir[0]*tb,C[1]+dir[1]*tb,C[2]+dir[2]*tb];acc+=shade(P,sf);}img[y*W+x]=acc/4;}}
+ // Unschärfe (Optik/Bewegung) + Rauschen
+ const o=new Float32Array(W*H),bl=+(process.env.BLUR||1);for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){let s=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)s+=img[(y+j)*W+x+i]*(i||j?bl*0.1:1);o[y*W+x]=s/(1+8*bl*0.1)+g()*2;}return o;}
+function look(C,T){let z=T.map((v,i)=>v-C[i]);const nz=Math.hypot(...z);z=z.map(v=>v/nz);let x=[z[1],-z[0],0];const nx=Math.hypot(...x);x=x.map(v=>v/nx);const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];const R=[...x,...y,...z];return [...BA.rotvec(R),-(R[0]*C[0]+R[1]*C[1]+R[2]*C[2]),-(R[3]*C[0]+R[4]*C[1]+R[5]*C[2]),-(R[6]*C[0]+R[7]*C[1]+R[8]*C[2])];}
+const frames=[];let cErr=[],t0=Date.now();const CF=process.env.CACHE,fs=require('fs');let cached=CF&&fs.existsSync(CF)?JSON.parse(fs.readFileSync(CF)):null;const truthCams=[];
+const STN=process.env.CAMS==='8st'?[[.5,.5],[L/2,.5],[L-.5,.5],[L-.5,B/2],[L-.5,B-.5],[L/2,B-.5],[.5,B-.5],[.5,B/2]]:[[.5,.5],[L-.5,.5],[L-.5,B-.5],[.5,B-.5]];
+for(let i=0;i<NF;i++){const k=Math.floor(STN.length*i/NF),f2=(STN.length*i/NF)%1,cor=STN[k],base=Math.atan2(B/2-cor[1],L/2-cor[0]),a=base+(f2-.5)*1.9;
+ let C=[cor[0],cor[1],1.5],T=[C[0]+3*Math.cos(a),C[1]+3*Math.sin(a),0.6+0.8*Math.sin(2*Math.PI*f2*2)];
+ if(process.env.CAMS==='walk'){ // Nutzer geht im Raum umher (Rundgang 0,8–1,4 m von den Wänden), schaut auf Wände, jedes 4. Bild auf die Bodenblätter
+  const rr=q=>{const x=Math.sin(i*12.9898+q*78.233)*43758.5453;return x-Math.floor(x);},m=0.8+0.6*rr(1),t=i/NF*2*(L+B-4*m),P=t<L-2*m?[m+t,m]:t<L+B-4*m?[L-m,m+t-(L-2*m)]:t<2*L+B-6*m?[L-m-(t-(L+B-4*m)),B-m]:[m,B-m-(t-(2*L+B-6*m))];
+  C=[P[0],P[1],1.3+0.3*rr(2)];const wsel=Math.floor(rr(3)*4),wp=[[rr(4)*L,0],[L,rr(4)*B],[rr(4)*L,B],[0,rr(4)*B]][wsel];T=[wp[0],wp[1],0.9+0.8*rr(6)];if(i%4===0){const sy=C[1]<1.4?1:-1;C=[0.9+SD/2+(rr(5)-.5)*1.5,sy>0?0.5:B-0.5,1.4];T=[0.9+SD/2,1.4+sy*1.0,0.45];}}
+ const NTOP=+(process.env.TOP||0);if(NTOP&&i>=NF-NTOP){const q=i-(NF-NTOP);C=[0.9+SD/2+(q/(NTOP-1||1)-.5)*0.6,1.37-0.5-0.1*(q%2),1.5];T=[0.9+SD/2+(q/(NTOP-1||1)-.5)*0.3,1.37,0];} // Zusatzbilder schräg von oben auf den Zollstock
+ const cam=look(C,T);truthCams.push(cam);if(cached){const J=+(process.env.JIT||0);let sd=(+(process.env.SEED||1))*7919+i*31;const gn=()=>{let a=0;for(let q=0;q<6;q++){sd=(sd*16807)%2147483647;a+=sd/2147483647;}return (a-3)*Math.SQRT2;};frames.push(J?{...cached[i],dets:cached[i].dets.map(d=>{const j=process.env.JONLY==='floor'?(d.id<4?J:0):process.env.JONLY==='wall'?(d.id>=4?J:0):J;return {...d,c:d.c.map(p=>[p[0]+j*gn(),p[1]+j*gn()])};})}:cached[i]);continue;}const img=render(cam,(+(process.env.PAN||0))*Math.PI/180*(i%2?1:-1)),dets=MK.detect(img,W,H);if(process.env.DUMP){const b=Buffer.alloc(W*H);for(let q=0;q<W*H;q++)b[q]=Math.max(0,Math.min(255,img[q]));fs.writeFileSync(`${process.env.DUMP}/f${String(i).padStart(3,'0')}.pgm`,Buffer.concat([Buffer.from(`P5 ${W} ${H} 255\n`),b]));}
+ dets.forEach(d=>{const s=sheets.find(q=>q.id===d.id);if(!s)return;PG.local(MS).forEach((l,q)=>{const X=[0,1,2].map(m=>s.c[m]+s.u[m]*l[0]+s.v[m]*l[1]),p=BA.project(it,cam,X),e=Math.hypot(p[0]-d.c[q][0],p[1]-d.c[q][1]);cErr.push(e);if(process.env.DBG&&e>3)console.log("Bild",i,"Marke",d.id,"Ecke",q,"Fehler",e.toFixed(1),"erkannt",d.c[q].map(v=>v.toFixed(0)),"soll",p.slice(0,2).map(v=>v.toFixed(0)));});});
+ frames.push({dets});}
+if(CF&&!cached)fs.writeFileSync(CF,JSON.stringify(frames));if(!cErr.length)cErr=[0];cErr.sort((a,b)=>a-b);const nd=frames.reduce((s,f)=>s+f.dets.length,0);
+console.log(`Render+Erkennung ${NF} Bilder ${W}x${H}: ${((Date.now()-t0)/1000).toFixed(0)} s, ${ (nd/NF).toFixed(1)} Marken/Bild, Eckfehler median ${cErr[cErr.length>>1].toFixed(3)} px, 95% ${cErr[Math.floor(cErr.length*.95)].toFixed(3)} px, max ${cErr[cErr.length-1].toFixed(2)}`);
+t0=Date.now();const rec=PG.reconstruct(frames,{W,H,size:MS,scaleDist:SD,sigTape:+(process.env.STAPE||0.0005),sigPx:+(process.env.SPX||0.3),check:process.env.CHECK?(r=>{const w=PG.walls(r);return w.ok&&w.lengths.length!==4?'Wandanzahl '+w.lengths.length:null}):undefined,calib:process.env.CALIB?[it[0]*(1+(+(process.env.CALIBERR||0))),it[1],it[2],it[3],it[4]]:undefined,rs:!!process.env.RSM,log:process.env.LOG?console.log:undefined});
+if(!rec.ok){console.log(rec.msg);process.exit(1);}
+console.log('Rek.: Bilder',rec.nImg,'rms',rec.res.rms.toFixed(3),'f',rec.res.it[0].toFixed(1),'Marken',rec.ids.join(','));const cnts={};frames.forEach(f=>f.dets.forEach(d=>cnts[d.id]=(cnts[d.id]||0)+1));console.log('Sichtungen je Marke',JSON.stringify(cnts));
+const wl=PG.walls(rec);if(!wl.ok){console.log(wl.msg);process.exit(1);}
+const T=[L,B,L,B],off=wl.lengths.map((v,i)=>v);// Reihenfolge der Wände unbekannt -> gegen passende Soll-Länge vergleichen
+console.log(`Ausgleich ${((Date.now()-t0)/1000).toFixed(1)} s: ${rec.nImg} Bilder, rms ${rec.res.rms.toFixed(3)} px, f ${rec.res.it[0].toFixed(1)} (soll ${it[0]}), k1 ${rec.res.it[3].toFixed(4)} (soll ${it[3]}), entfernt ${rec.dropped}`);
+wl.lengths.forEach((v,i)=>{const soll=Math.abs(v-L)<Math.abs(v-B)?L:B;console.log(`Wand ${i+1} (Marken ${wl.groups[i].join(',')}): ${v.toFixed(4)} m, soll ${soll} → Fehler ${((v-soll)*1000).toFixed(2)} mm, σ ${(wl.sigma[i]*1000).toFixed(2)} mm`);});

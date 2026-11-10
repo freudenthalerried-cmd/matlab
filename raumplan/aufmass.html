@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aufmaß AR</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--fg:#17201c;--mut:#5b6a63;--line:#d4dbd7;--acc:#1f6b50;--warn:#b3261e;--ok:#1b7a3a;--hi:#e5a823}
+@media (prefers-color-scheme:dark){:root{--bg:#121816;--card:#1b2320;--fg:#e4ebe7;--mut:#9aaaa2;--line:#2d3833;--acc:#5fbf98;--warn:#ff8a80;--ok:#7bd88f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,sans-serif;padding:12px max(14px,env(safe-area-inset-left)) 40px max(14px,env(safe-area-inset-right))}
+h1{font-size:24px;margin:4px 0 10px}h2{font-size:19px;margin:16px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+button{font:600 16px system-ui,sans-serif;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:11px 15px;cursor:pointer}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}button:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);min-width:0}
+.hint{color:var(--mut);font-size:14px}.warn{color:var(--warn)}.ok{color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg.plan{width:100%;background:#fff;border-radius:10px;border:1px solid var(--line)}
+ol li{margin:4px 0}
+/* AR-Oberfläche */
+#ar{position:fixed;inset:0;z-index:50;color:#fff;font-size:17px;pointer-events:none}
+#ar[hidden]{display:none}
+#arCv{position:absolute;inset:0;width:100%;height:100%}
+#arTop{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;background:linear-gradient(#000c,#0000);pointer-events:auto}
+#arStep{font-weight:700;font-size:19px}#arMsg{margin-top:4px;text-shadow:0 1px 3px #000}#arStat{font-size:14px;opacity:.85;margin-top:4px}
+#cross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px}
+#arBot{position:absolute;left:0;right:0;bottom:0;padding:10px 10px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;pointer-events:auto;background:linear-gradient(#0000,#000b)}
+#arBot .row{justify-content:center}
+#arMain{font-size:20px;padding:18px 20px;min-width:70%;border-radius:40px;background:var(--hi);border-color:var(--hi);color:#111;touch-action:none;user-select:none}
+#arBot button:not(#arMain){background:#000a;color:#fff;border-color:#fff6;font-size:15px;padding:10px 12px}
+#mini{position:absolute;right:10px;top:calc(110px + env(safe-area-inset-top));width:120px;height:120px;background:#000a;border-radius:10px;pointer-events:none}
+</style>
+</head>
+<body>
+<h1>📐 Aufmaß AR</h1>
+<div id="start">
+  <div class="card">
+    <b>Ohne Marken – nur Handy und Zollstock.</b>
+    <ol>
+      <li><b>Zollstock</b> (2 m) aufgeklappt auf den Boden legen.</li>
+      <li><b>Start</b> tippen, Handy auf den Boden richten, bis „Boden ✓“ kommt.</li>
+      <li>Fadenkreuz auf <b>Anfang</b> und <b>Ende</b> des Zollstocks → tippen. Am besten 2–3 Mal umlegen (andere Richtung).</li>
+      <li>Jede Wand: Fadenkreuz auf die <b>Linie Boden/Wand</b>, 3–4 Punkte über die ganze Wand (oder Knopf halten und entlangfahren). Rundherum in einer Richtung.</li>
+      <li>Dann <b>Raumhöhe</b> (Deckenkante anzielen), <b>Fenster/Türen</b> (2 Ecken), <b>Dachschräge</b> (Knick unten + Punkt auf der Schräge).</li>
+    </ol>
+    <div class="row"><label>Raum <input id="name" value="Raum 1" size="12"></label><label>Zollstock <input id="zlen" value="2,00" size="5" inputmode="decimal"> m</label><label>Sockelleiste <input id="skirt" value="0" size="3" inputmode="numeric"> mm</label></div>
+    <p class="row"><button id="go" class="pri">▶ Start (AR)</button><button id="demo">Beispiel ansehen</button></p>
+    <p class="hint" id="sup"></p>
+  </div>
+  <div id="hist"></div>
+</div>
+<div id="res"></div>
+
+<div id="ar" hidden>
+  <canvas id="arCv"></canvas>
+  <svg id="cross" viewBox="0 0 44 44"><circle cx="22" cy="22" r="14" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="22" cy="22" r="14" fill="none" stroke="#000" stroke-width="1" opacity=".5"/><path d="M22 2v12M22 30v12M2 22h12M30 22h12" stroke="#fff" stroke-width="2.5"/><circle id="dot" cx="22" cy="22" r="2.5" fill="#f33"/></svg>
+  <svg id="mini" viewBox="0 0 120 120"></svg>
+  <div id="arTop"><div id="arStep"></div><div id="arMsg"></div><div id="arStat"></div></div>
+  <div id="arBot">
+    <div class="row" id="arTools"></div>
+    <div class="row"><button id="arMain">Punkt</button></div>
+    <div class="row"><button id="arUndo">↶ Rückgängig</button><button id="arNext">Weiter ›</button><button id="arEnd">✕ Beenden</button></div>
+  </div>
+</div>
+<script src="aufmass-core.js"></script>
+<script src="aufmass.js"></script>
+</body>
+</html>

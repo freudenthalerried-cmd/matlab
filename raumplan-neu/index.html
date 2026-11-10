@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Raumplan Versuch</title>
+<meta name="theme-color" content="#14181d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<style>
+:root{--bg:#14181d;--card:#20262e;--line:#37404b;--fg:#f2f4f6;--mut:#a3adb8;--ok:#3ecf74;--warn:#ffb020;--bad:#ff5a5a;--acc:#4da3ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;min-height:48px;cursor:pointer}
+button.main{background:var(--acc);border-color:var(--acc);color:#04121f;font-weight:700}
+button.ok{background:var(--ok);border-color:var(--ok);color:#04170b;font-weight:700}
+button.no{background:var(--bad);border-color:var(--bad);color:#200;font-weight:700}
+button.sel{outline:3px solid #fff}
+button:disabled{opacity:.45}
+input{font:inherit;color:inherit;background:#0e1216;border:1px solid var(--line);border-radius:10px;padding:12px;width:100%}
+.scr{min-height:100%;padding:18px 16px calc(24px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
+.mut{color:var(--mut);font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 130px}
+.big{width:100%;font-size:19px;min-height:60px}
+.steps{margin:6px 0 0;padding-left:22px}.steps li{margin:6px 0}
+#notice{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;background:#2b3440;border:1px solid var(--warn);border-radius:12px;padding:12px 14px}
+#cam{position:fixed;inset:0;max-width:none;padding:0;background:#000;overflow:hidden}
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#camTop{position:absolute;left:0;right:170px;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;font-weight:600;text-shadow:0 1px 3px #000}
+#camLen{font-size:30px;font-weight:800;line-height:1.15}
+#camBot{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(#0000,#000b)}
+#camBot button{min-height:44px;padding:8px 12px;font-size:15px}
+.pills{display:flex;gap:8px;margin-top:6px;font-size:15px;flex-wrap:wrap}
+.pill{padding:5px 11px;border-radius:99px;background:#000a;border:1px solid #fff5}.pill.on{background:var(--ok);border-color:var(--ok);color:#04170b}
+#shot{width:72px;height:72px;border-radius:50%;background:#fff;border:6px solid #fff6;padding:0;flex:none}
+#shot:disabled{background:#777}
+#auto.on,#wide.on{border-color:var(--ok);color:var(--ok)}
+#map{position:absolute;right:10px;top:calc(10px + env(safe-area-inset-top));width:150px;height:150px;border-radius:10px;pointer-events:none}
+#bigMap{width:100%;max-width:420px;display:block;margin:10px auto 0;border-radius:10px;background:#000}
+#arUI{position:fixed;inset:0;background:transparent;z-index:80}
+#arTop{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:#000b;font-weight:600;font-size:18px}
+#arInfo{font-weight:400;font-size:15px;color:#d5dbe1;margin-top:6px}
+#arBot{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 14px calc(16px + env(safe-area-inset-bottom));background:#000b}
+#arBot #arBtn{flex:2;min-height:64px;font-size:19px}#arBot #arBtn2{flex:1}
+#busy{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:70}
+#resLen{font-size:min(48px,11vw);font-weight:800;text-align:center;line-height:1.1}
+.wrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.wrow:first-child{border-top:0}
+.good{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<main id="home" class="scr">
+  <h1>Raumplan Versuch</h1>
+  <div class="mut" id="ver"></div>
+  <div class="card">
+    <ol class="steps">
+      <li><b>Zollstock</b> mit den Blättern mittig in den Raum legen.</li>
+      <li><b>Eine Wand</b> aus mehreren Blickwinkeln fotografieren, immer mit beiden Blättern im Bild. Handy quer, von links, Mitte, rechts, auch nah und weit.</li>
+      <li>Die App rechnet die <b>Wandlänge</b> selbst. Du sagst, ob sie passt.</li>
+    </ol>
+    <button class="main big" id="start" style="margin-top:12px">Wand messen</button>
+  </div>
+  <div class="card">
+    <b>Variante ohne Blätter: Bodenfläche filmen</b>
+    <div class="mut" style="margin-top:4px">Das Handy verfolgt seine eigene Bewegung. Ein Referenzmaß, z. B. die Türbreite, legt den Maßstab fest.</div>
+    <button class="big" id="startAR" style="margin-top:12px">Bodenfläche filmen</button>
+  </div>
+  <div class="card" id="lernCard">
+    <b>Lerntraining</b>
+    <div class="mut" style="margin-top:4px">Die App zeigt ihre Werte, du misst nach und trägst das echte Maß ein. Daraus lernt sie eine Korrektur für die nächsten Messungen.</div>
+    <div id="lernTxt" style="margin-top:8px"></div>
+    <button id="lernReset" style="margin-top:10px" hidden>Gelerntes zurücksetzen</button>
+  </div>
+  <div class="card" id="listCard" hidden><b>Bisher gemessen</b><div id="list" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:12px"><button id="send">📤 An Claude senden</button><button id="clear">Liste leeren</button></div></div>
+  <div class="row"><button id="print">Blätter drucken</button></div>
+</main>
+
+<main id="ref" class="scr" hidden>
+  <h2>Bodenfläche filmen</h2>
+  <ol class="steps">
+    <li><b>Referenzmaß am Boden:</b> am besten den Zollstock ausgeklappt auf den Boden legen (200 cm). Es geht auch die Türbreite an der Schwelle. Maß unten eintragen.</li>
+    <li>Nach dem Start das Handy <b>hochkant mit der Unterkante auf den Boden stellen</b>, linke untere Ecke an das <b>eine Ende</b>, tippen. Dann genauso an das <b>andere Ende</b>, tippen. So kennt die App auch die Bodenhöhe.</li>
+    <li>Danach langsam den <b>ganzen Boden filmen</b>, bis zu jeder Wand, und „Fertig“ tippen.</li>
+  </ol>
+  <label class="mut" style="display:block;margin-top:12px">Referenzmaß in cm</label>
+  <input id="refCm" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 200">
+  <div class="mut" style="margin-top:6px">Je länger das Referenzmaß, desto genauer. Leer lassen heißt: ohne Referenz, nur mit dem Maßstab des Handys.</div>
+  <label style="display:flex;gap:10px;align-items:center;margin-top:12px"><input id="refFloor" type="checkbox" checked style="width:24px;height:24px"> Das Handy steht beim Abgreifen auf dem Boden</label>
+  <label class="mut" style="display:block;margin-top:10px">Kamera über der Handy-Unterkante in mm (mittlere Linse)</label>
+  <input id="lensMm" type="number" inputmode="numeric" step="1" value="118">
+  <div class="row" style="margin-top:14px"><button id="refBack">Zurück</button><button id="refGo" class="main">Starten</button></div>
+</main>
+
+<section id="arUI" hidden>
+  <div id="arTop"><div id="arTxt"></div><div id="arInfo"></div></div>
+  <div id="arBot"><button id="arBtn2"></button><button id="arBtn" class="main"></button></div>
+</section>
+
+<section id="cam" hidden>
+  <video id="vid" playsinline muted autoplay></video>
+  <canvas id="map" aria-label="Boden von oben"></canvas>
+  <div id="camTop">
+    <div id="camTxt"></div>
+    <div id="camLen"></div>
+    <div class="pills"><span class="pill" id="p0">Blatt 0 cm</span><span class="pill" id="p1">Blatt 200 cm</span><span class="pill" id="pRuh" hidden>ruhig halten…</span></div>
+  </div>
+  <div id="camBot">
+    <button id="camClose">✕</button>
+    <button id="auto" class="on">Automatik an</button>
+    <button id="wide" hidden>1×</button>
+    <button id="shot" aria-label="Foto aufnehmen"></button>
+    <button id="pick">Foto-App</button>
+    <button id="camDone" class="ok" disabled>Wand fertig</button>
+    <input id="file" type="file" accept="image/*" capture="environment" hidden>
+  </div>
+</section>
+
+<main id="res" class="scr" hidden>
+  <h2 id="resName"></h2>
+  <div class="card">
+    <div class="mut" style="text-align:center" id="resCap">Errechnete Wandlänge</div>
+    <div id="resLen"></div>
+    <div id="resInfo" class="mut" style="text-align:center;margin-top:4px"></div>
+    <canvas id="bigMap" width="840" height="840" aria-label="Boden von oben mit erkannter Wand"></canvas>
+    <div class="mut" style="text-align:center;margin-top:6px" id="mapCap">Gelb die erkannte Wand, Punkte die Wandenden, kurzer Strich der Zollstock.</div>
+  </div>
+  <div class="card">
+    <b>Nachmessen und Rückmeldung geben</b>
+    <div class="mut" style="margin-top:4px">Mit dem Zollstock nachmessen und das echte Maß eintragen. Nur damit kann die App lernen.</div>
+    <div id="realBox">
+      <label class="mut" style="display:block;margin-top:10px" id="realLab">Echtes Maß in cm</label>
+      <input id="real" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 412,5">
+      <div id="real2Box">
+        <label class="mut" style="display:block;margin-top:10px" id="realLab2">Echte Breite in cm (kürzere Seite)</label>
+        <input id="real2" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 341">
+      </div>
+    </div>
+    <div id="diff" style="margin-top:8px;font-weight:700"></div>
+    <div class="row" style="margin-top:10px"><button id="vOk" class="ok">✔ Passt</button><button id="vNo" class="no">✘ Passt nicht</button></div>
+    <div id="lernNow" class="mut" style="margin-top:8px"></div>
+  </div>
+  <div class="row"><button id="more">Noch ein Foto</button><button id="next" class="main">Nächste Wand</button></div>
+  <button id="toHome" style="margin-top:10px;width:100%">Zur Übersicht</button>
+</main>
+
+<div id="notice" hidden></div>
+<div id="busy" hidden>Rechne…</div>
+<script src="core.js"></script>
+<script src="ar.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

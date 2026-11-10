@@ -1,0 +1,11 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Raumplan Bodenblätter</title>
+<style>@page{size:A4;margin:0}body{margin:0;font-family:Arial,sans-serif}.b{width:210mm;height:297mm;page-break-after:always}.h{padding:14px;font-size:16px}@media print{.h{display:none}}</style></head><body>
+<div class="h"><b>Bodenblätter.</b> Mit 100 % (Originalgröße) drucken und an Zollstock kleben: Blatt 0 cm am Anfang, Blatt 200 cm am Ende, beide auf derselben Seite. Hast du sie schon, brauchst du nichts neu zu drucken. <button onclick="print()">Drucken</button></div>
+<div id="o"></div><script>
+const D=[32846848,26801152,20804416,29849856],N=5,G=7,S=80,C=105;
+function sheet(a,b,cm){let o=`<svg class="b" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" font-family="Arial"><rect width="210" height="297" fill="#fff"/>`;
+[[a,70],[b,225]].forEach(([id,cy])=>{const x0=C-S/2,y0=cy-S/2,c=D[id],w=S/G;o+=`<rect x="${x0}" y="${y0}" width="${S}" height="${S}" fill="#000"/>`;for(let r=0;r<N;r++)for(let k=0;k<N;k++)if(!(c>>>(r*N+k)&1))o+=`<rect x="${x0+(k+1)*w}" y="${y0+(r+1)*w}" width="${w+.02}" height="${w+.02}" fill="#fff"/>`;o+=`<text x="${C+S/2+6}" y="${cy+3}" font-size="8" font-weight="bold">${id}</text>`;});
+o+=`<rect x="0" y="5" width="210" height="17" fill="#f2f2f2"/><line x1="0" y1="5" x2="210" y2="5" stroke="#000" stroke-width=".35"/><line x1="0" y1="22" x2="210" y2="22" stroke="#000" stroke-width=".35"/><line x1="${C}" y1="1" x2="${C}" y2="26" stroke="#000" stroke-width=".5"/><text x="${C+2}" y="3.8" font-size="3.2" font-weight="bold">${cm} cm</text><text x="${cm?52:158}" y="15" font-size="3.4" text-anchor="middle">Zollstock hier auflegen</text><text x="105" y="153" font-size="8" text-anchor="middle" font-weight="bold">Boden · Zollstock ${cm} cm</text>`;
+return o+'</svg>';}
+document.getElementById('o').innerHTML=sheet(0,2,0)+sheet(1,3,200);
+</script></body></html>
