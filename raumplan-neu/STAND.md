@@ -1,7 +1,17 @@
 # Raumplan Versuch
 
-Stand 10.11.2026 (Versuch 5). Versuchs-App mit zwei Varianten, keine Ecken von Hand. Stefan beurteilt das Ergebnis mit „Passt / Passt nicht“ und kann das echte Maß dazuschreiben.
+Stand 10.11.2026 (Versuch 6). Versuchs-App mit zwei Varianten, keine Ecken von Hand. Stefan beurteilt das Ergebnis mit „Passt / Passt nicht“ und kann das echte Maß dazuschreiben.
 Der Ordner `raumplan/` (altes Filmen mit Tiefendaten) bleibt unverändert.
+
+## Versuch 6: Genauigkeit der Bodenmessung (10.11.2026)
+Stefan: zwei, drei Messungen desselben Raums, jedes Mal ein anderes Ergebnis. In Drive kam keine Messdatei an.
+- **Senden war kaputt:** Chrome am Handy teilt keine `.json`-Dateien, die Messung landete im Download-Ordner. Jetzt als `fall-*.txt` (Inhalt weiter JSON).
+- **Simulation zur Wiederholbarkeit** (`sim/rep_ar.js`, gleicher Raum, mehrere Durchgänge): andere Bildauswahl ±1 cm, Lagefehler ±1 cm / 0,2° ±2 cm, **Bodenhöhe ±2 cm ±5 cm (Spanne bis 19 cm)**. Längenfehler in % ≈ Höhenfehler / Kamerahöhe. Die Bodenhöhe ist der größte Hebel.
+- **Neu: Referenzmaß am Boden.** Handy hochkant mit der Unterkante auf den Boden stellen, an beide Enden (am besten Zollstock 200 cm). Bodenhöhe = Kamerahöhe beim Aufsetzen − Linsenhöhe (Vorgabe 118 mm, einstellbar, für das S25 geschätzt). Weicht sie mehr als 8 cm von den Hit-Test-Treffern ab oder liegen die Enden über 4 cm verschieden hoch, gelten die Treffer. Beide Höhen stehen in der Messdatei (`floorTap`, `floorHit`).
+- Abgreifen nur bei ruhigem Handy (Mittel aus 0,4 s, Streuung unter 8 mm), Drehung zwischen den Enden über 12° wird abgelehnt (`RP.steadyPos`, `RP.rotAngle`).
+- Referenz zählt je nach Länge (`RP.refWeight`: 80 cm 44 %, 2 m 83 %). Annahme dahinter: Handy-Maßstab ±1,5 %, Abgreifen ±13,5 mm. Nicht am Handy geprüft.
+- Bildauswahl: neues Bild ab 18 cm oder 10° (vorher 12 cm / 8°), bis 90 Bilder (vorher 70), Hinweis wenn die Grenze erreicht ist.
+- **Verworfen nach Test:** Bodenhöhe aus den Bildern selbst (Paarvergleich über die Höhe: nur in einem Testraum und ohne Lagefehler brauchbar) und „jede Stelle nur aus nahen Bildern“ (mit wenigen Bildern Ausfälle, kein Gewinn bei der Höhe).
 
 ## Lerntraining (neu, Versuch 5)
 Stefan misst die gezeigten Werte nach und trägt das echte Maß ein. Variante 2 zeigt dafür Länge × Breite des Rechtecks als Hauptwert, die Fläche darunter.

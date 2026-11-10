@@ -83,13 +83,16 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
 <main id="ref" class="scr" hidden>
   <h2>Bodenfläche filmen</h2>
   <ol class="steps">
-    <li><b>Referenzmaß</b> mit dem Zollstock messen, z. B. die Türbreite, und unten eintragen.</li>
-    <li>Nach dem Start das Handy an das <b>eine Ende</b> halten und tippen, dann an das <b>andere Ende</b> und tippen.</li>
+    <li><b>Referenzmaß am Boden:</b> am besten den Zollstock ausgeklappt auf den Boden legen (200 cm). Es geht auch die Türbreite an der Schwelle. Maß unten eintragen.</li>
+    <li>Nach dem Start das Handy <b>hochkant mit der Unterkante auf den Boden stellen</b>, linke untere Ecke an das <b>eine Ende</b>, tippen. Dann genauso an das <b>andere Ende</b>, tippen. So kennt die App auch die Bodenhöhe.</li>
     <li>Danach langsam den <b>ganzen Boden filmen</b>, bis zu jeder Wand, und „Fertig“ tippen.</li>
   </ol>
   <label class="mut" style="display:block;margin-top:12px">Referenzmaß in cm</label>
-  <input id="refCm" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 80">
+  <input id="refCm" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 200">
   <div class="mut" style="margin-top:6px">Je länger das Referenzmaß, desto genauer. Leer lassen heißt: ohne Referenz, nur mit dem Maßstab des Handys.</div>
+  <label style="display:flex;gap:10px;align-items:center;margin-top:12px"><input id="refFloor" type="checkbox" checked style="width:24px;height:24px"> Das Handy steht beim Abgreifen auf dem Boden</label>
+  <label class="mut" style="display:block;margin-top:10px">Kamera über der Handy-Unterkante in mm (mittlere Linse)</label>
+  <input id="lensMm" type="number" inputmode="numeric" step="1" value="118">
   <div class="row" style="margin-top:14px"><button id="refBack">Zurück</button><button id="refGo" class="main">Starten</button></div>
 </main>
 

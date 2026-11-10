@@ -237,9 +237,14 @@ const RP = (() => {
   function edgeOf(R, V) { const { n } = GRID, G = new Float32Array(n * n), vals = []; for (let j = 2; j < n - 2; j++) for (let i = 2; i < n - 2; i++) { const k = j * n + i; if (!V[k] || !V[k - 2] || !V[k + 2] || !V[k - 2 * n] || !V[k + 2 * n]) continue; const m = Math.hypot(R[k + 2] - R[k - 2], R[k + 2 * n] - R[k - 2 * n]); G[k] = m; if (m > 0 && !(k % 37)) vals.push(m); }
     vals.sort((a, b) => a - b); const T = Math.max(10, (vals[vals.length >> 1] || 0) * 2.5), E = new Uint8Array(n * n); for (let k = 0; k < n * n; k++) if (G[k] >= T) E[k] = 1; return E; }
   // ein Bild auf den Boden umrechnen; nahe am Handy aus einer verkleinerten Bildstufe, damit feine Muster nicht flimmern
-  function viewMapPose(pyr, Hi, fpx, cam) { const { cell, x0, y0, n } = GRID, R = new Float32Array(n * n), V = new Uint8Array(n * n), W = pyr[0].W, H = pyr[0].H, lim = c => Math.max(0, Math.min(n, c)), i0 = lim(Math.floor((cam[0] - 6600 - x0) / cell)), i1 = lim(Math.ceil((cam[0] + 6600 - x0) / cell)), j0 = lim(Math.floor((cam[1] - 6600 - y0) / cell)), j1 = lim(Math.ceil((cam[1] + 6600 - y0) / cell));
-    for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) { const X = x0 + (i + .5) * cell, Y = y0 + (j + .5) * cell, w = Hi[6] * X + Hi[7] * Y + Hi[8]; if (w < 0.35 || w > 6.5) continue; const px = (Hi[0] * X + Hi[1] * Y + Hi[2]) / w, py = (Hi[3] * X + Hi[4] * Y + Hi[5]) / w; if (px < 2 || py < 2 || px > W - 2 || py > H - 2) continue; let lv = 0, fp = fpx * cell / 1000 / w; while (fp > 2 && lv < pyr.length - 1) { fp /= 2; lv++; } const q = pyr[lv], s = 1 << lv, v = bil(q.g, q.W, q.H, px / s, py / s); if (Number.isNaN(v)) continue; R[j * n + i] = v; V[j * n + i] = 1; }
+  function viewMapPose(pyr, Hi, fpx, cam, near) { const { cell, x0, y0, n } = GRID, R = new Float32Array(n * n), V = new Uint8Array(n * n), W = pyr[0].W, H = pyr[0].H, lim = c => Math.max(0, Math.min(n, c)), i0 = lim(Math.floor((cam[0] - 6600 - x0) / cell)), i1 = lim(Math.ceil((cam[0] + 6600 - x0) / cell)), j0 = lim(Math.floor((cam[1] - 6600 - y0) / cell)), j1 = lim(Math.ceil((cam[1] + 6600 - y0) / cell));
+    for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) { const X = x0 + (i + .5) * cell, Y = y0 + (j + .5) * cell, w = Hi[6] * X + Hi[7] * Y + Hi[8]; if (w < 0.35 || w > 6.5) continue; const px = (Hi[0] * X + Hi[1] * Y + Hi[2]) / w, py = (Hi[3] * X + Hi[4] * Y + Hi[5]) / w; if (px < 2 || py < 2 || px > W - 2 || py > H - 2) continue; if (near && Math.hypot(X - cam[0], Y - cam[1]) > near.d[(j >> 2) * near.n + (i >> 2)] * near.f + near.add) continue; let lv = 0, fp = fpx * cell / 1000 / w; while (fp > 2 && lv < pyr.length - 1) { fp /= 2; lv++; } const q = pyr[lv], s = 1 << lv, v = bil(q.g, q.W, q.H, px / s, py / s); if (Number.isNaN(v)) continue; R[j * n + i] = v; V[j * n + i] = 1; }
     return { E: edgeOf(R, V), V, R }; }
+  // Je Bodenstelle der kleinste Abstand eines Bildes, das sie sieht (grobes Raster, 4 Zellen). Damit zählt für jede Stelle nur,
+  // was aus der Nähe aufgenommen wurde: Fehler aus Bodenhöhe, Sockelleiste und Kamerawinkel wachsen mit dem Abstand.
+  function nearMap(views, f = 1.5, add = 400) { const { cell, x0, y0, n } = GRID, m = Math.ceil(n / 4), d = new Float32Array(m * m).fill(1e9);
+    for (const v of views) { const Hi = v.Hi; for (let j = 0; j < m; j++) for (let i = 0; i < m; i++) { const X = x0 + (i * 4 + 2) * cell, Y = y0 + (j * 4 + 2) * cell, w = Hi[6] * X + Hi[7] * Y + Hi[8]; if (w < 0.35 || w > 6.5) continue; const px = (Hi[0] * X + Hi[1] * Y + Hi[2]) / w, py = (Hi[3] * X + Hi[4] * Y + Hi[5]) / w; if (px < 2 || py < 2 || px > v.W - 2 || py > v.H - 2) continue; const dd = Math.hypot(X - v.cam[0], Y - v.cam[1]); if (dd < d[j * m + i]) d[j * m + i] = dd; } }
+    return { d, n: m, f, add }; }
   // Ähnlichkeit zweier auf den Boden umgerechneter Bilder (nur zur Gegenprobe der Bildrichtung)
   function nccViews(a, b) { let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0; for (let k = 0; k < a.V.length; k += 3) if (a.V[k] && b.V[k]) { const x = a.R[k], y = b.R[k]; n++; sa += x; sb += y; saa += x * x; sbb += y * y; sab += x * y; } if (n < 1500) return null; const va = saa / n - (sa / n) ** 2, vb = sbb / n - (sb / n) ** 2; if (va < 4 || vb < 4) return 0; return (sab / n - sa * sb / n / n) / Math.sqrt(va * vb); }
   function accNew() { const { n } = GRID; return { S: new Uint16Array(n * n), Se: new Uint16Array(n * n), n: 0 }; }
@@ -269,6 +274,14 @@ const RP = (() => {
     let dir = 0, x = 0, y = 0; const P = [[0, 0]], D = [[1, 0], [0, 1], [-1, 0], [0, -1]]; for (const q of walls) { x += D[dir][0] * q.L; y += D[dir][1] * q.L; P.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; }
     const dx = P[P.length - 1][0], dy = P[P.length - 1][1], gap = Math.hypot(dx, dy); let sumAbs = walls.reduce((s, q) => s + q.L, 0); dir = 0; x = 0; y = 0; const Q = [[0, 0]]; for (const q of walls) { const u = D[dir], f = q.L / sumAbs; x += u[0] * q.L - dx * f; y += u[1] * q.L - dy * f; Q.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; } Q.pop(); return { poly: Q, gap, area: polyArea(Q) / 1e6 };
   }
+  // ---------- Referenzmaß mit dem Handy ----------
+  // Drehung zwischen zwei Kameralagen in Grad (M = 4×4, spaltenweise wie WebXR)
+  function rotAngle(A, B) { let tr = 0; for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++) tr += A[c * 4 + r] * B[c * 4 + r]; return Math.acos(Math.max(-1, Math.min(1, (tr - 1) / 2))) * 180 / Math.PI; }
+  // Ruhig gehaltene Lage aus den letzten Messpunkten: Mittel der Position, größte Abweichung davon in mm
+  function steadyPos(buf) { if (!buf || buf.length < 4) return null; const m = [0, 1, 2].map(i => buf.reduce((s, p) => s + p[i], 0) / buf.length); let dev = 0; for (const p of buf) dev = Math.max(dev, Math.hypot(p[0] - m[0], p[1] - m[1], p[2] - m[2])); return { p: m, dev: dev * 1000, n: buf.length }; }
+  // Wie stark das Referenzmaß gegenüber dem Maßstab des Handys zählt: kurze Maße sind beim Abgreifen ungenauer als das Handy selbst.
+  // Annahme: Handy-Maßstab ±1,5 %, Abgreifen ±13,5 mm. 80 cm zählt damit zu 44 %, 2 m zu 83 %.
+  const refWeight = mm => mm > 0 ? mm * mm / (mm * mm + 900 * 900) : 0;
   // ---------- Lerntraining: Korrektur aus nachgemessenen Maßen ----------
   // S = [{raw, real}] in mm. Ergebnis: real ≈ a·raw + b. Unter 2 Rückmeldungen bleibt die Korrektur aus.
   // Bis 5 Rückmeldungen nur ein fester Versatz b (Median), danach bei genug Längenunterschied auch ein Faktor a.
@@ -281,6 +294,6 @@ const RP = (() => {
     const b = med(S.map(s => s.real - a * s.raw));
     return { n, a: +a.toFixed(4), b: Math.round(b), on: true, mad: Math.round(med(S.map(s => Math.abs(s.real - (a * s.raw + b))))) }; }
   const learnApply = (fit, raw) => fit && fit.on ? fit.a * raw + fit.b : raw;
-  return { learnFit, learnApply, learnUsable, nccViews, accSharp, poseHi, pyramid, viewMapPose, accNew, accAdd, accSupport, accScore, floorLevel, floorFromAcc, GRID, viewMap, wallFromViews, locateBest, cornerSnap, pinSigma, roomFromPins, offsetPoly, inside, MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
+  return { rotAngle, steadyPos, refWeight, nearMap, learnFit, learnApply, learnUsable, nccViews, accSharp, poseHi, pyramid, viewMapPose, accNew, accAdd, accSupport, accScore, floorLevel, floorFromAcc, GRID, viewMap, wallFromViews, locateBest, cornerSnap, pinSigma, roomFromPins, offsetPoly, inside, MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
 })();
 if (typeof module !== 'undefined') module.exports = RP;
