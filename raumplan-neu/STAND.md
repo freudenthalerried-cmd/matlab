@@ -1,13 +1,25 @@
 # Raumplan Versuch
 
-Stand 09.11.2026, Vorgabe von Stefan: **keine Ecken von Hand, Wand für Wand, mehrere Blickwinkel, Möbel dürfen verdecken, es ist eine Versuchs-App.** Sie zeigt die errechnete Wandlänge, Stefan sagt, ob sie passt. Zollstock liegt mittig im Raum.
-Der Ordner `raumplan/` (altes Filmen) bleibt unverändert.
+Stand 10.11.2026. Versuchs-App mit zwei Varianten, keine Ecken von Hand. Stefan beurteilt das Ergebnis mit „Passt / Passt nicht“ und kann das echte Maß dazuschreiben.
+Der Ordner `raumplan/` (altes Filmen mit Tiefendaten) bleibt unverändert.
 
-**Verfahren:** Jedes Foto mit beiden Blättern wird über die 16 Markenecken auf den Boden umgerechnet (Raster 2 cm). Nur was auf dem Boden liegt, bleibt aus allen Blickwinkeln an derselben Stelle, Möbelkanten und Wände nicht. Aus der gemeinsamen Bodenfläche entsteht der Umriss. Die Wand ist die fernste gerade Kante in Blickrichtung, die Enden sind die Schnittpunkte mit den Seitenwänden. Verdeckte Stücke werden so überbrückt. Kern: `viewMap`, `supportMap`, `wallFromViews` in `core.js`.
+## Variante 1: Wand für Wand, Zollstock mit Blättern
+Zollstock liegt mittig im Raum. Jedes Foto mit beiden Blättern wird über die 16 Markenecken auf den Boden umgerechnet (Raster 2 cm). Nur was auf dem Boden liegt, bleibt aus allen Blickwinkeln an derselben Stelle. Aus der gemeinsamen Bodenfläche entsteht der Umriss, die Wand ist die fernste gerade Kante in Blickrichtung. Kern: `viewMap`, `supportMap`, `wallFromViews`.
+Gerenderte Fotos mit Möbeln: ab 3 Fotos 2 bis 8 cm Fehler.
 
-**Tests (gerenderte 12-MP-Fotos, 2 Räume mit Möbeln, stark gemusterter Boden):** ab 3 Fotos Fehler 2 bis 8 cm. Mit 2 Fotos einmal über 1 m daneben, darum verlangt die App mindestens 3.
+## Variante 2: Bodenfläche filmen, ohne Blätter, mit Referenzmaß (neu)
+Vorgabe von Stefan: einmal ein Referenzmaß messen (z. B. die Türbreite), daraus die Flächen hochrechnen, zuerst nur die Bodenfläche.
+- `ar.js`: WebXR-Sitzung (`immersive-ar`, `camera-access` Pflicht, `hit-test` und `local-floor` freiwillig). Gespeichert werden bis zu 70 Kamerabilder (960 px, grau) mit Kameralage M und Projektion P. **Keine Tiefendaten.** Bodenhöhe aus waagrechten Hit-Test-Treffern (`RP.floorLevel`), sonst `local-floor`.
+- Referenz: Handy an das eine Ende halten, tippen, an das andere Ende, tippen. Abstand der zwei Handy-Positionen gegen das echte Maß ergibt den Maßstab `k`.
+- `core.js`: `poseHi` (Boden → Bild aus M und P), `viewMapPose`, `accAdd`/`accSupport` (Übereinstimmung über die Bilder), `floorFromAcc` (Umriss über Strahlen von der Mitte, dazu Rechteck aus den vier fernsten deutlichen Kanten), `nccViews` (Gegenprobe, ob das Kamerabild richtig herum steht).
 
-**Ungetestet:** echte Fotos, einfarbige Böden (dort gibt es kaum Bodenkanten, Rückfall auf reine Kanten ist eingebaut, aber nicht geprüft), Live-Kamera und 0,6× am S25. Sockelleisten sind nicht eingerechnet.
-Rückmeldung: „Passt / Passt nicht“ und echtes Maß, „An Claude senden“ als `fall-*.json` (Drive „Raumplan-Dev“).
-Ältere Stände in der Git-Geschichte: Wandfoto f2db5dc, Ecken antippen dc6c116.
-Test am PC: `index.html?demo=1` braucht Testfotos in `demo/` (nicht im Repo, `sim/render3.py`).
+**Simulation** (`sim/render4.py`, `sim/test_ar.js`, 22 Bilder je Raum, gemusterter Boden):
+- Raum ohne Sockelleiste: Fläche ±0 bis 2 %, bei 3 cm falscher Bodenhöhe +3,5 %.
+- Raum mit 6 cm Sockelleiste: Fläche +5 bis +13 % (je Seite rund 7 cm zu weit außen). Die Oberkante der Leiste wird als Bodenkante gelesen. **Offen.**
+- 3 cm Fehler in der Bodenhöhe machen rund 2 % in jeder Länge. Das Referenzmaß gleicht das nicht aus.
+
+**Ungetestet am Handy:** ob Chrome am S25 `camera-access` liefert, die Bildrichtung, die Bodenhöhe, die Rechenzeit (PC 0,3 s je Bild), einfarbige Böden.
+Jede Messung enthält in `fall-*.json` alle Bilder (640 px) mit M und P und lässt sich offline nachrechnen. Die Bilder liegen nur bis zum Neuladen im Speicher, also gleich nach dem Messen senden.
+
+Ältere Stände in der Git-Geschichte: Wandfoto f2db5dc, Ecken antippen dc6c116, nur Variante 1 c97f61e.
+Test am PC: `index.html?demo=1` braucht Testdaten in `demo/` (nicht im Repo).

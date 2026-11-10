@@ -40,6 +40,11 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
 #auto.on,#wide.on{border-color:var(--ok);color:var(--ok)}
 #map{position:absolute;right:10px;top:calc(10px + env(safe-area-inset-top));width:150px;height:150px;border-radius:10px;pointer-events:none}
 #bigMap{width:100%;max-width:420px;display:block;margin:10px auto 0;border-radius:10px;background:#000}
+#arUI{position:fixed;inset:0;background:transparent;z-index:80}
+#arTop{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:#000b;font-weight:600;font-size:18px}
+#arInfo{font-weight:400;font-size:15px;color:#d5dbe1;margin-top:6px}
+#arBot{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 14px calc(16px + env(safe-area-inset-bottom));background:#000b}
+#arBot #arBtn{flex:2;min-height:64px;font-size:19px}#arBot #arBtn2{flex:1}
 #busy{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:70}
 #resLen{font-size:48px;font-weight:800;text-align:center;line-height:1.1}
 .wrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
@@ -59,10 +64,33 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
     </ol>
     <button class="main big" id="start" style="margin-top:12px">Wand messen</button>
   </div>
-  <div class="card" id="listCard" hidden><b>Gemessene Wände</b><div id="list" style="margin-top:6px"></div>
+  <div class="card">
+    <b>Variante ohne Blätter: Bodenfläche filmen</b>
+    <div class="mut" style="margin-top:4px">Das Handy verfolgt seine eigene Bewegung. Ein Referenzmaß, z. B. die Türbreite, legt den Maßstab fest.</div>
+    <button class="big" id="startAR" style="margin-top:12px">Bodenfläche filmen</button>
+  </div>
+  <div class="card" id="listCard" hidden><b>Bisher gemessen</b><div id="list" style="margin-top:6px"></div>
     <div class="row" style="margin-top:12px"><button id="send">📤 An Claude senden</button><button id="clear">Liste leeren</button></div></div>
   <div class="row"><button id="print">Blätter drucken</button></div>
 </main>
+
+<main id="ref" class="scr" hidden>
+  <h2>Bodenfläche filmen</h2>
+  <ol class="steps">
+    <li><b>Referenzmaß</b> mit dem Zollstock messen, z. B. die Türbreite, und unten eintragen.</li>
+    <li>Nach dem Start das Handy an das <b>eine Ende</b> halten und tippen, dann an das <b>andere Ende</b> und tippen.</li>
+    <li>Danach langsam den <b>ganzen Boden filmen</b>, bis zu jeder Wand, und „Fertig“ tippen.</li>
+  </ol>
+  <label class="mut" style="display:block;margin-top:12px">Referenzmaß in cm</label>
+  <input id="refCm" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 80">
+  <div class="mut" style="margin-top:6px">Je länger das Referenzmaß, desto genauer. Leer lassen heißt: ohne Referenz, nur mit dem Maßstab des Handys.</div>
+  <div class="row" style="margin-top:14px"><button id="refBack">Zurück</button><button id="refGo" class="main">Starten</button></div>
+</main>
+
+<section id="arUI" hidden>
+  <div id="arTop"><div id="arTxt"></div><div id="arInfo"></div></div>
+  <div id="arBot"><button id="arBtn2"></button><button id="arBtn" class="main"></button></div>
+</section>
 
 <section id="cam" hidden>
   <video id="vid" playsinline muted autoplay></video>
@@ -86,16 +114,16 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
 <main id="res" class="scr" hidden>
   <h2 id="resName"></h2>
   <div class="card">
-    <div class="mut" style="text-align:center">Errechnete Wandlänge</div>
+    <div class="mut" style="text-align:center" id="resCap">Errechnete Wandlänge</div>
     <div id="resLen"></div>
     <div id="resInfo" class="mut" style="text-align:center;margin-top:4px"></div>
     <canvas id="bigMap" width="840" height="840" aria-label="Boden von oben mit erkannter Wand"></canvas>
-    <div class="mut" style="text-align:center;margin-top:6px">Gelb die erkannte Wand, Punkte die Wandenden, kurzer Strich der Zollstock.</div>
+    <div class="mut" style="text-align:center;margin-top:6px" id="mapCap">Gelb die erkannte Wand, Punkte die Wandenden, kurzer Strich der Zollstock.</div>
   </div>
   <div class="card">
     <b>Passt das ungefähr?</b>
     <div class="row" style="margin-top:8px"><button id="vOk" class="ok">✔ Passt</button><button id="vNo" class="no">✘ Passt nicht</button></div>
-    <label class="mut" style="display:block;margin-top:10px">Echtes Maß in cm (freiwillig)</label>
+    <label class="mut" style="display:block;margin-top:10px" id="realLab">Echtes Maß in cm (freiwillig)</label>
     <input id="real" type="number" inputmode="decimal" step="0.1" placeholder="z. B. 412,5">
     <div id="diff" style="margin-top:8px;font-weight:700"></div>
   </div>
@@ -106,6 +134,7 @@ h1{font-size:26px;margin:4px 0 2px}h2{font-size:20px;margin:0 0 8px}
 <div id="notice" hidden></div>
 <div id="busy" hidden>Rechne…</div>
 <script src="core.js"></script>
+<script src="ar.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
