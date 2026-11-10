@@ -1,7 +1,13 @@
 # Raumplan Versuch
 
-Stand 10.11.2026. Versuchs-App mit zwei Varianten, keine Ecken von Hand. Stefan beurteilt das Ergebnis mit „Passt / Passt nicht“ und kann das echte Maß dazuschreiben.
+Stand 10.11.2026 (Versuch 5). Versuchs-App mit zwei Varianten, keine Ecken von Hand. Stefan beurteilt das Ergebnis mit „Passt / Passt nicht“ und kann das echte Maß dazuschreiben.
 Der Ordner `raumplan/` (altes Filmen mit Tiefendaten) bleibt unverändert.
+
+## Lerntraining (neu, Versuch 5)
+Stefan misst die gezeigten Werte nach und trägt das echte Maß ein. Variante 2 zeigt dafür Länge × Breite des Rechtecks als Hauptwert, die Fläche darunter.
+- `RP.learnFit` (core.js): aus den Paaren (gemessen, echt) ein fester Versatz als Median, ab 2 Rückmeldungen aktiv. Ab 6 Rückmeldungen mit mindestens 1,5 m Längenunterschied zusätzlich ein Faktor (Theil-Sen, begrenzt auf ±8 %). Paare, die mehr als 25 % + 30 cm danebenliegen, gelten als Fehlmessung und werden nicht gelernt.
+- Je Variante getrennt gelernt (`store.lern`, bleibt beim Leeren der Messliste erhalten). „Passt“ ohne Maß zählt den gezeigten Wert als richtig, „Passt nicht“ ohne Maß lehrt nichts.
+- Die Korrektur gleicht nur gleichbleibende Fehler aus (z. B. Sockelleiste), keine Fehlmessungen. `fall-*.json` enthält `lern` und je Messung Rohwert, gezeigten Wert und die verwendete Korrektur.
 
 ## Variante 1: Wand für Wand, Zollstock mit Blättern
 Zollstock liegt mittig im Raum. Jedes Foto mit beiden Blättern wird über die 16 Markenecken auf den Boden umgerechnet (Raster 2 cm). Nur was auf dem Boden liegt, bleibt aus allen Blickwinkeln an derselben Stelle. Aus der gemeinsamen Bodenfläche entsteht der Umriss, die Wand ist die fernste gerade Kante in Blickrichtung. Kern: `viewMap`, `supportMap`, `wallFromViews`.

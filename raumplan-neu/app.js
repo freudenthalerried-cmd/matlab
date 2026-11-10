@@ -2,28 +2,42 @@
 /* Raumplan Versuch – zwei Varianten:
    1. Wand für Wand aus mehreren Fotos, Zollstock mit Blättern liegt im Raum.
    2. Bodenfläche filmen ohne Blätter: das Handy verfolgt seine Bewegung, ein Referenzmaß gibt den Maßstab. */
-const APP_VER = 'Versuch 4';
+const APP_VER = 'Versuch 5 · Lerntraining';
 const $ = s => document.querySelector(s), SCR = ['home', 'ref', 'cam', 'res'];
 const f2 = (v, d = 2) => v.toFixed(d).replace('.', ',');
 const m = mm => f2(mm / 1000) + ' m';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LS = 'raumplan-versuch-v1', DEMO = /[?&]demo/.test(location.search);
 const store = (() => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } })();
-store.walls = store.walls || [];
-const save = () => { try { localStorage.setItem(LS, JSON.stringify({ walls: store.walls.map(w => ({ ...w, thumbs: undefined, bilder: undefined })) })); } catch (e) { } };
+store.walls = store.walls || []; store.lern = store.lern || [];
+const save = () => { try { localStorage.setItem(LS, JSON.stringify({ lern: store.lern, walls: store.walls.map(w => ({ ...w, thumbs: undefined, bilder: undefined })) })); } catch (e) { } };
 function show(id) { SCR.forEach(s => { $('#' + s).hidden = s !== id; }); window.scrollTo(0, 0); }
 let nTimer = 0; function notice(t, ms = 5000) { const n = $('#notice'); n.textContent = t; n.hidden = false; clearTimeout(nTimer); nTimer = setTimeout(() => { n.hidden = true; }, ms); }
 const busy = (on, txt) => { $('#busy').hidden = !on; $('#busy').textContent = txt || 'Rechne…'; };
 const tick = () => new Promise(r => setTimeout(r, 30));
 
+// ---------- Lerntraining ----------
+const num = id => parseFloat(String($(id).value).replace(',', '.')) || null;
+const cmS = mm => (mm > 0.5 ? '+' : mm < -0.5 ? '−' : '±') + f2(Math.abs(mm) / 10, 1) + ' cm';
+const fitFor = (kind, skip) => RP.learnFit(store.lern.filter(s => s.kind === kind && s.id !== skip).slice(-30));
+function fitTxt(fit) { if (!fit.on) return fit.n ? 'Lernkorrektur noch aus (1 Rückmeldung, ab 2 aktiv)' : 'noch nichts gelernt'; return `Lernkorrektur ${cmS(fit.b)}` + (fit.a !== 1 ? ` und ${fit.a > 1 ? '+' : '−'}${f2(Math.abs(fit.a - 1) * 100, 1)} %` : '') + ` aus ${fit.n} Rückmeldungen`; }
+function trend(kind) { const S = store.lern.filter(s => s.kind === kind && s.src === 'mass'); if (!S.length) return ''; const mean = L => L.reduce((t, s) => t + Math.abs(s.shown - s.real), 0) / L.length; return `<br><span class="mut">Gezeigter Wert lag im Mittel ${f2(mean(S) / 10, 1)} cm daneben` + (S.length >= 6 ? `, bei den letzten 3 ${f2(mean(S.slice(-3)) / 10, 1)} cm` : '') + ` (${S.length} nachgemessene Maße)</span>`; }
+function learn(id, kind, rows) { store.lern = store.lern.filter(s => s.id !== id); for (const [raw, shown, real] of rows) { if (real) store.lern.push({ id, kind, raw: Math.round(raw), shown: Math.round(shown), real: Math.round(real), src: 'mass' }); else if (verdict === 'ok') store.lern.push({ id, kind, raw: Math.round(raw), shown: Math.round(shown), real: Math.round(shown), src: 'passt' }); } }
+const tolOk = (shown, real) => Math.abs(shown - real) <= Math.max(30, 0.01 * real);
+
 let cw = null, cf = null, mode = 'wall'; // aktuelle Wand, aktuelle Bodenmessung
 function home() { show('home'); $('#ver').textContent = 'Version ' + APP_VER; const box = $('#list'); box.innerHTML = ''; $('#listCard').hidden = !store.walls.length;
-  store.walls.forEach(w => { const r = document.createElement('div'), fl = w.kind === 'floor', d = !w.real ? null : fl ? (w.area / w.real - 1) * 100 : (w.L - w.real * 10) / 10, good = d !== null && Math.abs(d) <= (fl ? 3 : 3); r.className = 'wrow'; r.innerHTML = `<span><b>${esc(w.name)}</b> ${fl ? f2(w.area) + ' m²' : m(w.L)}${d !== null ? ` <span class="${good ? 'good' : 'bad'}">Abw. ${f2(d, 1)} ${fl ? '%' : 'cm'}</span>` : ''}</span><span class="${w.verdict === 'ok' ? 'good' : w.verdict === 'no' ? 'bad' : 'mut'}">${w.verdict === 'ok' ? '✔ passt' : w.verdict === 'no' ? '✘ passt nicht' : ''}</span>`; box.appendChild(r); }); }
+  $('#lernTxt').innerHTML = `<b>Boden filmen:</b> ${fitTxt(fitFor('floor'))}${trend('floor')}<br><b>Wand mit Blättern:</b> ${fitTxt(fitFor('wall'))}${trend('wall')}`; $('#lernReset').hidden = !store.lern.length;
+  store.walls.forEach(w => { const r = document.createElement('div'), fl = w.kind === 'floor'; let val, dev = '';
+    if (fl) { const s = w.show; val = s ? `${f2(s.L / 1000)} × ${f2(s.B / 1000)} m` : f2(w.area) + ' m²'; const ds = s ? [[s.L, w.realL], [s.B, w.realB]].filter(p => p[1]) : []; if (ds.length) dev = ` <span class="${ds.every(p => tolOk(p[0], p[1])) ? 'good' : 'bad'}">Abw. ${ds.map(p => cmS(p[0] - p[1])).join(' / ')}</span>`; }
+    else { val = m(w.L); if (w.real) dev = ` <span class="${tolOk(w.L, w.real * 10) ? 'good' : 'bad'}">Abw. ${cmS(w.L - w.real * 10)}</span>`; }
+    r.className = 'wrow'; r.innerHTML = `<span><b>${esc(w.name)}</b> ${val}${dev}</span><span class="${w.verdict === 'ok' ? 'good' : w.verdict === 'no' ? 'bad' : 'mut'}">${w.verdict === 'ok' ? '✔ passt' : w.verdict === 'no' ? '✘ passt nicht' : ''}</span>`; box.appendChild(r); }); }
 const countOf = kind => store.walls.filter(w => (w.kind || 'wall') === kind).length;
 function newWall() { mode = 'wall'; cw = { name: 'Wand ' + (countOf('wall') + 1), views: [], locs: [], thumbs: [], result: null }; openCam(); }
 $('#start').onclick = newWall;
 $('#print').onclick = () => window.open('druck.html', '_blank');
 $('#clear').onclick = () => { store.walls = []; save(); home(); };
+$('#lernReset').onclick = () => { if (confirm('Alles Gelernte löschen? Die Messliste bleibt.')) { store.lern = []; save(); home(); } };
 
 // ---------- Variante 1: Kamera, Fotos mit Blättern ----------
 let stream = null, track = null, scanTimer = 0, stable = 0, lastC = null, autoOn = true, grabbing = false, lastShot = null, zoomMin = null, wide = false;
@@ -80,26 +94,41 @@ async function computeFloor(raw) { busy(true, 'Rechne…'); await tick(); const 
   const flip = np > 0 && n1 / np > n0 / np + 0.2, acc = RP.accNew(), bilder = [];
   for (let i = 0; i < F.length; i++) { const f = F[i]; RP.accAdd(acc, view(f, flip)); bilder.push({ M: Array.from(f.M, v => +v.toFixed(5)), P: [f.P[0], f.P[5], f.P[8], f.P[9]].map(v => +v.toFixed(5)), W: f.W, H: f.H, t: f.t, jpg: thumb(grayCanvas(f.g, f.W, f.H), 640) }); f.pyr = null; f.g = null; $('#busy').textContent = `Rechne… ${i + 1} von ${F.length}`; await tick(); }
   const r = RP.floorFromAcc(acc, [1000, 147]), k = raw.ref ? raw.ref.real / raw.ref.meas : 1; r.kind = 'floor'; r.path = F.map(foot);
-  cf = { name: 'Boden ' + (countOf('floor') + 1), r, k, n: F.length, floorY: fy, floorSrc: raw.floorSrc, hits: raw.hits, flip, ncc: np ? [+(n0 / np).toFixed(3), +(n1 / np).toFixed(3)] : null, ref: raw.ref, secs: raw.secs, lost: raw.lost, bilder, area: r.ok ? r.area * k * k / 1e6 : null, rect: r.ok && r.rect ? { L: r.rect.L * k, B: r.rect.B * k, area: r.rect.area * k * k / 1e6 } : null };
+  cf = { name: 'Boden ' + (countOf('floor') + 1), r, k, n: F.length, floorY: fy, floorSrc: raw.floorSrc, hits: raw.hits, flip, ncc: np ? [+(n0 / np).toFixed(3), +(n1 / np).toFixed(3)] : null, ref: raw.ref, secs: raw.secs, lost: raw.lost, bilder, area: r.ok ? r.area * k * k / 1e6 : null, rect: r.ok && r.rect ? { L: Math.max(r.rect.L, r.rect.B) * k, B: Math.min(r.rect.L, r.rect.B) * k, area: r.rect.area * k * k / 1e6 } : null };
   busy(false); showFloor(); }
-function showFloor() { mode = 'floor'; show('res'); verdict = null; resetVerdict(); const r = cf.r; $('#resName').textContent = cf.name; $('#resCap').textContent = 'Errechnete Bodenfläche'; $('#realLab').textContent = 'Echte Fläche in m² (freiwillig)'; $('#real').placeholder = 'z. B. 16,4'; $('#mapCap').textContent = 'Grau der erkannte Boden, blau sein Umriss, gelb das Rechteck, grün dein Weg.'; $('#more').hidden = true; $('#next').textContent = 'Nochmal filmen';
-  if (r.ok) { const rect = cf.rect, useRect = rect && Math.abs(rect.area - cf.area) / rect.area < 0.12, head = useRect ? rect.area : cf.area; cf.head = head; cf.headSrc = useRect ? 'rechteck' : 'umriss'; $('#resLen').textContent = f2(head) + ' m²'; const sc = cf.ref ? `Referenz: Handy lag ${f2(Math.abs(1 / cf.k - 1) * 100, 1)} % ${cf.k < 1 ? 'zu groß' : 'zu klein'}` : 'ohne Referenz'; $('#resInfo').innerHTML = (rect ? `als Rechteck ${m(rect.L)} × ${m(rect.B)} = ${f2(rect.area)} m²<br>` : '') + `Umriss ohne Möbel-Standflächen ${f2(cf.area)} m²<br>${cf.n} Bilder · ${sc}` + (cf.floorSrc === 'geschätzt' ? '<br><span class="warn">Bodenhöhe nur geschätzt, Ergebnis unsicher</span>' : ''); }
-  else { $('#resLen').textContent = '—'; $('#resInfo').textContent = 'Zu wenig Boden erkannt. Bitte nochmal filmen und den Boden bis zu jeder Wand zeigen.'; }
+function showFloor() { mode = 'floor'; show('res'); verdict = null; manual = false; resetVerdict(); const r = cf.r; $('#resName').textContent = cf.name; $('#realLab').textContent = 'Echte Länge in cm (längere Seite)'; $('#real').placeholder = 'z. B. 462'; $('#mapCap').textContent = 'Grau der erkannte Boden, blau sein Umriss, gelb das Rechteck, grün dein Weg.'; $('#more').hidden = true; $('#next').textContent = 'Nochmal filmen'; $('#real2Box').hidden = false; cf.show = null;
+  const sc = cf.ref ? `Referenz: Handy lag ${f2(Math.abs(1 / cf.k - 1) * 100, 1)} % ${cf.k < 1 ? 'zu groß' : 'zu klein'}` : 'ohne Referenz', tail = `${cf.n} Bilder · ${sc}` + (cf.floorSrc === 'geschätzt' ? '<br><span class="warn">Bodenhöhe nur geschätzt, Ergebnis unsicher</span>' : '');
+  if (r.ok && cf.rect) { const rect = cf.rect, fit = cf.fit = fitFor('floor', cf.rec && cf.rec.t), L = RP.learnApply(fit, rect.L), B = RP.learnApply(fit, rect.B), q = L * B / (rect.L * rect.B), useRect = Math.abs(rect.area - cf.area) / rect.area < 0.12; cf.show = { L, B, area: L * B / 1e6, umriss: cf.area * q }; cf.head = useRect ? cf.show.area : cf.show.umriss; cf.headSrc = useRect ? 'rechteck' : 'umriss';
+    $('#resCap').textContent = 'Errechnete Länge × Breite'; $('#resLen').textContent = `${f2(L / 1000)} × ${f2(B / 1000)} m`; $('#realBox').hidden = false;
+    $('#resInfo').innerHTML = `Fläche <b>${f2(cf.head)} m²</b>` + (useRect ? '' : ` nach Umriss, als Rechteck ${f2(cf.show.area)} m²`) + '<br>' + (fit.on ? `ohne Lernkorrektur ${f2(rect.L / 1000)} × ${f2(rect.B / 1000)} m<br>` : '') + fitTxt(fit).replace(/^./, c => c.toUpperCase()) + '<br>' + tail; }
+  else if (r.ok) { cf.fit = null; cf.head = cf.area; cf.headSrc = 'umriss'; $('#resCap').textContent = 'Errechnete Bodenfläche'; $('#resLen').textContent = f2(cf.area) + ' m²'; $('#realBox').hidden = true; $('#resInfo').innerHTML = 'Kein Rechteck erkannt, deshalb nur die Fläche nach Umriss.<br>' + tail; }
+  else { $('#resCap').textContent = 'Errechnete Bodenfläche'; $('#resLen').textContent = '—'; $('#realBox').hidden = true; $('#resInfo').textContent = 'Zu wenig Boden erkannt. Bitte nochmal filmen und den Boden bis zu jeder Wand zeigen.'; }
   drawMap($('#bigMap'), r); }
 
 // ---------- Ergebnis und Rückmeldung ----------
-let verdict = null;
-function resetVerdict() { $('#vOk').classList.remove('sel'); $('#vNo').classList.remove('sel'); $('#real').value = ''; $('#diff').textContent = ''; }
-function showResult() { mode = 'wall'; show('res'); verdict = null; resetVerdict(); $('#resName').textContent = cw.name; $('#resCap').textContent = 'Errechnete Wandlänge'; $('#realLab').textContent = 'Echtes Maß in cm (freiwillig)'; $('#real').placeholder = 'z. B. 412,5'; $('#mapCap').textContent = 'Gelb die erkannte Wand, Punkte die Wandenden, kurzer Strich der Zollstock.'; $('#more').hidden = false; $('#next').textContent = 'Nächste Wand'; const r = cw.result; if (r && r.ok) { $('#resLen').textContent = m(r.L); const un = [!r.leftOk && 'linkes', !r.rightOk && 'rechtes'].filter(Boolean); $('#resInfo').textContent = `${r.n} Fotos` + (un.length ? ` · ${un.join(' und ')} Ende nur geschätzt` : ''); } else { $('#resLen').textContent = '—'; $('#resInfo').textContent = 'Keine Wand erkannt. Noch ein Foto mit mehr Boden an der Wand.'; } drawMap($('#bigMap'), r); }
-function record() { const real = parseFloat(String($('#real').value).replace(',', '.')) || null;
-  if (mode === 'floor') { if (!cf || !cf.r.ok) return null; let w = cf.rec; if (!w || !store.walls.includes(w)) { w = cf.rec = { kind: 'floor', name: cf.name, t: Date.now() }; store.walls.push(w); } Object.assign(w, { area: cf.head, headSrc: cf.headSrc, umriss: cf.area, rect: cf.rect, k: cf.k, n: cf.n, floorY: cf.floorY, floorSrc: cf.floorSrc, hits: cf.hits, flip: cf.flip, ncc: cf.ncc, ref: cf.ref, secs: cf.secs, lost: cf.lost, verdict, real, bilder: cf.bilder }); save(); return w; }
-  if (!cw || !cw.result || !cw.result.ok) return null; let w = cw.rec; if (!w || !store.walls.includes(w)) { w = cw.rec = { kind: 'wall', name: cw.name, t: Date.now() }; store.walls.push(w); } Object.assign(w, { L: cw.result.L, n: cw.result.n, leftOk: cw.result.leftOk, rightOk: cw.result.rightOk, dist: cw.result.dist, a: cw.result.a, b: cw.result.b, locs: cw.locs, verdict, real, thumbs: cw.thumbs }); save(); return w; }
-$('#vOk').onclick = () => { verdict = 'ok'; $('#vOk').classList.add('sel'); $('#vNo').classList.remove('sel'); record(); };
-$('#vNo').onclick = () => { verdict = 'no'; $('#vNo').classList.add('sel'); $('#vOk').classList.remove('sel'); record(); };
-$('#real').oninput = () => { const v = parseFloat(String($('#real').value).replace(',', '.')), D = $('#diff'); D.textContent = ''; if (v > 0) { if (mode === 'floor' && cf && cf.r.ok) { const d = (cf.head / v - 1) * 100; D.textContent = `Abweichung ${d > 0 ? '+' : ''}${f2(d, 1)} %`; D.className = Math.abs(d) <= 3 ? 'good' : 'bad'; } else if (mode === 'wall' && cw.result && cw.result.ok) { const d = cw.result.L - v * 10; D.textContent = `Abweichung ${f2(d / 10, 1)} cm`; D.className = Math.abs(d) <= 30 ? 'good' : 'bad'; } } record(); };
+let verdict = null, manual = false;
+function resetVerdict() { $('#vOk').classList.remove('sel'); $('#vNo').classList.remove('sel'); $('#real').value = ''; $('#real2').value = ''; $('#diff').textContent = ''; $('#lernNow').textContent = ''; }
+function showResult() { mode = 'wall'; show('res'); verdict = null; manual = false; resetVerdict(); $('#resName').textContent = cw.name; $('#resCap').textContent = 'Errechnete Wandlänge'; $('#realLab').textContent = 'Echte Wandlänge in cm'; $('#real').placeholder = 'z. B. 412,5'; $('#mapCap').textContent = 'Gelb die erkannte Wand, Punkte die Wandenden, kurzer Strich der Zollstock.'; $('#more').hidden = false; $('#next').textContent = 'Nächste Wand'; $('#real2Box').hidden = true; const r = cw.result;
+  if (r && r.ok) { const fit = cw.fit = fitFor('wall', cw.rec && cw.rec.t); cw.shown = RP.learnApply(fit, r.L); $('#realBox').hidden = false; $('#resLen').textContent = m(cw.shown); const un = [!r.leftOk && 'linkes', !r.rightOk && 'rechtes'].filter(Boolean); $('#resInfo').innerHTML = (fit.on ? `ohne Lernkorrektur ${m(r.L)}<br>` : '') + fitTxt(fit).replace(/^./, c => c.toUpperCase()) + `<br>${r.n} Fotos` + (un.length ? ` · ${un.join(' und ')} Ende nur geschätzt` : ''); }
+  else { $('#realBox').hidden = true; $('#resLen').textContent = '—'; $('#resInfo').textContent = 'Keine Wand erkannt. Noch ein Foto mit mehr Boden an der Wand.'; } drawMap($('#bigMap'), r); }
+function record() { let real = num('#real'), real2 = num('#real2');
+  if (mode === 'floor') { if (!cf || !cf.r.ok) return null; let w = cf.rec; if (!w || !store.walls.includes(w)) { w = cf.rec = { kind: 'floor', name: cf.name, t: Date.now() }; store.walls.push(w); } let rL = real ? real * 10 : null, rB = real2 ? real2 * 10 : null; if (rL && rB && rB > rL) [rL, rB] = [rB, rL];
+    Object.assign(w, { area: cf.head, headSrc: cf.headSrc, umriss: cf.area, rect: cf.rect, show: cf.show, fit: cf.fit, k: cf.k, n: cf.n, floorY: cf.floorY, floorSrc: cf.floorSrc, hits: cf.hits, flip: cf.flip, ncc: cf.ncc, ref: cf.ref, secs: cf.secs, lost: cf.lost, verdict, realL: rL, realB: rB, bilder: cf.bilder }); learn(w.t, 'floor', cf.show ? [[cf.rect.L, cf.show.L, rL], [cf.rect.B, cf.show.B, rB]] : []); save(); return w; }
+  if (!cw || !cw.result || !cw.result.ok) return null; let w = cw.rec; if (!w || !store.walls.includes(w)) { w = cw.rec = { kind: 'wall', name: cw.name, t: Date.now() }; store.walls.push(w); } Object.assign(w, { L: cw.shown, rawL: cw.result.L, fit: cw.fit, n: cw.result.n, leftOk: cw.result.leftOk, rightOk: cw.result.rightOk, dist: cw.result.dist, a: cw.result.a, b: cw.result.b, locs: cw.locs, verdict, real, thumbs: cw.thumbs }); learn(w.t, 'wall', [[cw.result.L, cw.shown, real ? real * 10 : null]]); save(); return w; }
+// Zeigt die Abweichung je Maß, setzt Passt / Passt nicht aus den Maßen (solange nicht von Hand gewählt) und den neuen Lernstand.
+function feedback() { let real = num('#real'), real2 = num('#real2'), rows = [];
+  if (mode === 'floor' && cf && cf.show) { let rL = real ? real * 10 : null, rB = real2 ? real2 * 10 : null; if (rL && rB && rB > rL) [rL, rB] = [rB, rL]; rows = [['Länge', cf.rect.L, cf.show.L, rL], ['Breite', cf.rect.B, cf.show.B, rB]]; }
+  else if (mode === 'wall' && cw && cw.result && cw.result.ok) rows = [['Wand', cw.result.L, cw.shown, real ? real * 10 : null]];
+  const got = rows.filter(r => r[3]); $('#diff').innerHTML = got.map(r => `<div class="${tolOk(r[2], r[3]) ? 'good' : 'bad'}">${r[0]}: App ${Math.abs(r[2] - r[3]) < 5 ? 'genau richtig' : f2(Math.abs(r[2] - r[3]) / 10, 1) + ' cm ' + (r[2] > r[3] ? 'zu groß' : 'zu klein')} ${tolOk(r[2], r[3]) ? '✔' : '✘'}` + (RP.learnUsable({ raw: r[1], real: r[3] }) ? '' : ' <span class="warn">zu weit daneben, wird nicht gelernt</span>') + '</div>').join('');
+  if (got.length && !manual) { verdict = got.every(r => tolOk(r[2], r[3])) ? 'ok' : 'no'; $('#vOk').classList.toggle('sel', verdict === 'ok'); $('#vNo').classList.toggle('sel', verdict === 'no'); }
+  const w = record(); if (!w) return; const kind = mode === 'floor' ? 'floor' : 'wall', mine = store.lern.filter(s => s.id === w.t);
+  $('#lernNow').textContent = mine.length ? 'Gespeichert. Neuer Lernstand: ' + fitTxt(fitFor(kind)) + (mine[0].src === 'passt' ? ' (ohne echtes Maß zählt der gezeigte Wert als richtig)' : '') : verdict === 'no' ? 'Zum Lernen bitte das echte Maß eintragen.' : ''; }
+$('#vOk').onclick = () => { verdict = 'ok'; manual = true; $('#vOk').classList.add('sel'); $('#vNo').classList.remove('sel'); feedback(); };
+$('#vNo').onclick = () => { verdict = 'no'; manual = true; $('#vNo').classList.add('sel'); $('#vOk').classList.remove('sel'); feedback(); };
+$('#real').oninput = $('#real2').oninput = feedback;
 $('#more').onclick = openCam;
 $('#next').onclick = () => { record(); if (mode === 'floor') show('ref'); else newWall(); };
 $('#toHome').onclick = () => { record(); home(); };
-$('#send').onclick = async () => { const out = { app: APP_VER, device: navigator.userAgent, datum: new Date().toISOString(), walls: store.walls }, name = `fall-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.json`, file = new File([JSON.stringify(out)], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } } const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; a.click(); };
+$('#send').onclick = async () => { const out = { app: APP_VER, device: navigator.userAgent, datum: new Date().toISOString(), lern: store.lern, walls: store.walls }, name = `fall-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.json`, file = new File([JSON.stringify(out)], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } } const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; a.click(); };
 home();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });

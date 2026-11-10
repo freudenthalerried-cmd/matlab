@@ -269,6 +269,18 @@ const RP = (() => {
     let dir = 0, x = 0, y = 0; const P = [[0, 0]], D = [[1, 0], [0, 1], [-1, 0], [0, -1]]; for (const q of walls) { x += D[dir][0] * q.L; y += D[dir][1] * q.L; P.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; }
     const dx = P[P.length - 1][0], dy = P[P.length - 1][1], gap = Math.hypot(dx, dy); let sumAbs = walls.reduce((s, q) => s + q.L, 0); dir = 0; x = 0; y = 0; const Q = [[0, 0]]; for (const q of walls) { const u = D[dir], f = q.L / sumAbs; x += u[0] * q.L - dx * f; y += u[1] * q.L - dy * f; Q.push([x, y]); dir = (dir + (q.turn === 'L' ? 3 : 1)) % 4; } Q.pop(); return { poly: Q, gap, area: polyArea(Q) / 1e6 };
   }
-  return { nccViews, accSharp, poseHi, pyramid, viewMapPose, accNew, accAdd, accSupport, accScore, floorLevel, floorFromAcc, GRID, viewMap, wallFromViews, locateBest, cornerSnap, pinSigma, roomFromPins, offsetPoly, inside, MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
+  // ---------- Lerntraining: Korrektur aus nachgemessenen Maßen ----------
+  // S = [{raw, real}] in mm. Ergebnis: real ≈ a·raw + b. Unter 2 Rückmeldungen bleibt die Korrektur aus.
+  // Bis 5 Rückmeldungen nur ein fester Versatz b (Median), danach bei genug Längenunterschied auch ein Faktor a.
+  const learnUsable = s => s && s.raw > 0 && s.real > 0 && Math.abs(s.real - s.raw) < 0.25 * s.raw + 300;
+  function learnFit(S) {
+    const med = a => { const s = a.slice().sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : 0; };
+    S = (S || []).filter(learnUsable); const n = S.length; if (n < 2) return { n, a: 1, b: 0, on: false, mad: null };
+    let a = 1; const raws = S.map(s => s.raw), spread = Math.max(...raws) - Math.min(...raws);
+    if (n >= 6 && spread >= 1500) { const sl = []; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (Math.abs(S[j].raw - S[i].raw) >= 500) sl.push((S[j].real - S[i].real) / (S[j].raw - S[i].raw)); if (sl.length >= 5) a = Math.min(1.08, Math.max(0.92, med(sl))); }
+    const b = med(S.map(s => s.real - a * s.raw));
+    return { n, a: +a.toFixed(4), b: Math.round(b), on: true, mad: Math.round(med(S.map(s => Math.abs(s.real - (a * s.raw + b))))) }; }
+  const learnApply = (fit, raw) => fit && fit.on ? fit.a * raw + fit.b : raw;
+  return { learnFit, learnApply, learnUsable, nccViews, accSharp, poseHi, pyramid, viewMapPose, accNew, accAdd, accSupport, accScore, floorLevel, floorFromAcc, GRID, viewMap, wallFromViews, locateBest, cornerSnap, pinSigma, roomFromPins, offsetPoly, inside, MS, CENTERS, DICT, END, layoutCorners, grayFrom, half, bil, findQuads, locate, toFloor, toImage, floorDist, sigmaOf, wallCheck, snapBase, suggestCorners, roomRect, roomOrtho, polyArea };
 })();
 if (typeof module !== 'undefined') module.exports = RP;
