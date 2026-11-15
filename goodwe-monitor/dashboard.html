@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoodWe-Monitor</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--fg:#17202a;--mut:#6b7785;--line:#e2e7ec;--pv:#d98a00;--bat:#1f9d55;--grid:#2c6fd6;--load:#8a4fd0;--err:#c0392b}
+@media (prefers-color-scheme:dark){:root{--bg:#11161c;--card:#1a222b;--fg:#e8edf2;--mut:#8f9ba8;--line:#2a3541;--pv:#f5b638;--bat:#4cd08a;--grid:#6aa5ff;--load:#b98cf5;--err:#ff7b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,sans-serif}
+main{max-width:900px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:1.3rem;margin:0}
+#status{font-size:.85rem;color:var(--mut)}
+#status.err{color:var(--err);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;border-top:4px solid var(--c)}
+.card .l{font-size:.8rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.card .v{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums}
+.card .s{font-size:.85rem;color:var(--mut);min-height:1.2em}
+.bar{height:8px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bat);width:0;transition:width .5s}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+summary{cursor:pointer;font-weight:600}
+input{width:100%;margin:10px 0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+td{padding:5px 6px;border-top:1px solid var(--line)}
+td:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td:nth-child(3){color:var(--mut);font-size:.78rem}
+</style>
+</head>
+<body>
+<main>
+<header><h1>GoodWe-Monitor</h1><span id="status">Lade …</span></header>
+<div class="grid">
+  <div class="card" style="--c:var(--pv)"><div class="l">Photovoltaik</div><div class="v" id="pv">–</div><div class="s" id="pvs"></div></div>
+  <div class="card" style="--c:var(--bat)"><div class="l">Batterie</div><div class="v" id="soc">–</div><div class="s" id="bats"></div><div class="bar"><i id="socbar"></i></div></div>
+  <div class="card" style="--c:var(--grid)"><div class="l">Netz</div><div class="v" id="grid">–</div><div class="s" id="grids"></div></div>
+  <div class="card" style="--c:var(--load)"><div class="l">Hausverbrauch</div><div class="v" id="load">–</div><div class="s" id="loads"></div></div>
+</div>
+<details><summary>Gerät</summary><div class="tw"><table id="info"></table></div></details>
+<details><summary>Alle Messwerte (<span id="n">0</span>)</summary>
+  <input id="q" placeholder="Filter, z. B. battery" autocomplete="off">
+  <div class="tw"><table id="all"></table></div>
+</details>
+</main>
+<script>
+const $=id=>document.getElementById(id), LBL={Charge:'lädt',Discharge:'entlädt',Standby:'Standby',Exporting:'Einspeisung',Importing:'Netzbezug',Idle:'Leerlauf','No battery':'keine Batterie'};
+const w=v=>v==null?'–':Math.abs(v)>=1000?(v/1000).toFixed(2).replace('.',',')+' kW':Math.round(v)+' W';
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let last=[];
+function table(){
+  const q=$('q').value.toLowerCase();
+  $('all').innerHTML=last.filter(s=>!q||(s.name+s.id).toLowerCase().includes(q))
+    .map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.value)} ${esc(s.unit||'')}</td><td>${esc(s.id)}</td></tr>`).join('');
+}
+$('q').oninput=table;
+async function tick(){
+  let d;
+  try{d=await (await fetch('/api/data')).json()}catch(e){d={ok:false,error:'Programm nicht erreichbar',sensors:[],info:{}}}
+  const st=$('status'), age=d.ts?Math.round(Date.now()/1000-d.ts):0;
+  st.className=d.ok?'':'err';
+  st.textContent=d.ok?`verbunden · vor ${age} s aktualisiert`:'Keine Verbindung: '+d.error;
+  if(!d.ok&&!d.sensors.length)return;
+  last=d.sensors; const m={}; last.forEach(s=>m[s.id]=s.value);
+  const t=k=>LBL[m[k]]||m[k]||'';
+  $('pv').textContent=w(m.ppv);
+  $('pvs').textContent=[m.pv1_power!=null&&'PV1 '+w(m.pv1_power),m.pv2_power!=null&&'PV2 '+w(m.pv2_power),m.e_day!=null&&'heute '+m.e_day+' kWh'].filter(Boolean).join(' · ');
+  $('soc').textContent=m.battery_soc!=null?m.battery_soc+' %':'–';
+  $('socbar').style.width=(m.battery_soc||0)+'%';
+  $('bats').textContent=[t('battery_mode_label'),m.pbattery1!=null&&w(Math.abs(m.pbattery1)),m.battery_temperature!=null&&m.battery_temperature+' °C'].filter(Boolean).join(' · ');
+  $('grid').textContent=m.active_power!=null?w(Math.abs(m.active_power)):'–';
+  $('grids').textContent=t('grid_in_out_label');
+  $('load').textContent=w(m.house_consumption);
+  $('loads').textContent=t('work_mode_label');
+  $('info').innerHTML=Object.entries(d.info).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+  $('n').textContent=last.length; table();
+}
+tick(); setInterval(tick,5000);
+</script>
+</body>
+</html>
