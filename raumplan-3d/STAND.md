@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.1 (neu: Aufmessen mit Handy-Kamera). Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.2 (neu: Raum scannen im Durchgehen → 1:1-Modell mit echter Einrichtung). Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -12,7 +12,22 @@ Stand 22.11.2026, Version 1.1 (neu: Aufmessen mit Handy-Kamera). Kopie der Raump
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
 
-## Aufmessen mit Handy-Kamera (neu in 1.1, `aufmass.js`)
+## Raum scannen im Durchgehen (neu in 1.2, `scan.js` + `starteScan` in `aufmass.js`)
+Menü → „📹 Raum scannen – einfach durchgehen“. Nur Android + Chrome mit ARCore-Tiefendaten (WebXR `depth-sensing`, Pflicht; `camera-access` freiwillig). Ohne Tiefe: Hinweis und Ecken-Antippen.
+- **Aufnahme:** je Aufnahme Kameralage M, Projektion P, Tiefenraster 64×~138 (mm, über `getDepthInMeters`), Kamerabild 400 px. Neue Aufnahme ab 15 cm Bewegung oder 9° Drehung, nur bei ruhigem Handy, höchstens 240. Anzeige: grüne Punkte = erfasst, Raster 12×3 = gefilmte Blickrichtungen (oben/Mitte/unten), Tipps was fehlt. „Fertig“ ab 25 Aufnahmen.
+- **Ausrichtung selbst bestimmt** (Lehre aus Feldtest S25 vom 05.11., Tiefenbild-Zeilen verkehrt): 4 Varianten des Tiefenrasters, richtig ist die mit den wenigsten belegten Würfeln (Aufnahmen liegen übereinander); Reserve: bei Blick nach unten liegen die Punkte unter der Kamera. Kopfstehende Kamerabilder werden über die Farbstreuung je Raumstelle erkannt und gedreht.
+- **Punktwolke:** ein Punkt je 2,5-cm-Würfel, Lage und Farbe gemittelt, Tiefensprünge (Kanten) und Einzelsichtungen verworfen.
+- **Boden/Decke:** stärkste waagrechte Flächen. Ohne klare Decke (Dachschräge) wird die Höhe geschätzt und ein Hinweis gezeigt.
+- **Grundriss:** senkrechte Flächen (≥ 5 Höhenstufen à 10 cm je 5-cm-Feld) → Hauptrichtung (schärfste Linien, 0,05°) → Wandlinien je Achse → Felder zwischen den Linien. Ein Feld gehört zum Raum, wenn die Kamera dort war oder ≥ 50 % davon von Sichtstrahlen durchquert wurden und kein raumhohes Wandstück dazwischen liegt. Niedrige Flächen (Sofa, Schrank bis 2,2 m) sperren nicht; ein nicht einsehbares Feld vor einer Wandlinie (bis 1 m tief) zählt als Möbel und gehört zum Raum. Offene Türen: Sturz über der Tür sperrt, durchschrittene Kanten sind offen. Nur rechtwinklige Räume (Wände in zwei Hauptrichtungen); schräge Wände → Ecken antippen.
+- **Modell:** Wände/Boden bekommen die Fotos; das Tiefenbild blendet Möbel vor der Fläche aus, nie gesehene Stellen bekommen die mittlere Farbe. Alles, was mehr als 12 cm von Wand und 8 cm von Boden/Decke entfernt im Raum steht (Möbel, Dachschräge), bleibt als farbige Punktwolke („Echte Einrichtung zeigen“ ein/aus). Türen/Fenster werden noch nicht ausgeschnitten, sie sind als Foto auf der Wand zu sehen.
+- **Speichern/Teilen:** Projektdatei enthält Fotos und Punktwolke (Testraum 0,6 MB). „📤 Raum teilen“ gibt sie als `.txt` ans Android-Teilen-Menü (Chrome teilt keine `.json`). Datei öffnen stellt alles wieder her.
+- **Raum als eigene Kachel (App-Zentrale):** Projektdatei nach `raumplan-3d/raeume/<name>.json` legen, Link `index.html?plan=raeume/<name>.json` (nur eigener Server; eigener Speicherplatz je Link).
+- **Fehlersuche:** „🛠 Scan-Rohdaten senden“ liefert alle Aufnahmen klein verpackt (Testraum 6 MB). Diese Datei in der App öffnen = Scan neu auswerten. Erst mit einer echten Rohdatei weiter abstimmen, kein Blindflug.
+
+**Simulation** (`test/synth.js`, `synthRoh`): L-Raum 4,2 × 4,1 m, um 25° verdreht, Schrank, Tisch, Sofa, offene Tür mit Flur, 216 Aufnahmen, Tiefenrauschen 1,2 %. 7 Fälle (normal, ohne Rauschen, 3 % Rauschen, Zeilen verkehrt wie S25, zusätzlich Bild kopf, Tür zu, Dachschräge): immer 6 Wände, größte Abweichung 1,4 cm, Höhe ±0,5 cm, Ausrichtung und Kopfstand richtig erkannt, Rechenzeit rund 2 s am PC. Export → Öffnen auf zweitem Gerät, `?plan=`-Link und Rohdaten-Neuauswertung geprüft.
+**Am Handy ungetestet.** Echte Tiefendaten sind viel unruhiger als die Simulation (weiße Wände, Fenster, Spiegel); beim alten Raumplan-Projekt waren ±5–10 cm das Ergebnis. Die Punktwolke sieht aus der Nähe klötzchenhaft aus, fotorealistisch wäre nur Gaussian Splatting am PC (wie Rundgang 3D).
+
+## Aufmessen mit Ecken-Antippen (neu in 1.1, `aufmass.js`)
 Menü → „📏 Raum mit Handy-Kamera aufmessen“. Nur Android + Chrome (WebXR/ARCore, „Google Play-Dienste für AR“). iPhone/PC: Hinweis und Eintippen.
 1. **Boden suchen:** Handy schräg auf den Boden, bewegen, bis „Boden erkannt“. Bodenhöhe = Median der waagrechten Hit-Test-Treffer, wird laufend verfeinert.
 2. **Ecken:** Fadenkreuz auf jede Bodenecke, tippen. Länge zur letzten Ecke live. Nahe der ersten Ecke schließt Tippen den Raum.
@@ -46,7 +61,7 @@ Meter, x nach Osten, z nach Süden. Wand = Mittellinie a→b, Stärke t. `at` = 
 Damit kann ein Export der Raumplan-App direkt geladen werden (nächster Schritt: Export dort einbauen).
 
 ## Dateien
-`index.html` (Oberfläche), `app.js` (3D, Steuerung, Panels), `aufmass.js` (AR-Aufmaß, Fotoprojektion), `test/synth.js` (Simulation), `moebel.js` (Katalog), `daten.js` (Beispielwohnung, Farben, Böden), `lib/three.module.min.js` (three.js 0.160, MIT, lokal, damit es auch ohne CDN läuft).
+`index.html` (Oberfläche), `app.js` (3D, Steuerung, Panels), `aufmass.js` (AR-Sitzungen, Fotoprojektion, Plan aus Aufmaß), `scan.js` (Auswertung des Scans), `test/synth.js` (Simulation), `moebel.js` (Katalog), `daten.js` (Beispielwohnung, Farben, Böden), `lib/three.module.min.js` (three.js 0.160, MIT, lokal, damit es auch ohne CDN läuft).
 
 ## Getestet
 Headless-Chromium (PC 1280×800 und Pixel 7): Laden ohne Fehler, alle Ansichten, Möbel hinzufügen/drehen/färben, ganzen Raum streichen, Nacht, Einkaufsliste (33 Links), Rückgängig. **Am echten Handy noch ungetestet.** Möbel untereinander kollidieren nicht (bewusst, damit Schieben einfach bleibt).

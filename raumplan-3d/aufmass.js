@@ -3,6 +3,7 @@
 // und danach auf Wände und Boden projiziert. Alle Strahlen werden gespeichert und am Ende mit der endgültigen
 // Bodenhöhe neu geschnitten (genauer als sofort rechnen).
 import * as THREE from './lib/three.module.min.js';
+import { ndcX, ndcY, welt } from './scan.js';
 
 const f2 = (v, d = 2) => v.toFixed(d).replace('.', ',');
 const MAXF = 60, FOTO_PX = 512;
@@ -44,11 +45,10 @@ export function backe(frames, surf, leer = [216, 212, 204]) {
   const ctx = cv.getContext('2d'), img = ctx.createImageData(TW, TH), D = img.data, p = [0, 0, 0], n = surf.n;
   const proj = (f, q) => { const e = f.e, w = e[3] * q[0] + e[7] * q[1] + e[11] * q[2] + e[15]; if (w < 0.05) return null; return [(e[0] * q[0] + e[4] * q[1] + e[8] * q[2] + e[12]) / w, (e[1] * q[0] + e[5] * q[1] + e[9] * q[2] + e[13]) / w]; };
   const cand = frames.filter(f => { for (const u of [0.05, 0.5, 0.95]) for (const v of [0.05, 0.5, 0.95]) { surf.pt(u, v, p); const r = proj(f, p); if (r && Math.abs(r[0]) < 1 && Math.abs(r[1]) < 1) return true; } return false; });
-  let gefuellt = 0;
+  let gefuellt = 0, mr = 0, mg = 0, mb = 0;
   for (let j = 0; j < TH; j++) for (let i = 0; i < TW; i++) {
     const k = (j * TW + i) * 4, u = (i + 0.5) / TW, v = (j + 0.5) / TH;
-    D[k + 3] = 255;
-    if (surf.mask && !surf.mask(u, v)) { D[k] = leer[0]; D[k + 1] = leer[1]; D[k + 2] = leer[2]; continue; }
+    if (surf.mask && !surf.mask(u, v)) continue;
     surf.pt(u, v, p);
     let r = 0, g = 0, b = 0, W = 0;
     for (const f of cand) {
@@ -57,13 +57,18 @@ export function backe(frames, surf, leer = [216, 212, 204]) {
       const m = Math.max(Math.abs(nx), Math.abs(ny)); if (m > 0.97) continue;
       const vx = f.c[0] - p[0], vy = f.c[1] - p[1], vz = f.c[2] - p[2], dist = Math.hypot(vx, vy, vz), cos = (vx * n[0] + vy * n[1] + vz * n[2]) / dist;
       if (cos < 0.2) continue;
+      // Tiefenbild: steht etwas (Möbel) deutlich vor der Fläche, zeigt dieses Foto hier nicht die Fläche
+      if (f.zc) { const dz = f.zc[Math.min(f.CH - 1, ((1 - ny) / 2 * f.CH) | 0) * f.CW + Math.min(f.CW - 1, ((nx + 1) / 2 * f.CW) | 0)]; if (dz && dz / 1000 < w - Math.max(0.15, 0.08 * w)) continue; }
       if (surf.occ) { let bl = false; for (let k = 0; k < surf.occ.length; k++) if (k !== surf.self && kreuzt(f.c[0], f.c[2], p[0], p[2], surf.occ[k])) { bl = true; break; } if (bl) continue; }
       let wt = cos * cos / (dist * dist) * (1 - m ** 6); wt *= wt;
       const px = Math.min(f.W - 1, ((nx + 1) / 2 * f.W) | 0), py = Math.min(f.H - 1, ((1 - ny) / 2 * f.H) | 0), q = (py * f.W + px) * 4;
       r += f.data[q] * wt; g += f.data[q + 1] * wt; b += f.data[q + 2] * wt; W += wt;
     }
-    if (W > 0) { D[k] = r / W; D[k + 1] = g / W; D[k + 2] = b / W; gefuellt++; } else { D[k] = leer[0]; D[k + 1] = leer[1]; D[k + 2] = leer[2]; }
+    if (W > 0) { D[k] = r / W; D[k + 1] = g / W; D[k + 2] = b / W; D[k + 3] = 255; mr += D[k]; mg += D[k + 1]; mb += D[k + 2]; gefuellt++; }
   }
+  // nie gesehene Stellen (hinter Möbeln) in der mittleren Farbe der Fläche
+  const m = gefuellt ? [mr / gefuellt, mg / gefuellt, mb / gefuellt] : leer;
+  for (let k = 0; k < D.length; k += 4) if (!D[k + 3]) { D[k] = m[0]; D[k + 1] = m[1]; D[k + 2] = m[2]; D[k + 3] = 255; }
   ctx.putImageData(img, 0, 0);
   return { canvas: cv, anteil: gefuellt / (TW * TH) };
 }
@@ -130,7 +135,41 @@ export async function modellAusAufmass(res, name, scanId, fortschritt = () => {}
     const r = backe(fr, { TW, TH, n: [0, 1, 0], occ, self: -1, mask: (u, v) => pip(u * W, v * Dd), pt: (u, v, o) => { const w = inv([u * W, v * Dd]); o[0] = w[0]; o[1] = y0 + 0.003; o[2] = w[1]; return o; } }, [190, 180, 165]);
     if (r.anteil > 0.15) { const key = `${scanId}-boden`; tex.set(key, r.canvas); room.foto = { key, x0: 0, z0: 0, w: W, d: Dd }; }
   }
-  return { plan, tex };
+  // Punktwolke: nur was im Raum steht (Möbel, Dachschrägen). Wände, Boden und Decke sind schon Flächen mit Foto.
+  let wolke = null;
+  if (res.cloud && res.cloud.n) {
+    fortschritt('Einrichtung übernehmen …'); await new Promise(r => setTimeout(r, 0));
+    wolke = innenWolke(res.cloud, fwd, res.floorY, P, H);
+    if (wolke.pos.length < 300) wolke = null;
+  }
+  if (res.warn && res.warn.length) plan.aufmass.hinweise = res.warn;
+  if (res.cloud) plan.aufmass.art = 'scan';
+  return { plan, tex, wolke };
+}
+function innenWolke(cloud, fwd, floorY, P, H) {
+  const { pos, col, n } = cloud, N = P.length, Q = 0.04, tp = new Float32Array(n * 3), ti = new Int32Array(n), cnt = new Map(); let m = 0;
+  const E = P.map((p, i) => { const q = P[(i + 1) % N], dx = q[0] - p[0], dz = q[1] - p[1]; return [p[0], p[1], dx, dz, dx * dx + dz * dz || 1e-9]; });
+  const key = (x, y, z) => Math.round(x / Q) + 2048 + (Math.round(y / Q) + 2048) * 4096 + (Math.round(z / Q) + 2048) * 16777216;
+  for (let i = 0; i < n; i++) {
+    const Y = pos[i * 3 + 1] - floorY; if (Y < 0.08 || Y > H - 0.08) continue;
+    const [X, Z] = fwd([pos[i * 3], pos[i * 3 + 2]]);
+    let ins = false, nah = false;
+    for (let a = 0, b = N - 1; a < N; b = a++) { const [xi, zi] = P[a], [xj, zj] = P[b]; if ((zi > Z) !== (zj > Z) && X < (xj - xi) * (Z - zi) / (zj - zi) + xi) ins = !ins; }
+    if (!ins) continue;
+    for (const e of E) { const u = Math.max(0, Math.min(1, ((X - e[0]) * e[2] + (Z - e[1]) * e[3]) / e[4])), dx = X - e[0] - e[2] * u, dz = Z - e[1] - e[3] * u; if (dx * dx + dz * dz < 0.0144) { nah = true; break; } }
+    if (nah) continue;
+    tp[m * 3] = X; tp[m * 3 + 1] = Y; tp[m * 3 + 2] = Z; ti[m] = i; m++;
+    const k = key(X, Y, Z); cnt.set(k, (cnt.get(k) || 0) + 1);
+  }
+  // einzelne Streupunkte entfernen: mindestens 4 Punkte in der Nachbarschaft
+  const op = [], oc = [];
+  for (let q = 0; q < m; q++) {
+    const X = tp[q * 3], Y = tp[q * 3 + 1], Z = tp[q * 3 + 2]; let c = 0;
+    for (let a = -1; a <= 1 && c < 4; a++) for (let b = -1; b <= 1 && c < 4; b++) for (let d = -1; d <= 1; d++) c += cnt.get(key(X + a * Q, Y + b * Q, Z + d * Q)) || 0;
+    if (c < 4) continue;
+    op.push(X, Y, Z); const i = ti[q] * 3; oc.push(col[i], col[i + 1], col[i + 2]);
+  }
+  return { pos: Float32Array.from(op), col: Uint8Array.from(oc) };
 }
 
 // Plan gleichmäßig umrechnen (Kontrollmaß)
@@ -144,7 +183,7 @@ export function skaliere(p, k) {
   for (const r of p.rooms) { r.poly = r.poly.map(q => q.map(s)); if (r.foto) { r.foto.x0 = s(r.foto.x0); r.foto.z0 = s(r.foto.z0); r.foto.w = s(r.foto.w); r.foto.d = s(r.foto.d); } }
   for (const it of p.items || []) { it.x = s(it.x); it.z = s(it.z); }
   if (p.start) { p.start.x = s(p.start.x); p.start.z = s(p.start.z); }
-  if (p.hoeheQuelle === 'ar') p.height = s(p.height);
+  if (p.hoeheQuelle !== 'standard') p.height = s(p.height);
   if (p.aufmass) p.aufmass.korr = +((p.aufmass.korr || 1) * k).toFixed(5);
   return p;
 }
@@ -313,6 +352,7 @@ export function starteAufmass(root) {
           if (best) { dot.position.set(o[0] + d[0] * best.t, o[1] + d[1] * best.t, o[2] + d[2] * best.t); dot.visible = true; st.aim = { wall: best.wall, s: best.s, y: best.y - st.floorY }; }
         }
       }
+      renderer.render(scene, cam);
       // Fotos mit Kameralage (nur wenn bewegt und ruhig gehalten)
       if (glb && view.camera && st.phase !== 'boden' && !pose.emulatedPosition && st.frames.length < MAXF && t - st.lastT > 400) {
         const L = st.last, dot3 = (x, y) => x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
@@ -328,7 +368,6 @@ export function starteAufmass(root) {
         }
       }
       st.prevD = d;
-      renderer.render(scene, cam);
       if (t - lastUi > 150) { lastUi = t; ui(); }
     });
     ui();
@@ -343,6 +382,107 @@ export function starteAufmass(root) {
       })() : null;
       try { renderer.dispose(); renderer.forceContextLoss(); } catch { /* egal */ }
       resolve(res);
+    });
+  });
+}
+
+// ---------- Scan: einfach durch den Raum gehen ----------
+// Sammelt Aufnahmen aus Tiefenbild (ARCore Depth), Kamerabild und Kameralage. Ausgewertet wird danach in scan.js.
+const MAXK = 240, BILD_PX = 400;
+export function starteScan(root) {
+  return new Promise(async (resolve, reject) => {
+    const el = id => root.querySelector('#' + id);
+    root.hidden = false; root.classList.add('scan');
+    const zu = () => { root.hidden = true; root.classList.remove('scan'); };
+    let session;
+    try { session = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['depth-sensing'], optionalFeatures: ['dom-overlay', 'camera-access'], domOverlay: { root }, depthSensing: { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha', 'float32'] } }); }
+    catch (e) { zu(); const er = new Error('Keine Tiefendaten: ' + e.message); er.keineTiefe = true; reject(er); return; }
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local');
+    try { await renderer.xr.setSession(session); }
+    catch (e) { try { session.end(); } catch { /* */ } zu(); reject(new Error('AR startet nicht: ' + e.message)); return; }
+    const gl = renderer.getContext(), ref = renderer.xr.getReferenceSpace();
+    let glb = null; if (Array.from(session.enabledFeatures || ['camera-access']).includes('camera-access')) { try { glb = new XRWebGLBinding(session, gl); } catch { glb = null; } }
+    // grüne Punkte = schon erfasst
+    const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(), PRO = 700, posA = new Float32Array(MAXK * PRO * 3), geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(posA, 3)); geo.setDrawRange(0, 0);
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x3ecf74, size: 0.022, sizeAttenuation: true, transparent: true, opacity: 0.55, depthTest: false })); pts.frustumCulled = false; scene.add(pts);
+    let nPts = 0;
+    const kf = [], cov = new Uint8Array(36), vote = [0, 1, 2, 3].map(() => [0, 0]), w3 = [0, 0, 0];
+    const st = { modus: null, last: null, lastT: 0, prevD: null, lost: 0, keineTiefe: 0, schnell: 0, fertig: false, sektor: -1, msg: '', msgT: 0, gezeigt: 0 };
+    const covEl = el('arCov'); covEl.innerHTML = '<i></i>'.repeat(36); const zellen = covEl.children;
+    const B1 = el('arB1'), B2 = el('arB2'), B3 = el('arB3');
+    root.addEventListener('beforexrselect', e => e.preventDefault());
+    B3.hidden = true; B2.textContent = 'Abbrechen'; B1.textContent = '✓ Fertig'; B1.disabled = true;
+    el('arStep').textContent = 'Raum scannen'; el('arLive').textContent = '';
+    el('arTxt').textContent = 'Langsam durch den Raum gehen und alles abfilmen: Wände vom Boden bis zur Decke, alle Ecken, Boden, Möbel. Grün = erfasst.';
+    const ende = ok => { st.fertig = ok; try { session.end(); } catch { /* schon beendet */ } };
+    B1.onclick = () => { navigator.vibrate && navigator.vibrate(25); ende(true); };
+    B2.onclick = () => ende(false);
+    const zeige = f => {   // Stichprobe der Tiefenpunkte dieser Aufnahme als grüne Punkte
+      const sx = Math.max(1, Math.round(f.GW / 20)), sy = Math.max(1, Math.round(f.GH / 35));
+      for (let j = sy >> 1; j < f.GH; j += sy) for (let i = sx >> 1; i < f.GW; i += sx) {
+        const dm = f.z[j * f.GW + i]; if (dm < 300 || dm > 5500 || nPts >= MAXK * PRO) continue;
+        const u = (i + 0.5) / f.GW, v = (j + 0.5) / f.GH; welt(f.M, f.P, ndcX(u, v, st.modus), ndcY(u, v, st.modus), dm / 1000, w3);
+        posA[nPts * 3] = w3[0]; posA[nPts * 3 + 1] = w3[1]; posA[nPts * 3 + 2] = w3[2]; nPts++;
+      }
+    };
+    let grab = null, gdim = '', lastUi = 0;
+    const ui = t => {
+      const n = kf.length; el('arLive').textContent = `${n} Aufnahmen`;
+      B1.disabled = n < 25;
+      let w = '';
+      if (st.msg && t - st.msgT < 5000) w = '⚠ ' + st.msg;
+      else if (st.keineTiefe > 60) w = '⚠ Noch keine Tiefendaten – Handy langsam seitlich bewegen, Raum hell genug?';
+      else if (st.lost > 20) w = '⚠ Orientierung verloren – langsamer bewegen';
+      else if (st.schnell > 12) w = '⚠ Zu schnell – langsamer schwenken';
+      else if (n >= MAXK) w = 'Genug Aufnahmen – bitte „Fertig“ tippen';
+      else if (n >= 25) { const o = [0, 1, 2].map(b => 12 - cov.subarray(b * 12, b * 12 + 12).reduce((a, x) => a + x, 0)); w = o[0] > 4 ? 'Tipp: auch nach oben filmen (Wand bis zur Decke)' : o[2] > 4 ? 'Tipp: auch nach unten filmen (Boden, Wandfuß)' : o[1] > 3 ? 'Tipp: einmal ganz im Kreis drehen' : 'Sieht gut aus – „Fertig“ tippen oder weiter filmen'; }
+      el('arInfo').textContent = (w ? w + ' · ' : '') + (glb ? '' : 'ohne Kamerabilder · ') + `${n}/${MAXK}`;
+      for (let q = 0; q < 36; q++) zellen[q].className = (cov[q] ? 'an' : '') + (q === st.sektor ? ' hier' : '');
+    };
+    renderer.setAnimationLoop((t, frame) => {
+      if (!frame) return;
+      renderer.render(scene, cam);
+      const pose = frame.getViewerPose(ref); if (!pose) { st.lost++; return; }
+      const view = pose.views[0], Mx = view.transform.matrix, Px = view.projectionMatrix;
+      if (pose.emulatedPosition) st.lost++; else st.lost = Math.max(0, st.lost - 2);
+      const o = [Mx[12], Mx[13], Mx[14]], d = [-Mx[8], -Mx[9], -Mx[10]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      const band = d[1] > 0.25 ? 0 : d[1] < -0.35 ? 2 : 1; st.sektor = band * 12 + (Math.floor((Math.atan2(d[0], d[2]) + Math.PI) / (Math.PI / 6)) % 12);
+      let di = null; try { di = frame.getDepthInformation(view); } catch { /* noch nicht bereit */ }
+      if (di) st.keineTiefe = 0; else st.keineTiefe++;
+      const ruhig = st.prevD && dot(d, st.prevD) > 0.9997; st.schnell = ruhig ? Math.max(0, st.schnell - 1) : st.schnell + 1;
+      const L = st.last, bewegt = !L || Math.hypot(o[0] - L.o[0], o[1] - L.o[1], o[2] - L.o[2]) > 0.15 || dot(d, L.d) < 0.988;
+      if (di && bewegt && ruhig && !pose.emulatedPosition && kf.length < MAXK && t - st.lastT > 180) {
+        const vp = session.renderState.baseLayer.getViewport(view), GW = 64, GH = Math.max(32, Math.min(144, Math.round(64 * vp.height / vp.width))), z = new Uint16Array(GW * GH); let gut = 0;
+        for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { let m; try { m = di.getDepthInMeters((i + 0.5) / GW, (j + 0.5) / GH); } catch { continue; } if (m > 0.1 && m < 60) { z[j * GW + i] = Math.round(m * 1000); gut++; } }
+        if (gut > GW * GH * 0.2) {
+          let img = null;
+          if (glb && view.camera) {
+            try {
+              const cw = view.camera.width, ch = view.camera.height, sc = BILD_PX / Math.max(cw, ch), SW = Math.round(cw * sc), SH = Math.round(ch * sc);
+              if (!grab || gdim !== SW + 'x' + SH) { grab = grabber(gl, SW, SH); gdim = SW + 'x' + SH; }
+              if (grab) img = { data: grab(glb.getCameraImage(view.camera)), W: SW, H: SH };
+            } catch (e) { st.msg = 'Kamerabild: ' + e.message; st.msgT = t; glb = null; }
+            renderer.resetState();
+          }
+          const f = { M: Float32Array.from(Mx), P: Float32Array.from(Px), GW, GH, z, img }; kf.push(f);
+          st.last = { o, d }; st.lastT = t; cov[st.sektor] = 1;
+          // Ausrichtung des Tiefenbilds für die Anzeige: bei Blick nach unten/oben müssen die Punkte unter/über der Kamera liegen
+          if (st.modus === null && Math.abs(d[1]) > 0.4) {
+            for (let j = 2; j < GH; j += 6) for (let i = 2; i < GW; i += 6) { const dm = z[j * GW + i]; if (dm < 300 || dm > 5500) continue; const u = (i + 0.5) / GW, v = (j + 0.5) / GH; for (let m = 0; m < 4; m++) { welt(f.M, f.P, ndcX(u, v, m), ndcY(u, v, m), dm / 1000, w3); vote[m][1]++; if ((d[1] < 0) === (w3[1] < o[1])) vote[m][0]++; } }
+            if (vote[0][1] >= 1200) { let b = 0; for (let m = 1; m < 4; m++) if (vote[m][0] > vote[b][0]) b = m; if (vote[b][0] / vote[b][1] >= 0.75) st.modus = b; else vote.forEach(v => { v[0] = v[1] = 0; }); }
+          }
+          if (st.modus !== null) { for (; st.gezeigt < kf.length; st.gezeigt++) zeige(kf[st.gezeigt]); geo.setDrawRange(0, nPts); geo.attributes.position.needsUpdate = true; }
+        }
+      }
+      st.prevD = d;
+      if (t - lastUi > 250) { lastUi = t; ui(t); }
+    });
+    session.addEventListener('end', () => {
+      renderer.setAnimationLoop(null); zu();
+      try { renderer.dispose(); renderer.forceContextLoss(); } catch { /* egal */ }
+      resolve(st.fertig && kf.length >= 12 ? { kf } : null);
     });
   });
 }

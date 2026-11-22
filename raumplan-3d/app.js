@@ -2,9 +2,10 @@
 import * as THREE from './lib/three.module.min.js';
 import { MOEBEL, KATEGORIEN, baue } from './moebel.js';
 import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from './daten.js';
-import { arVerfuegbar, starteAufmass, modellAusAufmass, skaliere } from './aufmass.js';
+import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
+import { auswerten } from './scan.js';
 
-const VERSION = '1.1';
+const VERSION = '1.2';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -48,8 +49,8 @@ scene.add(hemi, amb);
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: '#7f8c6a', roughness: 1 }));
 ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; ground.receiveShadow = true;
 scene.add(ground);
-const gWalls = new THREE.Group(), gFloors = new THREE.Group(), gCeil = new THREE.Group(), gItems = new THREE.Group();
-scene.add(gWalls, gFloors, gCeil, gItems);
+const gWalls = new THREE.Group(), gFloors = new THREE.Group(), gCeil = new THREE.Group(), gItems = new THREE.Group(), gCloud = new THREE.Group();
+scene.add(gWalls, gFloors, gCeil, gItems, gCloud);
 const selBox = new THREE.BoxHelper(undefined, 0x4da3ff);
 selBox.material.depthTest = false; selBox.renderOrder = 10; selBox.visible = false;
 scene.add(selBox);
@@ -139,7 +140,25 @@ async function ladeFotos() {
       fotoTex.set(k, texAus(img)); neu++;
     } catch { /* Foto fehlt, dann eben Farbe */ }
   }
+  if (plan.wolke && !wolken.has(plan.wolke.key)) { try { const w = await idb.get(plan.wolke.key); if (w && w.pos) { wolken.set(plan.wolke.key, w); neu++; } } catch { /* ohne Punktwolke */ } }
   return neu;
+}
+// Gescannte Einrichtung: farbige Punktwolke (ein Punkt je 2,5-cm-Würfel)
+const wolken = new Map();
+const SHOWW = () => LS.get('rp3d-wolke') !== '0';
+let wolkeMat = null;
+const LIN = (() => { const t = new Float32Array(256); for (let i = 0; i < 256; i++) { const c = i / 255; t[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); } return t; })();
+const korr = () => (plan.aufmass && plan.aufmass.korr) || 1;
+function wolkeGroesse() { if (wolkeMat) wolkeMat.size = 0.036 * korr() / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)); }
+function baueWolke() {
+  while (gCloud.children.length) { const o = gCloud.children[0]; gCloud.remove(o); o.geometry.dispose(); o.material.dispose(); }
+  wolkeMat = null;
+  const w = plan.wolke && SHOWW() && wolken.get(plan.wolke.key); if (!w) return;
+  const col = new Float32Array(w.col.length); for (let i = 0; i < col.length; i++) col[i] = LIN[w.col[i]];
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(w.pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  wolkeMat = new THREE.PointsMaterial({ vertexColors: true, sizeAttenuation: true, toneMapped: false });
+  const pts = new THREE.Points(g, wolkeMat); pts.frustumCulled = false; pts.scale.setScalar(korr());
+  gCloud.add(pts); wolkeGroesse();
 }
 let fotoMats = [];
 function fotoMat(map, rx, ox, ry, oy) {
@@ -378,6 +397,7 @@ function applyLight() {
   hemi.intensity = 0.08 + 1.2 * smooth(-0.05, 0.3, sEl);
   amb.intensity = 0.05 + 0.85 * smooth(-0.05, 0.3, sEl);
   renderer.toneMappingExposure = L.exposure;
+  if (wolkeMat) wolkeMat.color.setScalar(Math.max(0.2 + 0.8 * smooth(-0.05, 0.3, sEl), L.lamps ? 0.5 : 0) * Math.min(1.3, L.exposure));
   applyLamps();
 }
 
@@ -402,7 +422,7 @@ function applyCam() {
 function setMode(m) {
   mode = m; walk.target = null;
   gCeil.visible = m === 'gehen';
-  camera.fov = m === 'plan' ? 45 : 62; camera.updateProjectionMatrix();
+  camera.fov = m === 'plan' ? 45 : 62; camera.updateProjectionMatrix(); wolkeGroesse();
   document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.v === m));
   $('#joy').hidden = !(m === 'gehen' && MOBIL);
   applyCam();
@@ -466,8 +486,11 @@ function doUndo() {
   $('#bUndo').disabled = !undo.length; if (sheet) openSheet(sheet); hint('Rückgängig');
 }
 let saveT = 0;
-function save() { clearTimeout(saveT); saveT = setTimeout(() => LS.set('rp3d-plan', snapshot()), 300); }
-function rebuild(resetCam = true) { normalize(plan); buildStructure(); buildItems(); applyLight(); if (resetCam) resetCams(); applyCam(); $('#sub').textContent = plan.name; }
+// Eigener Speicherplatz je verlinktem Raum (?plan=…), damit der eigene Plan nicht überschrieben wird
+const PLAN_URL = new URLSearchParams(location.search).get('plan');
+const SKEY = 'rp3d-plan' + (PLAN_URL ? ':' + PLAN_URL : '');
+function save() { clearTimeout(saveT); saveT = setTimeout(() => LS.set(SKEY, snapshot()), 300); }
+function rebuild(resetCam = true) { normalize(plan); buildStructure(); buildItems(); baueWolke(); applyLight(); if (resetCam) resetCams(); applyCam(); $('#sub').textContent = plan.name; }
 
 // ---------- Hinweis ----------
 let hintT = 0;
@@ -633,22 +656,25 @@ const SHEETS = {
   },
   menu() {
     return ['Menü', `<div class="list">
-      <button data-m="aufmessen" class="main">📏 Raum mit Handy-Kamera aufmessen</button>
+      <button data-m="scannen" class="main">📹 Raum scannen – einfach durchgehen</button>
+      <button data-m="aufmessen">📏 Raum aufmessen – Ecken antippen</button>
       <button data-m="raum">📐 Neuer Raum nach Maß (eintippen)</button>
       <button data-m="beispiel">🏠 Beispielwohnung laden</button>
       <button data-m="speichern">💾 Projekt als Datei speichern</button>
+      <button data-m="teilen">📤 Raum teilen (Datei senden)</button>
       <button data-m="oeffnen">📂 Projekt-Datei öffnen</button>
       <button data-m="foto">📷 Foto der Ansicht speichern</button>
       <button data-m="leeren" class="no">🧹 Alle Möbel entfernen</button>
       <button data-m="hilfe">❓ Hilfe</button></div>
       <h3>Einstellungen</h3>
       <label class="chk"><input type="checkbox" id="snap" ${SNAP() ? 'checked' : ''}> Einrasten (5 cm / 15°)</label>
-      <label class="chk"><input type="checkbox" id="fotos" ${SHOWF() ? 'checked' : ''}> Fotos vom Aufmaß auf Wänden/Boden zeigen</label>
+      <label class="chk"><input type="checkbox" id="fotos" ${SHOWF() ? 'checked' : ''}> Fotos vom Scan auf Wänden/Boden zeigen</label>
+      <label class="chk"><input type="checkbox" id="wolke" ${SHOWW() ? 'checked' : ''}> Gescannte Einrichtung zeigen (Punkte)</label>
       <label>Amazon-Partner-ID (Tracking-ID)<input id="tag" value="${esc(affTag)}" autocomplete="off" spellcheck="false"></label>
       <p class="note">Raumplan 3D · Version ${VERSION} · Kopie der Raumplan-App mit 3D-Rundgang. Alles bleibt in deinem Browser gespeichert.</p>`];
   },
   raum() {
-    return ['Neuer Raum nach Maß', `<button data-m="aufmessen" class="main" style="width:100%">📏 Lieber mit der Handy-Kamera aufmessen</button>
+    return ['Neuer Raum nach Maß', `<button data-m="scannen" class="main" style="width:100%">📹 Lieber mit dem Handy scannen</button>
       <p class="mut">Oder Innenmaße eintippen:</p><form id="fRaum">
       <label>Name<input name="n" value="Mein Raum" maxlength="40"></label>
       <div class="row"><label>Länge (m)<input name="l" type="number" inputmode="decimal" step="0.01" min="1" max="30" value="5.00" required></label>
@@ -662,13 +688,27 @@ const SHEETS = {
   aufmass() {
     const ws = plan.walls.filter(w => w.innen), A = plan.rooms[0] ? area(plan.rooms[0].poly) : 0, am = plan.aufmass || {};
     const k = am.korr && am.korr !== 1 ? ` · korrigiert um ${((am.korr - 1) * 100).toFixed(1).replace('.', ',')} %` : '';
-    return ['Aufmaß fertig', `<p><b>${esc(plan.name)}</b>: ${ws.length} Wände · ${A.toFixed(2).replace('.', ',')} m² · Höhe ${plan.height.toFixed(2).replace('.', ',')} m ${plan.hoeheQuelle === 'ar' ? '(gemessen)' : '(Standard)'} · ${am.fotos || 0} Fotos${k}</p>
+    const hq = { ar: '(gemessen)', scan: '(aus Scan)', 'geschätzt': '(geschätzt)' }[plan.hoeheQuelle] || '(Standard)';
+    const hw = (am.hinweise || []).map(h => `<p class="mut">⚠ ${esc(h)}</p>`).join('');
+    const pw = plan.wolke ? `<label class="chk"><input type="checkbox" id="wolke2" ${SHOWW() ? 'checked' : ''}> Echte Einrichtung zeigen (${Math.round(plan.wolke.n / 1000)} Tsd. Punkte) – aus = leerer Raum zum Planen</label>` : '';
+    return [am.art === 'scan' ? 'Scan fertig' : 'Aufmaß fertig', `<p><b>${esc(plan.name)}</b>: ${ws.length} Wände · ${A.toFixed(2).replace('.', ',')} m² · Höhe ${plan.height.toFixed(2).replace('.', ',')} m ${hq} · ${am.fotos || 0} Fotos${k}</p>${hw}${pw}
       <ul class="li">${ws.map((w, i) => `<li><span>Wand ${i + 1}</span><b>${(w.innen * 100).toFixed(1).replace('.', ',')} cm</b></li>`).join('')}</ul>
       <h3>Genauer machen: Kontrollmaß</h3>
-      <p class="mut">Die Handy-Messung ist auf etwa ±1–2 % genau. Miss eine lange Wand mit Maßband oder Laser und trag das echte Maß ein. Der ganze Raum wird darauf umgerechnet.</p>
+      <p class="mut">${am.art === 'scan' ? 'Der Scan trifft die Maße typisch auf einige Zentimeter.' : 'Die Handy-Messung ist auf etwa ±1–2 % genau.'} Miss eine lange Wand mit Maßband oder Laser und trag das echte Maß ein. Der ganze Raum wird darauf umgerechnet.</p>
       <div class="row"><select id="kmWand" aria-label="Wand">${ws.map((w, i) => `<option value="${i}">Wand ${i + 1} (${(w.innen * 100).toFixed(0)} cm)</option>`).join('')}</select>
       <input id="kmCm" type="number" inputmode="decimal" step="0.1" placeholder="echtes Maß in cm" aria-label="Echtes Maß in cm"><button data-km="1" class="main">Übernehmen</button></div>
-      <p class="note">Danach: ➕ Möbel stellen, 🎨 streichen, 🚶 Gehen. Fotos aus/ein: Menü → Einstellungen.</p>`];
+      <div class="list" style="margin-top:10px"><button data-m="teilen">📤 Raum teilen (z. B. an Claude → eigene Kachel in der App-Zentrale)</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (wenn etwas nicht stimmt)</button>' : ''}</div>
+      <p class="note">Danach: 🚶 Gehen, ➕ Möbel stellen, 🎨 streichen. Fotos und Einrichtung aus/ein: Menü → Einstellungen.</p>`];
+  },
+  keintiefe() {
+    return ['Scannen nicht möglich', `<p>Dieses Handy liefert im Browser keine Tiefendaten (ARCore Depth). Das Scannen im Durchgehen geht damit nicht.</p>
+      <div class="list"><button data-m="aufmessen" class="main">📏 Stattdessen Ecken antippen</button><button data-m="raum">📐 Maße eintippen</button></div>
+      <p class="note">${esc(scanFehler)}</p>`];
+  },
+  scanfehler() {
+    return ['Scan nicht auswertbar', `<p><b>${esc(scanFehler)}</b></p>
+      <ul class="help"><li>Langsam gehen und schwenken, Raum gut beleuchten.</li><li>Jede Wand vom Boden bis zur Decke filmen, auch die Ecken.</li><li>Einmal ganz im Kreis drehen, dann durch den Raum gehen.</li></ul>
+      <div class="list"><button data-m="scannen" class="main">📹 Nochmal scannen</button><button data-m="aufmessen">📏 Ecken antippen</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (zur Fehlersuche an Claude)</button>' : ''}</div>`];
   },
   keinar() {
     return ['Aufmessen nicht möglich', `<p>Dieses Gerät bzw. dieser Browser kann kein AR im Browser.</p>
@@ -679,6 +719,7 @@ const SHEETS = {
   },
   hilfe() {
     return ['So geht’s', `<ul class="help">
+      <li><b>Eigenen Raum holen:</b> ☰ Menü → „📹 Raum scannen“ (Android-Handy, Chrome). Langsam durchgehen und alles abfilmen, „Fertig“ – der Raum steht als 3D-Modell da.</li>
       <li><b>Ansicht oben:</b> 🚶 Gehen = durch die Wohnung laufen · 🏠 Haus = von schräg oben drehen · ⬛ Plan = Grundriss.</li>
       <li><b>Gehen:</b> ${MOBIL ? 'linker Kreis = laufen, rechts wischen = umsehen, Boden antippen = hingehen.' : 'W A S D oder Pfeiltasten, Maus ziehen = umsehen, Boden klicken = hingehen, Mausrad = vor/zurück.'}</li>
       <li><b>Möbel verschieben:</b> antippen (blauer Rahmen), dann nochmal drauf und ziehen. Drehen, Farbe, Kopie und Löschen im Feld unten.</li>
@@ -724,9 +765,11 @@ function bindSheet(name) {
     $('#eigen').oninput = e => { farbe = farbInfo(e.target.value); };
     $('#eigen').onchange = () => openSheet('farbe');
   }
+  if (name === 'aufmass' && $('#wolke2')) $('#wolke2').onchange = e => { LS.set('rp3d-wolke', e.target.checked ? '1' : '0'); baueWolke(); applyLight(); };
   if (name === 'menu') {
     $('#snap').onchange = e => LS.set('rp3d-snap', e.target.checked ? '1' : '0');
     $('#fotos').onchange = e => { LS.set('rp3d-fotos', e.target.checked ? '1' : '0'); buildStructure(); inv(); };
+    $('#wolke').onchange = e => { LS.set('rp3d-wolke', e.target.checked ? '1' : '0'); baueWolke(); applyLight(); };
     $('#tag').onchange = e => { affTag = e.target.value.trim() || AFF_DEFAULT; LS.set('rp3d-tag', affTag); hint('Partner-ID gespeichert: ' + affTag); };
   }
   if (name === 'raum') {
@@ -809,16 +852,36 @@ async function aufmessen() {
   if (!res) { hint('Aufmessen abgebrochen'); return; }
   await ladeAufmass(res, 'Aufmaß ' + new Date().toLocaleDateString('de-AT'));
 }
+let scanFehler = '';
+async function scannen() {
+  if (!(await arVerfuegbar())) return openSheet('keinar');
+  closeSheet(); deselect();
+  let roh;
+  try { roh = await starteScan($('#arUI')); }
+  catch (e) { scanFehler = e.message; return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
+  if (!roh) { hint('Scan abgebrochen (mindestens 25 Aufnahmen nötig)'); return; }
+  await ladeScan(roh, 'Scan ' + new Date().toLocaleDateString('de-AT'));
+}
+async function ladeScan(roh, name) {
+  hint('Scan wird ausgewertet …', 60000); await new Promise(r => setTimeout(r, 30));
+  try { letzterRoh = rohKompakt(roh); } catch { letzterRoh = null; }
+  let res;
+  try { res = await auswerten(roh, t => hint(t, 60000)); }
+  catch (e) { scanFehler = e.message; hint('Scan nicht auswertbar', 4000); openSheet('scanfehler'); return null; }
+  const p = await ladeAufmass(res, name); if (p) p.aufmass.info = res.info;
+  return p;
+}
 async function ladeAufmass(res, name) {
-  hint('3D-Modell wird gebaut …', 20000);
+  hint('3D-Modell wird gebaut …', 60000);
   const id = 'a' + Date.now().toString(36);
-  const { plan: p, tex } = await modellAusAufmass(res, name, id, t => hint(t, 20000));
+  const { plan: p, tex, wolke } = await modellAusAufmass(res, name, id, t => hint(t, 60000));
+  if (wolke) { const k = id + '-wolke'; wolken.set(k, wolke); p.wolke = { key: k, n: wolke.pos.length / 3 }; try { await idb.put(k, wolke); } catch { /* nur für diese Sitzung */ } }
   for (const [k, cv] of tex) {
     fotoTex.set(k, texAus(new THREE.CanvasTexture(cv)));
     try { const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85)); await idb.put(k, blob); } catch { /* nur für diese Sitzung */ }
   }
   pushUndo(); plan = p; rebuild(); deselect(); save(); setMode('haus'); openSheet('aufmass');
-  hint(`Fertig: ${p.walls.length} Wände, ${tex.size} Fotoflächen`);
+  hint(`Fertig: ${p.walls.length} Wände, ${tex.size} Fotoflächen${wolke ? ', Einrichtung als Punkte' : ''}`);
   return p;
 }
 function kontrollmass() {
@@ -839,18 +902,75 @@ function download(name, data) { const a = document.createElement('a'); a.href = 
 function menuAction(m) {
   if (m === 'raum' || m === 'hilfe') return openSheet(m);
   if (m === 'aufmessen') return aufmessen();
+  if (m === 'scannen') return scannen();
   if (m === 'beispiel') { pushUndo(); plan = beispiel(); rebuild(); deselect(); save(); closeSheet(); setMode('haus'); hint('Beispielwohnung geladen'); }
-  if (m === 'speichern') {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(plan, null, 1)], { type: 'application/json' }));
-    download(`raumplan-3d-${plan.name.replace(/[^\wäöüÄÖÜß-]+/g, '_')}.json`, url); setTimeout(() => URL.revokeObjectURL(url), 3000);
-  }
+  if (m === 'speichern') exportPlan();
+  if (m === 'teilen') exportPlan(true);
+  if (m === 'roh' && letzterRoh) teilen(`scan-roh-${letzterRoh.datum.slice(0, 16).replace(/[:T]/g, '-')}.txt`, JSON.stringify(letzterRoh));
   if (m === 'oeffnen') $('#file').click();
   if (m === 'foto') { selBox.visible = false; renderer.render(scene, camera); download('raumplan-3d.png', canvas.toDataURL('image/png')); selBox.visible = !!selId; inv(); }
   if (m === 'leeren') { if (!confirm('Alle Möbel aus dem Plan entfernen? (↶ holt sie zurück)')) return; pushUndo(); plan.items = []; buildItems(); deselect(); save(); hint('Alle Möbel entfernt'); }
 }
+// Projektdatei enthält auch die Fotos und die Punktwolke, damit der Raum auf jedem Gerät gleich aussieht
+const b64 = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 8192) t += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(t); };
+const unb64 = t => Uint8Array.from(atob(t), ch => ch.charCodeAt(0));
+// Teilen über das Android-Menü (Drive, Claude, Mail). Chrome teilt keine .json-Dateien, deshalb .txt.
+async function teilen(name, text) {
+  const file = new File([text], name, { type: 'text/plain' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } }
+  catch (e) { if (e.name === 'AbortError') return; }
+  const url = URL.createObjectURL(file); download(name, url); setTimeout(() => URL.revokeObjectURL(url), 5000); hint('Datei liegt im Download-Ordner: ' + name, 6000);
+}
+async function exportPlan(zumTeilen = false) {
+  hint('Datei wird erstellt …', 20000);
+  const out = JSON.parse(snapshot()), daten = { fotos: {}, wolken: {} }, keys = new Set();
+  for (const w of plan.walls) for (const f of [w.fotoA, w.fotoB]) if (f) keys.add(f.key);
+  for (const r of plan.rooms) if (r.foto) keys.add(r.foto.key);
+  for (const k of keys) { try { const blob = await idb.get(k); if (blob) daten.fotos[k] = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); }); } catch { /* Foto fehlt */ } }
+  const w = plan.wolke && wolken.get(plan.wolke.key);
+  if (w) daten.wolken[plan.wolke.key] = { pos: b64(new Uint8Array(w.pos.buffer, w.pos.byteOffset, w.pos.byteLength)), col: b64(w.col) };
+  if (Object.keys(daten.fotos).length || w) out.daten = daten;
+  const uml = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss' };
+  const datei = 'raumplan-3d-' + plan.name.replace(/[äöüÄÖÜß]/g, ch => uml[ch]).replace(/[^\w-]+/g, '_'), text = JSON.stringify(out);
+  if (zumTeilen) { hint('', 1); return teilen(datei + '.txt', text); }
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  download(datei + '.json', url); setTimeout(() => URL.revokeObjectURL(url), 5000);
+  hint('Projekt gespeichert (mit Fotos' + (w ? ' und Einrichtung' : '') + ')');
+}
+// Rohdaten des letzten Scans klein verpackt (Lagen, Tiefenraster, Bilder als kleines JPEG): damit lässt sich
+// ein misslungener Scan am PC genau nachrechnen. Datei öffnen = neu auswerten.
+let letzterRoh = null;
+function rohKompakt(roh) {
+  const big = document.createElement('canvas'), cv = document.createElement('canvas'), cx = cv.getContext('2d'), kf = [];
+  for (const f of roh.kf) {
+    let img = null;
+    if (f.img) { big.width = f.img.W; big.height = f.img.H; big.getContext('2d').putImageData(new ImageData(f.img.data, f.img.W, f.img.H), 0, 0); cv.width = Math.round(f.img.W / 2); cv.height = Math.round(f.img.H / 2); cx.drawImage(big, 0, 0, cv.width, cv.height); img = cv.toDataURL('image/jpeg', 0.6); }
+    kf.push({ M: Array.from(f.M, v => +v.toFixed(5)), P: Array.from(f.P, v => +v.toFixed(6)), GW: f.GW, GH: f.GH, z: b64(new Uint8Array(f.z.buffer, f.z.byteOffset, f.z.byteLength)), img });
+  }
+  return { typ: 'rp3d-roh', v: 1, datum: new Date().toISOString(), geraet: navigator.userAgent, kf };
+}
+async function rohLaden(o) {
+  const kf = [], c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently: true });
+  for (const f of o.kf) {
+    let img = null;
+    if (f.img && /^data:image\/jpeg;base64,/.test(f.img)) { const im = new Image(); im.src = f.img; await im.decode(); c.width = im.width; c.height = im.height; x.drawImage(im, 0, 0); img = { data: x.getImageData(0, 0, c.width, c.height).data, W: c.width, H: c.height }; }
+    const zb = unb64(f.z); kf.push({ M: Float32Array.from(f.M), P: Float32Array.from(f.P), GW: f.GW, GH: f.GH, z: new Uint16Array(zb.buffer, 0, zb.byteLength >> 1), img });
+  }
+  return { kf };
+}
+async function importPlan(p) {
+  if (p.typ === 'rp3d-roh') { closeSheet(); return ladeScan(await rohLaden(p), 'Scan ' + String(p.datum || '').slice(0, 10)); }
+  const d = p.daten; delete p.daten;
+  if (d) {
+    for (const [k, url] of Object.entries(d.fotos || {})) { if (!/^data:image\/(jpeg|png);base64,/.test(url)) continue; try { const blob = await (await fetch(url)).blob(); await idb.put(k, blob); } catch { /* ohne dieses Foto */ } }
+    for (const [k, v] of Object.entries(d.wolken || {})) { try { const pb = unb64(v.pos), w = { pos: new Float32Array(pb.buffer, 0, pb.byteLength >> 2), col: unb64(v.col) }; wolken.set(k, w); await idb.put(k, w); } catch { /* ohne Punktwolke */ } }
+  }
+  const old = plan ? snapshot() : null; normalize(p); if (old) { undo.push(old); $('#bUndo').disabled = false; }
+  await ladeFotos(); rebuild(); deselect(); save(); closeSheet();
+}
 $('#file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { const p = JSON.parse(await f.text()); const old = snapshot(); normalize(p); undo.push(old); $('#bUndo').disabled = false; rebuild(); deselect(); save(); closeSheet(); hint('Projekt geöffnet: ' + plan.name); }
+  try { const p = JSON.parse(await f.text()), roh = p.typ === 'rp3d-roh'; await importPlan(p); if (!roh) hint('Projekt geöffnet: ' + plan.name); }
   catch (err) { hint('Datei nicht lesbar: ' + err.message, 5000); }
 };
 
@@ -920,11 +1040,16 @@ function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h
 addEventListener('resize', resize);
 
 // ---------- Start ----------
-try { const s = LS.get('rp3d-plan'); plan = s ? JSON.parse(s) : beispiel(); normalize(plan); }
+try { const s = LS.get(SKEY); plan = s ? JSON.parse(s) : beispiel(); normalize(plan); }
 catch { plan = beispiel(); normalize(plan); }
 resize(); rebuild(); setMode('haus');
 requestAnimationFrame(loop);
 if (!LS.get('rp3d-hilfe')) { openSheet('hilfe'); LS.set('rp3d-hilfe', '1'); }
 // für Tests/Automatisierung
-window.rp3d = { get plan() { return plan; }, setMode, openSheet, select, addItem, inv, ladeAufmass, get mode() { return mode; } };
-ladeFotos().then(n => { if (n) { buildStructure(); inv(); } });
+window.rp3d = { get plan() { return plan; }, setMode, openSheet, select, addItem, inv, ladeAufmass, ladeScan, exportPlan, importPlan, get mode() { return mode; } };
+ladeFotos().then(n => { if (n) { buildStructure(); baueWolke(); applyLight(); } });
+// Verlinkter Raum (z. B. aus der App-Zentrale): index.html?plan=raeume/buero.json – nur vom eigenen Server
+if (PLAN_URL && !LS.get(SKEY)) {
+  const u = new URL(PLAN_URL, location.href);
+  if (u.origin === location.origin) fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(importPlan).then(() => { setMode('haus'); hint('Raum geladen: ' + plan.name); }).catch(e => hint('Raum konnte nicht geladen werden: ' + e.message, 6000));
+}
