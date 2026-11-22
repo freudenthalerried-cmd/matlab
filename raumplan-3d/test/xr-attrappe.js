@@ -3,7 +3,7 @@
 // und einem Orientierungsverlust mittendrin. Ersetzt navigator.xr, XRWebGLLayer und XRWebGLBinding.
 // opts: zeilenUnten (Tiefenpuffer verkehrt wie am S25), ohneKamera, werfen (getDepthInMeters wirft n-mal),
 //       immerEmu (Gerät meldet dauerhaft „Position geschätzt“), zittern (Grad Unruhe je Bild), tiefeSpaet (Bilder ohne Tiefe am Anfang),
-//       tiefeNie, tiefeWirft (getDepthInformation wirft), stehen (Position bleibt 0 = wirklich keine Lage), ohneTreffer (kein Boden per Hit-Test)
+//       tiefeNie, tiefeWirft (getDepthInformation wirft), stehen (Position bleibt 0 = wirklich keine Lage), ohneTreffer (kein Boden per Hit-Test), ohneBasis (renderState.baseLayer ist null wie am S25)
 export async function installiere(opts = {}) {
   const { synthRoh } = await import('./synth.js');
   const roh = await synthRoh(opts.synth || {});
@@ -37,7 +37,8 @@ export async function installiere(opts = {}) {
   };
   class Sitzung extends EventTarget {
     constructor() { super(); this.renderState = {}; this.enabledFeatures = ['depth-sensing', 'dom-overlay'].concat(opts.ohneKamera ? [] : ['camera-access']); this.depthDataFormat = 'luminance-alpha'; this.depthUsage = 'cpu-optimized'; this.inputSources = []; this.environmentBlendMode = 'alpha-blend'; this.cb = null; this.t = 1000; this.zu = false; }
-    updateRenderState(s) { Object.assign(this.renderState, s); }
+    // ohneBasis: wie Chrome am S25 mit WebXR-Layers – three.js behält seine Ebene, aber session.renderState.baseLayer ist null
+    updateRenderState(s) { if (opts.ohneBasis && s.baseLayer) { this.renderState = { baseLayer: null }; return; } Object.assign(this.renderState, s); }
     async requestReferenceSpace(type) { return { type }; }
     async requestHitTestSource() { return { cancel() {} }; }
     requestAnimationFrame(cb) { this.cb = cb; if (!this.zu) setTimeout(() => this.bild(), 0); return 1; }

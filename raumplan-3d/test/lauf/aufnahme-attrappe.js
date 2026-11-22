@@ -1,7 +1,7 @@
 // Echte Aufnahme (starteScan) gegen die WebXR-Attrappe: Startseite → Raum aufnehmen → Fertig → Modell. Aufruf: node t8.js [variante]
 const { chromium, devices } = require('playwright');
 const SP = __dirname, VAR = process.argv[2] || 'normal';
-const OPTS = { normal: {}, s25: { zeilenUnten: true }, ohneKamera: { ohneKamera: true }, wurf: { werfen: 40 }, immerEmu: { immerEmu: true }, zittern: { zittern: 2.5 }, tiefeSpaet: { tiefeSpaet: 200 }, tiefeNie: { tiefeNie: true }, tiefeWirft: { tiefeWirft: true }, stehen: { stehen: true } }[VAR];
+const OPTS = { normal: {}, s25: { zeilenUnten: true }, ohneKamera: { ohneKamera: true }, wurf: { werfen: 40 }, immerEmu: { immerEmu: true }, zittern: { zittern: 2.5 }, tiefeSpaet: { tiefeSpaet: 200 }, tiefeNie: { tiefeNie: true }, tiefeWirft: { tiefeWirft: true }, stehen: { stehen: true }, s25echt: { ohneBasis: true, zeilenUnten: true } }[VAR];
 (async () => {
   const b = await chromium.launch();
   const ctx = await b.newContext({ ...devices['Pixel 7'] });

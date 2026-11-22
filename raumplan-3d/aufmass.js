@@ -527,7 +527,9 @@ export function starteScan(root) {
       st.versuchT = t; stat.versuche++;
       let di = null; try { di = frame.getDepthInformation(view); } catch (e) { st.tiefeFehler = String(e && e.message || e).slice(0, 80); }
       if (!di) { st.keineTiefe += 15; stat.ohneTiefe++; st.tiefeOk = false; return; }
-      const vp = session.renderState.baseLayer.getViewport(view); tz.asp = vp.height / vp.width;
+      // Seitenverhältnis des Bildes aus der Projektion (Höhe/Breite). Nicht über session.renderState.baseLayer:
+      // Chrome am S25 nutzt WebXR-Layers, dort ist baseLayer null (Handytest 22.11., „reading 'getViewport'“).
+      tz.asp = Px[5] > 0 ? Math.max(0.3, Math.min(4, Px[0] / Px[5])) : 2;
       const raster = leseTiefe(di, fmt, tz);
       if (!raster) { st.keineTiefe += 15; stat.ohneTiefe++; st.tiefeOk = false; return; }
       st.keineTiefe = 0; st.tiefeOk = true;

@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 2.0 (nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 2.1 (Ursache des Handyfehlers gefunden und behoben, siehe „Dritter Handytest“; nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -11,6 +11,13 @@ Stand 22.11.2026, Version 2.0 (nach zweitem Handytest: Aufnahme gegen abweichend
 - **Einkaufsliste:** Möbel mit Menge, Wandfarbe in m² und Litern (2 Anstriche, 7 m²/l), Boden in m² (+10 % Verschnitt), jeweils mit Amazon-Link.
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
+
+## Dritter Handytest: Ursache gefunden (2.1)
+**Screenshot von Stefan (S25, Version 2.0):** unten „⚠ Cannot read properties of null (reading 'getViewport') · Lage ✓ · Tiefe … · Foto … · 0/240“.
+**Ursache (bestätigt durch die Fehlermeldung):** `session.renderState.baseLayer` ist am S25 `null`. Chrome dort unterstützt WebXR-Layers, three.js legt dann eine Projektionsebene an (`renderState.layers`) und keine `XRWebGLLayer`. Die Aufnahme las das Seitenverhältnis über `baseLayer.getViewport(view)` und scheiterte bei jedem Versuch, deshalb 0 Aufnahmen. Die Lage war in Ordnung.
+**Behoben:** Seitenverhältnis aus der Projektionsmatrix (`P[0] / P[5]`), kein Zugriff mehr auf `baseLayer`.
+**Attrappe:** Option `ohneBasis` stellt das nach. Alter Code: 0 Aufnahmen mit genau dieser Meldung. Neuer Code: 210 Aufnahmen, Modell richtig.
+**Lehre:** Die Attrappe ging bisher vom älteren Weg (`XRWebGLLayer`) aus. Am S25 läuft three.js über WebXR-Layers; dieser Weg ist in der Attrappe nur für `baseLayer` nachgestellt, nicht vollständig. Ob danach Tiefe und Kamerabild am Gerät kommen, zeigt erst die Zeile „Lage/Tiefe/Foto“ im nächsten Test.
 
 ## Zweiter Handytest und WebXR-Attrappe (1.5)
 **Meldung von Stefan (S25, Version 1.4):** „Aufnahme macht keine Fotos“. Wieder ohne Kennzahlen, die Ursache am Gerät ist **nicht bekannt**.
