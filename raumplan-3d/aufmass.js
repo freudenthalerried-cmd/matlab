@@ -289,7 +289,11 @@ export function starteAufmass(root) {
     let msg = '', msgT = 0; const say = t => { msg = t; msgT = performance.now(); };
     function ui() {
       const n = st.corners.length, a = ziel(); let step = '', txt = '', live = '', b1 = '', b2 = '', b3 = '', d1 = false;
-      if (st.phase === 'boden') { step = 'Boden suchen'; txt = 'Handy schräg auf den Boden richten und langsam hin und her bewegen.'; live = st.floorY != null ? '✓ Boden erkannt' : 'Boden wird gesucht …'; b1 = 'Weiter'; d1 = st.floorY == null; b2 = 'Abbrechen'; }
+      if (st.phase === 'boden') {
+        step = 'Boden suchen'; txt = 'Handy schräg auf den Boden richten und langsam hin und her bewegen.'; live = st.floorY != null ? '✓ Boden erkannt' : 'Boden wird gesucht …'; b1 = 'Weiter'; d1 = st.floorY == null; b2 = 'Abbrechen';
+        // Findet das Handy keinen Boden (glatter Boden, wenig Licht): Höhe schätzen. Der Fehler ist ein reiner Maßstabsfehler, den das Kontrollmaß danach ausgleicht.
+        if (st.floorY == null && st.camY != null && st.bilder > 180) { b3 = '🤷 Boden schätzen'; txt = 'Kein Boden gefunden? Handy auf Brusthöhe (ca. 1,40 m) halten und „Boden schätzen“ tippen. Danach unbedingt das Kontrollmaß eintragen.'; }
+      }
       else if (st.phase === 'ecken') {
         step = `1/3 · Ecken (${n})`; txt = n ? 'Nächste Ecke, einmal rundherum. Verdeckte Ecke: Kreuz dorthin, wo sie wäre.' : 'Kreuz genau auf eine Bodenecke richten (wo zwei Wände den Boden treffen), dann tippen.';
         live = !a ? 'Kreuz auf den Boden richten' : a.snap ? 'Tippen schließt den Raum' : n ? `${f2(a.len)} m` : 'Ecke anpeilen';
@@ -327,7 +331,7 @@ export function starteAufmass(root) {
       else if (st.phase === 'oeff') { if (st.sub) st.sub = 0; else return end(true); }
       ui();
     };
-    B3.onclick = () => { buzz(); if (st.phase === 'ecken' && st.corners.length >= 3) close(); else if (st.phase === 'oeff' && !st.sub) { st.typ = 'fenster'; st.sub = 1; } ui(); };
+    B3.onclick = () => { buzz(); if (st.phase === 'boden' && st.floorY == null && st.camY != null) { st.floorY = st.camY - 1.4; st.bodenGeschaetzt = true; st.phase = 'ecken'; redraw(); } else if (st.phase === 'ecken' && st.corners.length >= 3) close(); else if (st.phase === 'oeff' && !st.sub) { st.typ = 'fenster'; st.sub = 1; } ui(); };
     function close() { st.phase = 'hoehe'; redraw(); }
     function end(ok) { st.finished = ok; try { session.end(); } catch { /* schon beendet */ } }
 
@@ -338,7 +342,7 @@ export function starteAufmass(root) {
       if (!pose) { st.lost++; renderer.render(scene, cam); return; }
       const view = pose.views[0], Mx = view.transform.matrix, Px = view.projectionMatrix;
       if (pose.emulatedPosition) st.lost++; else st.lost = Math.max(0, st.lost - 1);
-      const o = [Mx[12], Mx[13], Mx[14]];
+      const o = [Mx[12], Mx[13], Mx[14]]; st.camY = o[1]; st.bilder = (st.bilder || 0) + 1;
       invP.fromArray(Px).invert(); camM.fromArray(Mx); v3.set(0, 0, 0.5).applyMatrix4(invP).normalize().transformDirection(camM);
       const d = [v3.x, v3.y, v3.z]; st.ray = { o, d };
       // Bodenhöhe aus waagrechten Treffern (Median, laufend verfeinert)
@@ -399,7 +403,7 @@ export function starteAufmass(root) {
         let height = st.height;
         if (st.hRay) { const r = rayVertical(st.hRay.o, st.hRay.d, corners[st.hRay.c]); if (r) height = r.y - st.floorY; }
         const opens = st.opens.map(o => { const a = corners[o.wall], b = corners[(o.wall + 1) % corners.length], r1 = rayWall(o.r1.o, o.r1.d, a, b), r2 = rayWall(o.r2.o, o.r2.d, a, b); return r1 && r2 ? { typ: o.typ, wall: o.wall, s0: r1.s, s1: r2.s, y0: r1.y - st.floorY, y1: r2.y - st.floorY } : null; }).filter(Boolean);
-        return { corners, floorY: st.floorY, height, heightSrc: st.heightSrc, opens, frames: st.frames, camH: median(st.camH) };
+        return { corners, floorY: st.floorY, height, heightSrc: st.heightSrc, opens, frames: st.frames, camH: median(st.camH), warn: st.bodenGeschaetzt && st.floorHits.length < 15 ? ['Bodenhöhe geschätzt (Handy auf 1,40 m angenommen) – bitte Kontrollmaß eintragen, sonst stimmen die Maße nur grob'] : [] };
       })() : null;
       try { renderer.dispose(); renderer.forceContextLoss(); } catch { /* egal */ }
       resolve(res);

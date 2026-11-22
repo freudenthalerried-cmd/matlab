@@ -3,7 +3,7 @@
 // und einem Orientierungsverlust mittendrin. Ersetzt navigator.xr, XRWebGLLayer und XRWebGLBinding.
 // opts: zeilenUnten (Tiefenpuffer verkehrt wie am S25), ohneKamera, werfen (getDepthInMeters wirft n-mal),
 //       immerEmu (Gerät meldet dauerhaft „Position geschätzt“), zittern (Grad Unruhe je Bild), tiefeSpaet (Bilder ohne Tiefe am Anfang),
-//       tiefeNie, tiefeWirft (getDepthInformation wirft), stehen (Position bleibt 0 = wirklich keine Lage)
+//       tiefeNie, tiefeWirft (getDepthInformation wirft), stehen (Position bleibt 0 = wirklich keine Lage), ohneTreffer (kein Boden per Hit-Test)
 export async function installiere(opts = {}) {
   const { synthRoh } = await import('./synth.js');
   const roh = await synthRoh(opts.synth || {});
@@ -51,7 +51,7 @@ export async function installiere(opts = {}) {
       if (opts.stehen) { M = Float32Array.from(M); M[12] = M[13] = M[14] = 0; }
       const ohneT = s.ohneTiefe || opts.tiefeNie || st.bilder < (opts.tiefeSpaet || 0);
       const view = { eye: 'none', transform: { matrix: M }, projectionMatrix: f.P, camera: opts.ohneKamera ? undefined : { width: W * 4, height: H * 4 } };
-      const frame = { session: this, getViewerPose: () => ({ emulatedPosition: !!s.emu || !!opts.immerEmu || !!opts.stehen, views: [view], transform: view.transform }), getHitTestResults: () => { const dy = -M[9]; if (dy < 0.2) return []; const t = (M[13] - (opts.bodenY ?? -1.45)) / dy, hm = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, M[12] - M[8] * t, opts.bodenY ?? -1.45, M[14] - M[10] * t, 1]); return [{ getPose: () => ({ transform: { matrix: hm } }) }]; }, getDepthInformation: () => { if (opts.tiefeWirft) throw new DOMException('Depth sensing not enabled', 'NotSupportedError'); return ohneT ? null : tiefe(f); } };
+      const frame = { session: this, getViewerPose: () => ({ emulatedPosition: !!s.emu || !!opts.immerEmu || !!opts.stehen, views: [view], transform: view.transform }), getHitTestResults: () => { const dy = -M[9]; if (dy < 0.2 || opts.ohneTreffer) return []; const t = (M[13] - (opts.bodenY ?? -1.45)) / dy, hm = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, M[12] - M[8] * t, opts.bodenY ?? -1.45, M[14] - M[10] * t, 1]); return [{ getPose: () => ({ transform: { matrix: hm } }) }]; }, getDepthInformation: () => { if (opts.tiefeWirft) throw new DOMException('Depth sensing not enabled', 'NotSupportedError'); return ohneT ? null : tiefe(f); } };
       const t0 = performance.now(); cb(this.t, frame); st.max = Math.max(st.max, performance.now() - t0);
     }
     async end() { if (this.zu) return; this.zu = true; this.dispatchEvent(new Event('end')); }
