@@ -105,6 +105,11 @@ h3{font-size:16px;margin:14px 0 6px}
 .pr button:first-child{flex:1;display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-width:0}
 .pr b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .warn{color:var(--warn)}
+#warte{position:fixed;inset:0;z-index:45;background:#14181df2;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
+#warte>div{max-width:420px;width:100%}
+#warte b{font-size:22px}
+#warte .bar{height:14px;border-radius:7px;background:var(--card2);overflow:hidden;margin:14px 0 6px}
+#warte .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
 #err{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50;background:var(--bg)}
 </style>
 </head>
@@ -133,6 +138,7 @@ h3{font-size:16px;margin:14px 0 6px}
   <button data-t="menu">☰<span>Menü</span></button>
 </nav>
 <section id="start" hidden></section>
+<div id="warte" hidden role="status" aria-live="polite"><div><b>Modell wird gebaut</b><p id="warteTxt"></p><div class="bar"><i id="warteBar"></i></div><p id="wartePct" class="mut"></p><p class="mut">Bitte warten und die Seite offen lassen.</p></div></div>
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
 <div id="arUI" hidden>
   <div id="arTop"><b id="arStep"></b><span id="arTxt"></span></div>

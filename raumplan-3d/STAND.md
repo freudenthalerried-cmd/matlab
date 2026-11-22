@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.3 (neu: Startseite mit Projekten, „Neues Projekt: Raum aufnehmen“ startet sofort die Kamera). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.4 (nach erstem Handytest: Aufnahme leichtgewichtig und absturzsicher, Fortschrittsanzeige beim Auswerten). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -11,6 +11,19 @@ Stand 22.11.2026, Version 1.3 (neu: Startseite mit Projekten, „Neues Projekt: 
 - **Einkaufsliste:** Möbel mit Menge, Wandfarbe in m² und Litern (2 Anstriche, 7 m²/l), Boden in m² (+10 % Verschnitt), jeweils mit Amazon-Link.
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
+
+## Erster Handytest und Umbau der Aufnahme (1.4)
+**Meldung von Stefan (S25, Version 1.3):** „Orientierung verloren, Handy hängt“. Keine Messdaten dazu.
+**Vermutete Ursache (nicht am Gerät bestätigt):** Solange ARCore nach dem Start noch keine Tiefendaten liefert, wurde das volle Tiefenraster (64 × 138 = 8.832 Aufrufe von `getDepthInMeters`) in **jedem Bild** neu abgefragt, weil die Zeitsperre nur nach einer gelungenen Aufnahme griff. Das bremst genau in der Phase, in der sich ARCore orientiert.
+**Geändert:**
+- Höchstens ein Aufnahmeversuch alle 250 ms, egal ob er gelingt. Vorab 7 Sonden: ist die Tiefe noch leer, wird nichts weiter gerechnet.
+- Tiefenraster direkt aus dem Puffer (`data` + `normDepthBufferFromNormView`) statt Einzelabfragen; einmalig an 30 Stellen gegen `getDepthInMeters` geprüft, bei Abweichung gröberes Raster (40 × ~86) mit Einzelabfragen (`leseTiefe`, Test `t7`: 7 statt 8.832 Aufrufe, Abweichung 0 mm).
+- Jeder Fehler in einem Bild wird abgefangen und unten angezeigt, die Aufnahme läuft weiter (vorher blieb bei einer Ausnahme das Bild stehen, weil three.js das nächste Bild erst nach dem Rückruf anfordert).
+- Leichter zu zeichnen: Bildpuffer halbe Auflösung, grüne Punkte in fester Größe (vorher wegen fehlender Rendergröße nur 1–2 Bildpunkte groß), nur neue Punkte werden zur Grafikkarte geschickt, Kamerabild 320 px.
+- Start: „Kamera startet …“ statt sofort „Orientierung verloren“. Die Warnung kommt erst, wenn die Lage nach dem Start länger als 0,7 s fehlt.
+- **Kennzahlen jeder Aufnahme** (Dauer, Bilder/s, Anteil ohne Orientierung, Versuche ohne Tiefe, Leseweg, Format, Ausrichtung, Fehler, Ergebnis) stehen danach als Zeile „Letzte Aufnahme …“ unten auf der Startseite und im Fehlerfeld. Bei Problemen diese Zeile schicken lassen.
+- Auswertung: Vollbild-Fortschritt mit Balken, Rechnen in Etappen (Seite bleibt bedienbar), je Wandstelle nur die 3 besten Fotos statt aller, Texel 1,5 cm (Wand) / 2 cm (Boden).
+**Offen:** ob das Hängen damit weg ist. Nächster Schritt nur anhand der Zeile „Letzte Aufnahme“ oder der Rohdaten.
 
 ## Startseite und Projekte (neu in 1.3)
 - Beim Öffnen erscheint die Startseite: großer Knopf **„📹 Neues Projekt: Raum aufnehmen“** (startet sofort die AR-Aufnahme, ein Tipp ist wegen der Kamera-Erlaubnis nötig), darunter Ecken antippen, Maße eintippen, Datei öffnen, „Meine Projekte“ (öffnen, löschen mit Rückfrage), Beispielwohnung.

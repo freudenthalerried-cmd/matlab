@@ -71,10 +71,11 @@ export function bildKopf(kf) {
 }
 
 // Alle Aufnahmen zu einer Punktwolke verschmelzen (ein Punkt je Würfel, Lage und Farbe gemittelt)
-export function fusion(kf) {
+export async function fusion(kf, tick = async () => {}) {
   let cap = 1 << 17, n = 0, S = new Float64Array(cap * 6), LK = new Int16Array(cap), NK = new Uint8Array(cap), CN = new Uint16Array(cap);
   const idx = new Map(), p = [0, 0, 0];
   for (let k = 0; k < kf.length; k++) {
+    if ((k & 7) === 7) await tick(k / kf.length);
     const f = kf[k], { zc, CW, CH } = f, im = f.img;
     for (let r = 0; r < CH; r++) for (let c = 0; c < CW; c++) {
       const q = r * CW + c, dm = zc[q]; if (dm < RMIN || dm > RMAX) continue;
@@ -83,6 +84,7 @@ export function fusion(kf) {
       welt(f.M, f.P, 2 * (c + 0.5) / CW - 1, 1 - 2 * (r + 0.5) / CH, dm / 1000, p);
       const key = vkey(p, VOX); let i = idx.get(key);
       if (i === undefined) {
+        if (n >= 3000000) continue;       // Obergrenze gegen Speichernot bei sehr unruhigen Tiefendaten
         if (n === cap) { cap *= 2; const S2 = new Float64Array(cap * 6); S2.set(S); S = S2; const L2 = new Int16Array(cap); L2.set(LK); LK = L2; const N2 = new Uint8Array(cap); N2.set(NK); NK = N2; const C2 = new Uint16Array(cap); C2.set(CN); CN = C2; }
         i = n++; idx.set(key, i); LK[i] = -1;
       }
@@ -288,15 +290,15 @@ export function grundriss(W, kf, bd, warn = []) {
 export async function auswerten(roh, prog = () => {}) {
   const kf = (roh.kf || []).filter(f => f && f.z && f.GW && f.GH);
   if (kf.length < 12) throw new Error('Zu wenige Aufnahmen. Bitte länger und langsamer filmen.');
-  const warn = [], tick = async t => { prog(t); await new Promise(r => setTimeout(r, 0)); };
-  await tick('Ausrichtung prüfen …');
+  const warn = [], tick = async (t, a) => { prog(t, a); await new Promise(r => setTimeout(r, 0)); };
+  await tick('Ausrichtung prüfen …', 0.08);
   const aus = ausrichtung(kf); if (!aus.sicher) warn.push('Ausrichtung des Tiefenbilds unsicher – beim Scannen auch nach unten und oben schwenken');
   for (const f of kf) Object.assign(f, kanon(f, aus.modus));
   const bk = kf.some(f => f.img) ? bildKopf(kf) : { kopf: false };
   if (bk.kopf) for (const f of kf) { if (!f.img) continue; const { data, W, H } = f.img, row = W * 4, t = new Uint8ClampedArray(row); for (let y = 0; y < H >> 1; y++) { const a = y * row, b = (H - 1 - y) * row; t.set(data.subarray(a, a + row)); data.copyWithin(a, b, b + row); data.set(t, b); } }
-  await tick('Punktwolke bauen …');
-  const W = fusion(kf); if (W.n < 3000) throw new Error('Zu wenige Tiefenpunkte. Raum heller machen und langsamer bewegen.');
-  await tick('Boden, Decke und Wände suchen …');
+  await tick('Punktwolke bauen …', 0.12);
+  const W = await fusion(kf, a => tick('Punktwolke bauen …', 0.12 + 0.23 * a)); if (W.n < 3000) throw new Error('Zu wenige Tiefenpunkte. Raum heller machen und langsamer bewegen.');
+  await tick('Boden, Decke und Wände suchen …', 0.37);
   const bd = bodenDecke(W, warn), gr = grundriss(W, kf, bd, warn);
   if (!kf.some(f => f.img)) warn.push('Ohne Kamerabilder gescannt – Modell ohne Farben und Fotos');
   return {

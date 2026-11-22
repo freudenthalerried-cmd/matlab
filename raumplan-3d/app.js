@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.3';
+const VERSION = '1.4';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -543,6 +543,7 @@ function zeigeStart(msg = '') {
     <div class="row"><button data-s="ecken">📏 Ecken antippen</button><button data-s="masse">📐 Maße eintippen</button><button data-s="datei">📂 Datei öffnen</button></div>
     ${projekte.length ? `<h3>Meine Projekte</h3><div class="list">${projekte.map(q => `<div class="pr"><button data-o="${esc(q.id)}"><b>${esc(q.name)}</b><span class="mut">${fmt(q.t)}${q.m2 ? ' · ' + String(q.m2).replace('.', ',') + ' m²' : ''}${q.id === aktId ? ' · zuletzt offen' : ''}</span></button><button class="no" data-del="${esc(q.id)}" aria-label="Projekt ${esc(q.name)} löschen">🗑</button></div>`).join('')}</div>` : ''}
     <div class="list" style="margin-top:14px"><button data-s="beispiel">🏠 Beispielwohnung ansehen</button></div>
+    ${letzteAufnahme() ? `<p class="note" id="letzte">${esc(letzteAufnahme())}</p>` : ''}
   </div>`;
   $('#start').hidden = false; $('#start').scrollTop = 0;
 }
@@ -774,9 +775,11 @@ const SHEETS = {
       <p class="note">${esc(scanFehler)}</p>`];
   },
   scanfehler() {
-    return ['Scan nicht auswertbar', `<p><b>${esc(scanFehler)}</b></p>
+    scanDetails = letzteAufnahme();
+    return ['Aufnahme nicht auswertbar', `<p><b>${esc(scanFehler)}</b></p>
       <ul class="help"><li>Langsam gehen und schwenken, Raum gut beleuchten.</li><li>Jede Wand vom Boden bis zur Decke filmen, auch die Ecken.</li><li>Einmal ganz im Kreis drehen, dann durch den Raum gehen.</li></ul>
-      <div class="list"><button data-m="scannen" class="main">📹 Nochmal scannen</button><button data-m="aufmessen">📏 Ecken antippen</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (zur Fehlersuche an Claude)</button>' : ''}</div>`];
+      <div class="list"><button data-m="scannen" class="main">📹 Nochmal scannen</button><button data-m="aufmessen">📏 Ecken antippen</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (zur Fehlersuche an Claude)</button>' : ''}</div>
+      ${scanDetails ? `<p class="note">${esc(scanDetails)}</p>` : ''}`];
   },
   keinar() {
     return ['Aufmessen nicht möglich', `<p>Dieses Gerät bzw. dieser Browser kann kein AR im Browser.</p>
@@ -924,36 +927,55 @@ async function aufmessen() {
   if (!res) return zurueck('Aufmessen abgebrochen.');
   await ladeAufmass(res, 'Raum ' + new Date().toLocaleDateString('de-AT'));
 }
-let scanFehler = '';
+let scanFehler = '', scanDetails = '';
+// Fortschritt beim Auswerten (deckt den ganzen Bildschirm, damit klar ist: die App arbeitet)
+function warte(text, anteil) {
+  const w = $('#warte'); if (text == null) { w.hidden = true; return; }
+  w.hidden = false; $('#warteTxt').textContent = text;
+  if (anteil != null) { const p = Math.round(100 * Math.max(0, Math.min(1, anteil))); $('#warteBar').style.width = p + '%'; $('#wartePct').textContent = p + ' %'; }
+}
+// Kennzahlen der letzten Aufnahme merken: stehen auf der Startseite und helfen bei der Fehlersuche
+function merkeAufnahme(stat, ergebnis) { try { LS.set('rp3d-letzte', JSON.stringify({ ...stat, ergebnis })); } catch { /* egal */ } }
+function letzteAufnahme() {
+  try { const a = JSON.parse(LS.get('rp3d-letzte')); if (!a) return ''; const z = new Date(a.zeit).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
+    return `Letzte Aufnahme ${z}: ${a.aufnahmen} Aufnahmen in ${a.sek} s · ${a.bps} Bilder/s · Orientierung weg ${a.verloren} % · ohne Tiefe ${a.ohneTiefe}× · Tiefe ${a.tiefe} (${a.format}, Lage ${a.modus ?? '?'}) · Kamera ${a.kamera ? 'ja' : 'nein'}${a.fehler ? ' · Fehler: ' + a.fehler : ''} · ${a.ergebnis || ''}`; }
+  catch { return ''; }
+}
 async function scannen() {
   const test = window.rp3dTestScan;      // nur für automatische Tests: liefert einen simulierten Roh-Scan statt der Kamera
   if (!test && !(await arVerfuegbar())) return zurueck(KEIN_AR, 'keinar');
   $('#start').hidden = true; closeSheet(); deselect();
-  let roh;
-  try { roh = test ? await test() : await starteScan($('#arUI')); }
-  catch (e) { scanFehler = e.message; return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
-  if (!roh) return zurueck('Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).');
-  await ladeScan(roh, 'Raum ' + new Date().toLocaleDateString('de-AT'));
+  let erg;
+  try { erg = test ? { kf: (await test()).kf, stat: { zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: 'Test', format: '-', kamera: true } } : await starteScan($('#arUI')); }
+  catch (e) { scanFehler = e.message; merkeAufnahme({ zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: '-', format: '-', kamera: false }, 'Start fehlgeschlagen: ' + e.message); return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
+  if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).'); }
+  merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, 'wird ausgewertet');
+  const p = await ladeScan({ kf: erg.kf }, 'Raum ' + new Date().toLocaleDateString('de-AT'));
+  merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, p ? `Modell: ${p.walls.length} Wände, ${(p.rooms[0] ? area(p.rooms[0].poly) : 0).toFixed(1)} m²` : 'Auswertung: ' + scanFehler);
 }
 async function ladeScan(roh, name) {
-  hint('Scan wird ausgewertet …', 60000); await new Promise(r => setTimeout(r, 30));
-  try { letzterRoh = rohKompakt(roh); } catch { letzterRoh = null; }
+  warte('Aufnahme sichern …', 0.02); await new Promise(r => setTimeout(r, 30));
+  try { letzterRoh = await rohKompakt(roh); } catch { letzterRoh = null; }
   let res;
-  try { res = await auswerten(roh, t => hint(t, 60000)); }
-  catch (e) { scanFehler = e.message; hint('Scan nicht auswertbar', 4000); openSheet('scanfehler'); return null; }
-  const p = await ladeAufmass(res, name); if (p) { p.aufmass.info = res.info; save(); }
+  try { res = await auswerten(roh, warte); }
+  catch (e) { warte(null); scanFehler = e.message; openSheet('scanfehler'); return null; }
+  let p = null;
+  try { p = await ladeAufmass(res, name); if (p) { p.aufmass.info = res.info; save(); } }
+  catch (e) { scanFehler = 'Modell konnte nicht gebaut werden: ' + e.message; openSheet('scanfehler'); }
+  warte(null);
   return p;
 }
 async function ladeAufmass(res, name) {
-  hint('3D-Modell wird gebaut …', 60000);
+  warte('3D-Modell wird gebaut …', 0.4);
   const id = 'a' + Date.now().toString(36);
-  const { plan: p, tex, wolke } = await modellAusAufmass(res, name, id, t => hint(t, 60000));
+  let m; try { m = await modellAusAufmass(res, name, id, warte); } catch (e) { warte(null); throw e; }
+  const { plan: p, tex, wolke } = m;
   if (wolke) { const k = id + '-wolke'; wolken.set(k, wolke); p.wolke = { key: k, n: wolke.pos.length / 3 }; try { await idb.put(k, wolke); } catch { /* nur für diese Sitzung */ } }
   for (const [k, cv] of tex) {
     fotoTex.set(k, texAus(new THREE.CanvasTexture(cv)));
     try { const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85)); await idb.put(k, blob); } catch { /* nur für diese Sitzung */ }
   }
-  neuesProjekt(p); setMode('haus'); openSheet('aufmass');
+  warte(null); neuesProjekt(p); setMode('haus'); openSheet('aufmass');
   hint(`Fertig: ${p.walls.length} Wände, ${tex.size} Fotoflächen${wolke ? ', Einrichtung als Punkte' : ''}`);
   return p;
 }
@@ -1014,9 +1036,10 @@ async function exportPlan(zumTeilen = false) {
 // Rohdaten des letzten Scans klein verpackt (Lagen, Tiefenraster, Bilder als kleines JPEG): damit lässt sich
 // ein misslungener Scan am PC genau nachrechnen. Datei öffnen = neu auswerten.
 let letzterRoh = null;
-function rohKompakt(roh) {
+async function rohKompakt(roh) {
   const big = document.createElement('canvas'), cv = document.createElement('canvas'), cx = cv.getContext('2d'), kf = [];
   for (const f of roh.kf) {
+    if (kf.length % 20 === 19) { warte('Aufnahme sichern …', 0.02 + 0.05 * kf.length / roh.kf.length); await new Promise(r => setTimeout(r, 0)); }
     let img = null;
     if (f.img) { big.width = f.img.W; big.height = f.img.H; big.getContext('2d').putImageData(new ImageData(f.img.data, f.img.W, f.img.H), 0, 0); cv.width = Math.round(f.img.W / 2); cv.height = Math.round(f.img.H / 2); cx.drawImage(big, 0, 0, cv.width, cv.height); img = cv.toDataURL('image/jpeg', 0.6); }
     kf.push({ M: Array.from(f.M, v => +v.toFixed(5)), P: Array.from(f.P, v => +v.toFixed(6)), GW: f.GW, GH: f.GH, z: b64(new Uint8Array(f.z.buffer, f.z.byteOffset, f.z.byteLength)), img });
