@@ -259,6 +259,8 @@ export function starteAufmass(root) {
     const ghostLbl = label(''); ghostLbl.visible = false; scene.add(ghostLbl); let ghostTxt = '';
 
     const st = { phase: 'boden', sub: 0, floorHits: [], floorY: null, corners: [], hRay: null, height: 2.6, heightSrc: 'standard', opens: [], typ: null, p1: null, frames: [], last: null, lastT: 0, prevD: null, aim: null, lost: 0, finished: false, camH: [] };
+    // Ziel unter dem Fadenkreuz – gilt nur für den Schritt, in dem es berechnet wurde (sonst Absturz beim Schrittwechsel)
+    const ziel = () => (st.aim && st.aimP === st.phase ? st.aim : null);
     const cornersXZ = () => st.corners.map(c => { const p = rayFloor(c.o, c.d, st.floorY); return p ? [p[0], p[2]] : [c.o[0], c.o[2]]; });
     function redraw() {
       deko.clear(); if (st.floorY == null) return;
@@ -286,7 +288,7 @@ export function starteAufmass(root) {
     const buzz = () => navigator.vibrate && navigator.vibrate(25);
     let msg = '', msgT = 0; const say = t => { msg = t; msgT = performance.now(); };
     function ui() {
-      const n = st.corners.length, a = st.aim; let step = '', txt = '', live = '', b1 = '', b2 = '', b3 = '', d1 = false;
+      const n = st.corners.length, a = ziel(); let step = '', txt = '', live = '', b1 = '', b2 = '', b3 = '', d1 = false;
       if (st.phase === 'boden') { step = 'Boden suchen'; txt = 'Handy schräg auf den Boden richten und langsam hin und her bewegen.'; live = st.floorY != null ? '✓ Boden erkannt' : 'Boden wird gesucht …'; b1 = 'Weiter'; d1 = st.floorY == null; b2 = 'Abbrechen'; }
       else if (st.phase === 'ecken') {
         step = `1/3 · Ecken (${n})`; txt = n ? 'Nächste Ecke, einmal rundherum. Verdeckte Ecke: Kreuz dorthin, wo sie wäre.' : 'Kreuz genau auf eine Bodenecke richten (wo zwei Wände den Boden treffen), dann tippen.';
@@ -306,7 +308,7 @@ export function starteAufmass(root) {
     }
     const ray = () => st.ray && { o: [...st.ray.o], d: [...st.ray.d] };
     B1.onclick = () => {
-      buzz(); const a = st.aim;
+      buzz(); const a = ziel();
       if (st.phase === 'boden' && st.floorY != null) st.phase = 'ecken';
       else if (st.phase === 'ecken' && a) { if (a.snap) close(); else { st.corners.push(ray()); redraw(); } }
       else if (st.phase === 'hoehe' && a) { st.hRay = { ...ray(), c: a.c }; st.height = a.h; st.heightSrc = 'ar'; st.phase = 'oeff'; redraw(); }
@@ -331,8 +333,7 @@ export function starteAufmass(root) {
 
     let grab = null, gdim = '', lastUi = 0;
     const invP = new THREE.Matrix4(), camM = new THREE.Matrix4(), v3 = new THREE.Vector3();
-    renderer.setAnimationLoop((t, frame) => {
-      if (!frame) return;
+    const eckBild = (t, frame) => {
       const pose = frame.getViewerPose(ref);
       if (!pose) { st.lost++; renderer.render(scene, cam); return; }
       const view = pose.views[0], Mx = view.transform.matrix, Px = view.projectionMatrix;
@@ -345,7 +346,7 @@ export function starteAufmass(root) {
       if (st.floorHits.length >= 15) st.floorY = median(st.floorHits);
       if (st.floorY != null) st.camH.push(o[1] - st.floorY), st.camH.length > 200 && st.camH.shift();
       // Zielpunkt je Schritt
-      st.aim = null; reticle.visible = dot.visible = ghost.visible = ghostLbl.visible = false;
+      st.aim = null; st.aimP = st.phase; reticle.visible = dot.visible = ghost.visible = ghostLbl.visible = false;
       if (st.floorY != null) {
         if (st.phase === 'ecken' || st.phase === 'boden') {
           const p = rayFloor(o, d, st.floorY);
@@ -384,7 +385,11 @@ export function starteAufmass(root) {
         }
       }
       st.prevD = d;
-      if (t - lastUi > 150) { lastUi = t; ui(); }
+    };
+    renderer.setAnimationLoop((t, frame) => {
+      if (!frame) return;
+      try { eckBild(t, frame); } catch (e) { say('Fehler: ' + String(e && e.message || e).slice(0, 100)); }
+      if (t - lastUi > 150) { lastUi = t; try { ui(); } catch { /* Anzeige */ } }
     });
     ui();
     session.addEventListener('end', () => {
@@ -454,8 +459,8 @@ export function starteScan(root) {
     const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x3ecf74, size: 5, sizeAttenuation: false, transparent: true, opacity: 0.7, depthTest: false })); pts.frustumCulled = false; scene.add(pts);
     let nPts = 0;
     const kf = [], cov = new Uint8Array(36), vote = [0, 1, 2, 3].map(() => [0, 0]), w3 = [0, 0, 0], tz = { direkt: null, asp: 2 };
-    const st = { modus: null, last: null, lastT: 0, versuchT: 0, prevD: null, bereit: false, verlorenSeit: 0, keineTiefe: 0, schnell: 0, fertig: false, sektor: -1, gezeigt: 0, fehler: '', fehlerT: 0 };
-    const stat = { start: Date.now(), bilder: 0, verloren: 0, ohneTiefe: 0, fehler: 0 };
+    const st = { modus: null, last: null, lastT: 0, versuchT: 0, prevD: null, bereit: false, verlorenSeit: 0, keineTiefe: 0, schnell: 0, fertig: false, sektor: -1, gezeigt: 0, fehler: '', fehlerT: 0, lastO: null, weg: 0, emuN: 0, emuEgal: false, prevT: 0, lageOk: false, tiefeOk: null, tiefeFehler: '' };
+    const stat = { start: Date.now(), bilder: 0, verloren: 0, ohneTiefe: 0, fehler: 0, versuche: 0 };
     const covEl = el('arCov'); covEl.innerHTML = '<i></i>'.repeat(36); const zellen = covEl.children;
     const B1 = el('arB1'), B2 = el('arB2'), B3 = el('arB3');
     root.addEventListener('beforexrselect', e => e.preventDefault());
@@ -465,6 +470,7 @@ export function starteScan(root) {
     const ende = ok => { st.fertig = ok; try { session.end(); } catch { /* schon beendet */ } };
     B1.onclick = () => { navigator.vibrate && navigator.vibrate(25); ende(true); };
     B2.onclick = () => ende(false);
+    B3.onclick = () => { st.wechsel = 'ecken'; ende(false); };
     const zeige = f => {   // Stichprobe der Tiefenpunkte dieser Aufnahme als grüne Punkte
       const sx = Math.max(1, Math.round(f.GW / 12)), sy = Math.max(1, Math.round(f.GH / 25));
       for (let j = sy >> 1; j < f.GH; j += sy) for (let i = sx >> 1; i < f.GW; i += sx) {
@@ -480,33 +486,47 @@ export function starteScan(root) {
       el('arTxt').textContent = !st.bereit ? 'Kamera startet … Handy langsam hin und her bewegen.' : n < 25 ? 'Langsam durch den Raum gehen und alles abfilmen: Wände vom Boden bis zur Decke, Ecken, Boden, Möbel. Grün = erfasst.' : 'Weiter filmen, bis alles grün ist – dann „Fertig“.';
       let w = '';
       if (st.fehler && t - st.fehlerT < 5000) w = '⚠ ' + st.fehler;
-      else if (!st.bereit) w = '';
+      else if (!st.bereit) w = stat.bilder > 150 ? (st.weg < 0.05 ? '⚠ Das Handy findet seine Position nicht. Raum heller machen, auf Boden oder Möbel mit Muster richten, langsam seitlich gehen' : 'Lage wird gesucht …') : '';
+      else if (st.tiefeFehler && st.tiefeOk === false) w = '⚠ Tiefendaten nicht lesbar: ' + st.tiefeFehler;
+      else if (!glb && n < 3) w = '⚠ Kein Kamera-Zugriff – das Modell bekommt keine Fotos (Seite neu laden und Kamera erlauben)';
       else if (st.verlorenSeit && t - st.verlorenSeit > 700) w = '⚠ Orientierung verloren – Handy ruhig auf Boden oder Möbel richten und kurz warten';
       else if (st.keineTiefe > 90) w = '⚠ Noch keine Tiefendaten – Handy langsam seitlich bewegen, Raum hell genug?';
       else if (st.schnell > 12) w = '⚠ Zu schnell – langsamer schwenken';
       else if (n >= MAXK) w = 'Genug Aufnahmen – bitte „Fertig“ tippen';
       else if (n >= 25) { const o = [0, 1, 2].map(b => 12 - cov.subarray(b * 12, b * 12 + 12).reduce((a, x) => a + x, 0)); w = o[0] > 4 ? 'Tipp: auch nach oben filmen (Wand bis zur Decke)' : o[2] > 4 ? 'Tipp: auch nach unten filmen (Boden, Wandfuß)' : o[1] > 3 ? 'Tipp: einmal ganz im Kreis drehen' : 'Sieht gut aus'; }
-      el('arInfo').textContent = (w ? w + ' · ' : '') + (st.bereit ? `${n}/${MAXK}` : '');
+      // Sackgasse (nach rund 8 s keine einzige Aufnahme, weil Tiefe fehlt): Ausweg „Ecken antippen“ anbieten
+      const fest = n === 0 && st.bereit && stat.ohneTiefe >= 30;
+      B3.hidden = !fest; if (fest) B3.textContent = '📏 Ohne Tiefe: Ecken antippen';
+      const hak = v => (v === true ? '✓' : v === false ? '✗' : '…');
+      el('arInfo').textContent = (w ? w + ' · ' : '') + `Lage ${hak(st.lageOk)} · Tiefe ${hak(st.tiefeOk)} · Foto ${hak(glb ? (n ? !!kf[n - 1].img : null) : false)} · ${n}/${MAXK}`;
       for (let q = 0; q < 36; q++) zellen[q].className = (cov[q] ? 'an' : '') + (q === st.sektor ? ' hier' : '');
     };
     const bild = (t, frame) => {
       const pose = frame.getViewerPose(ref); stat.bilder++;
-      if (!pose || pose.emulatedPosition) { stat.verloren++; if (st.bereit && !st.verlorenSeit) st.verlorenSeit = t; st.prevD = null; return; }
-      st.bereit = true; st.verlorenSeit = 0;
+      const weg = () => { stat.verloren++; st.lageOk = false; if (st.bereit && !st.verlorenSeit) st.verlorenSeit = t; st.prevD = null; };
+      if (!pose || !pose.views || !pose.views.length) return weg();
       const view = pose.views[0], Mx = view.transform.matrix, Px = view.projectionMatrix;
       const o = [Mx[12], Mx[13], Mx[14]], d = [-Mx[8], -Mx[9], -Mx[10]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      // Manche Geräte melden „Position geschätzt“ dauerhaft, obwohl die Lage sauber mitläuft. Erkennbar daran,
+      // dass sich die gemeldete Position trotzdem bewegt: dann zählt die Meldung nicht mehr.
+      if (st.lastO) st.weg += Math.min(0.3, Math.hypot(o[0] - st.lastO[0], o[1] - st.lastO[1], o[2] - st.lastO[2])); st.lastO = o;
+      if (pose.emulatedPosition && !st.emuEgal) { st.emuN++; if (!st.bereit && st.emuN > 90 && st.weg > 0.25) st.emuEgal = true; else return weg(); }
+      st.bereit = true; st.verlorenSeit = 0; st.lageOk = true;
       const band = d[1] > 0.25 ? 0 : d[1] < -0.35 ? 2 : 1; st.sektor = band * 12 + (Math.floor((Math.atan2(d[0], d[2]) + Math.PI) / (Math.PI / 6)) % 12);
-      const ruhig = st.prevD && dot(d, st.prevD) > 0.9997; st.schnell = ruhig ? Math.max(0, st.schnell - 1) : st.schnell + 1; st.prevD = d;
+      // Schwenktempo in Grad je Sekunde (unabhängig von der Bildrate des Handys)
+      const dt = st.prevT ? Math.max(1, t - st.prevT) : 33, rate = st.prevD ? Math.acos(Math.min(1, dot(d, st.prevD))) * 57.3 / dt * 1000 : 999; st.prevT = t; st.prevD = d;
+      const ruhig = rate < 50; st.schnell = rate < 80 ? Math.max(0, st.schnell - 1) : st.schnell + 1;
       const L = st.last, bewegt = !L || Math.hypot(o[0] - L.o[0], o[1] - L.o[1], o[2] - L.o[2]) > 0.15 || dot(d, L.d) < 0.988;
+      const zwang = t - st.lastT > 1500 && rate < 150;     // lange nichts aufgenommen: lieber ein leicht verwischtes Bild als keines
       // höchstens ein Versuch alle 250 ms, egal ob er gelingt (sonst bremst das Warten auf Tiefendaten das Handy aus)
-      if (!bewegt || !ruhig || kf.length >= MAXK || t - st.versuchT < VERSUCH_MS) return;
-      st.versuchT = t;
-      let di = null; try { di = frame.getDepthInformation(view); } catch { /* noch nicht bereit */ }
-      if (!di) { st.keineTiefe += 15; stat.ohneTiefe++; return; }
+      if (!bewegt || !(ruhig || zwang) || kf.length >= MAXK || t - st.versuchT < VERSUCH_MS) return;
+      st.versuchT = t; stat.versuche++;
+      let di = null; try { di = frame.getDepthInformation(view); } catch (e) { st.tiefeFehler = String(e && e.message || e).slice(0, 80); }
+      if (!di) { st.keineTiefe += 15; stat.ohneTiefe++; st.tiefeOk = false; return; }
       const vp = session.renderState.baseLayer.getViewport(view); tz.asp = vp.height / vp.width;
       const raster = leseTiefe(di, fmt, tz);
-      if (!raster) { st.keineTiefe += 15; stat.ohneTiefe++; return; }
-      st.keineTiefe = 0;
+      if (!raster) { st.keineTiefe += 15; stat.ohneTiefe++; st.tiefeOk = false; return; }
+      st.keineTiefe = 0; st.tiefeOk = true;
       let img = null;
       if (glb && view.camera) {
         try {
@@ -522,7 +542,7 @@ export function starteScan(root) {
       if (st.modus === null && Math.abs(d[1]) > 0.4) {
         const { GW, GH, z } = f;
         for (let j = 2; j < GH; j += 6) for (let i = 2; i < GW; i += 6) { const dm = z[j * GW + i]; if (dm < 300 || dm > 5500) continue; const u = (i + 0.5) / GW, v = (j + 0.5) / GH; for (let m = 0; m < 4; m++) { welt(f.M, f.P, ndcX(u, v, m), ndcY(u, v, m), dm / 1000, w3); vote[m][1]++; if ((d[1] < 0) === (w3[1] < o[1])) vote[m][0]++; } }
-        if (vote[0][1] >= 1200) { let b = 0; for (let m = 1; m < 4; m++) if (vote[m][0] > vote[b][0]) b = m; if (vote[b][0] / vote[b][1] >= 0.75) st.modus = b; else vote.forEach(v => { v[0] = v[1] = 0; }); }
+        if (vote[0][1] >= 1200) { let b = 0; for (let m = 1; m < 4; m++) if (vote[m][0] > vote[b][0] * 1.03) b = m; if (vote[b][0] / vote[b][1] >= 0.75) st.modus = b; else vote.forEach(v => { v[0] = v[1] = 0; }); }   // bei Gleichstand die Normallage
       }
       if (st.modus !== null) {
         const von = nPts; for (; st.gezeigt < kf.length; st.gezeigt++) zeige(kf[st.gezeigt]);
@@ -540,8 +560,8 @@ export function starteScan(root) {
       renderer.setAnimationLoop(null); zu();
       try { renderer.dispose(); renderer.forceContextLoss(); } catch { /* egal */ }
       const sek = Math.max(1, Math.round((Date.now() - stat.start) / 1000));
-      const info = { zeit: new Date().toISOString(), sek, bilder: stat.bilder, bps: Math.round(stat.bilder / sek), aufnahmen: kf.length, verloren: Math.round(100 * stat.verloren / Math.max(1, stat.bilder)), ohneTiefe: stat.ohneTiefe, tiefe: tz.direkt === true ? 'direkt ' + (tz.probe || '') : tz.direkt === false ? 'einzeln ' + (tz.probe || tz.fehler || '') : 'ungeprüft', format: fmt, kamera: !!glb, modus: st.modus, fehler: stat.fehler ? `${stat.fehler}× ${st.fehler}` : (st.fehler || ''), fertig: st.fertig };
-      resolve({ kf: st.fertig && kf.length >= 12 ? kf : null, stat: info });
+      const info = { zeit: new Date().toISOString(), sek, bilder: stat.bilder, bps: Math.round(stat.bilder / sek), aufnahmen: kf.length, verloren: Math.round(100 * stat.verloren / Math.max(1, stat.bilder)), ohneTiefe: stat.ohneTiefe, tiefe: tz.direkt === true ? 'direkt ' + (tz.probe || '') : tz.direkt === false ? 'einzeln ' + (tz.probe || tz.fehler || '') : 'ungeprüft', format: fmt, kamera: !!glb, modus: st.modus, versuche: stat.versuche, lage: st.emuEgal ? 'Meldung ignoriert' : st.bereit ? 'ok' : 'nie', wegM: +st.weg.toFixed(1), tiefeFehler: st.tiefeFehler, fehler: stat.fehler ? `${stat.fehler}× ${st.fehler}` : (st.fehler || ''), fertig: st.fertig };
+      resolve({ kf: st.fertig && kf.length >= 12 ? kf : null, stat: info, wechsel: st.wechsel || null });
     });
   });
 }

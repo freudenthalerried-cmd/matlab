@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.4';
+const VERSION = '1.5';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -938,7 +938,7 @@ function warte(text, anteil) {
 function merkeAufnahme(stat, ergebnis) { try { LS.set('rp3d-letzte', JSON.stringify({ ...stat, ergebnis })); } catch { /* egal */ } }
 function letzteAufnahme() {
   try { const a = JSON.parse(LS.get('rp3d-letzte')); if (!a) return ''; const z = new Date(a.zeit).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
-    return `Letzte Aufnahme ${z}: ${a.aufnahmen} Aufnahmen in ${a.sek} s · ${a.bps} Bilder/s · Orientierung weg ${a.verloren} % · ohne Tiefe ${a.ohneTiefe}× · Tiefe ${a.tiefe} (${a.format}, Lage ${a.modus ?? '?'}) · Kamera ${a.kamera ? 'ja' : 'nein'}${a.fehler ? ' · Fehler: ' + a.fehler : ''} · ${a.ergebnis || ''}`; }
+    return `Letzte Aufnahme ${z}: ${a.aufnahmen} Aufnahmen in ${a.sek} s · ${a.bps} Bilder/s · Orientierung weg ${a.verloren} % · ohne Tiefe ${a.ohneTiefe}× · Tiefe ${a.tiefe} (${a.format}, Lage ${a.modus ?? '?'}) · Kamera ${a.kamera ? 'ja' : 'nein'} · Lage ${a.lage || '?'} (${a.wegM ?? '?'} m) · Versuche ${a.versuche ?? '?'}${a.tiefeFehler ? ' · Tiefenfehler: ' + a.tiefeFehler : ''}${a.fehler ? ' · Fehler: ' + a.fehler : ''} · ${a.ergebnis || ''}`; }
   catch { return ''; }
 }
 async function scannen() {
@@ -948,6 +948,7 @@ async function scannen() {
   let erg;
   try { erg = test ? { kf: (await test()).kf, stat: { zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: 'Test', format: '-', kamera: true } } : await starteScan($('#arUI')); }
   catch (e) { scanFehler = e.message; merkeAufnahme({ zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: '-', format: '-', kamera: false }, 'Start fehlgeschlagen: ' + e.message); return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
+  if (erg.wechsel === 'ecken') { merkeAufnahme(erg.stat, 'keine Tiefe → Ecken antippen'); return aufmessen(); }
   if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).'); }
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, 'wird ausgewertet');
   const p = await ladeScan({ kf: erg.kf }, 'Raum ' + new Date().toLocaleDateString('de-AT'));
