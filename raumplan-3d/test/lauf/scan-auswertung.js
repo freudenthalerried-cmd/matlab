@@ -1,7 +1,7 @@
 // Test Scan-Auswertung mit simuliertem Roh-Scan (Tiefe + Bild + Lage). Aufruf: node t4.js [variante]
 const { chromium } = require('playwright');
 const SP = __dirname, VAR = process.argv[2] || 'normal';
-const OPTS = { normal: {}, s25: { zeilenUnten: true }, kopf: { zeilenUnten: true, bildKopf: true }, sauber: { rauschen: 0 }, laut: { rauschen: 0.03 }, zu: { tuerOffen: false }, dach: { dach: true } }[VAR];
+const OPTS = { normal: {}, s25: { zeilenUnten: true }, kopf: { zeilenUnten: true, bildKopf: true }, sauber: { rauschen: 0 }, laut: { rauschen: 0.03 }, mittel: { rauschen: 0.06 }, wild: { rauschen: 0.12 }, chaos: { rauschen: 0.3 }, zu: { tuerOffen: false }, dach: { dach: true } }[VAR];
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1200, height: 800 } });

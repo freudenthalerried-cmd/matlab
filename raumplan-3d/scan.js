@@ -77,9 +77,13 @@ export async function fusion(kf, tick = async () => {}) {
   for (let k = 0; k < kf.length; k++) {
     if ((k & 7) === 7) await tick(k / kf.length);
     const f = kf[k], { zc, CW, CH } = f, im = f.img;
+    // Unruhe dieser Aufnahme: mittlerer Sprung zwischen Nachbarwerten (bezogen auf die Tiefe). Bei unruhigen
+    // Tiefendaten würde ein fester Kantenfilter fast alles verwerfen, deshalb wächst die Toleranz mit.
+    const dl = []; for (let q = 3; q < CW * CH - 1; q += 7) { const a = zc[q], b = zc[q + 1]; if (a >= RMIN && b >= RMIN && a <= RMAX && b <= RMAX && (q + 1) % CW) dl.push(Math.abs(a - b) / a); }
+    dl.sort((x, y) => x - y); const unruhe = dl.length ? dl[dl.length >> 1] : 0, rel = Math.max(0.08, 3.5 * unruhe);
     for (let r = 0; r < CH; r++) for (let c = 0; c < CW; c++) {
       const q = r * CW + c, dm = zc[q]; if (dm < RMIN || dm > RMAX) continue;
-      const tol = dm * 0.08 + 30; let a;   // Tiefensprung zum Nachbarn = Kante, dort sind die Werte unzuverlässig
+      const tol = dm * rel + 30; let a;   // Tiefensprung zum Nachbarn = Kante, dort sind die Werte unzuverlässig
       if ((c > 0 && (a = zc[q - 1]) && Math.abs(a - dm) > tol) || (c < CW - 1 && (a = zc[q + 1]) && Math.abs(a - dm) > tol) || (r > 0 && (a = zc[q - CW]) && Math.abs(a - dm) > tol) || (r < CH - 1 && (a = zc[q + CW]) && Math.abs(a - dm) > tol)) continue;
       welt(f.M, f.P, 2 * (c + 0.5) / CW - 1, 1 - 2 * (r + 0.5) / CH, dm / 1000, p);
       const key = vkey(p, VOX); let i = idx.get(key);
@@ -94,11 +98,14 @@ export async function fusion(kf, tick = async () => {}) {
       if (CN[i] < 65535) CN[i]++; if (LK[i] !== k) { LK[i] = k; if (NK[i] < 255) NK[i]++; }
     }
   }
-  const minK = kf.length >= 12 ? 2 : 1; let m = 0;
+  // Punkte, die nur eine einzige Aufnahme gesehen hat, sind meist Streuung – aber nur verwerfen, wenn dann genug
+  // übrig bleibt. Bei unruhigen Tiefendaten trifft dieselbe Stelle selten zweimal denselben 2,5-cm-Würfel.
+  let minK = kf.length >= 12 ? 2 : 1, m = 0;
   for (let i = 0; i < n; i++) if (NK[i] >= minK) m++;
+  if (minK === 2 && (m < 20000 || m < 0.3 * n)) { minK = 1; m = n; }
   const pos = new Float32Array(m * 3), col = new Uint8Array(m * 3); let j = 0;
   for (let i = 0; i < n; i++) { if (NK[i] < minK) continue; const c = CN[i], o = i * 6; pos[j * 3] = S[o] / c; pos[j * 3 + 1] = S[o + 1] / c; pos[j * 3 + 2] = S[o + 2] / c; col[j * 3] = S[o + 3] / c; col[j * 3 + 1] = S[o + 4] / c; col[j * 3 + 2] = S[o + 5] / c; j++; }
-  return { pos, col, n: m };
+  return { pos, col, n: m, alle: n, streng: minK === 2 };
 }
 
 // Boden und Decke: stärkste waagrechte Flächen unten bzw. oben
@@ -147,7 +154,7 @@ export function grundriss(W, kf, bd, warn = []) {
       const dm = zc[r * CW + c]; if (dm < RMIN || dm > RMAX) continue;
       welt(f.M, f.P, 2 * (c + 0.5) / CW - 1, 1 - 2 * (r + 0.5) / CH, dm / 1000, p);
       if (p[1] < boden - 0.2 || p[1] > decke + 0.2) continue;
-      const dx = p[0] - cx, dz = p[2] - cz, l2 = Math.hypot(dx, dz), l3 = Math.hypot(dx, p[1] - cy, dz), tEnd = 1 - 0.15 / l3; if (l2 < 0.1 || tEnd <= 0) continue;
+      const dx = p[0] - cx, dz = p[2] - cz, l2 = Math.hypot(dx, dz), l3 = Math.hypot(dx, p[1] - cy, dz), tEnd = 1 - Math.max(0.15, 0.07 * l3) / l3; if (l2 < 0.1 || tEnd <= 0) continue;
       const steps = Math.ceil(l2 * tEnd / (G * 0.7)); let lastC = -1;
       for (let s = 0; s <= steps; s++) { const t = tEnd * s / steps, q = ci(cx + dx * t, cz + dz * t); if (q >= 0 && q !== lastC) { if (frei[q] < 255) frei[q]++; lastC = q; } }
     }
@@ -191,9 +198,10 @@ export function grundriss(W, kf, bd, warn = []) {
     let max = 0; for (let k = 0; k < nb; k++) if (hs[k] > max) max = hs[k];
     const thr = Math.max(0.1 * max, 40), ord = []; for (let k = 1; k < nb - 1; k++) if (hs[k] >= thr && hs[k] >= hs[k - 1] && hs[k] >= hs[k + 1]) ord.push(k);
     ord.sort((a, b) => hs[b] - hs[a]); const out = [];
+    let abst = 0.2; if (ord.length) { let l = ord[0], r = ord[0]; while (l > 0 && hs[l] > hs[ord[0]] / 2) l--; while (r < nb - 1 && hs[r] > hs[ord[0]] / 2) r++; abst = Math.max(0.2, Math.min(0.6, 1.3 * (r - l) * B)); }
     for (const k of ord) {
       let sw = 0, sp = 0; for (let q = Math.max(0, k - 3); q <= Math.min(nb - 1, k + 3); q++) { sw += h[q]; sp += h[q] * (q + 0.5); }
-      const t = lo + sp / sw * B; if (out.every(o => Math.abs(o - t) >= 0.2)) out.push(t); if (out.length >= 14) break;
+      const t = lo + sp / sw * B; if (out.every(o => Math.abs(o - t) >= abst)) out.push(t); if (out.length >= 14) break;
     }
     return out.sort((a, b) => a - b);
   };
@@ -286,6 +294,24 @@ export function grundriss(W, kf, bd, warn = []) {
     linien: { a: A.map(r2), b: Bl.map(r2), wandA: wandA.map(Number), wandB: wandB.map(Number), frei: Array.from(fr, v => Math.round(v * 9)).join(''), innen: Array.from(innen).join(''), ni: NI, nj: NJ } };
 }
 
+// Rückfall, wenn der genaue Grundriss nicht gelingt (sehr unruhige Tiefendaten): kleinstes Rechteck um alles Gesehene.
+// Lieber ein grobes Modell mit Hinweis als gar keines.
+export function grobRechteck(W, kf, bd) {
+  const { pos, n } = W, P = []; const step = Math.max(1, Math.floor(n / 20000));
+  for (let i = 0; i < n; i += step) { const h = pos[i * 3 + 1] - bd.boden; if (h > 0.2 && h < bd.hoehe - 0.1) P.push(pos[i * 3], pos[i * 3 + 2]); }
+  for (const f of kf) P.push(f.M[12], f.M[14]);
+  const m = P.length / 2; if (m < 200) throw new Error('Zu wenig vom Raum erfasst. Bitte länger und langsamer filmen.');
+  let best = null;
+  for (let d = 0; d < 90; d += 1) {
+    const c = Math.cos(d * RAD), s = Math.sin(d * RAD), a = new Float32Array(m), b = new Float32Array(m);
+    for (let k = 0; k < m; k++) { a[k] = P[k * 2] * c + P[k * 2 + 1] * s; b[k] = -P[k * 2] * s + P[k * 2 + 1] * c; }
+    a.sort(); b.sort(); const lo = Math.floor(m * 0.02), hi = Math.min(m - 1, Math.floor(m * 0.98));
+    const fl = (a[hi] - a[lo]) * (b[hi] - b[lo]); if (!best || fl < best.fl) best = { fl, c, s, a0: a[lo], a1: a[hi], b0: b[lo], b1: b[hi] };
+  }
+  const { c, s, a0, a1, b0, b1 } = best; if (a1 - a0 < 0.8 || b1 - b0 < 0.8) throw new Error('Raum zu klein erfasst. Bitte alle Wände abfilmen.');
+  return { corners: [[a0, b0], [a1, b0], [a1, b1], [a0, b1]].map(([a, b]) => [a * c - b * s, a * s + b * c]), flaeche: best.fl, winkel: Math.acos(c) / RAD, linien: { grob: true } };
+}
+
 // Gesamte Auswertung. Liefert dasselbe Format wie das Aufmaß mit Ecken-Antippen, dazu die Punktwolke.
 export async function auswerten(roh, prog = () => {}) {
   const kf = (roh.kf || []).filter(f => f && f.z && f.GW && f.GH);
@@ -297,12 +323,19 @@ export async function auswerten(roh, prog = () => {}) {
   const bk = kf.some(f => f.img) ? bildKopf(kf) : { kopf: false };
   if (bk.kopf) for (const f of kf) { if (!f.img) continue; const { data, W, H } = f.img, row = W * 4, t = new Uint8ClampedArray(row); for (let y = 0; y < H >> 1; y++) { const a = y * row, b = (H - 1 - y) * row; t.set(data.subarray(a, a + row)); data.copyWithin(a, b, b + row); data.set(t, b); } }
   await tick('Punktwolke bauen …', 0.12);
-  const W = await fusion(kf, a => tick('Punktwolke bauen …', 0.12 + 0.23 * a)); if (W.n < 3000) throw new Error('Zu wenige Tiefenpunkte. Raum heller machen und langsamer bewegen.');
+  const W = await fusion(kf, a => tick('Punktwolke bauen …', 0.12 + 0.23 * a)); if (W.n < 1500) throw new Error('Zu wenige Tiefenpunkte. Raum heller machen und langsamer bewegen.');
+  if (!W.streng) warn.push('Tiefendaten sehr unruhig – Maße nur grob. Heller Raum und langsames Schwenken helfen');
   await tick('Boden, Decke und Wände suchen …', 0.37);
-  const bd = bodenDecke(W, warn), gr = grundriss(W, kf, bd, warn);
+  const bd = bodenDecke(W, warn); let gr;
+  try {
+    gr = grundriss(W, kf, bd, warn);
+    const C = gr.corners, kurz = C.filter((q, i) => { const r = C[(i + 1) % C.length]; return Math.hypot(r[0] - q[0], r[1] - q[1]) < 0.3; }).length;
+    if (C.length > 14 || kurz >= 4) throw new Error('Grundriss zerstückelt (' + C.length + ' Ecken)');
+  }
+  catch (e) { gr = grobRechteck(W, kf, bd); warn.push('Grundriss nur grob als Rechteck (' + e.message.split('.')[0] + '). Für genaue Wände: nochmal langsamer aufnehmen oder „Ecken antippen“'); }
   if (!kf.some(f => f.img)) warn.push('Ohne Kamerabilder gescannt – Modell ohne Farben und Fotos');
   return {
-    corners: gr.corners, floorY: bd.boden, height: bd.hoehe, heightSrc: bd.sicher ? 'scan' : 'geschätzt', opens: [], cloud: W, warn,
+    corners: gr.corners, floorY: bd.boden, height: bd.hoehe, heightSrc: bd.sicher ? 'scan' : 'geschätzt', opens: [], cloud: W.streng ? W : { n: 0, pos: W.pos, col: W.col }, warn,
     frames: kf.filter(f => f.img).map(f => ({ data: f.img.data, W: f.img.W, H: f.img.H, M: f.M, P: f.P, zc: f.zc, CW: f.CW, CH: f.CH })),
     info: { bilder: kf.length, punkte: W.n, modus: aus.modus, sicher: aus.sicher, wuerfel: aus.size, quote: aus.quote, bildKopf: bk, winkel: +gr.winkel.toFixed(2), linien: gr.linien, flaeche: +gr.flaeche.toFixed(2) },
   };

@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.7';
+const VERSION = '1.8';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
