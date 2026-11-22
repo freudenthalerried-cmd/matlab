@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.0. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.1 (neu: Aufmessen mit Handy-Kamera). Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -11,6 +11,22 @@ Stand 22.11.2026, Version 1.0. Kopie der Raumplan-App mit echter 3D-Ansicht zum 
 - **Einkaufsliste:** Möbel mit Menge, Wandfarbe in m² und Litern (2 Anstriche, 7 m²/l), Boden in m² (+10 % Verschnitt), jeweils mit Amazon-Link.
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
+
+## Aufmessen mit Handy-Kamera (neu in 1.1, `aufmass.js`)
+Menü → „📏 Raum mit Handy-Kamera aufmessen“. Nur Android + Chrome (WebXR/ARCore, „Google Play-Dienste für AR“). iPhone/PC: Hinweis und Eintippen.
+1. **Boden suchen:** Handy schräg auf den Boden, bewegen, bis „Boden erkannt“. Bodenhöhe = Median der waagrechten Hit-Test-Treffer, wird laufend verfeinert.
+2. **Ecken:** Fadenkreuz auf jede Bodenecke, tippen. Länge zur letzten Ecke live. Nahe der ersten Ecke schließt Tippen den Raum.
+3. **Raumhöhe:** Kreuz auf die Deckenecke über einer Bodenecke (Strahl gegen senkrechte Linie durch die Ecke). Überspringen = 2,60 m.
+4. **Türen/Fenster:** untere Ecke + schräg gegenüberliegende obere Ecke (Strahl gegen Wandebene).
+- Gespeichert werden die **Strahlen**, nicht die Punkte. Am Ende wird mit der endgültigen Bodenhöhe neu geschnitten.
+- Nebenbei bis zu 60 **Fotos** (512 px, mit Kameralage M und P), nur wenn das Handy bewegt und dann ruhig gehalten wird.
+- Danach: Plan mit Wandachsen um t/2 nach außen versetzt (Innenflächen = gemessene Ecken), längste Wand waagrecht. Fotos werden auf jede Wand und den Boden projiziert (gewichtet nach Blickwinkel und Abstand, bei verwinkelten Räumen mit Verdeckungsprüfung) und als JPEG in IndexedDB gespeichert (Plan merkt sich nur den Schlüssel).
+- **Kontrollmaß:** eine Wand mit Maßband/Laser messen, eintragen → ganzer Raum wird gleichmäßig umgerechnet (Handy-Maßstab ±1–2 %). Grenze ±15 %.
+- Wand streichen bzw. Boden wechseln ersetzt das Foto dieser Fläche. Fotos ein/aus: Menü → Einstellungen.
+- Erwartete Genauigkeit ohne Kontrollmaß ±5–10 cm (Erfahrung Raumplan-Projekt), mit Kontrollmaß rund ±1–2 cm, abhängig davon, wie genau die Ecken angepeilt werden.
+
+**Simulation:** `test/synth.js` erzeugt einen L-Raum mit bekannten Maßen und 54 gerenderten Kamerabildern. Ergebnis: alle 6 Wandlängen und Höhe exakt, Tür/Fenster richtig, Fotos lagegenau (Raster durchgehend), Kontrollmaß +2 % korrekt, Fotos nach Neuladen vorhanden, Rechenzeit 0,6 s.
+**Am Handy ungetestet:** AR-Start, Kamerazugriff (`camera-access`), Bildausrichtung, Treffsicherheit der Bodenhöhe, Rechenzeit am S25.
 
 ## Affiliate
 - Links: `https://www.amazon.de/s?k=<Suchbegriff>&tag=<Partner-ID>` (Suchlinks, keine Preise, weil die sich ändern und Amazon fixe Preise ohne API nicht erlaubt).
@@ -30,7 +46,7 @@ Meter, x nach Osten, z nach Süden. Wand = Mittellinie a→b, Stärke t. `at` = 
 Damit kann ein Export der Raumplan-App direkt geladen werden (nächster Schritt: Export dort einbauen).
 
 ## Dateien
-`index.html` (Oberfläche), `app.js` (3D, Steuerung, Panels), `moebel.js` (Katalog), `daten.js` (Beispielwohnung, Farben, Böden), `lib/three.module.min.js` (three.js 0.160, MIT, lokal, damit es auch ohne CDN läuft).
+`index.html` (Oberfläche), `app.js` (3D, Steuerung, Panels), `aufmass.js` (AR-Aufmaß, Fotoprojektion), `test/synth.js` (Simulation), `moebel.js` (Katalog), `daten.js` (Beispielwohnung, Farben, Böden), `lib/three.module.min.js` (three.js 0.160, MIT, lokal, damit es auch ohne CDN läuft).
 
 ## Getestet
 Headless-Chromium (PC 1280×800 und Pixel 7): Laden ohne Fehler, alle Ansichten, Möbel hinzufügen/drehen/färben, ganzen Raum streichen, Nacht, Einkaufsliste (33 Links), Rückgängig. **Am echten Handy noch ungetestet.** Möbel untereinander kollidieren nicht (bewusst, damit Schieben einfach bleibt).

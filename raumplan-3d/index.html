@@ -76,6 +76,18 @@ h3{font-size:16px;margin:14px 0 6px}
 #hint.on{opacity:1}
 #joy{position:fixed;left:22px;bottom:calc(96px + env(safe-area-inset-bottom));width:124px;height:124px;border-radius:50%;background:#ffffff1c;border:2px solid #ffffff45;touch-action:none;z-index:8}
 #knob{position:absolute;left:36px;top:36px;width:52px;height:52px;border-radius:50%;background:#ffffffb0;pointer-events:none}
+#arUI{position:fixed;inset:0;z-index:100;pointer-events:none;background:transparent;font-size:17px}
+#arUI button{pointer-events:auto}
+#arTop{position:absolute;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));background:#000b;border-radius:14px;padding:10px 14px;color:#fff}
+#arTop b{display:block;font-size:15px;color:#ffd166;margin-bottom:2px}
+#arCross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px}
+#arCross::before,#arCross::after{content:"";position:absolute;background:#fff;box-shadow:0 0 0 1.5px #000a}
+#arCross::before{left:21px;top:0;width:2px;height:44px}#arCross::after{top:21px;left:0;height:2px;width:44px}
+#arLive{position:absolute;left:50%;top:calc(50% + 34px);transform:translateX(-50%);background:#000b;color:#fff;font-weight:700;font-size:22px;padding:6px 14px;border-radius:12px;white-space:nowrap}
+#arBtns{position:absolute;left:10px;right:10px;bottom:calc(40px + env(safe-area-inset-bottom));display:flex;gap:8px}
+#arBtns button{flex:1 1 0;min-height:60px;font-size:17px;background:#20262eee;color:#fff;border:1px solid #fff5}
+#arBtns button.main{background:var(--acc);color:#04121f;border-color:var(--acc);flex:1.4 1 0}
+#arInfo{position:absolute;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));text-align:center;color:#fff;font-size:13px;text-shadow:0 1px 2px #000}
 #err{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50;background:var(--bg)}
 </style>
 </head>
@@ -104,6 +116,12 @@ h3{font-size:16px;margin:14px 0 6px}
   <button data-t="menu">☰<span>Menü</span></button>
 </nav>
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
+<div id="arUI" hidden>
+  <div id="arTop"><b id="arStep"></b><span id="arTxt"></span></div>
+  <div id="arCross"></div><div id="arLive"></div>
+  <div id="arBtns"><button id="arB2"></button><button id="arB1" class="main"></button><button id="arB3" hidden></button></div>
+  <div id="arInfo"></div>
+</div>
 <div id="err" hidden></div>
 <script type="module" src="app.js"></script>
 </body>

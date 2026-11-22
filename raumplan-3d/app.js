@@ -2,8 +2,9 @@
 import * as THREE from './lib/three.module.min.js';
 import { MOEBEL, KATEGORIEN, baue } from './moebel.js';
 import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from './daten.js';
+import { arVerfuegbar, starteAufmass, modellAusAufmass, skaliere } from './aufmass.js';
 
-const VERSION = '1.0';
+const VERSION = '1.1';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -114,6 +115,44 @@ function floorMat(id) {
   return m;
 }
 
+// ---------- Fotos (aus dem Aufmaß) ----------
+// Bilder liegen in IndexedDB (zu groß für localStorage), der Plan merkt sich nur den Schlüssel.
+const idb = (() => {
+  let dbp = null;
+  const open = () => dbp ||= new Promise((res, rej) => { const r = indexedDB.open('rp3d', 1); r.onupgradeneeded = () => r.result.createObjectStore('fotos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const tx = db.transaction('fotos', mode), rq = fn(tx.objectStore('fotos')); tx.oncomplete = () => res(rq && rq.result); tx.onerror = () => rej(tx.error); }));
+  return { put: (k, v) => run('readwrite', s => s.put(v, k)), get: k => run('readonly', s => s.get(k)) };
+})();
+const fotoTex = new Map();
+const SHOWF = () => LS.get('rp3d-fotos') !== '0';
+function texAus(src) { const t = src.isTexture ? src : new THREE.Texture(src); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAX_ANISO; t.needsUpdate = true; return t; }
+async function ladeFotos() {
+  const keys = new Set();
+  for (const w of plan.walls) for (const f of [w.fotoA, w.fotoB]) if (f) keys.add(f.key);
+  for (const r of plan.rooms) if (r.foto) keys.add(r.foto.key);
+  let neu = 0;
+  for (const k of keys) {
+    if (fotoTex.has(k)) continue;
+    try {
+      const blob = await idb.get(k); if (!blob) continue;
+      const img = new Image(); img.src = URL.createObjectURL(blob); await img.decode();
+      fotoTex.set(k, texAus(img)); neu++;
+    } catch { /* Foto fehlt, dann eben Farbe */ }
+  }
+  return neu;
+}
+let fotoMats = [];
+function fotoMat(map, rx, ox, ry, oy) {
+  const t = map.clone(); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.repeat.set(rx, ry); t.offset.set(ox, oy); t.needsUpdate = true;
+  const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }); fotoMats.push(m); return m;
+}
+function wandFotoMat(w, side, x0, x1, y0, y1) {
+  const f = w['foto' + side], map = f && fotoTex.get(f.key); if (!map) return null;
+  const H = plan.height, L = f.len;
+  return side === 'A' ? fotoMat(map, (x1 - x0) / L, (x0 - f.x0) / L, (y1 - y0) / H, y0 / H) : fotoMat(map, -(x1 - x0) / L, (x1 - f.x0) / L, (y1 - y0) / H, y0 / H);
+}
+function bodenFotoMat(r) { const f = r.foto, map = f && fotoTex.get(f.key); return map ? fotoMat(map, 1 / f.w, -f.x0 / f.w, 1 / f.d, 1 + f.z0 / f.d) : null; }
+
 // ---------- Plan ----------
 let plan = null;
 function frame(w) {
@@ -207,7 +246,8 @@ function deco(g, o, t, top) {
 }
 function buildStructure() {
   clear(gWalls); clear(gFloors); clear(gCeil); solids = []; wallMats.clear();
-  const H = plan.height;
+  fotoMats.forEach(m => { m.map.dispose(); m.dispose(); }); fotoMats = [];
+  const H = plan.height, mitFoto = SHOWF();
   for (const w of plan.walls) {
     const f = frame(w); if (f.L < 0.01) continue;
     const mats = [REVEAL, REVEAL, REVEAL, REVEAL, paintMat(w.colA), paintMat(w.colB)];
@@ -216,7 +256,9 @@ function buildStructure() {
     const seg = (x0, x1) => solids.push({ ax: w.a[0] + f.ux * x0, az: w.a[1] + f.uz * x0, bx: w.a[0] + f.ux * x1, bz: w.a[1] + f.uz * x1, t: w.t });
     const piece = (x0, x1, y0, y1) => {
       if (x1 - x0 < 0.005 || y1 - y0 < 0.005) return;
-      const m = new THREE.Mesh(BOX, mats); m.scale.set(x1 - x0, y1 - y0, w.t); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0);
+      let pm = mats;
+      if (mitFoto && (w.fotoA || w.fotoB)) { pm = mats.slice(); for (const sd of ['A', 'B']) { const fm = wandFotoMat(w, sd, x0, x1, y0, y1); if (fm) pm[sd === 'A' ? 4 : 5] = fm; } }
+      const m = new THREE.Mesh(BOX, pm); m.scale.set(x1 - x0, y1 - y0, w.t); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0);
       m.castShadow = m.receiveShadow = true; m.userData = { kind: 'wall', wall: w }; g.add(m);
       if (y0 < 0.01) seg(x0, x1);
     };
@@ -237,7 +279,7 @@ function buildStructure() {
   }
   for (const r of plan.rooms) {
     const geo = new THREE.ShapeGeometry(new THREE.Shape(r.poly.map(p => new THREE.Vector2(p[0], -p[1])))); geo.rotateX(-Math.PI / 2);
-    const m = new THREE.Mesh(geo, floorMat(r.floor)); m.position.y = 0.002; m.receiveShadow = true; m.userData = { kind: 'floor', room: r }; gFloors.add(m);
+    const m = new THREE.Mesh(geo, (mitFoto && bodenFotoMat(r)) || floorMat(r.floor)); m.position.y = 0.002; m.receiveShadow = true; m.userData = { kind: 'floor', room: r }; gFloors.add(m);
     const gc = new THREE.ShapeGeometry(new THREE.Shape(r.poly.map(p => new THREE.Vector2(p[0], p[1])))); gc.rotateX(Math.PI / 2);
     const c = new THREE.Mesh(gc, CEIL); c.position.y = H; c.castShadow = true; c.receiveShadow = true; c.userData = { kind: 'ceil' }; gCeil.add(c);
   }
@@ -256,7 +298,7 @@ function fitSun() {
 }
 
 // Wandseiten-Farbe ändern
-function setWallColor(w, side, hex) { w['col' + side] = hex; const m = wallMats.get(w.id); if (m) m[side === 'A' ? 4 : 5] = paintMat(hex); inv(); }
+function setWallColor(w, side, hex) { w['col' + side] = hex; const m = wallMats.get(w.id); if (m) m[side === 'A' ? 4 : 5] = paintMat(hex); inv(); if (w['foto' + side]) { delete w['foto' + side]; return true; } return false; }
 
 // ---------- Möbel ----------
 const objs = new Map();
@@ -351,8 +393,8 @@ function resetCams() {
 function applyCam() {
   if (mode === 'gehen') { camera.position.set(walk.x, walk.eye, walk.z); camera.rotation.set(walk.pitch, walk.yaw, 0); }
   else {
-    const ph = mode === 'plan' ? 0.001 : orb.ph, th = mode === 'plan' ? 0 : orb.th;
-    camera.position.set(orb.tx + orb.r * Math.sin(ph) * Math.sin(th), orb.r * Math.cos(ph), orb.tz + orb.r * Math.sin(ph) * Math.cos(th));
+    const ph = mode === 'plan' ? 0.001 : orb.ph, th = mode === 'plan' ? 0 : orb.th, r = effR();
+    camera.position.set(orb.tx + r * Math.sin(ph) * Math.sin(th), r * Math.cos(ph), orb.tz + r * Math.sin(ph) * Math.cos(th));
     camera.lookAt(orb.tx, 0, orb.tz);
   }
   inv();
@@ -376,7 +418,8 @@ function collide(x, z, r = 0.2) {
   }
   return [x, z];
 }
-const upp = () => 2 * orb.r * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.max(1, canvas.clientHeight);
+const effR = () => mode === 'plan' ? orb.r * 1.4 : orb.r;
+const upp = () => 2 * effR() * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.max(1, canvas.clientHeight);
 function pan(dx, dy) {
   const k = upp();
   if (mode === 'plan') { orb.tx -= dx * k; orb.tz -= dy * k; }
@@ -514,7 +557,7 @@ function onTap(h) {
     return;
   }
   if (tool === 'boden') {
-    if (h && h.kind === 'floor') { pushUndo(); h.room.floor = bodenAktiv; h.room && gFloors.children.forEach(m => { if (m.userData.room === h.room) m.material = floorMat(bodenAktiv); }); save(); inv(); hint(`${h.room.name}: ${BOEDEN[bodenAktiv].name}`); }
+    if (h && h.kind === 'floor') { pushUndo(); h.room.floor = bodenAktiv; delete h.room.foto; h.room && gFloors.children.forEach(m => { if (m.userData.room === h.room) m.material = floorMat(bodenAktiv); }); save(); inv(); hint(`${h.room.name}: ${BOEDEN[bodenAktiv].name}`); }
     else hint('Bitte auf einen Boden tippen.');
     return;
   }
@@ -530,8 +573,10 @@ function paintWall(w, side) {
   pushUndo();
   const ganz = LS.get('rp3d-ganz') !== '0', room = sideRoom(w, side);
   let n = 0;
-  if (ganz) { for (const o of plan.walls) for (const s of ['A', 'B']) if (sideRoom(o, s) === room) { setWallColor(o, s, farbe.hex); n++; } }
-  else { setWallColor(w, side, farbe.hex); n = 1; }
+  let rb = false;
+  if (ganz) { for (const o of plan.walls) for (const s of ['A', 'B']) if (sideRoom(o, s) === room) { rb = setWallColor(o, s, farbe.hex) || rb; n++; } }
+  else { rb = setWallColor(w, side, farbe.hex); n = 1; }
+  if (rb) buildStructure();
   save();
   hint(`${room ? room.name : 'Fassade'}: ${farbe.name}${ganz ? ` (${n} Wandflächen)` : ''}`);
 }
@@ -588,7 +633,8 @@ const SHEETS = {
   },
   menu() {
     return ['Menü', `<div class="list">
-      <button data-m="raum">📐 Neuer Raum nach Maß</button>
+      <button data-m="aufmessen" class="main">📏 Raum mit Handy-Kamera aufmessen</button>
+      <button data-m="raum">📐 Neuer Raum nach Maß (eintippen)</button>
       <button data-m="beispiel">🏠 Beispielwohnung laden</button>
       <button data-m="speichern">💾 Projekt als Datei speichern</button>
       <button data-m="oeffnen">📂 Projekt-Datei öffnen</button>
@@ -597,11 +643,13 @@ const SHEETS = {
       <button data-m="hilfe">❓ Hilfe</button></div>
       <h3>Einstellungen</h3>
       <label class="chk"><input type="checkbox" id="snap" ${SNAP() ? 'checked' : ''}> Einrasten (5 cm / 15°)</label>
+      <label class="chk"><input type="checkbox" id="fotos" ${SHOWF() ? 'checked' : ''}> Fotos vom Aufmaß auf Wänden/Boden zeigen</label>
       <label>Amazon-Partner-ID (Tracking-ID)<input id="tag" value="${esc(affTag)}" autocomplete="off" spellcheck="false"></label>
       <p class="note">Raumplan 3D · Version ${VERSION} · Kopie der Raumplan-App mit 3D-Rundgang. Alles bleibt in deinem Browser gespeichert.</p>`];
   },
   raum() {
-    return ['Neuer Raum nach Maß', `<form id="fRaum">
+    return ['Neuer Raum nach Maß', `<button data-m="aufmessen" class="main" style="width:100%">📏 Lieber mit der Handy-Kamera aufmessen</button>
+      <p class="mut">Oder Innenmaße eintippen:</p><form id="fRaum">
       <label>Name<input name="n" value="Mein Raum" maxlength="40"></label>
       <div class="row"><label>Länge (m)<input name="l" type="number" inputmode="decimal" step="0.01" min="1" max="30" value="5.00" required></label>
       <label>Breite (m)<input name="b" type="number" inputmode="decimal" step="0.01" min="1" max="30" value="4.00" required></label>
@@ -610,6 +658,24 @@ const SHEETS = {
       <label>Tür<select name="t"><option value="1" selected>ja</option><option value="0">nein</option></select></label></div>
       <p class="mut">Innenmaße eingeben, z. B. aus der Raumplan-Messung. Der aktuelle Plan wird ersetzt (↶ holt ihn zurück).</p>
       <button class="main" style="width:100%">Raum erstellen</button></form>`];
+  },
+  aufmass() {
+    const ws = plan.walls.filter(w => w.innen), A = plan.rooms[0] ? area(plan.rooms[0].poly) : 0, am = plan.aufmass || {};
+    const k = am.korr && am.korr !== 1 ? ` · korrigiert um ${((am.korr - 1) * 100).toFixed(1).replace('.', ',')} %` : '';
+    return ['Aufmaß fertig', `<p><b>${esc(plan.name)}</b>: ${ws.length} Wände · ${A.toFixed(2).replace('.', ',')} m² · Höhe ${plan.height.toFixed(2).replace('.', ',')} m ${plan.hoeheQuelle === 'ar' ? '(gemessen)' : '(Standard)'} · ${am.fotos || 0} Fotos${k}</p>
+      <ul class="li">${ws.map((w, i) => `<li><span>Wand ${i + 1}</span><b>${(w.innen * 100).toFixed(1).replace('.', ',')} cm</b></li>`).join('')}</ul>
+      <h3>Genauer machen: Kontrollmaß</h3>
+      <p class="mut">Die Handy-Messung ist auf etwa ±1–2 % genau. Miss eine lange Wand mit Maßband oder Laser und trag das echte Maß ein. Der ganze Raum wird darauf umgerechnet.</p>
+      <div class="row"><select id="kmWand" aria-label="Wand">${ws.map((w, i) => `<option value="${i}">Wand ${i + 1} (${(w.innen * 100).toFixed(0)} cm)</option>`).join('')}</select>
+      <input id="kmCm" type="number" inputmode="decimal" step="0.1" placeholder="echtes Maß in cm" aria-label="Echtes Maß in cm"><button data-km="1" class="main">Übernehmen</button></div>
+      <p class="note">Danach: ➕ Möbel stellen, 🎨 streichen, 🚶 Gehen. Fotos aus/ein: Menü → Einstellungen.</p>`];
+  },
+  keinar() {
+    return ['Aufmessen nicht möglich', `<p>Dieses Gerät bzw. dieser Browser kann kein AR im Browser.</p>
+      <ul class="help"><li><b>Android-Handy</b> (z. B. Samsung S25): Seite in <b>Chrome</b> öffnen. „Google Play-Dienste für AR“ muss installiert sein (Play Store).</li>
+      <li><b>iPhone</b>: Safari kann das derzeit nicht. Bitte Maße mit dem Maßband nehmen und unter „Neuer Raum nach Maß“ eintippen.</li>
+      <li><b>PC</b>: geht nicht, Kamera und Bewegungssensoren fehlen.</li></ul>
+      <button data-m="raum" style="width:100%">📐 Maße eintippen</button>`];
   },
   hilfe() {
     return ['So geht’s', `<ul class="help">
@@ -660,6 +726,7 @@ function bindSheet(name) {
   }
   if (name === 'menu') {
     $('#snap').onchange = e => LS.set('rp3d-snap', e.target.checked ? '1' : '0');
+    $('#fotos').onchange = e => { LS.set('rp3d-fotos', e.target.checked ? '1' : '0'); buildStructure(); inv(); };
     $('#tag').onchange = e => { affTag = e.target.value.trim() || AFF_DEFAULT; LS.set('rp3d-tag', affTag); hint('Partner-ID gespeichert: ' + affTag); };
   }
   if (name === 'raum') {
@@ -678,10 +745,11 @@ function bindSheet(name) {
     else if (d.add) addItem(d.add);
     else if (d.farbe) { farbe = farbInfo(d.farbe); openSheet('farbe'); hint(`${farbe.name} – jetzt Wand antippen`); }
     else if (d.boden) { bodenAktiv = d.boden; openSheet('boden'); hint(`${BOEDEN[bodenAktiv].name} – jetzt Boden antippen`); }
-    else if (d.alle) { pushUndo(); plan.rooms.forEach(r => { r.floor = bodenAktiv; }); gFloors.children.forEach(m => { m.material = floorMat(bodenAktiv); }); save(); inv(); }
+    else if (d.alle) { pushUndo(); plan.rooms.forEach(r => { r.floor = bodenAktiv; delete r.foto; }); gFloors.children.forEach(m => { m.material = floorMat(bodenAktiv); }); save(); inv(); }
     else if (d.tod) { pushUndo(); plan.light.tod = +d.tod; plan.light.lamps = +d.tod > 18 || +d.tod < 7; applyLight(); save(); openSheet('licht'); }
     else if (d.copy) copyList();
     else if (d.m) menuAction(d.m);
+    else if (d.km) kontrollmass();
   };
 }
 let lightUndoT = 0;
@@ -731,6 +799,37 @@ function selAction(a, c) {
   placeObj(it); select(it.id); save();
 }
 
+// ---------- Aufmessen ----------
+async function aufmessen() {
+  if (!(await arVerfuegbar())) return openSheet('keinar');
+  closeSheet(); deselect();
+  let res;
+  try { res = await starteAufmass($('#arUI')); }
+  catch (e) { hint(e.message + ' – Kamera-Erlaubnis erteilt? ARCore installiert?', 7000); return; }
+  if (!res) { hint('Aufmessen abgebrochen'); return; }
+  await ladeAufmass(res, 'Aufmaß ' + new Date().toLocaleDateString('de-AT'));
+}
+async function ladeAufmass(res, name) {
+  hint('3D-Modell wird gebaut …', 20000);
+  const id = 'a' + Date.now().toString(36);
+  const { plan: p, tex } = await modellAusAufmass(res, name, id, t => hint(t, 20000));
+  for (const [k, cv] of tex) {
+    fotoTex.set(k, texAus(new THREE.CanvasTexture(cv)));
+    try { const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85)); await idb.put(k, blob); } catch { /* nur für diese Sitzung */ }
+  }
+  pushUndo(); plan = p; rebuild(); deselect(); save(); setMode('haus'); openSheet('aufmass');
+  hint(`Fertig: ${p.walls.length} Wände, ${tex.size} Fotoflächen`);
+  return p;
+}
+function kontrollmass() {
+  const ws = plan.walls.filter(w => w.innen), w = ws[+$('#kmWand').value], cmv = parseFloat(String($('#kmCm').value).replace(',', '.'));
+  if (!w || !(cmv > 20)) return hint('Bitte das echte Maß in cm eintragen.');
+  const k = cmv / 100 / w.innen;
+  if (k < 0.85 || k > 1.15) return hint(`Abweichung ${((k - 1) * 100).toFixed(1)} % – zu groß. Richtige Wand gewählt?`, 5000);
+  pushUndo(); skaliere(plan, k); rebuild(false); save(); openSheet('aufmass');
+  hint(`Raum um ${((k - 1) * 100).toFixed(1).replace('.', ',')} % umgerechnet`);
+}
+
 function copyList() {
   const cnt = {}; plan.items.forEach(it => { cnt[it.cat] = (cnt[it.cat] || 0) + 1; });
   const txt = `Einkaufsliste – ${plan.name}\n` + Object.entries(cnt).map(([c, n]) => `${n}× ${MOEBEL[c].name}`).join('\n');
@@ -739,6 +838,7 @@ function copyList() {
 function download(name, data) { const a = document.createElement('a'); a.href = data; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 function menuAction(m) {
   if (m === 'raum' || m === 'hilfe') return openSheet(m);
+  if (m === 'aufmessen') return aufmessen();
   if (m === 'beispiel') { pushUndo(); plan = beispiel(); rebuild(); deselect(); save(); closeSheet(); setMode('haus'); hint('Beispielwohnung geladen'); }
   if (m === 'speichern') {
     const url = URL.createObjectURL(new Blob([JSON.stringify(plan, null, 1)], { type: 'application/json' }));
@@ -826,4 +926,5 @@ resize(); rebuild(); setMode('haus');
 requestAnimationFrame(loop);
 if (!LS.get('rp3d-hilfe')) { openSheet('hilfe'); LS.set('rp3d-hilfe', '1'); }
 // für Tests/Automatisierung
-window.rp3d = { get plan() { return plan; }, setMode, openSheet, select, addItem, inv, get mode() { return mode; } };
+window.rp3d = { get plan() { return plan; }, setMode, openSheet, select, addItem, inv, ladeAufmass, get mode() { return mode; } };
+ladeFotos().then(n => { if (n) { buildStructure(); inv(); } });
