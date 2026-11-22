@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.6';
+const VERSION = '1.7';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -541,7 +541,7 @@ function zeigeStart(msg = '') {
     <p class="mut">Raum mit dem Handy aufnehmen, in 3D durchgehen und einrichten.</p>
     ${msg ? `<p class="warn">⚠ ${esc(msg)}</p>${letzteHtml()}` : ''}
     <button class="main big" data-s="scan">📹 Neues Projekt: Raum aufnehmen</button>
-    <p class="mut">${arOk === false ? '⚠ Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“). Auf diesem Gerät: Maße eintippen oder eine Projektdatei öffnen.' : 'Antippen, Kamera erlauben, dann langsam durch den Raum gehen und alles abfilmen.'}</p>
+    <p class="mut">${arOk === false ? '⚠ Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“). Auf diesem Gerät: Maße eintippen oder eine Projektdatei öffnen.' : 'Antippen, Kamera erlauben, dann langsam durch den Raum gehen und alles abfilmen. Wichtig: Raum hell beleuchten (alle Lampen an), bei wenig Licht findet das Handy seine Lage nicht.'}</p>
     <div class="row"><button data-s="ecken">📏 Ecken antippen</button><button data-s="masse">📐 Maße eintippen</button><button data-s="datei">📂 Datei öffnen</button></div>
     ${projekte.length ? `<h3>Meine Projekte</h3><div class="list">${projekte.map(q => `<div class="pr"><button data-o="${esc(q.id)}"><b>${esc(q.name)}</b><span class="mut">${fmt(q.t)}${q.m2 ? ' · ' + String(q.m2).replace('.', ',') + ' m²' : ''}${q.id === aktId ? ' · zuletzt offen' : ''}</span></button><button class="no" data-del="${esc(q.id)}" aria-label="Projekt ${esc(q.name)} löschen">🗑</button></div>`).join('')}</div>` : ''}
     <div class="list" style="margin-top:14px"><button data-s="beispiel">🏠 Beispielwohnung ansehen</button></div>
@@ -926,7 +926,8 @@ async function aufmessen() {
   $('#start').hidden = true; closeSheet(); deselect();
   let res;
   try { res = await starteAufmass($('#arUI')); }
-  catch (e) { return zurueck(e.message + ' – Kamera-Erlaubnis erteilt? ARCore installiert?'); }
+  catch (e) { nachAR(); return zurueck(e.message + ' – Kamera-Erlaubnis erteilt? ARCore installiert?'); }
+  nachAR();
   if (!res) return zurueck('Aufmessen abgebrochen.');
   await ladeAufmass(res, 'Raum ' + new Date().toLocaleDateString('de-AT'));
 }
@@ -950,7 +951,8 @@ async function scannen() {
   $('#start').hidden = true; closeSheet(); deselect();
   let erg;
   try { erg = test ? { kf: (await test()).kf, stat: { zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: 'Test', format: '-', kamera: true } } : await starteScan($('#arUI')); }
-  catch (e) { scanFehler = e.message; merkeAufnahme({ zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: '-', format: '-', kamera: false }, 'Start fehlgeschlagen: ' + e.message); return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
+  catch (e) { nachAR(); scanFehler = e.message; merkeAufnahme({ zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: '-', format: '-', kamera: false }, 'Start fehlgeschlagen: ' + e.message); return zurueck('Aufnahme startet nicht: ' + e.message, e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
+  nachAR();
   if (erg.wechsel === 'ecken') { merkeAufnahme(erg.stat, 'keine Tiefe → Ecken antippen'); return aufmessen(); }
   if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).'); }
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, 'wird ausgewertet');
@@ -1140,6 +1142,9 @@ function loop(now) {
 }
 function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); inv(); }
 addEventListener('resize', resize);
+canvas.addEventListener('webglcontextrestored', () => { resize(); inv(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { resize(); inv(); } });
+const nachAR = () => { resize(); inv(); setTimeout(() => { resize(); inv(); }, 400); };
 
 // ---------- Start ----------
 // Altbestand (bis Version 1.2 gab es nur eine Planung) als erstes Projekt übernehmen

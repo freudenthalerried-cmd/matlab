@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.6 (nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.7 (nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -29,6 +29,7 @@ Stand 22.11.2026, Version 1.6 (nach zweitem Handytest: Aufnahme gegen abweichend
 - Unten in der Aufnahme steht jetzt laufend **„Lage ✓/✗ · Tiefe ✓/✗ · Foto ✓/✗ · n/240“**. Daran sieht man sofort, was fehlt.
 - **Ecken-Modus:** lief in der Attrappe zum ersten Mal durch. Gefundener Fehler behoben: Beim Schrittwechsel wurde das Ziel des vorigen Schritts gelesen (`toFixed` von undefined, im schlimmsten Fall Raumhöhe NaN). Fehler in einem Bild halten auch hier die Anzeige nicht mehr an.
 - **1.6:** Nach einer abgebrochenen oder missglückten Aufnahme stehen die Kennzahlen direkt unter der Warnung auf der Startseite, mit Knopf „📋 Diese Zeile kopieren (für Claude)“.
+- **1.7:** Nach jeder AR-Sitzung wird die 3D-Ansicht neu gezeichnet (auch nach verlorenem Grafikspeicher). Startet die Aufnahme nicht, kommt man mit Fehlertext zur Startseite zurück statt in der Vorschau zu landen. Hinweis auf helle Beleuchtung: Vermutung, dass ARCore am Abend bei Kunstlicht und weißen Wänden die Lage nicht findet (beide Handytests waren abends).
 **Grenze der Attrappe:** Sie prüft meinen Code, nicht das Handy. Was Chrome am S25 wirklich liefert, zeigt nur die Zeile „Lage/Tiefe/Foto“ bzw. „Letzte Aufnahme“ vom Gerät.
 
 ## Erster Handytest und Umbau der Aufnahme (1.4)
