@@ -79,6 +79,7 @@ h3{font-size:16px;margin:14px 0 6px}
 #arUI{position:fixed;inset:0;z-index:100;pointer-events:none;background:transparent;font-size:17px}
 #arUI button{pointer-events:auto}
 #arTop{position:absolute;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));background:#000b;border-radius:14px;padding:10px 14px;color:#fff}
+#arVer{float:right;font-size:12px;color:#ffffffb0;margin-left:8px}
 #arTop b{display:block;font-size:15px;color:#ffd166;margin-bottom:2px}
 #arCross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px}
 #arCross::before,#arCross::after{content:"";position:absolute;background:#fff;box-shadow:0 0 0 1.5px #000a}
@@ -141,7 +142,7 @@ h3{font-size:16px;margin:14px 0 6px}
 <div id="warte" hidden role="status" aria-live="polite"><div><b>Modell wird gebaut</b><p id="warteTxt"></p><div class="bar"><i id="warteBar"></i></div><p id="wartePct" class="mut"></p><p class="mut">Bitte warten und die Seite offen lassen.</p></div></div>
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
 <div id="arUI" hidden>
-  <div id="arTop"><b id="arStep"></b><span id="arTxt"></span></div>
+  <div id="arTop"><small id="arVer"></small><b id="arStep"></b><span id="arTxt"></span></div>
   <div id="arCov"></div>
   <div id="arCross"></div><div id="arLive"></div>
   <div id="arBtns"><button id="arB2"></button><button id="arB1" class="main"></button><button id="arB3" hidden></button></div>

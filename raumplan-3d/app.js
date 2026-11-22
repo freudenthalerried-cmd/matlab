@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '2.1';
+const VERSION = '2.2';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -1156,6 +1156,7 @@ try {
 } catch { geladen = false; aktId = null; }
 if (!geladen) normalize(beispiel());      // Vorschau im Hintergrund, wird erst mit der ersten Änderung ein Projekt
 resize(); rebuild(); setMode('haus');
+$('#arVer').textContent = 'Version ' + VERSION;      // steht auch im Aufnahmebild, damit jeder Screenshot die Version zeigt
 zeigeStart();
 arVerfuegbar().then(ok => { arOk = ok; if (!$('#start').hidden) zeigeStart(); });
 requestAnimationFrame(loop);

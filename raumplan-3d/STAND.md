@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 2.1 (Ursache des Handyfehlers gefunden und behoben, siehe „Dritter Handytest“; nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 2.2 (Ursache des Handyfehlers gefunden und behoben, siehe „Dritter Handytest“; nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -17,6 +17,7 @@ Stand 22.11.2026, Version 2.1 (Ursache des Handyfehlers gefunden und behoben, si
 **Ursache (bestätigt durch die Fehlermeldung):** `session.renderState.baseLayer` ist am S25 `null`. Chrome dort unterstützt WebXR-Layers, three.js legt dann eine Projektionsebene an (`renderState.layers`) und keine `XRWebGLLayer`. Die Aufnahme las das Seitenverhältnis über `baseLayer.getViewport(view)` und scheiterte bei jedem Versuch, deshalb 0 Aufnahmen. Die Lage war in Ordnung.
 **Behoben:** Seitenverhältnis aus der Projektionsmatrix (`P[0] / P[5]`), kein Zugriff mehr auf `baseLayer`.
 **Attrappe:** Option `ohneBasis` stellt das nach. Alter Code: 0 Aufnahmen mit genau dieser Meldung. Neuer Code: 210 Aufnahmen, Modell richtig.
+**2.2:** Stefan schickte danach denselben Screenshot noch einmal (gleiche Datei). Ob das ein neuer Versuch mit alter Seite war, ist unklar. Deshalb steht die Versionsnummer jetzt auch oben rechts im Aufnahmebild. Im eigenen Code gibt es keinen Aufruf von `getViewport` mehr.
 **Lehre:** Die Attrappe ging bisher vom älteren Weg (`XRWebGLLayer`) aus. Am S25 läuft three.js über WebXR-Layers; dieser Weg ist in der Attrappe nur für `baseLayer` nachgestellt, nicht vollständig. Ob danach Tiefe und Kamerabild am Gerät kommen, zeigt erst die Zeile „Lage/Tiefe/Foto“ im nächsten Test.
 
 ## Zweiter Handytest und WebXR-Attrappe (1.5)
