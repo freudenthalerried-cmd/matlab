@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.5';
+const VERSION = '1.6';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -529,6 +529,8 @@ function oeffneBeispiel() { const e = projekte.find(q => q.bsp); if (e && oeffne
 
 // ---------- Startseite ----------
 let arOk = null;
+// Kennzahlen der letzten Aufnahme mit Knopf zum Kopieren (zum Einfügen im Chat mit Claude)
+const letzteHtml = () => (letzteAufnahme() ? `<p class="note" id="letzte">${esc(letzteAufnahme())}</p><button data-s="kopie" style="min-height:40px;font-size:14px">📋 Diese Zeile kopieren (für Claude)</button>` : '');
 function zeigeStart(msg = '') {
   if (PLAN_URL) return;
   if (saveT) saveNow();
@@ -537,13 +539,13 @@ function zeigeStart(msg = '') {
   $('#start').innerHTML = `<div class="st-in">
     <h1>Raumplan 3D <small>Version ${VERSION}</small></h1>
     <p class="mut">Raum mit dem Handy aufnehmen, in 3D durchgehen und einrichten.</p>
-    ${msg ? `<p class="warn">⚠ ${esc(msg)}</p>` : ''}
+    ${msg ? `<p class="warn">⚠ ${esc(msg)}</p>${letzteHtml()}` : ''}
     <button class="main big" data-s="scan">📹 Neues Projekt: Raum aufnehmen</button>
     <p class="mut">${arOk === false ? '⚠ Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“). Auf diesem Gerät: Maße eintippen oder eine Projektdatei öffnen.' : 'Antippen, Kamera erlauben, dann langsam durch den Raum gehen und alles abfilmen.'}</p>
     <div class="row"><button data-s="ecken">📏 Ecken antippen</button><button data-s="masse">📐 Maße eintippen</button><button data-s="datei">📂 Datei öffnen</button></div>
     ${projekte.length ? `<h3>Meine Projekte</h3><div class="list">${projekte.map(q => `<div class="pr"><button data-o="${esc(q.id)}"><b>${esc(q.name)}</b><span class="mut">${fmt(q.t)}${q.m2 ? ' · ' + String(q.m2).replace('.', ',') + ' m²' : ''}${q.id === aktId ? ' · zuletzt offen' : ''}</span></button><button class="no" data-del="${esc(q.id)}" aria-label="Projekt ${esc(q.name)} löschen">🗑</button></div>`).join('')}</div>` : ''}
     <div class="list" style="margin-top:14px"><button data-s="beispiel">🏠 Beispielwohnung ansehen</button></div>
-    ${letzteAufnahme() ? `<p class="note" id="letzte">${esc(letzteAufnahme())}</p>` : ''}
+    ${msg ? '' : letzteHtml()}
   </div>`;
   $('#start').hidden = false; $('#start').scrollTop = 0;
 }
@@ -554,6 +556,7 @@ $('#start').onclick = async e => {
   else if (d.s === 'masse') { $('#start').hidden = true; openSheet('raum'); }
   else if (d.s === 'datei') $('#file').click();
   else if (d.s === 'beispiel') oeffneBeispiel();
+  else if (d.s === 'kopie') { const txt = `Raumplan 3D ${VERSION} – ${letzteAufnahme()}`; try { await navigator.clipboard.writeText(txt); t.textContent = '✓ Kopiert – jetzt im Chat einfügen'; } catch { const r = document.createRange(); r.selectNodeContents($('#letzte')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); t.textContent = 'Text ist markiert – bitte kopieren'; } }
   else if (d.o) { if (!oeffneProjekt(d.o)) zeigeStart('Projekt konnte nicht geöffnet werden.'); }
   else if (d.del) { const q = projekte.find(x => x.id === d.del); if (q && confirm(`Projekt „${q.name}“ mit allen Fotos endgültig löschen?`)) { await loescheProjekt(d.del); zeigeStart(); } }
 };
