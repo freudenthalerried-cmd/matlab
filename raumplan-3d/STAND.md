@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.8 (nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.9 (nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -36,6 +36,7 @@ Stand 22.11.2026, Version 1.8 (nach zweitem Handytest: Aufnahme gegen abweichend
   - Sichtstrahlen enden 7 % der Strahllänge (mindestens 15 cm) vor dem Messpunkt; Mindestabstand der Wandlinien richtet sich nach der Breite der stärksten Spitze (20–60 cm).
   - Unglaubwürdiger Grundriss (über 14 Ecken oder 4 Wände unter 30 cm) oder gar keiner → **Rückfall `grobRechteck`**: kleinstes Rechteck um alles Gesehene, mit Hinweis. Lieber grobes Modell als keines.
   - Ergebnis: bis 3 % Rauschen genau wie bisher (max. 1,4 cm), ab 6 % grobes Rechteck (im Test 436 × 425 statt 420 × 410 cm bei L-Form), ab 12 % Rechteck rund 1 m zu groß. Wie unruhig die Tiefe am S25 wirklich ist, ist unbekannt.
+- **1.9:** „Fertig“ schon ab 12 Aufnahmen (vorher 25), damit auch unter schwierigen Verhältnissen ein Modell entsteht; nach 8 s ohne Orientierung konkreter Rat (mehr Licht, zurück zu gefilmter Stelle).
 **Grenze der Attrappe:** Sie prüft meinen Code, nicht das Handy. Was Chrome am S25 wirklich liefert, zeigt nur die Zeile „Lage/Tiefe/Foto“ bzw. „Letzte Aufnahme“ vom Gerät.
 
 ## Erster Handytest und Umbau der Aufnahme (1.4)

@@ -482,14 +482,14 @@ export function starteScan(root) {
     let grab = null, gdim = '', lastUi = 0;
     const ui = t => {
       const n = kf.length; el('arLive').textContent = st.bereit ? `${n} Aufnahmen` : '';
-      B1.disabled = n < 25;
+      B1.disabled = n < 12;
       el('arTxt').textContent = !st.bereit ? 'Kamera startet … Handy langsam hin und her bewegen.' : n < 25 ? 'Langsam durch den Raum gehen und alles abfilmen: Wände vom Boden bis zur Decke, Ecken, Boden, Möbel. Grün = erfasst.' : 'Weiter filmen, bis alles grün ist – dann „Fertig“.';
       let w = '';
       if (st.fehler && t - st.fehlerT < 5000) w = '⚠ ' + st.fehler;
       else if (!st.bereit) w = stat.bilder > 150 ? (st.weg < 0.05 ? '⚠ Das Handy findet seine Position nicht. Raum heller machen, auf Boden oder Möbel mit Muster richten, langsam seitlich gehen' : 'Lage wird gesucht …') : '';
       else if (st.tiefeFehler && st.tiefeOk === false) w = '⚠ Tiefendaten nicht lesbar: ' + st.tiefeFehler;
       else if (!glb && n < 3) w = '⚠ Kein Kamera-Zugriff – das Modell bekommt keine Fotos (Seite neu laden und Kamera erlauben)';
-      else if (st.verlorenSeit && t - st.verlorenSeit > 700) w = '⚠ Orientierung verloren – Handy ruhig auf Boden oder Möbel richten und kurz warten';
+      else if (st.verlorenSeit && t - st.verlorenSeit > 700) w = t - st.verlorenSeit > 8000 ? '⚠ Orientierung weg. Mehr Licht einschalten, zurück zu einer schon gefilmten Stelle gehen und ruhig halten' : '⚠ Orientierung verloren – Handy ruhig auf Boden oder Möbel richten und kurz warten';
       else if (st.keineTiefe > 90) w = '⚠ Noch keine Tiefendaten – Handy langsam seitlich bewegen, Raum hell genug?';
       else if (st.schnell > 12) w = '⚠ Zu schnell – langsamer schwenken';
       else if (n >= MAXK) w = 'Genug Aufnahmen – bitte „Fertig“ tippen';

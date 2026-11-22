@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.8';
+const VERSION = '1.9';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -954,7 +954,7 @@ async function scannen() {
   catch (e) { nachAR(); scanFehler = e.message; merkeAufnahme({ zeit: new Date().toISOString(), aufnahmen: 0, sek: 0, bps: 0, verloren: 0, ohneTiefe: 0, tiefe: '-', format: '-', kamera: false }, 'Start fehlgeschlagen: ' + e.message); return zurueck('Aufnahme startet nicht: ' + e.message, e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
   nachAR();
   if (erg.wechsel === 'ecken') { merkeAufnahme(erg.stat, 'keine Tiefe → Ecken antippen'); return aufmessen(); }
-  if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).'); }
+  if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 12 Aufnahmen nötig).'); }
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, 'wird ausgewertet');
   const p = await ladeScan({ kf: erg.kf }, 'Raum ' + new Date().toLocaleDateString('de-AT'));
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, p ? `Modell: ${p.walls.length} Wände, ${(p.rooms[0] ? area(p.rooms[0].poly) : 0).toFixed(1)} m²` : 'Auswertung: ' + scanFehler);
