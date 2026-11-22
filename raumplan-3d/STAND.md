@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 1.2 (neu: Raum scannen im Durchgehen → 1:1-Modell mit echter Einrichtung). Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 22.11.2026, Version 1.3 (neu: Startseite mit Projekten, „Neues Projekt: Raum aufnehmen“ startet sofort die Kamera). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -12,8 +12,16 @@ Stand 22.11.2026, Version 1.2 (neu: Raum scannen im Durchgehen → 1:1-Modell mi
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
 
+## Startseite und Projekte (neu in 1.3)
+- Beim Öffnen erscheint die Startseite: großer Knopf **„📹 Neues Projekt: Raum aufnehmen“** (startet sofort die AR-Aufnahme, ein Tipp ist wegen der Kamera-Erlaubnis nötig), darunter Ecken antippen, Maße eintippen, Datei öffnen, „Meine Projekte“ (öffnen, löschen mit Rückfrage), Beispielwohnung.
+- Jede Aufnahme, jeder Raum nach Maß und jede geöffnete Datei wird ein **eigenes Projekt** (Name „Raum TT.MM.JJJJ“, im Menü umbenennbar). Bestehende Projekte werden nie überschrieben.
+- Speicher: Liste `rp3d-liste`, Plan je Projekt `rp3d-p:<id>`, zuletzt offen `rp3d-akt` (localStorage); Fotos und Punktwolke in IndexedDB, beim Löschen mit entfernt. Die eine Planung aus Version 1.0–1.2 (`rp3d-plan`) wird beim ersten Start als Projekt übernommen.
+- Ohne AR (PC, iPhone) steht ein Hinweis unter dem Knopf. Zurück zur Startseite: Menü → „🗂 Projekte · Neues Projekt“.
+- Abgebrochene oder fehlgeschlagene Aufnahme ohne offenes Projekt führt zurück zur Startseite mit Meldung.
+- Testnaht: `window.rp3dTestScan` (Funktion, die einen Roh-Scan liefert) ersetzt in automatischen Tests die Kamera.
+
 ## Raum scannen im Durchgehen (neu in 1.2, `scan.js` + `starteScan` in `aufmass.js`)
-Menü → „📹 Raum scannen – einfach durchgehen“. Nur Android + Chrome mit ARCore-Tiefendaten (WebXR `depth-sensing`, Pflicht; `camera-access` freiwillig). Ohne Tiefe: Hinweis und Ecken-Antippen.
+Startseite → „📹 Neues Projekt: Raum aufnehmen“ (oder Menü → „📹 Raum aufnehmen“). Nur Android + Chrome mit ARCore-Tiefendaten (WebXR `depth-sensing`, Pflicht; `camera-access` freiwillig). Ohne Tiefe: Hinweis und Ecken-Antippen.
 - **Aufnahme:** je Aufnahme Kameralage M, Projektion P, Tiefenraster 64×~138 (mm, über `getDepthInMeters`), Kamerabild 400 px. Neue Aufnahme ab 15 cm Bewegung oder 9° Drehung, nur bei ruhigem Handy, höchstens 240. Anzeige: grüne Punkte = erfasst, Raster 12×3 = gefilmte Blickrichtungen (oben/Mitte/unten), Tipps was fehlt. „Fertig“ ab 25 Aufnahmen.
 - **Ausrichtung selbst bestimmt** (Lehre aus Feldtest S25 vom 05.11., Tiefenbild-Zeilen verkehrt): 4 Varianten des Tiefenrasters, richtig ist die mit den wenigsten belegten Würfeln (Aufnahmen liegen übereinander); Reserve: bei Blick nach unten liegen die Punkte unter der Kamera. Kopfstehende Kamerabilder werden über die Farbstreuung je Raumstelle erkannt und gedreht.
 - **Punktwolke:** ein Punkt je 2,5-cm-Würfel, Lage und Farbe gemittelt, Tiefensprünge (Kanten) und Einzelsichtungen verworfen.

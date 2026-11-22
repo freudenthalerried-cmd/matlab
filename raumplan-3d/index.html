@@ -95,6 +95,16 @@ h3{font-size:16px;margin:14px 0 6px}
 #arCov i.an{background:var(--ok)}
 #arCov i.hier{outline:2px solid #fff}
 #arInfo{position:absolute;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));text-align:center;color:#fff;font-size:13px;text-shadow:0 1px 2px #000}
+#start{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;overscroll-behavior:contain;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.st-in{max-width:560px;margin:0 auto}
+#start h1{font-size:28px;margin:4px 0 2px}
+#start h1 small{font-size:13px;color:var(--mut);font-weight:400;margin-left:6px;white-space:nowrap}
+#start .big{width:100%;min-height:76px;font-size:20px;margin:16px 0 4px}
+#start .row button{min-height:52px}
+.pr{display:flex;gap:8px}
+.pr button:first-child{flex:1;display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-width:0}
+.pr b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.warn{color:var(--warn)}
 #err{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:50;background:var(--bg)}
 </style>
 </head>
@@ -122,6 +132,7 @@ h3{font-size:16px;margin:14px 0 6px}
   <button data-t="liste">🛒<span>Einkauf</span></button>
   <button data-t="menu">☰<span>Menü</span></button>
 </nav>
+<section id="start" hidden></section>
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
 <div id="arUI" hidden>
   <div id="arTop"><b id="arStep"></b><span id="arTxt"></span></div>

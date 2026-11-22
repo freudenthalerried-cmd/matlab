@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '1.2';
+const VERSION = '1.3';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -122,7 +122,7 @@ const idb = (() => {
   let dbp = null;
   const open = () => dbp ||= new Promise((res, rej) => { const r = indexedDB.open('rp3d', 1); r.onupgradeneeded = () => r.result.createObjectStore('fotos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const tx = db.transaction('fotos', mode), rq = fn(tx.objectStore('fotos')); tx.oncomplete = () => res(rq && rq.result); tx.onerror = () => rej(tx.error); }));
-  return { put: (k, v) => run('readwrite', s => s.put(v, k)), get: k => run('readonly', s => s.get(k)) };
+  return { put: (k, v) => run('readwrite', s => s.put(v, k)), get: k => run('readonly', s => s.get(k)), del: k => run('readwrite', s => s.delete(k)) };
 })();
 const fotoTex = new Map();
 const SHOWF = () => LS.get('rp3d-fotos') !== '0';
@@ -488,8 +488,74 @@ function doUndo() {
 let saveT = 0;
 // Eigener Speicherplatz je verlinktem Raum (?plan=…), damit der eigene Plan nicht überschrieben wird
 const PLAN_URL = new URLSearchParams(location.search).get('plan');
-const SKEY = 'rp3d-plan' + (PLAN_URL ? ':' + PLAN_URL : '');
-function save() { clearTimeout(saveT); saveT = setTimeout(() => LS.set(SKEY, snapshot()), 300); }
+// ---------- Projekte ----------
+// Jeder aufgenommene/angelegte Raum ist ein eigenes Projekt. Liste und Pläne liegen im Browser-Speicher.
+let projekte = [], aktId = null;
+try { projekte = JSON.parse(LS.get('rp3d-liste') || '[]'); if (!Array.isArray(projekte)) projekte = []; } catch { projekte = []; }
+const listeSichern = () => LS.set('rp3d-liste', JSON.stringify(projekte));
+const neueId = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const skey = () => (PLAN_URL ? 'rp3d-plan:' + PLAN_URL : aktId ? 'rp3d-p:' + aktId : null);
+function saveNow() {
+  clearTimeout(saveT); saveT = 0; if (!plan) return;
+  if (!PLAN_URL && !aktId) { aktId = neueId(); projekte.unshift({ id: aktId, name: plan.name, t: Date.now() }); LS.set('rp3d-akt', aktId); }   // erste Änderung an der Vorschau → eigenes Projekt
+  LS.set(skey(), snapshot());
+  const e = projekte.find(q => q.id === aktId);
+  if (e) { e.name = plan.name; e.t = Date.now(); e.m2 = +plan.rooms.reduce((sum, r) => sum + area(r.poly), 0).toFixed(1); listeSichern(); }
+}
+function save() { clearTimeout(saveT); saveT = setTimeout(saveNow, 300); }
+function freierName(basis) { let n = basis, i = 2; while (projekte.some(q => q.name === n)) n = `${basis} (${i++})`; return n; }
+function neuesProjekt(p) {      // fertigen Plan als neues Projekt anlegen und anzeigen
+  if (saveT) saveNow();
+  normalize(p);
+  if (!PLAN_URL) { plan.name = freierName(plan.name); aktId = neueId(); projekte.unshift({ id: aktId, name: plan.name, t: Date.now() }); LS.set('rp3d-akt', aktId); }
+  undo.length = 0; $('#bUndo').disabled = true; $('#start').hidden = true;
+  rebuild(); deselect(); saveNow();
+}
+function oeffneProjekt(id) {
+  if (saveT) saveNow();
+  let p; try { p = JSON.parse(LS.get('rp3d-p:' + id)); normalize(p); } catch { return false; }
+  aktId = id; LS.set('rp3d-akt', id); undo.length = 0; $('#bUndo').disabled = true; $('#start').hidden = true;
+  rebuild(); deselect(); closeSheet(); setMode('haus');
+  ladeFotos().then(n => { if (n) { buildStructure(); baueWolke(); applyLight(); } });
+  return true;
+}
+async function loescheProjekt(id) {
+  try { const p = JSON.parse(LS.get('rp3d-p:' + id)), keys = []; for (const w of p.walls || []) for (const f of [w.fotoA, w.fotoB]) if (f) keys.push(f.key); for (const r of p.rooms || []) if (r.foto) keys.push(r.foto.key); if (p.wolke) keys.push(p.wolke.key); for (const k of keys) { fotoTex.delete(k); wolken.delete(k); await idb.del(k).catch(() => {}); } } catch { /* Plan nicht lesbar */ }
+  try { localStorage.removeItem('rp3d-p:' + id); } catch { /* privat */ }
+  projekte = projekte.filter(q => q.id !== id); listeSichern();
+  if (aktId === id) { aktId = null; LS.set('rp3d-akt', ''); normalize(beispiel()); undo.length = 0; $('#bUndo').disabled = true; rebuild(); deselect(); }
+}
+function oeffneBeispiel() { const e = projekte.find(q => q.bsp); if (e && oeffneProjekt(e.id)) return; neuesProjekt(beispiel()); const n = projekte.find(q => q.id === aktId); if (n) { n.bsp = true; listeSichern(); } setMode('haus'); }
+
+// ---------- Startseite ----------
+let arOk = null;
+function zeigeStart(msg = '') {
+  if (PLAN_URL) return;
+  if (saveT) saveNow();
+  closeSheet(); deselect();
+  const fmt = t => new Date(t).toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  $('#start').innerHTML = `<div class="st-in">
+    <h1>Raumplan 3D <small>Version ${VERSION}</small></h1>
+    <p class="mut">Raum mit dem Handy aufnehmen, in 3D durchgehen und einrichten.</p>
+    ${msg ? `<p class="warn">⚠ ${esc(msg)}</p>` : ''}
+    <button class="main big" data-s="scan">📹 Neues Projekt: Raum aufnehmen</button>
+    <p class="mut">${arOk === false ? '⚠ Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“). Auf diesem Gerät: Maße eintippen oder eine Projektdatei öffnen.' : 'Antippen, Kamera erlauben, dann langsam durch den Raum gehen und alles abfilmen.'}</p>
+    <div class="row"><button data-s="ecken">📏 Ecken antippen</button><button data-s="masse">📐 Maße eintippen</button><button data-s="datei">📂 Datei öffnen</button></div>
+    ${projekte.length ? `<h3>Meine Projekte</h3><div class="list">${projekte.map(q => `<div class="pr"><button data-o="${esc(q.id)}"><b>${esc(q.name)}</b><span class="mut">${fmt(q.t)}${q.m2 ? ' · ' + String(q.m2).replace('.', ',') + ' m²' : ''}${q.id === aktId ? ' · zuletzt offen' : ''}</span></button><button class="no" data-del="${esc(q.id)}" aria-label="Projekt ${esc(q.name)} löschen">🗑</button></div>`).join('')}</div>` : ''}
+    <div class="list" style="margin-top:14px"><button data-s="beispiel">🏠 Beispielwohnung ansehen</button></div>
+  </div>`;
+  $('#start').hidden = false; $('#start').scrollTop = 0;
+}
+$('#start').onclick = async e => {
+  const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
+  if (d.s === 'scan') scannen();
+  else if (d.s === 'ecken') aufmessen();
+  else if (d.s === 'masse') { $('#start').hidden = true; openSheet('raum'); }
+  else if (d.s === 'datei') $('#file').click();
+  else if (d.s === 'beispiel') oeffneBeispiel();
+  else if (d.o) { if (!oeffneProjekt(d.o)) zeigeStart('Projekt konnte nicht geöffnet werden.'); }
+  else if (d.del) { const q = projekte.find(x => x.id === d.del); if (q && confirm(`Projekt „${q.name}“ mit allen Fotos endgültig löschen?`)) { await loescheProjekt(d.del); zeigeStart(); } }
+};
 function rebuild(resetCam = true) { normalize(plan); buildStructure(); buildItems(); baueWolke(); applyLight(); if (resetCam) resetCams(); applyCam(); $('#sub').textContent = plan.name; }
 
 // ---------- Hinweis ----------
@@ -656,7 +722,8 @@ const SHEETS = {
   },
   menu() {
     return ['Menü', `<div class="list">
-      <button data-m="scannen" class="main">📹 Raum scannen – einfach durchgehen</button>
+      <button data-m="start" class="main">🗂 Projekte · Neues Projekt</button>
+      <button data-m="scannen">📹 Raum aufnehmen – einfach durchgehen</button>
       <button data-m="aufmessen">📏 Raum aufmessen – Ecken antippen</button>
       <button data-m="raum">📐 Neuer Raum nach Maß (eintippen)</button>
       <button data-m="beispiel">🏠 Beispielwohnung laden</button>
@@ -670,7 +737,8 @@ const SHEETS = {
       <label class="chk"><input type="checkbox" id="snap" ${SNAP() ? 'checked' : ''}> Einrasten (5 cm / 15°)</label>
       <label class="chk"><input type="checkbox" id="fotos" ${SHOWF() ? 'checked' : ''}> Fotos vom Scan auf Wänden/Boden zeigen</label>
       <label class="chk"><input type="checkbox" id="wolke" ${SHOWW() ? 'checked' : ''}> Gescannte Einrichtung zeigen (Punkte)</label>
-      <label>Amazon-Partner-ID (Tracking-ID)<input id="tag" value="${esc(affTag)}" autocomplete="off" spellcheck="false"></label>
+      <label>Projektname<input id="pname" value="${esc(plan.name)}" maxlength="40" autocomplete="off"></label>
+      <label style="margin-top:8px">Amazon-Partner-ID (Tracking-ID)<input id="tag" value="${esc(affTag)}" autocomplete="off" spellcheck="false"></label>
       <p class="note">Raumplan 3D · Version ${VERSION} · Kopie der Raumplan-App mit 3D-Rundgang. Alles bleibt in deinem Browser gespeichert.</p>`];
   },
   raum() {
@@ -682,7 +750,7 @@ const SHEETS = {
       <label>Höhe (m)<input name="h" type="number" inputmode="decimal" step="0.01" min="1.8" max="6" value="2.60" required></label></div>
       <div class="row"><label>Fenster<select name="f"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
       <label>Tür<select name="t"><option value="1" selected>ja</option><option value="0">nein</option></select></label></div>
-      <p class="mut">Innenmaße eingeben, z. B. aus der Raumplan-Messung. Der aktuelle Plan wird ersetzt (↶ holt ihn zurück).</p>
+      <p class="mut">Innenmaße eingeben. Es wird ein neues Projekt angelegt.</p>
       <button class="main" style="width:100%">Raum erstellen</button></form>`];
   },
   aufmass() {
@@ -719,7 +787,7 @@ const SHEETS = {
   },
   hilfe() {
     return ['So geht’s', `<ul class="help">
-      <li><b>Eigenen Raum holen:</b> ☰ Menü → „📹 Raum scannen“ (Android-Handy, Chrome). Langsam durchgehen und alles abfilmen, „Fertig“ – der Raum steht als 3D-Modell da.</li>
+      <li><b>Eigenen Raum holen:</b> ☰ Menü → „🗂 Projekte“ → „📹 Neues Projekt: Raum aufnehmen“ (Android-Handy, Chrome). Langsam durchgehen und alles abfilmen, „Fertig“ – der Raum steht als 3D-Modell da.</li>
       <li><b>Ansicht oben:</b> 🚶 Gehen = durch die Wohnung laufen · 🏠 Haus = von schräg oben drehen · ⬛ Plan = Grundriss.</li>
       <li><b>Gehen:</b> ${MOBIL ? 'linker Kreis = laufen, rechts wischen = umsehen, Boden antippen = hingehen.' : 'W A S D oder Pfeiltasten, Maus ziehen = umsehen, Boden klicken = hingehen, Mausrad = vor/zurück.'}</li>
       <li><b>Möbel verschieben:</b> antippen (blauer Rahmen), dann nochmal drauf und ziehen. Drehen, Farbe, Kopie und Löschen im Feld unten.</li>
@@ -770,6 +838,7 @@ function bindSheet(name) {
     $('#snap').onchange = e => LS.set('rp3d-snap', e.target.checked ? '1' : '0');
     $('#fotos').onchange = e => { LS.set('rp3d-fotos', e.target.checked ? '1' : '0'); buildStructure(); inv(); };
     $('#wolke').onchange = e => { LS.set('rp3d-wolke', e.target.checked ? '1' : '0'); baueWolke(); applyLight(); };
+    $('#pname').onchange = e => { plan.name = e.target.value.trim().slice(0, 40) || plan.name; $('#sub').textContent = plan.name; save(); hint('Projektname gespeichert'); };
     $('#tag').onchange = e => { affTag = e.target.value.trim() || AFF_DEFAULT; LS.set('rp3d-tag', affTag); hint('Partner-ID gespeichert: ' + affTag); };
   }
   if (name === 'raum') {
@@ -777,8 +846,8 @@ function bindSheet(name) {
       e.preventDefault(); const f = new FormData(e.target), n = k => parseFloat(String(f.get(k)).replace(',', '.'));
       const L = n('l'), B = n('b'), H = n('h');
       if (!(L >= 1 && B >= 1 && H >= 1.8)) return hint('Bitte gültige Maße eingeben (mind. 1 m, Höhe mind. 1,8 m).');
-      pushUndo(); plan = rechteckRaum(String(f.get('n') || 'Mein Raum').slice(0, 40), L, B, H, +f.get('f'), f.get('t') === '1');
-      rebuild(); deselect(); save(); closeSheet(); setMode('haus'); hint(`Raum ${L.toFixed(2)} × ${B.toFixed(2)} m erstellt. ➕ Möbel hinzufügen!`);
+      neuesProjekt(rechteckRaum(String(f.get('n') || 'Mein Raum').slice(0, 40), L, B, H, +f.get('f'), f.get('t') === '1'));
+      closeSheet(); setMode('haus'); hint(`Raum ${L.toFixed(2)} × ${B.toFixed(2)} m erstellt. ➕ Möbel hinzufügen!`);
     };
   }
   body.onclick = e => {
@@ -843,24 +912,28 @@ function selAction(a, c) {
 }
 
 // ---------- Aufmessen ----------
+const KEIN_AR = 'Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“).';
+// Ohne offenes Projekt zurück zur Startseite, sonst Meldung über dem Plan
+const zurueck = (msg, blatt) => { if (!aktId && !PLAN_URL) zeigeStart(msg); else if (blatt) openSheet(blatt); else hint(msg, 6000); };
 async function aufmessen() {
-  if (!(await arVerfuegbar())) return openSheet('keinar');
-  closeSheet(); deselect();
+  if (!(await arVerfuegbar())) return zurueck(KEIN_AR, 'keinar');
+  $('#start').hidden = true; closeSheet(); deselect();
   let res;
   try { res = await starteAufmass($('#arUI')); }
-  catch (e) { hint(e.message + ' – Kamera-Erlaubnis erteilt? ARCore installiert?', 7000); return; }
-  if (!res) { hint('Aufmessen abgebrochen'); return; }
-  await ladeAufmass(res, 'Aufmaß ' + new Date().toLocaleDateString('de-AT'));
+  catch (e) { return zurueck(e.message + ' – Kamera-Erlaubnis erteilt? ARCore installiert?'); }
+  if (!res) return zurueck('Aufmessen abgebrochen.');
+  await ladeAufmass(res, 'Raum ' + new Date().toLocaleDateString('de-AT'));
 }
 let scanFehler = '';
 async function scannen() {
-  if (!(await arVerfuegbar())) return openSheet('keinar');
-  closeSheet(); deselect();
+  const test = window.rp3dTestScan;      // nur für automatische Tests: liefert einen simulierten Roh-Scan statt der Kamera
+  if (!test && !(await arVerfuegbar())) return zurueck(KEIN_AR, 'keinar');
+  $('#start').hidden = true; closeSheet(); deselect();
   let roh;
-  try { roh = await starteScan($('#arUI')); }
+  try { roh = test ? await test() : await starteScan($('#arUI')); }
   catch (e) { scanFehler = e.message; return openSheet(e.keineTiefe ? 'keintiefe' : 'scanfehler'); }
-  if (!roh) { hint('Scan abgebrochen (mindestens 25 Aufnahmen nötig)'); return; }
-  await ladeScan(roh, 'Scan ' + new Date().toLocaleDateString('de-AT'));
+  if (!roh) return zurueck('Aufnahme abgebrochen (mindestens 25 Aufnahmen nötig).');
+  await ladeScan(roh, 'Raum ' + new Date().toLocaleDateString('de-AT'));
 }
 async function ladeScan(roh, name) {
   hint('Scan wird ausgewertet …', 60000); await new Promise(r => setTimeout(r, 30));
@@ -868,7 +941,7 @@ async function ladeScan(roh, name) {
   let res;
   try { res = await auswerten(roh, t => hint(t, 60000)); }
   catch (e) { scanFehler = e.message; hint('Scan nicht auswertbar', 4000); openSheet('scanfehler'); return null; }
-  const p = await ladeAufmass(res, name); if (p) p.aufmass.info = res.info;
+  const p = await ladeAufmass(res, name); if (p) { p.aufmass.info = res.info; save(); }
   return p;
 }
 async function ladeAufmass(res, name) {
@@ -880,7 +953,7 @@ async function ladeAufmass(res, name) {
     fotoTex.set(k, texAus(new THREE.CanvasTexture(cv)));
     try { const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85)); await idb.put(k, blob); } catch { /* nur für diese Sitzung */ }
   }
-  pushUndo(); plan = p; rebuild(); deselect(); save(); setMode('haus'); openSheet('aufmass');
+  neuesProjekt(p); setMode('haus'); openSheet('aufmass');
   hint(`Fertig: ${p.walls.length} Wände, ${tex.size} Fotoflächen${wolke ? ', Einrichtung als Punkte' : ''}`);
   return p;
 }
@@ -903,7 +976,8 @@ function menuAction(m) {
   if (m === 'raum' || m === 'hilfe') return openSheet(m);
   if (m === 'aufmessen') return aufmessen();
   if (m === 'scannen') return scannen();
-  if (m === 'beispiel') { pushUndo(); plan = beispiel(); rebuild(); deselect(); save(); closeSheet(); setMode('haus'); hint('Beispielwohnung geladen'); }
+  if (m === 'beispiel') { oeffneBeispiel(); closeSheet(); hint('Beispielwohnung geöffnet'); }
+  if (m === 'start') zeigeStart();
   if (m === 'speichern') exportPlan();
   if (m === 'teilen') exportPlan(true);
   if (m === 'roh' && letzterRoh) teilen(`scan-roh-${letzterRoh.datum.slice(0, 16).replace(/[:T]/g, '-')}.txt`, JSON.stringify(letzterRoh));
@@ -965,8 +1039,9 @@ async function importPlan(p) {
     for (const [k, url] of Object.entries(d.fotos || {})) { if (!/^data:image\/(jpeg|png);base64,/.test(url)) continue; try { const blob = await (await fetch(url)).blob(); await idb.put(k, blob); } catch { /* ohne dieses Foto */ } }
     for (const [k, v] of Object.entries(d.wolken || {})) { try { const pb = unb64(v.pos), w = { pos: new Float32Array(pb.buffer, 0, pb.byteLength >> 2), col: unb64(v.col) }; wolken.set(k, w); await idb.put(k, w); } catch { /* ohne Punktwolke */ } }
   }
-  const old = plan ? snapshot() : null; normalize(p); if (old) { undo.push(old); $('#bUndo').disabled = false; }
-  await ladeFotos(); rebuild(); deselect(); save(); closeSheet();
+  if (PLAN_URL) { normalize(p); await ladeFotos(); rebuild(); deselect(); saveNow(); }
+  else { neuesProjekt(p); if (await ladeFotos()) { buildStructure(); baueWolke(); applyLight(); } setMode('haus'); }
+  closeSheet();
 }
 $('#file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -1040,16 +1115,23 @@ function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h
 addEventListener('resize', resize);
 
 // ---------- Start ----------
-try { const s = LS.get(SKEY); plan = s ? JSON.parse(s) : beispiel(); normalize(plan); }
-catch { plan = beispiel(); normalize(plan); }
+// Altbestand (bis Version 1.2 gab es nur eine Planung) als erstes Projekt übernehmen
+if (!PLAN_URL && !projekte.length) { const alt = LS.get('rp3d-plan'); if (alt) { try { const p = JSON.parse(alt), id = neueId(); LS.set('rp3d-p:' + id, alt); projekte.push({ id, name: p.name || 'Mein Plan', t: Date.now() }); listeSichern(); LS.set('rp3d-akt', id); } catch { /* unlesbar */ } } }
+let geladen = false;
+try {
+  if (PLAN_URL) { const s = LS.get(skey()); if (s) { normalize(JSON.parse(s)); geladen = true; } }
+  else { const id = LS.get('rp3d-akt'); if (id && projekte.some(q => q.id === id)) { normalize(JSON.parse(LS.get('rp3d-p:' + id))); aktId = id; geladen = true; } }
+} catch { geladen = false; aktId = null; }
+if (!geladen) normalize(beispiel());      // Vorschau im Hintergrund, wird erst mit der ersten Änderung ein Projekt
 resize(); rebuild(); setMode('haus');
+zeigeStart();
+arVerfuegbar().then(ok => { arOk = ok; if (!$('#start').hidden) zeigeStart(); });
 requestAnimationFrame(loop);
-if (!LS.get('rp3d-hilfe')) { openSheet('hilfe'); LS.set('rp3d-hilfe', '1'); }
 // für Tests/Automatisierung
-window.rp3d = { get plan() { return plan; }, setMode, openSheet, select, addItem, inv, ladeAufmass, ladeScan, exportPlan, importPlan, get mode() { return mode; } };
+window.rp3d = { get plan() { return plan; }, get projekte() { return projekte; }, get aktId() { return aktId; }, setMode, openSheet, select, addItem, inv, ladeAufmass, ladeScan, exportPlan, importPlan, zeigeStart, get mode() { return mode; } };
 ladeFotos().then(n => { if (n) { buildStructure(); baueWolke(); applyLight(); } });
 // Verlinkter Raum (z. B. aus der App-Zentrale): index.html?plan=raeume/buero.json – nur vom eigenen Server
-if (PLAN_URL && !LS.get(SKEY)) {
+if (PLAN_URL && !geladen) {
   const u = new URL(PLAN_URL, location.href);
   if (u.origin === location.origin) fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(importPlan).then(() => { setMode('haus'); hint('Raum geladen: ' + plan.name); }).catch(e => hint('Raum konnte nicht geladen werden: ' + e.message, 6000));
 }
