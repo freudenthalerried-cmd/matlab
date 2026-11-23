@@ -144,6 +144,7 @@ section { padding: 64px 0; }
 .footer { background: var(--navy); color: #94a3b8; padding: 28px 0; font-size: .9rem; }
 .footer-inner { display: flex; gap: 20px; flex-wrap: wrap; }
 .footer a { color: #cbd5e1; text-decoration: none; }
+.test-bar { background: #fef3c7; color: #78350f; font-size: .9rem; padding: 8px 0; }
 .legal { padding: 48px 0; }
 .legal h1 { font-size: 2rem; }
 .legal h2 { font-size: 1.25rem; margin-top: 1.6em; }

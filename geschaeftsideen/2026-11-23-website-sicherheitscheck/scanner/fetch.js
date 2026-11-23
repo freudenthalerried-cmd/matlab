@@ -2,9 +2,26 @@
 const http = require('node:http');
 const https = require('node:https');
 const net = require('node:net');
+const zlib = require('node:zlib');
 const { isPrivate, makeLookup, blockedError } = require('./netguard');
 
 const UA = 'Mozilla/5.0 (compatible; WebAmpel-Sicherheitscheck/1.0)';
+
+// Manche Server senden trotz „identity“ komprimiert – entpacken, mit Größenlimit gegen Zip-Bomben.
+function decode(buf, enc, max) {
+  const e = String(enc || '').toLowerCase().trim();
+  const opt = { finishFlush: zlib.constants.Z_SYNC_FLUSH, maxOutputLength: max };
+  try {
+    if (e === 'gzip' || e === 'x-gzip') return zlib.gunzipSync(buf, opt);
+    if (e === 'deflate') {
+      try { return zlib.inflateSync(buf, opt); } catch { return zlib.inflateRawSync(buf, opt); }
+    }
+    if (e === 'br') return zlib.brotliDecompressSync(buf, { finishFlush: zlib.constants.BROTLI_OPERATION_FLUSH, maxOutputLength: max });
+  } catch {
+    return Buffer.alloc(0);
+  }
+  return buf;
+}
 
 function err(code) {
   const e = new Error(code);
@@ -59,7 +76,7 @@ function requestOnce(url, o) {
       let cut = false;
       const finish = () => {
         clearTimeout(timer);
-        resolve({ url, status: res.statusCode, headers: res.headers, tls, body: Buffer.concat(chunks).toString('utf8') });
+        resolve({ url, status: res.statusCode, headers: res.headers, tls, body: decode(Buffer.concat(chunks), res.headers['content-encoding'], o.maxBytes * 4).toString('utf8') });
       };
       res.on('data', (c) => {
         if (cut) return;

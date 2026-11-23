@@ -11,6 +11,7 @@ const CFG = {
   contactEmail: env.CONTACT_EMAIL || 'kontakt@example.at',
   phone: env.PHONE || '',
   trustProxy: env.TRUST_PROXY === '1',
+  testMode: env.TEST_MODE === '1', // Testversion: Hinweisbalken + nicht in Google
   // Nur für lokale Tests – in Produktion NIE setzen:
   allowPrivate: env.ALLOW_PRIVATE === '1',
   allowAnyPort: env.ALLOW_ANY_PORT === '1',
@@ -33,6 +34,8 @@ const SEC_HEADERS = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
 };
+if (CFG.testMode) SEC_HEADERS['X-Robots-Tag'] = 'noindex, nofollow';
+const TEST_BANNER = '<div class="test-bar"><div class="wrap"><strong>Testversion</strong> – nicht öffentlich beworben. Prüfungen sind echt, Anfragen werden ggf. nicht dauerhaft gespeichert.</div></div>';
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -40,7 +43,8 @@ const fill = (html) => html
   .replaceAll('{{BRAND}}', esc(CFG.brand))
   .replaceAll('{{CONTACT_EMAIL}}', esc(CFG.contactEmail))
   .replaceAll('{{PHONE}}', esc(CFG.phone || '–'))
-  .replaceAll('{{YEAR}}', String(new Date().getFullYear()));
+  .replaceAll('{{YEAR}}', String(new Date().getFullYear()))
+  .replace('<!--TEST_BANNER-->', CFG.testMode ? TEST_BANNER : '');
 
 function send(res, status, body, type = 'application/json; charset=utf-8', extra = {}) {
   res.writeHead(status, { ...SEC_HEADERS, 'Content-Type': type, ...extra });
@@ -48,7 +52,8 @@ function send(res, status, body, type = 'application/json; charset=utf-8', extra
 }
 
 function clientIp(req) {
-  if (CFG.trustProxy && req.headers['x-forwarded-for']) return req.headers['x-forwarded-for'].split(',')[0].trim();
+  // Letzter Eintrag stammt vom eigenen Proxy (Render/Caddy) – der erste wäre vom Besucher fälschbar.
+  if (CFG.trustProxy && req.headers['x-forwarded-for']) return req.headers['x-forwarded-for'].split(',').pop().trim();
   return req.socket.remoteAddress || 'unknown';
 }
 
@@ -160,6 +165,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/lead') return await handleLead(req, res);
     if (req.method === 'GET' && pathname === '/api/config') return send(res, 200, { brand: CFG.brand, stripe: CFG.stripe });
     if (req.method === 'GET' && pathname === '/healthz') return send(res, 200, { ok: true });
+    if (CFG.testMode && pathname === '/robots.txt') return send(res, 200, 'User-agent: *\nDisallow: /\n', 'text/plain; charset=utf-8');
     if (req.method === 'GET' || req.method === 'HEAD') return serveStatic(req, res, pathname);
     send(res, 405, { error: 'Methode nicht erlaubt.' });
   } catch (e) {

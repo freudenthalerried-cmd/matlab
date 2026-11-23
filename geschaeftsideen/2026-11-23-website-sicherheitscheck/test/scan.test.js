@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const zlib = require('node:zlib');
 const { scan } = require('../scanner');
 
 let cert;
@@ -28,8 +29,9 @@ const PAGE = `<html><head><meta name="generator" content="WordPress 6.2"><link h
 
 test('kompletter Scan gegen lokale Server', { skip: !cert && 'openssl fehlt' }, async (t) => {
   const tlsSrv = https.createServer(cert, (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/html', 'X-Powered-By': 'PHP/8.0.30', 'Strict-Transport-Security': 'max-age=31536000' });
-    res.end(PAGE);
+    // gzip trotz Accept-Encoding: identity – wie manche echte Server
+    res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip', 'X-Powered-By': 'PHP/8.0.30', 'Strict-Transport-Security': 'max-age=31536000' });
+    res.end(zlib.gzipSync(PAGE));
   });
   await new Promise((r) => tlsSrv.listen(0, '127.0.0.1', r));
   const sPort = tlsSrv.address().port;

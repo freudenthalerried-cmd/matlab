@@ -23,6 +23,14 @@ npm start        # http://localhost:3000 – kein npm install nötig (keine Abh�
 npm test
 ```
 
+## Testversion (kostenlos, Render.com)
+`render.yaml` im Repo-Hauptordner richtet alles ein (Name „Seitencheck“, Testmodus mit Hinweisbalken, nicht in Google).
+1. render.com → **Sign up with GitHub**
+2. **New → Blueprint** → Repo `matlab` wählen → Branch `ccr-55fb00f9-8m7xq4` → `CONTACT_EMAIL` eintragen → **Apply**
+3. Nach ca. 3–5 Min. läuft die Seite unter `https://seitencheck-test.onrender.com` (oder ähnlich)
+
+Gratis-Stufe: schläft nach 15 Min. ohne Besucher ein (erster Aufruf dauert dann ca. 1 Min.), Anfragen in `data/` gehen beim Neustart verloren → nur zum Testen.
+
 ## Online stellen
 **GitHub Pages reicht nicht.** Der Check braucht einen eigenen Server.
 

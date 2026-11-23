@@ -1,0 +1,19 @@
+# Render.com Blueprint – kostenlose Testversion des Website-Sicherheitschecks
+services:
+  - type: web
+    name: seitencheck-test
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./geschaeftsideen/2026-11-23-website-sicherheitscheck/Dockerfile
+    dockerContext: ./geschaeftsideen/2026-11-23-website-sicherheitscheck
+    healthCheckPath: /healthz
+    envVars:
+      - key: BRAND
+        value: Seitencheck
+      - key: TRUST_PROXY
+        value: "1"
+      - key: TEST_MODE
+        value: "1"
+      - key: CONTACT_EMAIL
+        sync: false
