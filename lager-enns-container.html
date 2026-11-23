@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Seecontainer kaufen, mieten & einlagern – bauversand.com · Lager Enns</title>
-  <meta name="description" content="Seecontainer 10, 20 und 40 Fuß kaufen oder mieten, Lagercontainer im Lager Enns monatlich anmieten, Umbau und Zubehör. Lieferung auf Anfrage. Jetzt Angebot anfordern.">
+  <meta name="description" content="Seecontainer 10, 20 und 40 Fuß kaufen oder mieten, Lagercontainer ca. 14 m² im Lager Enns ab 125 € im Monat, Umbau und Zubehör. Lieferung auf Anfrage. Jetzt Angebot anfordern.">
   <meta property="og:title" content="Seecontainer kaufen, mieten & einlagern – bauversand.com">
   <meta property="og:description" content="Lagercontainer im Lager Enns, Seecontainer-Verkauf und -Miete, Umbau und Zubehör aus einer Hand.">
   <meta property="og:type" content="website">
@@ -19,7 +19,7 @@
     "url": "https://bauversand.com",
     "telephone": "+43 664 5103676",
     "email": "stefan.freudenthaler@aon.at",
-    "address": { "@type": "PostalAddress", "addressLocality": "Enns", "addressRegion": "Oberösterreich", "addressCountry": "AT" },
+    "address": { "@type": "PostalAddress", "streetAddress": "Enghagnerstraße 17", "postalCode": "4470", "addressLocality": "Enns", "addressRegion": "Oberösterreich", "addressCountry": "AT" },
     "areaServed": "Österreich"
   }
   </script>
@@ -31,6 +31,7 @@
       <a href="lager-enns-lkw-parken.html">LKW-Parken</a>
       <a href="lager-enns-bauzaun.html">Bauzaun</a>
       <a href="lager-enns-container.html" class="active">Container</a>
+      <a href="lager-enns-winterlager.html">Winterlager</a>
       <a href="#kontakt" class="nav-cta">Anfragen</a>
     </nav>
   </header>
@@ -49,8 +50,8 @@
           <a class="btn bz-btn-light btn-large" href="#groessen">Größen &amp; Kauf</a>
         </div>
         <ul class="bz-badges">
-          <li>✔ Wind- &amp; wasserdicht</li>
-          <li>✔ Abschließbar</li>
+          <li>✔ Lagercontainer 125 € / Monat</li>
+          <li>✔ 24/7 Zugang, videoüberwacht</li>
           <li>✔ Umbau &amp; Zubehör</li>
           <li>✔ Lieferung auf Anfrage</li>
         </ul>
@@ -83,7 +84,7 @@
           <ul class="bz-list">
             <li>Für Handwerker, Firmen &amp; Private</li>
             <li>Ideal bei Umzug, Hausbau, Saisonware</li>
-            <li>Monatlich kündbar nach Vereinbarung</li>
+            <li>125 € pro Monat, monatlich kündbar</li>
           </ul>
         </article>
         <article class="bz-card">
@@ -130,25 +131,31 @@
     <section class="bz-section" id="lagern">
       <div class="ct-storage">
         <div>
-          <p class="bz-eyebrow">Neu im Lager Enns</p>
+          <p class="bz-eyebrow">Lager Enns · 125 € / Monat</p>
           <h2>Lagercontainer zur Miete – Ihr Lager ohne Lagerhalle</h2>
-          <p>Statt teurer Hallenfläche: ein abschließbarer Container auf unserem Gelände in Enns,
-          mit LKW-Zufahrt und Anbindung an die A1. Sie bringen Ihr Material, wir stellen den Platz.</p>
+          <p>Statt teurer Hallenfläche: Ihr eigener 20-Fuß-Container (innen 5,89 × 2,34 × 2,37&nbsp;m, ca. 14&nbsp;m² / 33&nbsp;m³)
+          auf unserem eingezäunten, videoüberwachten Gelände in Enns – eigenes Schloss, Zugang rund um die Uhr,
+          monatlich kündbar und provisionsfrei.</p>
           <ul class="bz-list">
             <li>Handwerker &amp; Baufirmen: Material und Geräte zentral lagern</li>
             <li>Private: Möbel bei Umzug, Hausbau oder Renovierung</li>
             <li>Händler: Saisonware, Reifen, Ersatzteile</li>
             <li>Vereine &amp; Gemeinden: Festausstattung, Absperrmaterial</li>
           </ul>
+          <form class="ct-calc" id="ct-calc" onsubmit="return false">
+            <label>Container <input id="ct-n" type="number" min="1" max="20" value="1" inputmode="numeric"></label>
+            <label>Monate <input id="ct-m" type="number" min="1" max="60" value="3" inputmode="numeric"></label>
+            <output id="ct-sum">375 €</output>
+          </form>
           <div class="bz-actions">
-            <a class="btn btn-primary btn-large bz-link-btn" data-product="Lagercontainer im Lager Enns (monatlich)" href="#kontakt">Lagercontainer anfragen</a>
+            <a class="btn btn-primary btn-large bz-link-btn" id="ct-req" data-product="Lagercontainer im Lager Enns (125 € / Monat)" href="#kontakt">Lagercontainer anfragen</a>
           </div>
         </div>
         <div class="ct-stat-grid">
-          <div class="ct-stat"><strong>10–40 ft</strong><span>Containergrößen</span></div>
-          <div class="ct-stat"><strong>monatlich</strong><span>flexibel mietbar</span></div>
-          <div class="ct-stat"><strong>A1</strong><span>verkehrsgünstig in Enns</span></div>
-          <div class="ct-stat"><strong>LKW</strong><span>Zufahrt am Gelände</span></div>
+          <div class="ct-stat"><strong>125 €</strong><span>pro Monat</span></div>
+          <div class="ct-stat"><strong>14 m²</strong><span>ca. 33 m³ Volumen</span></div>
+          <div class="ct-stat"><strong>24/7</strong><span>Zugang, eigenes Schloss</span></div>
+          <div class="ct-stat"><strong>6 km</strong><span>zur A1 Enns</span></div>
         </div>
       </div>
     </section>
@@ -206,7 +213,7 @@
         </details>
         <details>
           <summary>Kann ich den Container vor dem Kauf ansehen?</summary>
-          <p>Ja, gerne nach Terminvereinbarung bei uns im Lager Enns.</p>
+          <p>Ja, gerne nach Terminvereinbarung bei uns im Lager Enns, Enghagnerstraße 17.</p>
         </details>
       </div>
     </section>
@@ -218,15 +225,26 @@
         <a id="bz-mail" class="btn btn-primary btn-large" href="mailto:stefan.freudenthaler@aon.at?subject=Anfrage%20Container%20%E2%80%93%20bauversand.com">✉️ E-Mail-Anfrage senden</a>
         <a class="btn btn-ghost btn-large" href="tel:+436645103676">📞 0664 / 510 36 76</a>
       </div>
-      <p class="bz-small">Lager Enns, Oberösterreich · stefan.freudenthaler@aon.at</p>
+      <p class="bz-small">Lager Enns, Enghagnerstraße 17, 4470 Enns · stefan.freudenthaler@aon.at</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <p>bauversand.com · Seecontainer &amp; Lagercontainer · Lager Enns ·
-      <a href="lager-enns-bauzaun.html">Bauzaun</a> · <a href="lager-enns-lkw-parken.html">LKW-Parken</a> · <a href="/">Startseite</a></p>
+      <a href="lager-enns-bauzaun.html">Bauzaun</a> · <a href="lager-enns-winterlager.html">Winterlager</a> · <a href="lager-enns-lkw-parken.html">LKW-Parken</a> · <a href="/">Startseite</a></p>
   </footer>
 
   <script src="bauzaun.js"></script>
+  <script>
+  (function () {
+    var n = document.getElementById('ct-n'), m = document.getElementById('ct-m'), o = document.getElementById('ct-sum');
+    function upd() {
+      var a = Math.max(1, parseInt(n.value, 10) || 1), b = Math.max(1, parseInt(m.value, 10) || 1);
+      o.textContent = (a * b * 125).toLocaleString('de-AT') + ' €';
+      document.getElementById('ct-req').setAttribute('data-product', a + ' Lagercontainer im Lager Enns für ' + b + ' Monate (' + o.textContent + ')');
+    }
+    n.addEventListener('input', upd); m.addEventListener('input', upd); upd();
+  })();
+  </script>
 </body>
 </html>

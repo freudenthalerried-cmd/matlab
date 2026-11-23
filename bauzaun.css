@@ -247,3 +247,22 @@ main { max-width: 1080px; }
   .site-nav { gap: 10px; font-size: 13px; }
   .brand { font-size: 17px; }
 }
+
+/* Preise */
+.bz-price { font-size: 22px; font-weight: 800; color: var(--text) !important; margin: 0 0 10px !important; }
+.bz-price small { font-size: 13px; font-weight: 500; color: var(--muted); }
+.bz-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bz-calc-inputs input[type="date"], .wl-select {
+  font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; width: 100%; background: #fff;
+}
+.bz-calc-result dl.bz-sum { border-top: 1px solid #444c56; padding-top: 12px; }
+.bz-calc-result .bz-total dt, .bz-calc-result .bz-total { color: #fff; font-weight: 700; }
+.bz-calc-result dd.bz-big { font-size: 26px; }
+.wl-five { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important; }
+.wl-runtime { vertical-align: top; background: var(--accent-bg); }
+.bz-calc-result dt.bz-info { grid-column: 1 / -1; font-size: 13px; color: #8b949e; border-top: 1px solid #444c56; padding-top: 10px; margin-top: 4px; }
+.bz-calc-result dd.bz-info { display: none; }
+.ct-calc { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-top: 18px; background: var(--dark-2); border-radius: 12px; padding: 14px; }
+.ct-calc label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #c9d1d9; }
+.ct-calc input { width: 90px; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid #444c56; }
+.ct-calc output { font-size: 22px; font-weight: 800; color: var(--orange); margin-left: auto; }
