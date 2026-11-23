@@ -5,7 +5,7 @@ const net = require('node:net');
 const zlib = require('node:zlib');
 const { isPrivate, makeLookup, blockedError } = require('./netguard');
 
-const UA = 'Mozilla/5.0 (compatible; WebAmpel-Sicherheitscheck/1.0)';
+const UA = 'Mozilla/5.0 (compatible; Seitencheck/1.0)';
 
 // Manche Server senden trotz „identity“ komprimiert – entpacken, mit Größenlimit gegen Zip-Bomben.
 function decode(buf, enc, max) {

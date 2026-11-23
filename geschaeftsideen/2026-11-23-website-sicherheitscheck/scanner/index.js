@@ -69,7 +69,7 @@ async function safeBrowsing(url, key) {
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(5000),
       body: JSON.stringify({
-        client: { clientId: 'webampel', clientVersion: '1.0' },
+        client: { clientId: 'seitencheck', clientVersion: '1.0' },
         threatInfo: {
           threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
           platformTypes: ['ANY_PLATFORM'], threatEntryTypes: ['URL'], threatEntries: [{ url }],

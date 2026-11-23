@@ -7,7 +7,7 @@ const { scan, ScanError } = require('./scanner');
 const env = process.env;
 const CFG = {
   port: Number(env.PORT) || 3000,
-  brand: env.BRAND || 'WebAmpel',
+  brand: env.BRAND || 'Seitencheck',
   contactEmail: env.CONTACT_EMAIL || 'kontakt@example.at',
   phone: env.PHONE || '',
   trustProxy: env.TRUST_PROXY === '1',
