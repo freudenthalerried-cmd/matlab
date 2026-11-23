@@ -174,3 +174,14 @@ main {
 }
 
 .site-footer a { color: var(--orange-dark); }
+
+/* Mobile Navigation (4 Menüpunkte) */
+.site-header { flex-wrap: wrap; z-index: 10; }
+.site-nav { flex-wrap: wrap; }
+@media (max-width: 520px) {
+  .site-header { padding: 10px 16px; gap: 8px; }
+  .brand { font-size: 17px; }
+  .site-nav { gap: 10px; font-size: 13px; }
+  .nav-cta { padding: 6px 12px; }
+  main { padding: 0 16px 48px; }
+}

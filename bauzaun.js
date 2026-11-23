@@ -62,7 +62,7 @@
   }
 
   // Produkt-Links: Anfrage mit vorausgefülltem Produkt
-  document.querySelectorAll('.bz-link[data-product]').forEach(function (a) {
+  document.querySelectorAll('[data-product]').forEach(function (a) {
     a.addEventListener('click', function () {
       var p = a.getAttribute('data-product');
       mail.href = mailto('Anfrage ' + p + ' – bauversand.com',
@@ -70,6 +70,7 @@
     });
   });
 
+  if (!form) return; // Seite ohne Rechner
   form.addEventListener('input', calc);
   form.addEventListener('change', calc);
   form.addEventListener('submit', function (e) { e.preventDefault(); });
