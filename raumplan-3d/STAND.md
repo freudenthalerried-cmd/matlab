@@ -1,6 +1,6 @@
 # Raumplan 3D
 
-Stand 22.11.2026, Version 2.2 (Ursache des Handyfehlers gefunden und behoben, siehe „Dritter Handytest“; nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
+Stand 23.11.2026, Version 2.3 (neu: Foto-Rundgang mit Originalfotos und Beweis-Protokoll; Ursache des Handyfehlers gefunden und behoben, siehe „Dritter Handytest“; nach zweitem Handytest: Aufnahme gegen abweichendes Geräteverhalten abgesichert, erstmals mit WebXR-Attrappe wirklich ausgeführt). Die Version steht oben auf der Startseite. Kopie der Raumplan-App mit echter 3D-Ansicht zum Einrichten. Läuft im Browser (Handy + PC), keine Installation, kein Server nötig.
 
 ## Funktionen
 - **Ansichten:** 🚶 Gehen (Ich-Perspektive, Wände blockieren, Türen frei), 🏠 Haus (Puppenhaus von schräg oben), ⬛ Plan (Grundriss von oben).
@@ -11,6 +11,19 @@ Stand 22.11.2026, Version 2.2 (Ursache des Handyfehlers gefunden und behoben, si
 - **Einkaufsliste:** Möbel mit Menge, Wandfarbe in m² und Litern (2 Anstriche, 7 m²/l), Boden in m² (+10 % Verschnitt), jeweils mit Amazon-Link.
 - **Raum nach Maß:** Länge × Breite × Höhe (Innenmaße, z. B. aus der Raumplan-Messung), Fenster, Tür.
 - Rückgängig (40 Schritte), automatisches Speichern im Browser, Projekt als JSON-Datei speichern/öffnen, Foto (PNG).
+
+## Foto-Rundgang und Beweis-Protokoll (2.3)
+**Rückmeldung von Stefan (23.11., Aufnahme läuft am S25):** Raummaße eingeben nicht zwingend; Gegenstände werden nicht richtig angezeigt; soll eventuell für Beweissicherung dienen.
+**Folgerung:** Die Punktwolke kann Gegenstände nicht echt zeigen. Für die Beweissicherung zählen die unveränderten Fotos mit Ort und Zeit, nicht das geometrische Modell. Das 3D-Modell ist nur noch die Übersicht.
+- **Originalfotos bei der Aufnahme:** zusätzlich zu den kleinen Bildern fürs Modell alle 0,7 s (ab 30 cm oder 15° Unterschied) ein größeres Kamerabild (lange Seite 1280 px, JPEG 0,86, höchstens 220), unverändert, mit Kameralage und Uhrzeit. Auslesen mit gedrehtem Shader (kein Umkopieren), Kodierung über `canvas.toBlob`. Schlägt es fehl, läuft die Aufnahme ohne Originalfotos weiter.
+- **Ablage:** je Foto ein Blob in IndexedDB (`<id>-b<n>`), im Plan `rundgang.fotos[] = { k, p: Standort im Plan, d: Blickrichtung, t: Zeit, h: SHA-256 }`. Kontrollmaß skaliert die Standorte mit. Projektdatei und Löschen berücksichtigen die Fotos.
+- **Foto-Rundgang** (Knopf „📷 Fotos“ im 3D-Bild, im Ergebnisfeld und im Menü): zeigt das Originalfoto bildfüllend. ◀ ▶ drehen, ▲ ▼ gehen, ⤒ ⤓ kippen (jeweils das passendste Foto in der Nähe), ⏮ ⏭ in Aufnahmereihenfolge, ▶ abspielen, Wischen, Doppeltipp = 3-fach vergrößern, kleiner Plan mit Standort (antippen = dorthin). „✕ 3D“ stellt die 3D-Ansicht auf denselben Standort.
+- **Beweis-Protokoll** (eine HTML-Datei, am PC als PDF druckbar): freiwillige Angaben (Objekt, Raum, Auftraggeber/Anlass, aufgenommen von, Bemerkung), Aufnahmezeitraum, Plan als Zeichnung mit nummerierten Fotostandorten und Blickrichtung, alle Fotos mit Nummer, Uhrzeit, Standort, Blickrichtung, Neigung und SHA-256, dazu eine Prüfsumme über alle Fotos und Hinweise zur Genauigkeit.
+- **Ergebnisfeld:** Foto-Rundgang und Protokoll stehen vorn. Maße und Kontrollmaß sind eingeklappt, das Kontrollmaß heißt „Freiwillig“.
+- **Simulation** (Attrappe wie S25): 210 Aufnahmen, 106 Originalfotos 594 × 1280; Rundgang, Drehrichtung (16/16 richtig), Protokoll (106 Fotos, 106 Prüfsummen, 4,3 MB), Neuladen und Öffnen auf zweitem Gerät geprüft.
+- **Grenzen (ehrlich):** Die Fotos kommen aus dem AR-Kamerabild, rund 1 Megapixel. Für feine Risse reichen sie nicht, dafür zusätzlich normale Kamerafotos. Welche Auflösung das S25 wirklich liefert, ist ungeprüft. Die Prüfsummen belegen nur, dass ein Foto seit der Aufnahme nicht verändert wurde, wenn das Protokoll zeitnah hinterlegt wird (z. B. per Mail an sich selbst). Kein Ersatz für ein gerichtliches Gutachten.
+- **Nächste Schritte dafür:** Markierungen im Raum (Mangel, Riss) mit Notiz und Detailfoto der normalen Kamera; Originalfotos auch im Ecken-Modus; höhere Auflösung als Einstellung.
+- Der Ecken-Test der Attrappe (`ecken-ohne-boden.js`) ist zeitabhängig und fiel einmal mit Zeitüberschreitung aus, beim zweiten Lauf bestanden.
 
 ## Dritter Handytest: Ursache gefunden (2.1)
 **Screenshot von Stefan (S25, Version 2.0):** unten „⚠ Cannot read properties of null (reading 'getViewport') · Lage ✓ · Tiefe … · Foto … · 0/240“.

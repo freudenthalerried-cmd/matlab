@@ -16,6 +16,7 @@ const SP = __dirname, TMP = '/home/user/matlab/raumplan-3d/raeume-test.json';
   await p1.waitForTimeout(500);
   await p1.screenshot({ path: SP + '/h2-ergebnis.png' });
   // Kontrollmaß +1,5 % auf Wand 1
+  await p1.click('#shBody details:nth-of-type(2) summary');
   await p1.selectOption('#kmWand', '0'); await p1.fill('#kmCm', String(Math.round(r1.w[0] * 1.015)));
   await p1.click('button[data-km="1"]'); await p1.waitForTimeout(300);
   const k = await p1.evaluate(() => ({ korr: rp3d.plan.aufmass.korr, H: rp3d.plan.height }));

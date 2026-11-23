@@ -158,7 +158,8 @@ export async function modellAusAufmass(res, name, scanId, fortschritt = () => {}
   }
   if (res.warn && res.warn.length) plan.aufmass.hinweise = res.warn;
   if (res.cloud) plan.aufmass.art = 'scan';
-  return { plan, tex, wolke };
+  // trafo: Aufnahme-Koordinaten → Plan (Drehung um die Hochachse, Verschiebung, Boden = 0), für die Standorte der Originalfotos
+  return { plan, tex, wolke, trafo: { ca, sa, mx, mz, floorY: res.floorY } };
 }
 async function innenWolke(cloud, fwd, floorY, P, H) {
   const { pos, col, n } = cloud, N = P.length, Q = 0.04, tp = new Float32Array(n * 3), ti = new Int32Array(n), cnt = new Map(); let m = 0;
@@ -198,6 +199,7 @@ export function skaliere(p, k) {
   }
   for (const r of p.rooms) { r.poly = r.poly.map(q => q.map(s)); if (r.foto) { r.foto.x0 = s(r.foto.x0); r.foto.z0 = s(r.foto.z0); r.foto.w = s(r.foto.w); r.foto.d = s(r.foto.d); } }
   for (const it of p.items || []) { it.x = s(it.x); it.z = s(it.z); }
+  for (const f of (p.rundgang && p.rundgang.fotos) || []) f.p = f.p.map(s);
   if (p.start) { p.start.x = s(p.start.x); p.start.z = s(p.start.z); }
   if (p.hoeheQuelle !== 'standard') p.height = s(p.height);
   if (p.aufmass) p.aufmass.korr = +((p.aufmass.korr || 1) * k).toFixed(5);
@@ -206,10 +208,10 @@ export function skaliere(p, k) {
 
 // ---------- AR-Sitzung ----------
 // Kamerabild (WebGL-Textur) verkleinert auslesen, oberste Zeile zuerst
-function grabber(gl, SW, SH) {
+function grabber(gl, SW, SH, obenZuerst = false) {
   const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
   const pr = gl.createProgram();
-  gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p; varying vec2 t; void main(){ t = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }'));
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p; varying vec2 t; void main(){ t = vec2(p.x * 0.5 + 0.5, ' + (obenZuerst ? '0.5 - p.y * 0.5' : 'p.y * 0.5 + 0.5') + '); gl_Position = vec4(p, 0.0, 1.0); }'));
   gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, 'precision mediump float; uniform sampler2D u; varying vec2 t; void main(){ gl_FragColor = texture2D(u, t); }'));
   gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return null;
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
@@ -223,6 +225,7 @@ function grabber(gl, SW, SH) {
     gl.useProgram(pr); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, camTex); gl.uniform1i(gl.getUniformLocation(pr, 'u'), 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.readPixels(0, 0, SW, SH, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    if (obenZuerst) return new Uint8ClampedArray(px.buffer);      // geteilter Puffer: sofort verbrauchen
     const out = new Uint8ClampedArray(SW * SH * 4), row = SW * 4;
     for (let y = 0; y < SH; y++) out.set(px.subarray((SH - 1 - y) * row, (SH - y) * row), y * row);
     return out;
@@ -415,6 +418,8 @@ export function starteAufmass(root) {
 // Sammelt Aufnahmen aus Tiefenbild (ARCore Depth), Kamerabild und Kameralage. Ausgewertet wird danach in scan.js.
 // Wichtig fürs Handy: je Bild so wenig wie möglich rechnen, sonst verliert ARCore die Orientierung.
 const MAXK = 240, BILD_PX = 320, VERSUCH_MS = 250;
+// Originalfotos für Foto-Rundgang und Beweissicherung: größer, unverändert als JPEG, mit Lage und Uhrzeit
+const BEWEIS_PX = 1280, MAXB = 220, BEWEIS_MS = 700;
 // Tiefenraster lesen. Schnell: Puffer direkt (einmalig gegen getDepthInMeters geprüft). Sonst: einzeln abfragen, gröber.
 export function leseTiefe(di, fmt, zu) {
   const sonde = [[0.5, 0.5], [0.25, 0.3], [0.75, 0.3], [0.25, 0.7], [0.75, 0.7], [0.5, 0.2], [0.5, 0.8]];
@@ -463,7 +468,7 @@ export function starteScan(root) {
     const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x3ecf74, size: 5, sizeAttenuation: false, transparent: true, opacity: 0.7, depthTest: false })); pts.frustumCulled = false; scene.add(pts);
     let nPts = 0;
     const kf = [], cov = new Uint8Array(36), vote = [0, 1, 2, 3].map(() => [0, 0]), w3 = [0, 0, 0], tz = { direkt: null, asp: 2 };
-    const st = { modus: null, last: null, lastT: 0, versuchT: 0, prevD: null, bereit: false, verlorenSeit: 0, keineTiefe: 0, schnell: 0, fertig: false, sektor: -1, gezeigt: 0, fehler: '', fehlerT: 0, lastO: null, weg: 0, emuN: 0, emuEgal: false, prevT: 0, lageOk: false, tiefeOk: null, tiefeFehler: '' };
+    const st = { modus: null, last: null, lastT: 0, versuchT: 0, prevD: null, bereit: false, verlorenSeit: 0, keineTiefe: 0, schnell: 0, fertig: false, sektor: -1, gezeigt: 0, fehler: '', fehlerT: 0, lastO: null, weg: 0, emuN: 0, emuEgal: false, prevT: 0, lageOk: false, tiefeOk: null, tiefeFehler: '', beweisT: 0, lastB: null, offen: 0, ohneBeweis: false };
     const stat = { start: Date.now(), bilder: 0, verloren: 0, ohneTiefe: 0, fehler: 0, versuche: 0 };
     const covEl = el('arCov'); covEl.innerHTML = '<i></i>'.repeat(36); const zellen = covEl.children;
     const B1 = el('arB1'), B2 = el('arB2'), B3 = el('arB3');
@@ -483,9 +488,10 @@ export function starteScan(root) {
         posA[nPts * 3] = w3[0]; posA[nPts * 3 + 1] = w3[1]; posA[nPts * 3 + 2] = w3[2]; nPts++;
       }
     };
-    let grab = null, gdim = '', lastUi = 0;
+    let grab = null, gdim = '', lastUi = 0, grabB = null, bdim = '';
+    const beweis = [], bcv = document.createElement('canvas'), bctx = bcv.getContext('2d');
     const ui = t => {
-      const n = kf.length; el('arLive').textContent = st.bereit ? `${n} Aufnahmen` : '';
+      const n = kf.length; el('arLive').textContent = st.bereit ? `${n} Aufnahmen${beweis.length ? ' · ' + beweis.length + ' Fotos' : ''}` : '';
       B1.disabled = n < 12;
       el('arTxt').textContent = !st.bereit ? 'Kamera startet … Handy langsam hin und her bewegen.' : n < 25 ? 'Langsam durch den Raum gehen und alles abfilmen: Wände vom Boden bis zur Decke, Ecken, Boden, Möbel. Grün = erfasst.' : 'Weiter filmen, bis alles grün ist – dann „Fertig“.';
       let w = '';
@@ -540,6 +546,20 @@ export function starteScan(root) {
           if (!grab || gdim !== SW + 'x' + SH) { grab = grabber(gl, SW, SH); gdim = SW + 'x' + SH; }
           if (grab) img = { data: grab(glb.getCameraImage(view.camera)), W: SW, H: SH };
         } catch (e) { st.fehler = 'Kamerabild: ' + e.message; st.fehlerT = t; glb = null; }
+        // Originalfoto (seltener als die Aufnahmen fürs Modell: ab 30 cm oder 15° Unterschied, höchstens alle 0,7 s)
+        const Lb = st.lastB;
+        if (img && glb && !st.ohneBeweis && beweis.length < MAXB && t - st.beweisT > BEWEIS_MS && (!Lb || Math.hypot(o[0] - Lb.o[0], o[1] - Lb.o[1], o[2] - Lb.o[2]) > 0.3 || dot(d, Lb.d) < 0.966)) {
+          try {
+            const cw = view.camera.width, ch = view.camera.height, sc = Math.min(1, BEWEIS_PX / Math.max(cw, ch)), BW = Math.round(cw * sc), BH = Math.round(ch * sc);
+            if (!grabB || bdim !== BW + 'x' + BH) { grabB = grabber(gl, BW, BH, true); bdim = BW + 'x' + BH; bcv.width = BW; bcv.height = BH; }
+            if (grabB) {
+              bctx.putImageData(new ImageData(grabB(glb.getCameraImage(view.camera)), BW, BH), 0, 0);
+              const e = { M: Float32Array.from(Mx), P: Float32Array.from(Px), t: Date.now(), blob: null, W: BW, H: BH }; beweis.push(e); st.offen++;
+              bcv.toBlob(b => { e.blob = b; st.offen--; }, 'image/jpeg', 0.86);
+              st.beweisT = t; st.lastB = { o, d };
+            }
+          } catch (e) { st.fehler = 'Originalfoto: ' + e.message; st.fehlerT = t; st.ohneBeweis = true; }
+        }
         renderer.resetState();
       }
       const f = { M: Float32Array.from(Mx), P: Float32Array.from(Px), GW: raster.GW, GH: raster.GH, z: raster.z, img }; kf.push(f);
@@ -567,7 +587,10 @@ export function starteScan(root) {
       try { renderer.dispose(); renderer.forceContextLoss(); } catch { /* egal */ }
       const sek = Math.max(1, Math.round((Date.now() - stat.start) / 1000));
       const info = { zeit: new Date().toISOString(), sek, bilder: stat.bilder, bps: Math.round(stat.bilder / sek), aufnahmen: kf.length, verloren: Math.round(100 * stat.verloren / Math.max(1, stat.bilder)), ohneTiefe: stat.ohneTiefe, tiefe: tz.direkt === true ? 'direkt ' + (tz.probe || '') : tz.direkt === false ? 'einzeln ' + (tz.probe || tz.fehler || '') : 'ungeprüft', format: fmt, kamera: !!glb, modus: st.modus, versuche: stat.versuche, lage: st.emuEgal ? 'Meldung ignoriert' : st.bereit ? 'ok' : 'nie', wegM: +st.weg.toFixed(1), tiefeFehler: st.tiefeFehler, fehler: stat.fehler ? `${stat.fehler}× ${st.fehler}` : (st.fehler || ''), fertig: st.fertig };
-      resolve({ kf: st.fertig && kf.length >= 12 ? kf : null, stat: info, wechsel: st.wechsel || null });
+      info.originalfotos = beweis.length;
+      // auf noch laufende JPEG-Kodierung der Originalfotos warten (höchstens 4 s)
+      const t0 = Date.now(), fertig = () => { if (st.offen > 0 && Date.now() - t0 < 4000) return setTimeout(fertig, 60); resolve({ kf: st.fertig && kf.length >= 12 ? kf : null, stat: info, wechsel: st.wechsel || null, beweis: beweis.filter(e => e.blob) }); };
+      fertig();
     });
   });
 }

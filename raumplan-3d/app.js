@@ -5,7 +5,7 @@ import { beispiel, rechteckRaum, WANDFARBEN, BOEDEN, MOEBELFARBEN, WAND0 } from 
 import { arVerfuegbar, starteAufmass, starteScan, modellAusAufmass, skaliere } from './aufmass.js';
 import { auswerten } from './scan.js';
 
-const VERSION = '2.2';
+const VERSION = '2.3';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* privat */ } } };
@@ -520,7 +520,7 @@ function oeffneProjekt(id) {
   return true;
 }
 async function loescheProjekt(id) {
-  try { const p = JSON.parse(LS.get('rp3d-p:' + id)), keys = []; for (const w of p.walls || []) for (const f of [w.fotoA, w.fotoB]) if (f) keys.push(f.key); for (const r of p.rooms || []) if (r.foto) keys.push(r.foto.key); if (p.wolke) keys.push(p.wolke.key); for (const k of keys) { fotoTex.delete(k); wolken.delete(k); await idb.del(k).catch(() => {}); } } catch { /* Plan nicht lesbar */ }
+  try { const p = JSON.parse(LS.get('rp3d-p:' + id)), keys = []; for (const w of p.walls || []) for (const f of [w.fotoA, w.fotoB]) if (f) keys.push(f.key); for (const r of p.rooms || []) if (r.foto) keys.push(r.foto.key); if (p.wolke) keys.push(p.wolke.key); for (const f of (p.rundgang && p.rundgang.fotos) || []) keys.push(f.k); for (const k of keys) { fotoTex.delete(k); wolken.delete(k); await idb.del(k).catch(() => {}); } } catch { /* Plan nicht lesbar */ }
   try { localStorage.removeItem('rp3d-p:' + id); } catch { /* privat */ }
   projekte = projekte.filter(q => q.id !== id); listeSichern();
   if (aktId === id) { aktId = null; LS.set('rp3d-akt', ''); normalize(beispiel()); undo.length = 0; $('#bUndo').disabled = true; rebuild(); deselect(); }
@@ -560,7 +560,7 @@ $('#start').onclick = async e => {
   else if (d.o) { if (!oeffneProjekt(d.o)) zeigeStart('Projekt konnte nicht geöffnet werden.'); }
   else if (d.del) { const q = projekte.find(x => x.id === d.del); if (q && confirm(`Projekt „${q.name}“ mit allen Fotos endgültig löschen?`)) { await loescheProjekt(d.del); zeigeStart(); } }
 };
-function rebuild(resetCam = true) { normalize(plan); buildStructure(); buildItems(); baueWolke(); applyLight(); if (resetCam) resetCams(); applyCam(); $('#sub').textContent = plan.name; }
+function rebuild(resetCam = true) { normalize(plan); buildStructure(); buildItems(); baueWolke(); applyLight(); $('#bFotos').hidden = !rgFotos().length; if (resetCam) resetCams(); applyCam(); $('#sub').textContent = plan.name; }
 
 // ---------- Hinweis ----------
 let hintT = 0;
@@ -727,6 +727,7 @@ const SHEETS = {
   menu() {
     return ['Menü', `<div class="list">
       <button data-m="start" class="main">🗂 Projekte · Neues Projekt</button>
+      ${rgFotos().length ? '<button data-m="rundgang">📷 Foto-Rundgang (echte Bilder)</button><button data-m="protokoll">📄 Beweis-Protokoll</button>' : ''}
       <button data-m="scannen">📹 Raum aufnehmen – einfach durchgehen</button>
       <button data-m="aufmessen">📏 Raum aufmessen – Ecken antippen</button>
       <button data-m="raum">📐 Neuer Raum nach Maß (eintippen)</button>
@@ -758,19 +759,28 @@ const SHEETS = {
       <button class="main" style="width:100%">Raum erstellen</button></form>`];
   },
   aufmass() {
-    const ws = plan.walls.filter(w => w.innen), A = plan.rooms[0] ? area(plan.rooms[0].poly) : 0, am = plan.aufmass || {};
+    const ws = plan.walls.filter(w => w.innen), A = plan.rooms[0] ? area(plan.rooms[0].poly) : 0, am = plan.aufmass || {}, nf = rgFotos().length;
     const k = am.korr && am.korr !== 1 ? ` · korrigiert um ${((am.korr - 1) * 100).toFixed(1).replace('.', ',')} %` : '';
     const hq = { ar: '(gemessen)', scan: '(aus Scan)', 'geschätzt': '(geschätzt)' }[plan.hoeheQuelle] || '(Standard)';
     const hw = (am.hinweise || []).map(h => `<p class="mut">⚠ ${esc(h)}</p>`).join('');
-    const pw = plan.wolke ? `<label class="chk"><input type="checkbox" id="wolke2" ${SHOWW() ? 'checked' : ''}> Echte Einrichtung zeigen (${Math.round(plan.wolke.n / 1000)} Tsd. Punkte) – aus = leerer Raum zum Planen</label>` : '';
-    return [am.art === 'scan' ? 'Scan fertig' : 'Aufmaß fertig', `<p><b>${esc(plan.name)}</b>: ${ws.length} Wände · ${A.toFixed(2).replace('.', ',')} m² · Höhe ${plan.height.toFixed(2).replace('.', ',')} m ${hq} · ${am.fotos || 0} Fotos${k}</p>${hw}${pw}
-      <ul class="li">${ws.map((w, i) => `<li><span>Wand ${i + 1}</span><b>${(w.innen * 100).toFixed(1).replace('.', ',')} cm</b></li>`).join('')}</ul>
-      <h3>Genauer machen: Kontrollmaß</h3>
-      <p class="mut">${am.art === 'scan' ? 'Der Scan trifft die Maße typisch auf einige Zentimeter.' : 'Die Handy-Messung ist auf etwa ±1–2 % genau.'} Miss eine lange Wand mit Maßband oder Laser und trag das echte Maß ein. Der ganze Raum wird darauf umgerechnet.</p>
+    const pw = plan.wolke ? `<label class="chk"><input type="checkbox" id="wolke2" ${SHOWW() ? 'checked' : ''}> Einrichtung im 3D-Modell als Punkte zeigen (grob)</label>` : '';
+    return [am.art === 'scan' ? 'Aufnahme fertig' : 'Aufmaß fertig', `<p><b>${esc(plan.name)}</b>: ${nf ? nf + ' Originalfotos · ' : ''}${A.toFixed(1).replace('.', ',')} m² · Höhe ${plan.height.toFixed(2).replace('.', ',')} m ${hq}${k}</p>${hw}
+      ${nf ? `<div class="list"><button data-m="rundgang" class="main">📷 Foto-Rundgang: echte Bilder ansehen</button><button data-m="protokoll">📄 Beweis-Protokoll erstellen</button></div>
+      <p class="mut">Im Foto-Rundgang siehst du alles so, wie es wirklich ist (unveränderte Fotos mit Standort und Uhrzeit). Das 3D-Modell dahinter ist nur die Übersicht.</p>` : ''}
+      ${pw}
+      <details><summary>Maße des Raums (${ws.length} Wände)</summary><ul class="li">${ws.map((w, i) => `<li><span>Wand ${i + 1}</span><b>${(w.innen * 100).toFixed(1).replace('.', ',')} cm</b></li>`).join('')}</ul></details>
+      <details><summary>Freiwillig: Kontrollmaß eintragen</summary>
+      <p class="mut">Nur nötig, wenn du genaue Maße brauchst. ${am.art === 'scan' ? 'Der Scan trifft die Maße typisch auf einige Zentimeter.' : 'Die Handy-Messung ist auf etwa ±1–2 % genau.'} Miss eine lange Wand mit Maßband oder Laser und trag das echte Maß ein, der ganze Raum wird darauf umgerechnet.</p>
       <div class="row"><select id="kmWand" aria-label="Wand">${ws.map((w, i) => `<option value="${i}">Wand ${i + 1} (${(w.innen * 100).toFixed(0)} cm)</option>`).join('')}</select>
-      <input id="kmCm" type="number" inputmode="decimal" step="0.1" placeholder="echtes Maß in cm" aria-label="Echtes Maß in cm"><button data-km="1" class="main">Übernehmen</button></div>
-      <div class="list" style="margin-top:10px"><button data-m="teilen">📤 Raum teilen (z. B. an Claude → eigene Kachel in der App-Zentrale)</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (wenn etwas nicht stimmt)</button>' : ''}</div>
-      <p class="note">Danach: 🚶 Gehen, ➕ Möbel stellen, 🎨 streichen. Fotos und Einrichtung aus/ein: Menü → Einstellungen.</p>`];
+      <input id="kmCm" type="number" inputmode="decimal" step="0.1" placeholder="echtes Maß in cm" aria-label="Echtes Maß in cm"><button data-km="1" class="main">Übernehmen</button></div></details>
+      <div class="list" style="margin-top:10px"><button data-m="teilen">📤 Raum teilen (z. B. an Claude → eigene Kachel in der App-Zentrale)</button>${letzterRoh ? '<button data-m="roh">🛠 Scan-Rohdaten senden (wenn etwas nicht stimmt)</button>' : ''}</div>`];
+  },
+  protokoll() {
+    const b = plan.beweis || {}, f = (n, l, v, ph = '') => `<label>${l}<input name="${n}" value="${esc(v || '')}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off"></label>`;
+    return ['Beweis-Protokoll', `<p class="mut">Erstellt eine Datei mit Plan, allen ${rgFotos().length} Originalfotos (Standort, Blickrichtung, Uhrzeit) und Prüfsummen. Am PC öffnen und als PDF drucken. Alle Angaben sind freiwillig.</p>
+      <form id="fProt">${f('objekt', 'Objekt / Adresse', b.objekt, 'z. B. Musterstraße 1, 4470 Enns')}${f('raum', 'Raum / Bauteil', b.raum || plan.name)}${f('auftrag', 'Auftraggeber / Anlass', b.auftrag, 'z. B. Zustand vor Baubeginn')}${f('person', 'Aufgenommen von', b.person)}${f('bem', 'Bemerkung', b.bem)}
+      <div class="row" style="margin-top:10px"><button class="main" name="art" value="speichern">💾 Protokoll speichern</button><button name="art" value="teilen">📤 Teilen</button></div></form>
+      <p class="note">Die Fotos stammen aus der Kameraaufnahme des Scans (rund 1 Megapixel). Für feine Risse und Details zusätzlich normale Fotos mit der Handy-Kamera machen. Maße und Standorte sind Handy-Messwerte, keine Vermessung.</p>`];
   },
   keintiefe() {
     return ['Scannen nicht möglich', `<p>Dieses Handy liefert im Browser keine Tiefendaten (ARCore Depth). Das Scannen im Durchgehen geht damit nicht.</p>
@@ -839,6 +849,7 @@ function bindSheet(name) {
     $('#eigen').oninput = e => { farbe = farbInfo(e.target.value); };
     $('#eigen').onchange = () => openSheet('farbe');
   }
+  if (name === 'protokoll') $('#fProt').onsubmit = e => { e.preventDefault(); const fd = new FormData(e.target), art = (e.submitter && e.submitter.value) || 'speichern'; plan.beweis = { objekt: fd.get('objekt'), raum: fd.get('raum'), auftrag: fd.get('auftrag'), person: fd.get('person'), bem: fd.get('bem') }; save(); protokollErzeugen(art === 'teilen'); };
   if (name === 'aufmass' && $('#wolke2')) $('#wolke2').onchange = e => { LS.set('rp3d-wolke', e.target.checked ? '1' : '0'); baueWolke(); applyLight(); };
   if (name === 'menu') {
     $('#snap').onchange = e => LS.set('rp3d-snap', e.target.checked ? '1' : '0');
@@ -917,6 +928,127 @@ function selAction(a, c) {
   placeObj(it); select(it.id); save();
 }
 
+// ---------- Foto-Rundgang: die unveränderten Originalfotos an ihrem Standort ----------
+const rg = { i: 0, urls: new Map(), zoom: 1, tx: 0, ty: 0, lauf: 0, t0: null };
+function rgFotos() { return (plan && plan.rundgang && plan.rundgang.fotos) || []; }
+const yawVon = f => Math.atan2(f.d[0], f.d[2]), wickel = a => Math.atan2(Math.sin(a), Math.cos(a));
+async function rgUrl(k) {
+  if (rg.urls.has(k)) return rg.urls.get(k);
+  const b = await idb.get(k); if (!b) return '';
+  const u = URL.createObjectURL(b); rg.urls.set(k, u);
+  if (rg.urls.size > 40) { const [k0, u0] = rg.urls.entries().next().value; URL.revokeObjectURL(u0); rg.urls.delete(k0); }
+  return u;
+}
+// Nächstes Foto für eine Bewegung: l/r = drehen, v/z = vor/zurück gehen, o/u = nach oben/unten schauen
+function rgZiel(art) {
+  const F = rgFotos(), c = F[rg.i]; if (!c) return -1; const K = korr(), cy = yawVon(c); let best = -1, bs = Infinity;
+  F.forEach((f, j) => {
+    if (j === rg.i) return;
+    const dx = (f.p[0] - c.p[0]) * K, dz = (f.p[2] - c.p[2]) * K, dist = Math.hypot(dx, dz), dy = wickel(yawVon(f) - cy), dp = f.d[1] - c.d[1]; let sc = Infinity;
+    if (art === 'l' || art === 'r') { const a = art === 'l' ? dy : -dy; if (dist < 1.0 && a > 0.2 && a < 1.9) sc = a + dist * 0.8 + Math.abs(dp) * 0.8; }
+    else if (art === 'o' || art === 'u') { const a = art === 'o' ? dp : -dp; if (dist < 1.0 && Math.abs(dy) < 0.5 && a > 0.2) sc = a + dist + Math.abs(dy); }
+    else { const sg = art === 'v' ? 1 : -1, fx = Math.sin(cy) * sg, fz = Math.cos(cy) * sg, laengs = dx * fx + dz * fz, quer = Math.abs(dx * fz - dz * fx); if (laengs > 0.3 && laengs < 3.5 && quer < laengs * 0.9 + 0.2) sc = laengs + quer * 1.5 + Math.abs(dy) * 1.2 + Math.abs(dp); }
+    if (sc < bs) { bs = sc; best = j; }
+  });
+  return best;
+}
+const zeitText = t => new Date(t).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+function rgBild() { $('#rgImg').style.transform = `translate(${rg.tx}px,${rg.ty}px) scale(${rg.zoom})${plan.rundgang && plan.rundgang.kopf ? ' scaleY(-1)' : ''}`; }
+async function rgZeige(i) {
+  const F = rgFotos(); if (!F.length) return; rg.i = Math.max(0, Math.min(F.length - 1, i)); const f = F[rg.i];
+  rg.zoom = 1; rg.tx = rg.ty = 0; rgBild();
+  $('#rgInfo').textContent = `Foto ${rg.i + 1} von ${F.length} · ${zeitText(f.t)}`;
+  for (const a of ['l', 'r', 'v', 'z', 'o', 'u']) $(`#rg button[data-g="${a}"]`).disabled = rgZiel(a) < 0;
+  $('#rg button[data-g="-"]').disabled = rg.i === 0; $('#rg button[data-g="+"]').disabled = rg.i === F.length - 1;
+  rgKarte();
+  const u = await rgUrl(f.k); if (F[rg.i] === f) { $('#rgImg').src = u; $('#rgFehlt').hidden = !!u; }
+}
+function rgKarte() {
+  const cv = $('#rgKarte'), x = cv.getContext('2d'), F = rgFotos(), P = (plan.rooms[0] && plan.rooms[0].poly) || [], K = korr(), W = cv.width, H = cv.height;
+  x.clearRect(0, 0, W, H); if (!P.length) return;
+  const xs = P.map(q => q[0]).concat(F.map(f => f.p[0] * K)), zs = P.map(q => q[1]).concat(F.map(f => f.p[2] * K)), x0 = Math.min(...xs), z0 = Math.min(...zs), sc = (W - 16) / Math.max(Math.max(...xs) - x0, Math.max(...zs) - z0, 0.5);
+  const X = v => 8 + (v - x0) * sc, Z = v => 8 + (v - z0) * sc; rg.karte = { x0, z0, sc };
+  x.fillStyle = '#ffffff22'; x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); P.forEach((q, i) => (i ? x.lineTo(X(q[0]), Z(q[1])) : x.moveTo(X(q[0]), Z(q[1])))); x.closePath(); x.fill(); x.stroke();
+  x.fillStyle = '#ffffff90'; for (const f of F) { x.beginPath(); x.arc(X(f.p[0] * K), Z(f.p[2] * K), 2, 0, 7); x.fill(); }
+  const c = F[rg.i], cx = X(c.p[0] * K), cz = Z(c.p[2] * K), a = Math.atan2(c.d[2], c.d[0]);
+  x.fillStyle = '#4da3ff'; x.beginPath(); x.moveTo(cx, cz); x.arc(cx, cz, 22, a - 0.45, a + 0.45); x.closePath(); x.fill();
+  x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cz, 4.5, 0, 7); x.fill();
+}
+function rgAuf(i) {
+  const F = rgFotos(); if (!F.length) return hint('In diesem Projekt gibt es keine Originalfotos.');
+  if (i == null) { i = 0; if (mode === 'gehen') { const K = korr(); let bd = Infinity; F.forEach((f, j) => { const dd = Math.hypot(f.p[0] * K - walk.x, f.p[2] * K - walk.z) + Math.abs(wickel(Math.atan2(-f.d[0], -f.d[2]) - walk.yaw)) * 0.5; if (dd < bd) { bd = dd; i = j; } }); } }
+  closeSheet(); deselect(); $('#rg').hidden = false; rgZeige(i);
+}
+function rgZu() {
+  clearInterval(rg.lauf); rg.lauf = 0; $('#rg button[data-g="play"]').textContent = '▶'; $('#rg').hidden = true;
+  const f = rgFotos()[rg.i]; if (f) { const K = korr(); setMode('gehen'); walk.x = f.p[0] * K; walk.z = f.p[2] * K; walk.yaw = Math.atan2(-f.d[0], -f.d[2]); walk.pitch = Math.max(-1.2, Math.min(1.2, Math.asin(Math.max(-1, Math.min(1, f.d[1]))))); applyCam(); }
+}
+function rgGeh(art) {
+  if (art === 'x') return rgZu();
+  if (art === '+' || art === '-') return rgZeige(rg.i + (art === '+' ? 1 : -1));
+  if (art === 'play') { if (rg.lauf) { clearInterval(rg.lauf); rg.lauf = 0; } else rg.lauf = setInterval(() => { if (rg.i >= rgFotos().length - 1) rgGeh('play'); else rgZeige(rg.i + 1); }, 900); $('#rg button[data-g="play"]').textContent = rg.lauf ? '⏸' : '▶'; return; }
+  const j = rgZiel(art); if (j >= 0) rgZeige(j);
+}
+$('#rg').addEventListener('click', e => { const b = e.target.closest('button[data-g]'); if (b) rgGeh(b.dataset.g); });
+$('#bFotos').onclick = () => rgAuf();
+$('#rgKarte').onclick = e => {
+  const k = rg.karte, F = rgFotos(); if (!k || !F.length) return; const r = e.target.getBoundingClientRect(), K = korr(), px = (e.clientX - r.left) * e.target.width / r.width, pz = (e.clientY - r.top) * e.target.height / r.height;
+  const wx = (px - 8) / k.sc + k.x0, wz = (pz - 8) / k.sc + k.z0, cy = yawVon(F[rg.i]); let best = 0, bd = Infinity;
+  F.forEach((f, j) => { const dd = Math.hypot(f.p[0] * K - wx, f.p[2] * K - wz) + Math.abs(wickel(yawVon(f) - cy)) * 0.15; if (dd < bd) { bd = dd; best = j; } });
+  rgZeige(best);
+};
+// Wischen = drehen/kippen, Doppeltipp = vergrößern, vergrößert: ziehen = verschieben
+{ const im = $('#rgBuehne'); let dn = null, lastTap = 0;
+  im.addEventListener('pointerdown', e => { dn = { x: e.clientX, y: e.clientY, tx: rg.tx, ty: rg.ty, t: performance.now() }; im.setPointerCapture(e.pointerId); });
+  im.addEventListener('pointermove', e => { if (dn && rg.zoom > 1) { rg.tx = dn.tx + e.clientX - dn.x; rg.ty = dn.ty + e.clientY - dn.y; rgBild(); } });
+  im.addEventListener('pointerup', e => {
+    if (!dn) return; const dx = e.clientX - dn.x, dy = e.clientY - dn.y, kurz = performance.now() - dn.t < 350; dn = null;
+    if (Math.hypot(dx, dy) < 10 && kurz) { const now = performance.now(); if (now - lastTap < 320) { if (rg.zoom > 1) { rg.zoom = 1; rg.tx = rg.ty = 0; } else { const r = im.getBoundingClientRect(); rg.zoom = 3; rg.tx = (r.left + r.width / 2 - e.clientX) * 2; rg.ty = (r.top + r.height / 2 - e.clientY) * 2; } rgBild(); lastTap = 0; } else lastTap = now; return; }
+    if (rg.zoom > 1) return;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) rgGeh(dx > 0 ? 'l' : 'r'); else if (Math.abs(dy) > 50) rgGeh(dy > 0 ? 'o' : 'u');
+  });
+  im.addEventListener('pointercancel', () => { dn = null; }); }
+
+// ---------- Beweis-Protokoll: eine Datei mit Plan, Originalfotos, Standort, Uhrzeit, Prüfsummen ----------
+async function protokollErzeugen(zumTeilen) {
+  const F = rgFotos(); if (!F.length) return hint('Keine Originalfotos in diesem Projekt.');
+  closeSheet(); warte('Protokoll wird erstellt …', 0);
+  try {
+    const b = plan.beweis || {}, K = korr(), P = (plan.rooms[0] && plan.rooms[0].poly) || [], ws = plan.walls.filter(w => w.innen), am = plan.aufmass || {}, kopf = !!plan.rundgang.kopf;
+    const m2 = v => v.toFixed(2).replace('.', ','), grad = f => Math.round(((Math.atan2(f.d[0], -f.d[2]) * 180 / Math.PI) + 360) % 360);
+    // Plan als Zeichnung
+    const xs = P.map(q => q[0]).concat(F.map(f => f.p[0] * K)), zs = P.map(q => q[1]).concat(F.map(f => f.p[2] * K)), x0 = Math.min(...xs) - 0.4, z0 = Math.min(...zs) - 0.4, bw = Math.max(...xs) - x0 + 0.4, bh = Math.max(...zs) - z0 + 0.4, sc = 700 / bw;
+    const X = v => ((v - x0) * sc).toFixed(1), Z = v => ((v - z0) * sc).toFixed(1);
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 ${(bh * sc).toFixed(0)}" style="width:100%;max-width:700px;border:1px solid #999;background:#fff"><polygon points="${P.map(q => X(q[0]) + ',' + Z(q[1])).join(' ')}" fill="#f2f2f2" stroke="#000" stroke-width="3"/>`;
+    P.forEach((q, i) => { const r = P[(i + 1) % P.length], L = Math.hypot(r[0] - q[0], r[1] - q[1]); if (L > 0.4) svg += `<text x="${X((q[0] + r[0]) / 2)}" y="${Z((q[1] + r[1]) / 2)}" font-size="13" text-anchor="middle" fill="#0645ad" stroke="#fff" stroke-width="3" paint-order="stroke">${m2(L)} m</text>`; });
+    F.forEach((f, i) => { const px = +X(f.p[0] * K), pz = +Z(f.p[2] * K), n = Math.hypot(f.d[0], f.d[2]) || 1; svg += `<line x1="${px}" y1="${pz}" x2="${(px + f.d[0] / n * 16).toFixed(1)}" y2="${(pz + f.d[2] / n * 16).toFixed(1)}" stroke="#c00" stroke-width="1.5"/><circle cx="${px}" cy="${pz}" r="3" fill="#c00"/><text x="${px + 4}" y="${pz - 4}" font-size="8" fill="#000">${i + 1}</text>`; });
+    svg += '</svg>';
+    // Fotos einbetten
+    let fotos = '', alle = '';
+    for (let i = 0; i < F.length; i++) {
+      const f = F[i]; if (i % 5 === 0) { warte(`Protokoll: Foto ${i + 1} von ${F.length} …`, i / F.length); await new Promise(r => setTimeout(r, 0)); }
+      const blob = await idb.get(f.k).catch(() => null); if (!blob) { fotos += `<figure><figcaption><b>Foto ${i + 1}</b> fehlt im Speicher dieses Geräts.</figcaption></figure>`; continue; }
+      const url = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+      alle += f.h;
+      fotos += `<figure><img src="${url}" alt="Foto ${i + 1}"${kopf ? ' style="transform:scaleY(-1)"' : ''}><figcaption><b>Foto ${i + 1}</b> · ${esc(zeitText(f.t))} · Standort x ${m2(f.p[0] * K)} m / y ${m2(f.p[2] * K)} m, Kamerahöhe ${m2(f.p[1] * K)} m · Blickrichtung ${grad(f)}° (0° = Planoberkante), Neigung ${Math.round(Math.asin(Math.max(-1, Math.min(1, f.d[1]))) * 57.3)}°<br><small>SHA-256: ${esc(f.h || 'nicht berechnet')}</small></figcaption></figure>`;
+    }
+    let gesamt = ''; try { const hh = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(alle))); gesamt = Array.from(hh, v => v.toString(16).padStart(2, '0')).join(''); } catch { gesamt = 'nicht berechnet'; }
+    const zeile = (l, v) => (v ? `<tr><th>${l}</th><td>${esc(v)}</td></tr>` : '');
+    const html = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Beweissicherung ${esc(b.raum || plan.name)}</title>
+<style>body{font:14px/1.45 system-ui,Arial,sans-serif;color:#111;max-width:1000px;margin:0 auto;padding:16px}h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:22px 0 8px;border-bottom:2px solid #111;padding-bottom:3px}table{border-collapse:collapse}th{text-align:left;padding:3px 14px 3px 0;vertical-align:top;white-space:nowrap}td{padding:3px 0}.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}figure{margin:0;break-inside:avoid;border:1px solid #bbb;padding:6px}figure img{width:100%;display:block}figcaption{font-size:12px;margin-top:5px}small{font-size:10px;color:#444;word-break:break-all}.klein{font-size:12px;color:#333}@media print{body{max-width:none;padding:0}.fotos{grid-template-columns:1fr 1fr}h2{break-after:avoid}}</style></head><body>
+<h1>Beweissicherung – Raumaufnahme</h1><p class="klein">Erstellt mit Raumplan 3D ${VERSION} am ${esc(zeitText(Date.now()))}</p>
+<table>${zeile('Objekt / Adresse', b.objekt)}${zeile('Raum / Bauteil', b.raum || plan.name)}${zeile('Auftraggeber / Anlass', b.auftrag)}${zeile('Aufgenommen von', b.person)}${zeile('Aufnahme', zeitText(F[0].t) + ' bis ' + zeitText(F[F.length - 1].t))}${zeile('Anzahl Fotos', String(F.length))}${zeile('Raum', `${m2(P.length ? area(P) : 0)} m², Höhe ${m2(plan.height)} m, ${ws.length} Wände` + (am.korr && am.korr !== 1 ? ', mit Kontrollmaß umgerechnet' : ', ohne Kontrollmaß'))}${zeile('Bemerkung', b.bem)}${zeile('Gerät', navigator.userAgent)}</table>
+<h2>Plan mit Fotostandorten</h2>${svg}<p class="klein">Rote Punkte = Standort der Kamera, Strich = Blickrichtung, Zahl = Fotonummer. Maße in Metern.</p>
+<h2>Fotos (${F.length})</h2><div class="fotos">${fotos}</div>
+<h2>Hinweise zur Aufnahme</h2><p class="klein">Die Fotos sind die unveränderten Kamerabilder der Aufnahme (JPEG), nicht nachbearbeitet${kopf ? ', in diesem Protokoll gespiegelt dargestellt, weil das Gerät sie kopfstehend liefert' : ''}. Die Prüfsumme (SHA-256) jedes Fotos wurde unmittelbar nach der Aufnahme berechnet. Prüfsumme über alle Fotos: <small>${gesamt}</small><br>Standorte, Blickrichtungen und Maße stammen aus der Lage- und Tiefenmessung des Handys. Sie dienen der Zuordnung der Fotos und sind keine Vermessung (Genauigkeit einige Zentimeter bis Dezimeter).</p></body></html>`;
+    const uml = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss' }, datei = 'beweis-' + (b.raum || plan.name).replace(/[äöüÄÖÜß]/g, ch => uml[ch]).replace(/[^\w-]+/g, '_') + '.html';
+    warte(null);
+    if (zumTeilen) return teilen(datei, html, 'text/html');
+    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' })); download(datei, url); setTimeout(() => URL.revokeObjectURL(url), 8000);
+    hint('Protokoll gespeichert: ' + datei + ' (am PC öffnen → Drucken → als PDF speichern)', 7000);
+  } catch (e) { warte(null); hint('Protokoll konnte nicht erstellt werden: ' + e.message, 7000); }
+}
+
 // ---------- Aufmessen ----------
 const KEIN_AR = 'Aufnehmen geht nur am Android-Handy in Chrome (mit „Google Play-Dienste für AR“).';
 // Ohne offenes Projekt zurück zur Startseite, sonst Meldung über dem Plan
@@ -931,7 +1063,20 @@ async function aufmessen() {
   if (!res) return zurueck('Aufmessen abgebrochen.');
   await ladeAufmass(res, 'Raum ' + new Date().toLocaleDateString('de-AT'));
 }
-let scanFehler = '', scanDetails = '';
+let scanFehler = '', scanDetails = '', letztesModell = null;
+// Originalfotos der Aufnahme als Foto-Rundgang ablegen: Standort und Blickrichtung im Plan, Uhrzeit, Prüfsumme
+async function sha256(blob) { const h = new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())); return Array.from(h, b => b.toString(16).padStart(2, '0')).join(''); }
+async function rundgangSpeichern(p, beweis, tr, id, kopf) {
+  const fotos = [];
+  for (let i = 0; i < beweis.length; i++) {
+    const b = beweis[i], M = b.M, x = M[12], z = M[14], dx = -M[8], dz = -M[10], k = `${id}-b${i}`; let h = '';
+    if (i % 8 === 7) { warte('Originalfotos sichern …', 0.97 + 0.03 * i / beweis.length); await new Promise(r => setTimeout(r, 0)); }
+    try { await idb.put(k, b.blob); } catch { continue; }
+    try { h = await sha256(b.blob); } catch { h = ''; }
+    fotos.push({ k, p: [+(x * tr.ca + z * tr.sa - tr.mx).toFixed(3), +(M[13] - tr.floorY).toFixed(3), +(-x * tr.sa + z * tr.ca - tr.mz).toFixed(3)], d: [+(dx * tr.ca + dz * tr.sa).toFixed(3), +(-M[9]).toFixed(3), +(-dx * tr.sa + dz * tr.ca).toFixed(3)], t: b.t, h });
+  }
+  if (fotos.length) { p.rundgang = { fotos, kopf, w: beweis[0].W, h: beweis[0].H }; saveNow(); $('#bFotos').hidden = false; }
+}
 // Fortschritt beim Auswerten (deckt den ganzen Bildschirm, damit klar ist: die App arbeitet)
 function warte(text, anteil) {
   const w = $('#warte'); if (text == null) { w.hidden = true; return; }
@@ -956,10 +1101,10 @@ async function scannen() {
   if (erg.wechsel === 'ecken') { merkeAufnahme(erg.stat, 'keine Tiefe → Ecken antippen'); return aufmessen(); }
   if (!erg.kf) { merkeAufnahme(erg.stat, erg.stat.fertig ? 'zu wenige Aufnahmen' : 'abgebrochen'); return zurueck(erg.stat.aufnahmen < 12 && erg.stat.sek > 15 ? 'Es kamen fast keine Aufnahmen zustande. Bitte die Zeile „Letzte Aufnahme“ unten an Claude schicken.' : 'Aufnahme abgebrochen (mindestens 12 Aufnahmen nötig).'); }
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, 'wird ausgewertet');
-  const p = await ladeScan({ kf: erg.kf }, 'Raum ' + new Date().toLocaleDateString('de-AT'));
+  const p = await ladeScan({ kf: erg.kf }, 'Raum ' + new Date().toLocaleDateString('de-AT'), erg.beweis);
   merkeAufnahme({ ...erg.stat, aufnahmen: erg.kf.length }, p ? `Modell: ${p.walls.length} Wände, ${(p.rooms[0] ? area(p.rooms[0].poly) : 0).toFixed(1)} m²` : 'Auswertung: ' + scanFehler);
 }
-async function ladeScan(roh, name) {
+async function ladeScan(roh, name, beweis) {
   warte('Aufnahme sichern …', 0.02); await new Promise(r => setTimeout(r, 30));
   try { letzterRoh = await rohKompakt(roh); } catch { letzterRoh = null; }
   let res;
@@ -968,6 +1113,10 @@ async function ladeScan(roh, name) {
   let p = null;
   try { p = await ladeAufmass(res, name); if (p) { p.aufmass.info = res.info; save(); } }
   catch (e) { scanFehler = 'Modell konnte nicht gebaut werden: ' + e.message; openSheet('scanfehler'); }
+  if (p && beweis && beweis.length && letztesModell) {
+    try { await rundgangSpeichern(p, beweis, letztesModell.trafo, letztesModell.id, !!(res.info.bildKopf && res.info.bildKopf.kopf)); openSheet('aufmass'); }
+    catch (e) { hint('Originalfotos konnten nicht gespeichert werden: ' + e.message, 6000); }
+  }
   warte(null);
   return p;
 }
@@ -975,7 +1124,7 @@ async function ladeAufmass(res, name) {
   warte('3D-Modell wird gebaut …', 0.4);
   const id = 'a' + Date.now().toString(36);
   let m; try { m = await modellAusAufmass(res, name, id, warte); } catch (e) { warte(null); throw e; }
-  const { plan: p, tex, wolke } = m;
+  const { plan: p, tex, wolke } = m; letztesModell = { id, trafo: m.trafo };
   if (wolke) { const k = id + '-wolke'; wolken.set(k, wolke); p.wolke = { key: k, n: wolke.pos.length / 3 }; try { await idb.put(k, wolke); } catch { /* nur für diese Sitzung */ } }
   for (const [k, cv] of tex) {
     fotoTex.set(k, texAus(new THREE.CanvasTexture(cv)));
@@ -1008,6 +1157,8 @@ function menuAction(m) {
   if (m === 'start') zeigeStart();
   if (m === 'speichern') exportPlan();
   if (m === 'teilen') exportPlan(true);
+  if (m === 'rundgang') rgAuf();
+  if (m === 'protokoll') openSheet('protokoll');
   if (m === 'roh' && letzterRoh) teilen(`scan-roh-${letzterRoh.datum.slice(0, 16).replace(/[:T]/g, '-')}.txt`, JSON.stringify(letzterRoh));
   if (m === 'oeffnen') $('#file').click();
   if (m === 'foto') { selBox.visible = false; renderer.render(scene, camera); download('raumplan-3d.png', canvas.toDataURL('image/png')); selBox.visible = !!selId; inv(); }
@@ -1017,8 +1168,8 @@ function menuAction(m) {
 const b64 = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 8192) t += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(t); };
 const unb64 = t => Uint8Array.from(atob(t), ch => ch.charCodeAt(0));
 // Teilen über das Android-Menü (Drive, Claude, Mail). Chrome teilt keine .json-Dateien, deshalb .txt.
-async function teilen(name, text) {
-  const file = new File([text], name, { type: 'text/plain' });
+async function teilen(name, text, typ = 'text/plain') {
+  const file = new File([text], name, { type: typ });
   try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; } }
   catch (e) { if (e.name === 'AbortError') return; }
   const url = URL.createObjectURL(file); download(name, url); setTimeout(() => URL.revokeObjectURL(url), 5000); hint('Datei liegt im Download-Ordner: ' + name, 6000);
@@ -1028,6 +1179,7 @@ async function exportPlan(zumTeilen = false) {
   const out = JSON.parse(snapshot()), daten = { fotos: {}, wolken: {} }, keys = new Set();
   for (const w of plan.walls) for (const f of [w.fotoA, w.fotoB]) if (f) keys.add(f.key);
   for (const r of plan.rooms) if (r.foto) keys.add(r.foto.key);
+  for (const f of rgFotos()) keys.add(f.k);
   for (const k of keys) { try { const blob = await idb.get(k); if (blob) daten.fotos[k] = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); }); } catch { /* Foto fehlt */ } }
   const w = plan.wolke && wolken.get(plan.wolke.key);
   if (w) daten.wolken[plan.wolke.key] = { pos: b64(new Uint8Array(w.pos.buffer, w.pos.byteOffset, w.pos.byteLength)), col: b64(w.col) };
@@ -1161,7 +1313,7 @@ zeigeStart();
 arVerfuegbar().then(ok => { arOk = ok; if (!$('#start').hidden) zeigeStart(); });
 requestAnimationFrame(loop);
 // für Tests/Automatisierung
-window.rp3d = { get plan() { return plan; }, get projekte() { return projekte; }, get aktId() { return aktId; }, setMode, openSheet, select, addItem, inv, ladeAufmass, ladeScan, exportPlan, importPlan, zeigeStart, get mode() { return mode; } };
+window.rp3d = { rgAuf, rgGeh, rgZiel, get rg() { return rg; }, protokollErzeugen, get plan() { return plan; }, get projekte() { return projekte; }, get aktId() { return aktId; }, setMode, openSheet, select, addItem, inv, ladeAufmass, ladeScan, exportPlan, importPlan, zeigeStart, get mode() { return mode; } };
 ladeFotos().then(n => { if (n) { buildStructure(); baueWolke(); applyLight(); } });
 // Verlinkter Raum (z. B. aus der App-Zentrale): index.html?plan=raeume/buero.json – nur vom eigenen Server
 if (PLAN_URL && !geladen) {
