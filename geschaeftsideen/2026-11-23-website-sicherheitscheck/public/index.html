@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{BRAND}} – Kostenloser Sicherheits-Check für Ihre Website</title>
+  <meta name="description" content="Ist Ihre Website sicher? Kostenloser Sicherheits-Check in 30 Sekunden: SSL, Updates, E-Mail-Schutz und DSGVO – verständlich erklärt mit Ampel. Probleme beheben wir für Sie.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!--TEST_BANNER-->
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="logo" href="/" aria-label="{{BRAND}} Startseite">
+        <svg viewBox="0 0 24 40" width="14" height="24" aria-hidden="true"><rect width="24" height="40" rx="6" fill="#1e293b"/><circle cx="12" cy="9" r="5" fill="#ef4444"/><circle cx="12" cy="20" r="5" fill="#f59e0b"/><circle cx="12" cy="31" r="5" fill="#22c55e"/></svg>
+        <span>{{BRAND}}</span>
+      </a>
+      <nav class="nav">
+        <a href="#check">Check</a>
+        <a href="#preise">Preise</a>
+        <a href="#faq">FAQ</a>
+        <a href="#kontakt" class="nav-cta">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="check">
+      <div class="wrap">
+        <p class="eyebrow">Kostenloser Website-Sicherheits-Check</p>
+        <h1>Ist Ihre Website sicher?</h1>
+        <p class="lead">Adresse eingeben – in 30 Sekunden sehen Sie mit einer Ampel, wo Ihre Website Sicherheitslücken hat. Verständlich erklärt, ohne Fachchinesisch.</p>
+
+        <form id="scan-form" class="scan-form" novalidate>
+          <div class="scan-row">
+            <label for="url" class="sr-only">Website-Adresse</label>
+            <input id="url" name="url" type="text" inputmode="url" autocomplete="url" placeholder="z. B. meine-firma.at" required>
+            <button type="submit" id="scan-btn">Jetzt prüfen</button>
+          </div>
+          <label class="consent">
+            <input type="checkbox" id="consent" required>
+            <span>Ich bin Betreiber:in dieser Website oder berechtigt, sie prüfen zu lassen.</span>
+          </label>
+          <p id="scan-error" class="form-error" role="alert" hidden></p>
+        </form>
+
+        <ul class="trust">
+          <li>Kostenlos &amp; unverbindlich</li>
+          <li>Kein Angriff auf Ihre Seite – wir lesen nur, was jeder Browser sieht</li>
+          <li>Aus Österreich, DSGVO-konform, ohne Tracking</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="scan" class="scan" hidden>
+      <div class="wrap">
+        <div id="progress" class="progress">
+          <h2>Prüfung läuft: <span id="progress-host"></span></h2>
+          <ol id="steps" class="steps"></ol>
+        </div>
+
+        <div id="result" class="result" hidden>
+          <div class="result-head">
+            <div class="ring" id="ring"><span id="grade">–</span></div>
+            <div>
+              <h2>Ergebnis für <span id="result-host"></span></h2>
+              <p id="result-summary" class="summary"></p>
+              <p class="muted small" id="result-meta"></p>
+            </div>
+          </div>
+
+          <div id="cta" class="cta-box">
+            <div>
+              <h3 id="cta-title">Wir beheben das für Sie.</h3>
+              <p id="cta-text">Unser Fix-Paket schließt die gefundenen Lücken – inklusive Backup, Bericht und Nachkontrolle.</p>
+            </div>
+            <div class="cta-actions">
+              <a class="btn btn-primary" href="#kontakt" data-package="fix">Probleme beheben lassen – ab&nbsp;990&nbsp;€</a>
+              <a class="btn btn-ghost" href="#kontakt" data-package="roast">Video-Analyse für 199&nbsp;€</a>
+            </div>
+          </div>
+
+          <div id="categories"></div>
+
+          <div class="locked">
+            <h3>Im Detailbericht zusätzlich geprüft</h3>
+            <p class="muted small">Diese Prüfungen greifen tiefer. Wir führen sie nur nach Nachweis durch, dass Ihnen die Domain gehört.</p>
+            <ul id="locked-list"></ul>
+          </div>
+
+          <div class="result-foot">
+            <button type="button" id="print-btn" class="btn btn-ghost">Ergebnis als PDF speichern</button>
+            <button type="button" id="again-btn" class="btn btn-ghost">Andere Website prüfen</button>
+          </div>
+          <p class="disclaimer">Der Gratis-Check ist eine automatisierte Erstprüfung der öffentlich sichtbaren Konfiguration. Er ersetzt keinen Penetrationstest und garantiert keine vollständige Sicherheit.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="how">
+      <div class="wrap">
+        <h2>So funktioniert’s</h2>
+        <div class="grid3">
+          <div class="card"><span class="num">1</span><h3>Prüfen</h3><p>Sie geben Ihre Adresse ein. Wir prüfen Verschlüsselung, Updates, E-Mail-Schutz und Datenschutz.</p></div>
+          <div class="card"><span class="num">2</span><h3>Verstehen</h3><p>Grün passt, Gelb sollte man verbessern, Rot ist ein echtes Risiko. Jeder Punkt ist in einfachen Worten erklärt.</p></div>
+          <div class="card"><span class="num">3</span><h3>Beheben lassen</h3><p>Auf Wunsch beheben wir alles zum Fixpreis – oder Sie geben die Anleitung Ihrer Webagentur.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="preise">
+      <div class="wrap">
+        <h2>Preise</h2>
+        <p class="muted center">Fixpreise statt Stundenabrechnung. Alle Preise netto.</p>
+        <div class="grid4">
+          <div class="price">
+            <h3>Gratis-Check</h3>
+            <p class="amount">0 €</p>
+            <ul><li>Automatischer Sofort-Check</li><li>Ampel-Ergebnis mit Erklärung</li><li>Als PDF speicherbar</li></ul>
+            <a class="btn btn-ghost" href="#check">Jetzt prüfen</a>
+          </div>
+          <div class="price">
+            <h3>Video-Analyse</h3>
+            <p class="amount">199 €</p>
+            <ul><li>Persönliche Prüfung durch einen Experten</li><li>15-Minuten-Video Ihrer Website</li><li>Alle Pro-Prüfungen inklusive</li><li>Wird beim Fix-Paket voll angerechnet</li></ul>
+            <a class="btn btn-ghost" href="#kontakt" data-package="roast">Bestellen</a>
+          </div>
+          <div class="price featured">
+            <p class="badge">Beliebt</p>
+            <h3>Fix-Paket</h3>
+            <p class="amount">ab 990 €</p>
+            <ul><li>Alle roten &amp; gelben Punkte behoben</li><li>Updates von System &amp; Plugins</li><li>Backup vorher &amp; nachher</li><li>E-Mail-Schutz (SPF/DMARC)</li><li>DSGVO-Fixes (Fonts, Tracking)</li><li>Abschlussbericht + 30 Tage Nachkontrolle</li></ul>
+            <a class="btn btn-primary" href="#kontakt" data-package="fix">Anfragen</a>
+          </div>
+          <div class="price">
+            <h3>Wartung &amp; Monitoring</h3>
+            <p class="amount">ab 79 €<small>/Monat</small></p>
+            <ul><li>Laufende Updates</li><li>Tägliche Backups</li><li>Wöchentlicher Sicherheits-Check</li><li>Sofort-Alarm bei Problemen</li><li>Monatlich kündbar</li></ul>
+            <a class="btn btn-ghost" href="#kontakt" data-package="wartung">Starten</a>
+          </div>
+        </div>
+        <div class="emergency">
+          <strong>Website gehackt?</strong> Notfall-Bereinigung ab 490 €, Start in der Regel am selben Werktag.
+          <a href="#kontakt" data-package="notfall">Notfall melden →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="why">
+      <div class="wrap grid2">
+        <div>
+          <h2>Warum {{BRAND}}?</h2>
+          <ul class="checks">
+            <li><strong>Verständlich:</strong> Sie bekommen Klartext statt Fachbegriffe.</li>
+            <li><strong>Persönlich:</strong> Ein fester Ansprechpartner statt Hotline.</li>
+            <li><strong>Fixpreis:</strong> Sie wissen vorher, was es kostet.</li>
+            <li><strong>Datenschutz im Blick:</strong> Sicherheit und DSGVO aus einer Hand.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Für wen?</h3>
+          <p>Für Selbstständige, Handwerksbetriebe, Praxen, Kanzleien und kleine Online-Shops – vor allem mit WordPress-Websites. Für alle, die keine eigene IT-Abteilung haben.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq" id="faq">
+      <div class="wrap">
+        <h2>Häufige Fragen</h2>
+        <details><summary>Ist der Check legal und ungefährlich für meine Website?</summary><p>Ja. Der Gratis-Check ruft Ihre Startseite auf wie ein normaler Besucher und liest öffentlich sichtbare Informationen (Zertifikat, Server-Einstellungen, DNS-Einträge). Es wird nichts angegriffen oder verändert. Tiefere Prüfungen machen wir nur mit Ihrem Auftrag und nach Nachweis, dass Ihnen die Domain gehört.</p></details>
+        <details><summary>Was wird genau geprüft?</summary><p>SSL-Zertifikat und Verschlüsselung, Schutz-Einstellungen des Servers, veraltete Software (z. B. WordPress, PHP, jQuery), E-Mail-Schutz gegen gefälschte Absender (SPF, DMARC) sowie Datenschutz-Punkte wie Google Fonts, Tracking ohne Einwilligung, Impressum und Datenschutzerklärung.</p></details>
+        <details><summary>Warum kostet das Beheben ab 990 €?</summary><p>Das Fix-Paket ist mehr als „ein paar Einstellungen“: Backup, Updates mit Funktionstest, Härtung, E-Mail-Schutz, DSGVO-Anpassungen, Abschlussbericht und 30 Tage Nachkontrolle. Den genauen Fixpreis nennen wir nach der Prüfung – vorher entstehen keine Kosten.</p></details>
+        <details><summary>Meine Website wurde gehackt – was tun?</summary><p>Melden Sie sich sofort über das Kontaktformular mit dem Paket „Notfall“. Ändern Sie bis dahin die Passwörter für Hosting, FTP und das Admin-Konto. Wir bereinigen die Website, schließen die Lücke und helfen bei der Entfernung von Google-Warnungen.</p></details>
+        <details><summary>Speichern Sie meine Daten?</summary><p>Vom Gratis-Check speichern wir nur die geprüfte Domain und das Ergebnis (für Statistik), keine IP-Adressen. Wir setzen keine Cookies und kein Tracking ein. Details in der <a href="/datenschutz">Datenschutzerklärung</a>.</p></details>
+      </div>
+    </section>
+
+    <section class="contact" id="kontakt">
+      <div class="wrap narrow">
+        <h2>Anfrage stellen</h2>
+        <p class="muted center">Antwort in der Regel innerhalb von 24 Stunden (werktags).</p>
+        <form id="lead-form" class="lead-form" novalidate>
+          <div class="grid2 tight">
+            <label>Name*<input name="name" required maxlength="120" autocomplete="name"></label>
+            <label>Firma<input name="company" maxlength="160" autocomplete="organization"></label>
+            <label>E-Mail*<input name="email" type="email" required maxlength="200" autocomplete="email"></label>
+            <label>Telefon<input name="phone" type="tel" maxlength="60" autocomplete="tel"></label>
+            <label>Website<input name="website" id="lead-website" maxlength="253" placeholder="meine-firma.at"></label>
+            <label>Interesse
+              <select name="package" id="lead-package">
+                <option value="fix">Fix-Paket (ab 990 €)</option>
+                <option value="roast">Video-Analyse (199 €)</option>
+                <option value="wartung">Wartung &amp; Monitoring (ab 79 €/Monat)</option>
+                <option value="shop">Online-Shop absichern</option>
+                <option value="notfall">Notfall: Website gehackt</option>
+                <option value="sonstiges">Sonstiges</option>
+              </select>
+            </label>
+          </div>
+          <label>Nachricht<textarea name="message" id="lead-message" rows="5" maxlength="3000"></textarea></label>
+          <label class="hp" aria-hidden="true">Bitte leer lassen<input name="hp" tabindex="-1" autocomplete="off"></label>
+          <label class="consent">
+            <input type="checkbox" name="privacy" required>
+            <span>Ich habe die <a href="/datenschutz" target="_blank">Datenschutzerklärung</a> gelesen und bin einverstanden, dass meine Angaben zur Bearbeitung der Anfrage gespeichert werden.*</span>
+          </label>
+          <button type="submit" class="btn btn-primary">Anfrage senden</button>
+          <p id="lead-error" class="form-error" role="alert" hidden></p>
+          <p id="lead-ok" class="form-ok" role="status" hidden>Danke! Ihre Anfrage ist eingegangen – wir melden uns in Kürze.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span>© {{YEAR}} {{BRAND}}</span>
+      <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a>
+      <a href="/impressum">Impressum</a>
+      <a href="/datenschutz">Datenschutz</a>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>
