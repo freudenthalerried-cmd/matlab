@@ -1,0 +1,166 @@
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/dns.json server/dns.json
+--- server-vorher/dns.json	2026-11-23 17:34:10.175497775 +0000
++++ server/dns.json	2026-11-23 17:35:09.982136997 +0000
+@@ -1,4 +1,5 @@
+ {
+-  "_hinweis": "Simulierte DNS-Zone (TXT) fuer die fiktive demo-handwerk.at",
+-  "demo-handwerk.at": ["google-site-verification=demo"]
++  "_hinweis": "Simulierte DNS-Zone (TXT) fuer die fiktive demo-handwerk.at. Fix 2026-001: SPF + DMARC Stufe 1.",
++  "demo-handwerk.at": ["google-site-verification=demo", "v=spf1 include:spf.protection.outlook.com -all"],
++  "_dmarc.demo-handwerk.at": ["v=DMARC1; p=none; rua=mailto:dmarc@demo-handwerk.at; adkim=s; aspf=s"]
+ }
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/nginx.conf server/nginx.conf
+--- server-vorher/nginx.conf	2026-11-23 17:35:39.333027748 +0000
++++ server/nginx.conf	2026-11-23 17:35:39.332667670 +0000
+@@ -1,4 +1,4 @@
+-# VORHER-Zustand der fiktiven demo-handwerk.at (typischer Billig-Hosting-Stand)
++# NACHHER-Zustand der fiktiven demo-handwerk.at – Fix 2026-001 (Seitencheck)
+ worker_processes 1;
+ user root;
+ pid run/nginx.pid;
+@@ -8,16 +8,13 @@
+   include /etc/nginx/mime.types;
+   access_log off;
+   client_body_temp_path run/tmp;
+-  # server_tokens on (Standard) -> "Server: nginx/1.24.0"
++  server_tokens off;                         # Fix: keine nginx-Version
+ 
++  # Fix: HTTP -> HTTPS (301)
+   server {
+     listen 127.0.0.1:80;
+     server_name demo-handwerk.at www.demo-handwerk.at;
+-    root www;
+-    # keine Weiterleitung auf HTTPS
+-    add_header X-Powered-By "PHP/7.4.33";
+-    add_header Set-Cookie "PHPSESSID=demo123; path=/";
+-    location / { try_files $uri $uri/ =404; }
++    return 301 https://$host$request_uri;
+   }
+ 
+   server {
+@@ -25,9 +22,21 @@
+     server_name demo-handwerk.at www.demo-handwerk.at;
+     ssl_certificate ../tls/demo-handwerk.crt;
+     ssl_certificate_key ../tls/demo-handwerk.key;
++    ssl_protocols TLSv1.2 TLSv1.3;
+     root www;
+-    add_header X-Powered-By "PHP/7.4.33";
+-    add_header Set-Cookie "PHPSESSID=demo123; path=/";
++
++    # Fix: Sicherheits-Header
++    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
++    add_header X-Frame-Options "SAMEORIGIN" always;
++    add_header X-Content-Type-Options "nosniff" always;
++    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
++    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
++    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com; frame-src https://www.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
++
++    # Fix: X-Powered-By entfernt (beim echten Kunden: expose_php = Off bzw. fastcgi_hide_header).
++    # ACHTUNG: PHP selbst ist damit NICHT aktualisiert – PHP 8.3 im Hoster-Panel umstellen!
++    # Fix: Session-Cookie gehaertet (echt: session.cookie_secure/httponly/samesite in php.ini)
++    add_header Set-Cookie "PHPSESSID=demo123; path=/; Secure; HttpOnly; SameSite=Lax" always;
+     location / { try_files $uri $uri/ =404; }
+   }
+ }
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/datenschutz/index.html server/www/datenschutz/index.html
+--- server-vorher/www/datenschutz/index.html	1970-01-01 00:00:00.000000000 +0000
++++ server/www/datenschutz/index.html	2026-11-23 17:35:09.979370521 +0000
+@@ -0,0 +1,2 @@
++<!DOCTYPE html><html lang="de-AT"><head><meta charset="UTF-8"><title>Datenschutzerklärung (Demo)</title></head>
++<body><h1>Datenschutzerklärung</h1><p>[Platzhalter – Text liefert der Kunde bzw. Generator der WKO. Seitencheck liefert keine Rechtsberatung.]</p></body></html>
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/index.html server/www/index.html
+--- server-vorher/www/index.html	2026-11-23 17:34:10.171318336 +0000
++++ server/www/index.html	2026-11-23 17:35:59.310372146 +0000
+@@ -4,32 +4,28 @@
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <title>Tischlerei Huber GmbH – Möbel nach Maß (FIKTIVE DEMO-SEITE)</title>
+-<meta name="generator" content="WordPress 5.8.3">
+ <meta name="robots" content="noindex">
+-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
+-<link rel="stylesheet" href="/wp-content/themes/huber/style.css?ver=5.8.3">
+-<link rel="stylesheet" href="/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=5.4">
+-<link rel="stylesheet" href="/wp-content/plugins/elementor/assets/css/frontend.min.css?ver=3.4.1">
+-<link rel="stylesheet" href="/wp-content/plugins/revslider/public/assets/css/rs6.css?ver=6.5.5">
+-<script src="/wp-includes/js/jquery/jquery.js?ver=1.12.4"></script>
+-<script src="/wp-content/plugins/wp-google-maps/js/wpgmaps.js?ver=8.1.12"></script>
+-<script src="/wp-content/plugins/yoast-seo/js/dist/frontend.js?ver=17.0"></script>
+-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DEMO000000"></script>
+-<script>
+-  window.dataLayer = window.dataLayer || [];
+-  function gtag(){dataLayer.push(arguments);}
+-  gtag('js', new Date());
+-  gtag('config', 'G-DEMO000000');
+-</script>
++<link rel="stylesheet" href="/wp-content/themes/huber/style.css">
++<link rel="stylesheet" href="/wp-content/plugins/contact-form-7/includes/css/styles.css">
++<link rel="stylesheet" href="/wp-content/plugins/elementor/assets/css/frontend.min.css">
++<link rel="stylesheet" href="/wp-content/plugins/revslider/public/assets/css/rs6.css">
++<script src="/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
++<script src="/wp-content/plugins/wp-google-maps/js/wpgmaps.js"></script>
++<script src="/wp-content/plugins/yoast-seo/js/dist/frontend.js"></script>
++<script defer src="/wp-content/plugins/klaro/config.js"></script>
++<script defer data-config="klaroConfig" src="/wp-content/plugins/klaro/klaro.js"></script>
++<script type="text/plain" data-type="application/javascript" data-name="google-analytics" data-src="https://www.googletagmanager.com/gtag/js?id=G-DEMO000000"></script>
++<script type="text/plain" data-type="application/javascript" data-name="google-analytics" data-src="/wp-content/themes/huber/js/ga-init.js"></script>
++<script defer src="/wp-content/themes/huber/js/maps-click.js"></script>
+ </head>
+ <body>
+ <header><h1>Tischlerei Huber GmbH</h1><p>Möbel nach Maß aus dem Innviertel – seit 1987</p></header>
+ <main>
+   <section><h2>Küchen · Schränke · Innenausbau</h2><p>Fiktive Demo-Seite für den Seitencheck-Probekundenfall. Firma und Domain sind erfunden.</p></section>
+   <section><h2>So finden Sie uns</h2>
+-    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!demo" width="600" height="300" style="border:0" loading="lazy"></iframe>
++    <div class="map-placeholder"><p>Beim Laden der Karte werden Daten an Google übertragen.</p><button type="button" data-map-load="!1m18!1m12!demo">Karte laden</button></div>
+   </section>
+ </main>
+-<footer><a href="/impressum/">Impressum</a> · © Tischlerei Huber GmbH</footer>
++<footer><a href="/impressum/">Impressum</a> · <a href="/datenschutz/">Datenschutz</a> · <a href="#" data-klaro-show>Cookie-Einstellungen</a> · © Tischlerei Huber GmbH</footer>
+ </body>
+ </html>
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/wp-content/plugins/klaro/config.js server/www/wp-content/plugins/klaro/config.js
+--- server-vorher/www/wp-content/plugins/klaro/config.js	1970-01-01 00:00:00.000000000 +0000
++++ server/www/wp-content/plugins/klaro/config.js	2026-11-23 17:35:09.975351477 +0000
+@@ -0,0 +1,9 @@
++// Fix 2026-001: Google Analytics erst nach Einwilligung (Klaro, BSD-3)
++var klaroConfig = {
++  lang: 'de', mustConsent: false, acceptAll: true, hideDeclineAll: false,
++  privacyPolicy: '/datenschutz/',
++  services: [{
++    name: 'google-analytics', title: 'Google Analytics', purposes: ['analytics'],
++    cookies: [/^_ga/, /^_gid/], required: false, default: false,
++  }],
++};
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/wp-content/themes/huber/js/ga-init.js server/www/wp-content/themes/huber/js/ga-init.js
+--- server-vorher/www/wp-content/themes/huber/js/ga-init.js	1970-01-01 00:00:00.000000000 +0000
++++ server/www/wp-content/themes/huber/js/ga-init.js	2026-11-23 17:35:09.976512698 +0000
+@@ -0,0 +1,4 @@
++window.dataLayer = window.dataLayer || [];
++function gtag(){dataLayer.push(arguments);}
++gtag('js', new Date());
++gtag('config', 'G-DEMO000000', { anonymize_ip: true });
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/wp-content/themes/huber/js/maps-click.js server/www/wp-content/themes/huber/js/maps-click.js
+--- server-vorher/www/wp-content/themes/huber/js/maps-click.js	1970-01-01 00:00:00.000000000 +0000
++++ server/www/wp-content/themes/huber/js/maps-click.js	2026-11-23 17:35:59.310555991 +0000
+@@ -0,0 +1,12 @@
++// Fix 2026-001: Zwei-Klick-Loesung – Google Maps laedt erst nach Klick
++document.addEventListener('click', function (e) {
++  var b = e.target.closest('[data-map-load]'); if (!b) return;
++  var f = document.createElement('iframe');
++  f.src = 'https://www.google.com/maps/' + 'embed?pb=' + b.getAttribute('data-map-load');
++  f.width = 600; f.height = 300; f.style.border = 0; f.loading = 'lazy'; f.title = 'Karte';
++  b.closest('.map-placeholder').replaceWith(f);
++});
++// Cookie-Einstellungen erneut oeffnen (ohne Inline-Handler, CSP-konform)
++document.addEventListener('click', function (e) {
++  if (e.target.closest('[data-klaro-show]')) { e.preventDefault(); window.klaro && klaro.show(); }
++});
+diff -ruN -x run -x klaro.js -x jquery.min.js -x '*.woff2' -x 'LICENSE*' server-vorher/www/wp-content/themes/huber/style.css server/www/wp-content/themes/huber/style.css
+--- server-vorher/www/wp-content/themes/huber/style.css	2026-11-23 17:34:10.174182494 +0000
++++ server/www/wp-content/themes/huber/style.css	2026-11-23 17:35:09.972815945 +0000
+@@ -1 +1,5 @@
++/* Fix 2026-001: Google Fonts lokal statt fonts.googleapis.com */
++@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/wp-content/uploads/fonts/inter-latin-400-normal.woff2') format('woff2')}
++@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url('/wp-content/uploads/fonts/inter-latin-700-normal.woff2') format('woff2')}
+ body{font-family:'Inter',sans-serif;margin:0;color:#2b2b2b}header{background:#6b4226;color:#fff;padding:24px}main,footer{padding:24px}
++.map-placeholder{width:600px;max-width:100%;height:300px;background:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}

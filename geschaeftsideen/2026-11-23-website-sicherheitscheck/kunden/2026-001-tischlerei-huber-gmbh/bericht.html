@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Abschlussbericht Tischlerei Huber GmbH</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1f2328;--mut:#656d76;--line:#d0d7de}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px}
+header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.brand{font-weight:700;color:#0969da}h1{font-size:24px;margin:4px 0}h2{font-size:18px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}
+.grades{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.arrow{font-size:28px;color:var(--mut)}
+.grade{display:flex;align-items:center;gap:10px}.g{width:64px;height:64px;border-radius:14px;color:#fff;font:700 38px/64px system-ui;text-align:center}
+.gl{color:var(--mut);font-size:13px}.muted{color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.st{font-weight:600}.st-behoben{color:#1a7f37}.st-teilweise{color:#bf8700}.st-verdeckt,.st-offen{color:#cf222e}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.cols{grid-template-columns:1fr}}
+.cta{background:#ddf4ff;border-color:#54aeff}small{color:var(--mut)}
+@media print{body{background:#fff}.card{break-inside:avoid}}
+</style></head><body><div class="wrap">
+<header><div><div class="brand">Seitencheck</div><h1>Abschlussbericht Website-Sicherheit</h1><div class="muted">Tischlerei Huber GmbH · demo-handwerk.at · Projekt 2026-001</div></div>
+<div class="muted">Vorher 23.11.2026 · Nachher 23.11.2026</div></header>
+<div class="card"><h2>Vorher → Nachher</h2><div class="grades"><div class="grade"><div class="g" style="background:#cf222e">F</div><div class="gl">Vorher<br><b>18/100</b></div></div><div class="arrow">→</div><div class="grade"><div class="g" style="background:#1a7f37">A</div><div class="gl">Nachher (Scanner)<br><b>97/100</b></div></div><div class="grade"><div class="g" style="background:#bf8700">C</div><div class="gl">Ehrliche Note*<br><b>73/100</b></div></div></div>
+<p class="muted">Rot/Gelb vorher 8/10 · nachher 0/1.<br>* Zählt Punkte weiter, die nur unsichtbar gemacht, aber noch nicht wirklich behoben sind.</p></div>
+<div class="cols">
+<div class="card"><h2>✅ Erledigt (15)</h2><ul><li>Automatische Weiterleitung auf HTTPS</li><li>HTTPS erzwingen (HSTS)</li><li>Schutz gegen eingeschleuste Skripte (CSP)</li><li>Schutz gegen Clickjacking</li><li>Dateityp-Schutz (nosniff)</li><li>Weitergabe von Seitenadressen begrenzt</li><li>Keine Versionsnummern öffentlich</li><li>Cookies sicher gesetzt</li><li>Systemversion nicht öffentlich sichtbar</li><li>Veraltete Bibliothek jQuery 1.12.4</li><li>Schutz gegen gefälschte Absender (SPF)</li><li>Google Fonts lokal eingebunden</li><li>Tracking erst nach Einwilligung</li><li>Eingebettete Inhalte datenschutzfreundlich</li><li>Datenschutzerklärung vorhanden</li></ul></div>
+<div class="card"><h2>⏳ Offen (3)</h2><ul><li><b>PHP 7.4 veraltet</b><br><small>Version versteckt, aber noch nicht aktualisiert. Beim echten Kunden im Panel: PHP-Version im Hoster-Panel umstellen.</small></li><li><b>WordPress veraltet</b><br><small>Version versteckt, aber noch nicht aktualisiert. Beim echten Kunden im Panel: WordPress-Update im WP-Admin.</small></li><li><b>Richtlinie gegen E-Mail-Betrug (DMARC)</b><br><small>DMARC ist nur im Beobachtungsmodus (p=none) – gefälschte Mails werden noch zugestellt. Beim echten Kunden im Panel: TXT-Eintrag beim Domain-Registrar anlegen.</small></li></ul></div>
+</div>
+
+<div class="card"><h2>Alle Befunde im Detail</h2><table><tr><th>Vorher</th><th>Befund</th><th>Nachher</th><th>Status</th></tr><tr><td>🔴</td><td>Automatische Weiterleitung auf HTTPS</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>HTTPS erzwingen (HSTS)</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Schutz gegen eingeschleuste Skripte (CSP)</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Schutz gegen Clickjacking</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Dateityp-Schutz (nosniff)</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Weitergabe von Seitenadressen begrenzt</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Keine Versionsnummern öffentlich</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Cookies sicher gesetzt</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>PHP 7.4 veraltet</td><td>—</td><td class="st st-verdeckt">versteckt, Update offen</td></tr><tr><td>🟡</td><td>Systemversion nicht öffentlich sichtbar</td><td>—</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>WordPress veraltet</td><td>—</td><td class="st st-verdeckt">versteckt, Update offen</td></tr><tr><td>🟡</td><td>Veraltete Bibliothek jQuery 1.12.4</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>Schutz gegen gefälschte Absender (SPF)</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>Richtlinie gegen E-Mail-Betrug (DMARC)</td><td>🟡</td><td class="st st-teilweise">teilweise</td></tr><tr><td>🔴</td><td>Google Fonts lokal eingebunden</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr><tr><td>🔴</td><td>Tracking erst nach Einwilligung</td><td>🔵</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Eingebettete Inhalte datenschutzfreundlich</td><td>—</td><td class="st st-behoben">erledigt</td></tr><tr><td>🟡</td><td>Datenschutzerklärung vorhanden</td><td>🟢</td><td class="st st-behoben">erledigt</td></tr></table></div>
+<div class="card cta"><h2>Empfehlung: Wartung ab 79 €/Monat</h2><p>Jede Woche werden neue Lücken in Plugins bekannt. Mit der Wartung bleiben WordPress, Plugins und PHP aktuell (immer mit Backup), die Seite wird überwacht, und Sie bekommen jeden Monat einen kurzen Sicherheits-Check. DMARC wird auf Stufe 2 angehoben. Monatlich kündbar. Preise netto.</p></div>
+<p class="muted"><small>Geprüft wurde von außen, wie ein Besucher. Kein Prüfbericht garantiert absolute Sicherheit.</small></p>
+</div></body></html>

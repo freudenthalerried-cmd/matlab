@@ -1,0 +1,298 @@
+{
+  "target": "demo-handwerk.at",
+  "finalUrl": "https://demo-handwerk.at/",
+  "scannedAt": "2026-11-23T17:34:30.837Z",
+  "durationMs": 24,
+  "score": 18,
+  "grade": "F",
+  "summary": {
+    "pass": 6,
+    "warn": 10,
+    "fail": 8,
+    "info": 3
+  },
+  "categories": [
+    {
+      "id": "tls",
+      "title": "Verschlüsselung (HTTPS)",
+      "results": [
+        {
+          "id": "https",
+          "cat": "tls",
+          "title": "Website über HTTPS erreichbar",
+          "status": "pass",
+          "sev": 3,
+          "detail": "Die Verbindung zu Ihrer Website ist verschlüsselt.",
+          "fix": ""
+        },
+        {
+          "id": "redirect",
+          "cat": "tls",
+          "title": "Automatische Weiterleitung auf HTTPS",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Wer Ihre Adresse ohne „https://“ eingibt, bleibt auf der unverschlüsselten Version.",
+          "fix": "Dauerhafte Weiterleitung (301) von HTTP auf HTTPS im Webserver bzw. beim Hoster einschalten."
+        },
+        {
+          "id": "cert",
+          "cat": "tls",
+          "title": "SSL-Zertifikat gültig",
+          "status": "pass",
+          "sev": 3,
+          "detail": "Gültiges Zertifikat von Seitencheck Demo-CA.",
+          "fix": ""
+        },
+        {
+          "id": "cert_expiry",
+          "cat": "tls",
+          "title": "Zertifikat-Laufzeit",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Noch 89 Tage gültig.",
+          "fix": ""
+        },
+        {
+          "id": "tls_version",
+          "cat": "tls",
+          "title": "Aktuelles Verschlüsselungsverfahren",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Verbindung nutzt TLSv1.3.",
+          "fix": ""
+        },
+        {
+          "id": "hsts",
+          "cat": "tls",
+          "title": "HTTPS erzwingen (HSTS)",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Der Browser wird nicht angewiesen, immer die sichere Verbindung zu nutzen. In öffentlichen WLANs kann die Verbindung so umgeleitet werden.",
+          "fix": "Header „Strict-Transport-Security: max-age=31536000; includeSubDomains“ setzen."
+        },
+        {
+          "id": "mixed",
+          "cat": "tls",
+          "title": "Keine unsicheren Inhalte (Mixed Content)",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Alle Inhalte werden verschlüsselt geladen.",
+          "fix": ""
+        }
+      ]
+    },
+    {
+      "id": "headers",
+      "title": "Schutz-Einstellungen des Servers",
+      "results": [
+        {
+          "id": "csp",
+          "cat": "headers",
+          "title": "Schutz gegen eingeschleuste Skripte (CSP)",
+          "status": "warn",
+          "sev": 2,
+          "detail": "Es ist nicht festgelegt, welche Skripte laden dürfen. Bei einer Lücke kann Schadcode leichter ausgeführt werden.",
+          "fix": "Content-Security-Policy schrittweise einführen (erst im Report-Only-Modus testen)."
+        },
+        {
+          "id": "clickjacking",
+          "cat": "headers",
+          "title": "Schutz gegen Clickjacking",
+          "status": "warn",
+          "sev": 2,
+          "detail": "Ihre Seite kann in fremde Webseiten eingebettet werden – Besucher können so zu ungewollten Klicks verleitet werden.",
+          "fix": "Header „X-Frame-Options: SAMEORIGIN“ oder CSP „frame-ancestors 'self'“ setzen."
+        },
+        {
+          "id": "nosniff",
+          "cat": "headers",
+          "title": "Dateityp-Schutz (nosniff)",
+          "status": "warn",
+          "sev": 1,
+          "detail": "Browser könnten hochgeladene Dateien als Skript ausführen.",
+          "fix": "Header „X-Content-Type-Options: nosniff“ setzen."
+        },
+        {
+          "id": "referrer",
+          "cat": "headers",
+          "title": "Weitergabe von Seitenadressen begrenzt",
+          "status": "warn",
+          "sev": 1,
+          "detail": "Beim Klick auf externe Links wird die vollständige Adresse weitergegeben (Datenschutz).",
+          "fix": "Header „Referrer-Policy: strict-origin-when-cross-origin“ setzen."
+        },
+        {
+          "id": "permissions",
+          "cat": "headers",
+          "title": "Zugriff auf Kamera/Mikrofon/Standort begrenzt",
+          "status": "info",
+          "sev": 1,
+          "detail": "Keine Permissions-Policy gesetzt (empfohlen, aber kein akutes Risiko).",
+          "fix": "Header „Permissions-Policy: camera=(), microphone=(), geolocation=()“ setzen."
+        },
+        {
+          "id": "server_leak",
+          "cat": "headers",
+          "title": "Keine Versionsnummern öffentlich",
+          "status": "warn",
+          "sev": 1,
+          "detail": "Der Server verrät seine Software-Version (Server: nginx/1.24.0 (Ubuntu), X-Powered-By: PHP/7.4.33). Angreifer suchen gezielt nach bekannten Lücken dieser Versionen.",
+          "fix": "Versionsangaben in der Server-Konfiguration ausblenden (z. B. „expose_php = Off“, „ServerTokens Prod“)."
+        },
+        {
+          "id": "cookies",
+          "cat": "headers",
+          "title": "Cookies sicher gesetzt",
+          "status": "warn",
+          "sev": 2,
+          "detail": "Unsicher gesetzte Cookies: PHPSESSID: ohne „Secure“.",
+          "fix": "Cookies mit den Attributen Secure, HttpOnly und SameSite setzen."
+        }
+      ]
+    },
+    {
+      "id": "software",
+      "title": "Software & Updates",
+      "results": [
+        {
+          "id": "php",
+          "cat": "software",
+          "title": "PHP 7.4 veraltet",
+          "status": "fail",
+          "sev": 3,
+          "detail": "PHP 7.4 bekommt seit Jahren keine Sicherheitsupdates mehr. Neue Lücken werden nicht mehr geschlossen.",
+          "fix": "PHP beim Hoster auf eine aktuelle Version (8.3 oder neuer) umstellen – vorher Kompatibilität der Website testen."
+        },
+        {
+          "id": "cms",
+          "cat": "software",
+          "title": "System erkannt: WordPress",
+          "status": "info",
+          "sev": 1,
+          "detail": "WordPress muss regelmäßig aktualisiert werden (System, Themes, Plugins).",
+          "fix": ""
+        },
+        {
+          "id": "generator",
+          "cat": "software",
+          "title": "Systemversion nicht öffentlich sichtbar",
+          "status": "warn",
+          "sev": 1,
+          "detail": "Im Quellcode steht: „WordPress 5.8.3“. Angreifer sehen sofort, welche Version läuft.",
+          "fix": "Generator-Angabe entfernen (bei WordPress z. B. per Sicherheits-Plugin)."
+        },
+        {
+          "id": "wp_version",
+          "cat": "software",
+          "title": "WordPress veraltet",
+          "status": "fail",
+          "sev": 3,
+          "detail": "WordPress 5.8.3 läuft, aktuell ist 6.8.3. Veraltete WordPress-Seiten sind das häufigste Ziel automatisierter Angriffe.",
+          "fix": "Backup erstellen, WordPress, Themes und Plugins aktualisieren, danach Funktion testen."
+        },
+        {
+          "id": "plugins",
+          "cat": "software",
+          "title": "5 Plugins öffentlich erkennbar",
+          "status": "info",
+          "sev": 1,
+          "detail": "Gefunden: contact-form-7, elementor, revslider, wp-google-maps, yoast-seo. Ob davon welche bekannte Sicherheitslücken haben, prüfen wir im Detailbericht.",
+          "fix": ""
+        },
+        {
+          "id": "jquery",
+          "cat": "software",
+          "title": "Veraltete Bibliothek jQuery 1.12.4",
+          "status": "warn",
+          "sev": 2,
+          "detail": "jQuery 1.12.4 hat bekannte Sicherheitslücken (Cross-Site-Scripting, CVE-2020-11022/11023).",
+          "fix": "jQuery auf Version 3.7 oder neuer aktualisieren."
+        }
+      ]
+    },
+    {
+      "id": "mail",
+      "title": "E-Mail-Sicherheit",
+      "results": [
+        {
+          "id": "spf",
+          "cat": "mail",
+          "title": "Schutz gegen gefälschte Absender (SPF)",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Es ist nicht festgelegt, welche Server E-Mails für Ihre Domain senden dürfen. Betrüger können leichter E-Mails in Ihrem Namen verschicken.",
+          "fix": "SPF-Eintrag im DNS anlegen (z. B. „v=spf1 include:<Mailanbieter> -all“)."
+        },
+        {
+          "id": "dmarc",
+          "cat": "mail",
+          "title": "Richtlinie gegen E-Mail-Betrug (DMARC)",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Kein DMARC-Eintrag. Gefälschte E-Mails mit Ihrer Absenderadresse werden von Empfängern nicht abgewiesen – beliebt für Rechnungsbetrug.",
+          "fix": "DMARC-Eintrag anlegen, zuerst mit „p=none“ und Berichten, danach auf „quarantine“/„reject“ erhöhen."
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "Datenschutz (DSGVO)",
+      "results": [
+        {
+          "id": "gfonts",
+          "cat": "privacy",
+          "title": "Google Fonts lokal eingebunden",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Schriften werden direkt von Google-Servern geladen. Dabei wird die IP-Adresse jedes Besuchers ohne Einwilligung an Google übertragen – in Österreich und Deutschland gab es dazu Abmahnwellen.",
+          "fix": "Schriftdateien herunterladen und vom eigenen Server ausliefern."
+        },
+        {
+          "id": "tracking",
+          "cat": "privacy",
+          "title": "Tracking erst nach Einwilligung",
+          "status": "fail",
+          "sev": 2,
+          "detail": "Gefunden: Google Analytics – aber kein Cookie-Banner-Tool erkannt. Tracking ohne Einwilligung verstößt gegen DSGVO/TKG.",
+          "fix": "Consent-Tool einbinden, das Tracker erst nach Zustimmung lädt."
+        },
+        {
+          "id": "embeds",
+          "cat": "privacy",
+          "title": "Eingebettete Inhalte datenschutzfreundlich",
+          "status": "warn",
+          "sev": 1,
+          "detail": "Google Maps werden direkt eingebettet – Daten fließen beim Seitenaufruf an Google.",
+          "fix": "Erst nach Klick laden (Zwei-Klick-Lösung) bzw. youtube-nocookie.com verwenden."
+        },
+        {
+          "id": "impressum",
+          "cat": "privacy",
+          "title": "Impressum vorhanden",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Ein Impressum-Link wurde gefunden.",
+          "fix": ""
+        },
+        {
+          "id": "datenschutz",
+          "cat": "privacy",
+          "title": "Datenschutzerklärung vorhanden",
+          "status": "warn",
+          "sev": 2,
+          "detail": "Kein Link zur Datenschutzerklärung gefunden (DSGVO-Pflicht).",
+          "fix": "Datenschutzerklärung erstellen und auf jeder Seite verlinken."
+        }
+      ]
+    }
+  ],
+  "locked": [
+    "Plugins & Themes auf bekannte Sicherheitslücken (CVE-Datenbank)",
+    "Öffentlich erreichbare Backups, .git- und .env-Dateien",
+    "Offene Ports und Dienste (FTP, Datenbank, SSH)",
+    "Schutz des Admin-Logins gegen Passwort-Raten",
+    "Alte Verschlüsselungsverfahren (TLS 1.0/1.1) am Server",
+    "Persönliche Experten-Prüfung als Video",
+    "Malware- und Blacklist-Prüfung"
+  ]
+}

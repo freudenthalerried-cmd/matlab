@@ -1,0 +1,262 @@
+{
+  "target": "demo-handwerk.at",
+  "finalUrl": "https://demo-handwerk.at/",
+  "scannedAt": "2026-11-23T17:36:07.262Z",
+  "durationMs": 26,
+  "score": 97,
+  "grade": "A",
+  "summary": {
+    "pass": 19,
+    "warn": 1,
+    "fail": 0,
+    "info": 3
+  },
+  "categories": [
+    {
+      "id": "tls",
+      "title": "Verschlüsselung (HTTPS)",
+      "results": [
+        {
+          "id": "https",
+          "cat": "tls",
+          "title": "Website über HTTPS erreichbar",
+          "status": "pass",
+          "sev": 3,
+          "detail": "Die Verbindung zu Ihrer Website ist verschlüsselt.",
+          "fix": ""
+        },
+        {
+          "id": "redirect",
+          "cat": "tls",
+          "title": "Automatische Weiterleitung auf HTTPS",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Wer „http://“ eingibt, landet automatisch auf der sicheren Version.",
+          "fix": ""
+        },
+        {
+          "id": "cert",
+          "cat": "tls",
+          "title": "SSL-Zertifikat gültig",
+          "status": "pass",
+          "sev": 3,
+          "detail": "Gültiges Zertifikat von Seitencheck Demo-CA.",
+          "fix": ""
+        },
+        {
+          "id": "cert_expiry",
+          "cat": "tls",
+          "title": "Zertifikat-Laufzeit",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Noch 89 Tage gültig.",
+          "fix": ""
+        },
+        {
+          "id": "tls_version",
+          "cat": "tls",
+          "title": "Aktuelles Verschlüsselungsverfahren",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Verbindung nutzt TLSv1.3.",
+          "fix": ""
+        },
+        {
+          "id": "hsts",
+          "cat": "tls",
+          "title": "HTTPS erzwingen (HSTS)",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Browser verwenden dauerhaft nur die sichere Verbindung.",
+          "fix": ""
+        },
+        {
+          "id": "mixed",
+          "cat": "tls",
+          "title": "Keine unsicheren Inhalte (Mixed Content)",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Alle Inhalte werden verschlüsselt geladen.",
+          "fix": ""
+        }
+      ]
+    },
+    {
+      "id": "headers",
+      "title": "Schutz-Einstellungen des Servers",
+      "results": [
+        {
+          "id": "csp",
+          "cat": "headers",
+          "title": "Schutz gegen eingeschleuste Skripte (CSP)",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Eine Content-Security-Policy ist gesetzt.",
+          "fix": ""
+        },
+        {
+          "id": "clickjacking",
+          "cat": "headers",
+          "title": "Schutz gegen Clickjacking",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Ihre Seite kann nicht unbemerkt in fremde Seiten eingebettet werden.",
+          "fix": ""
+        },
+        {
+          "id": "nosniff",
+          "cat": "headers",
+          "title": "Dateityp-Schutz (nosniff)",
+          "status": "pass",
+          "sev": 1,
+          "detail": "Browser interpretieren Dateien nicht eigenmächtig um.",
+          "fix": ""
+        },
+        {
+          "id": "referrer",
+          "cat": "headers",
+          "title": "Weitergabe von Seitenadressen begrenzt",
+          "status": "pass",
+          "sev": 1,
+          "detail": "Referrer-Policy: strict-origin-when-cross-origin.",
+          "fix": ""
+        },
+        {
+          "id": "permissions",
+          "cat": "headers",
+          "title": "Zugriff auf Kamera/Mikrofon/Standort begrenzt",
+          "status": "pass",
+          "sev": 1,
+          "detail": "Eine Permissions-Policy ist gesetzt.",
+          "fix": ""
+        },
+        {
+          "id": "server_leak",
+          "cat": "headers",
+          "title": "Keine Versionsnummern öffentlich",
+          "status": "pass",
+          "sev": 1,
+          "detail": "Der Server verrät keine Software-Versionen.",
+          "fix": ""
+        },
+        {
+          "id": "cookies",
+          "cat": "headers",
+          "title": "Cookies sicher gesetzt",
+          "status": "pass",
+          "sev": 1,
+          "detail": "1 Cookie(s) mit sicheren Attributen.",
+          "fix": ""
+        }
+      ]
+    },
+    {
+      "id": "software",
+      "title": "Software & Updates",
+      "results": [
+        {
+          "id": "cms",
+          "cat": "software",
+          "title": "System erkannt: WordPress",
+          "status": "info",
+          "sev": 1,
+          "detail": "WordPress muss regelmäßig aktualisiert werden (System, Themes, Plugins).",
+          "fix": ""
+        },
+        {
+          "id": "plugins",
+          "cat": "software",
+          "title": "6 Plugins öffentlich erkennbar",
+          "status": "info",
+          "sev": 1,
+          "detail": "Gefunden: contact-form-7, elementor, revslider, wp-google-maps, yoast-seo, klaro. Ob davon welche bekannte Sicherheitslücken haben, prüfen wir im Detailbericht.",
+          "fix": ""
+        },
+        {
+          "id": "jquery",
+          "cat": "software",
+          "title": "jQuery 3.7.1 aktuell",
+          "status": "pass",
+          "sev": 1,
+          "detail": "Keine bekannten Lücken in der eingesetzten jQuery-Version.",
+          "fix": ""
+        }
+      ]
+    },
+    {
+      "id": "mail",
+      "title": "E-Mail-Sicherheit",
+      "results": [
+        {
+          "id": "spf",
+          "cat": "mail",
+          "title": "Schutz gegen gefälschte Absender (SPF)",
+          "status": "pass",
+          "sev": 2,
+          "detail": "SPF ist korrekt eingerichtet.",
+          "fix": ""
+        },
+        {
+          "id": "dmarc",
+          "cat": "mail",
+          "title": "Richtlinie gegen E-Mail-Betrug (DMARC)",
+          "status": "warn",
+          "sev": 2,
+          "detail": "DMARC ist nur im Beobachtungsmodus (p=none) – gefälschte Mails werden noch zugestellt.",
+          "fix": "Nach Auswertung der Berichte auf „p=quarantine“ oder „p=reject“ umstellen."
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "Datenschutz (DSGVO)",
+      "results": [
+        {
+          "id": "gfonts",
+          "cat": "privacy",
+          "title": "Google Fonts lokal eingebunden",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Im Quellcode wurden keine extern geladenen Google Fonts gefunden.",
+          "fix": ""
+        },
+        {
+          "id": "tracking",
+          "cat": "privacy",
+          "title": "Tracking erst nach Einwilligung",
+          "status": "info",
+          "sev": 1,
+          "detail": "Gefunden: Google Analytics. Cookie-Banner (Klaro) erkannt – ob Tracker wirklich erst nach Zustimmung laden, prüfen wir im Detailbericht.",
+          "fix": ""
+        },
+        {
+          "id": "impressum",
+          "cat": "privacy",
+          "title": "Impressum vorhanden",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Ein Impressum-Link wurde gefunden.",
+          "fix": ""
+        },
+        {
+          "id": "datenschutz",
+          "cat": "privacy",
+          "title": "Datenschutzerklärung vorhanden",
+          "status": "pass",
+          "sev": 2,
+          "detail": "Ein Link zur Datenschutzerklärung wurde gefunden.",
+          "fix": ""
+        }
+      ]
+    }
+  ],
+  "locked": [
+    "Plugins & Themes auf bekannte Sicherheitslücken (CVE-Datenbank)",
+    "Öffentlich erreichbare Backups, .git- und .env-Dateien",
+    "Offene Ports und Dienste (FTP, Datenbank, SSH)",
+    "Schutz des Admin-Logins gegen Passwort-Raten",
+    "Alte Verschlüsselungsverfahren (TLS 1.0/1.1) am Server",
+    "Persönliche Experten-Prüfung als Video",
+    "Malware- und Blacklist-Prüfung"
+  ]
+}
