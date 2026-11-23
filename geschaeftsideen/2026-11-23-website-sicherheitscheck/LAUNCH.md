@@ -93,3 +93,13 @@ Realistischer Aufwand: 4–8 h, also ca. 120–250 €/h.
 - Begrenzung und Zwischenspeicher liegen im Arbeitsspeicher. Für einen einzelnen Server reicht das.
 - Es gibt keinen Admin-Bereich. Anfragen landen in einer Datei bzw. per Webhook in deinem Postfach.
 - Es gibt keinen eigenen PDF-Generator. Das PDF entsteht über „Drucken → Als PDF speichern“ im Browser.
+
+## Projekt pro Kunde (`projekt.js`)
+```bash
+node projekt.js neu "Firma GmbH" firma.at        # Ordner kunden/JJJJ-NNN-firma-gmbh/ mit Scan, fixplan.md, angebot.md, video-skript.md, auftrag-checkliste.md
+# … Fixes umsetzen, echte Updates in notizen.json → manuell_erledigt eintragen …
+node projekt.js nachher kunden/2026-001-firma-gmbh # scan-nachher.json, bericht.md, bericht.html (als PDF drucken)
+```
+- **Ehrliche Note:** Versteckte Versionsnummern (PHP, WordPress) gelten erst als behoben, wenn das Update in `notizen.json` bestätigt ist.
+- Echte Kundenordner sind per `.gitignore` vom Git ausgeschlossen. **Zugangsdaten nie in den Ordner legen.**
+- Beispiel komplett durchgespielt: `kunden/2026-001-tischlerei-huber-gmbh/` (fiktiv), Demo-Server: `demo/demo-handwerk/` (`setup.sh server-vorher` bzw. `setup.sh server`, dann mit `--demo --dns … --ca …` scannen).

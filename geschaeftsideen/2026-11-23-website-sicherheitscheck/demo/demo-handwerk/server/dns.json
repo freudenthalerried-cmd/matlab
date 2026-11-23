@@ -1,0 +1,5 @@
+{
+  "_hinweis": "Simulierte DNS-Zone (TXT) fuer die fiktive demo-handwerk.at. Fix 2026-001: SPF + DMARC Stufe 1.",
+  "demo-handwerk.at": ["google-site-verification=demo", "v=spf1 include:spf.protection.outlook.com -all"],
+  "_dmarc.demo-handwerk.at": ["v=DMARC1; p=none; rua=mailto:dmarc@demo-handwerk.at; adkim=s; aspf=s"]
+}

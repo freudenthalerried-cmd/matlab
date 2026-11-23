@@ -1,0 +1,13 @@
+{
+  "nr": "2026-001",
+  "kunde": "Tischlerei Huber GmbH",
+  "domain": "demo-handwerk.at",
+  "ordner": "2026-001-tischlerei-huber-gmbh",
+  "angelegt": "2026-11-23T17:34:30.836Z",
+  "flags": {
+    "demo": true,
+    "dns": "demo/demo-handwerk/server/dns.json",
+    "ca": "demo/demo-handwerk/tls/ca.pem",
+    "wp-latest": "6.8.3"
+  }
+}

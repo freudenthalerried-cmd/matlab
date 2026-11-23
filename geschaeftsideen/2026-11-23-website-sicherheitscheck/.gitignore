@@ -1,3 +1,6 @@
 data/
 .env
 node_modules/
+# Echte Kundenordner nicht ins Git (Kundendaten). Nur der fiktive Beispielfall ist versioniert.
+kunden/*
+!kunden/2026-001-tischlerei-huber-gmbh/
