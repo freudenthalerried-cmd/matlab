@@ -1,0 +1,1705 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sicherstart Bau · Sicherheitsunterweisung für die Baustelle</title>
+<meta name="description" content="Sicherheitsunterweisung für Baufirmen in Österreich: Kurzfilme in 4 Sprachen, Zwischenfragen, digitale Unterschrift, BauKG-Check und Nachweis für jede Kontrolle.">
+<meta property="og:title" content="Sicherstart Bau · Sicherheitsunterweisung für die Baustelle">
+<meta property="og:description" content="Sicherheitsunterweisung für Baufirmen in Österreich: Kurzfilme in 4 Sprachen, Zwischenfragen, digitale Unterschrift, BauKG-Check und Nachweis für jede Kontrolle.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_AT">
+<meta name="theme-color" content="#F6A800">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2L31 29H1z' fill='%23F6A800'/%3E%3Cpath d='M16 11v9' stroke='%23141A20' stroke-width='3'/%3E%3Ccircle cx='16' cy='24.5' r='1.8' fill='%23141A20'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>body{margin:0}img{max-width:100%}</style>
+<script src="config.js"></script>
+</head>
+<body>
+<style>
+/* Layout: Baustellen-Signalwelt – Betongrau, Signalgelb (RAL 1003) als einziges Akzentsignal, ein Warnstreifen oben; Landing + App in einer 1120px-Spalte */
+:root{
+  --bg:#ECEEED; --surface:#FFFFFF; --ink:#141A20; --muted:#56616B; --line:#D2D7DA;
+  --signal:#F6A800; --on-signal:#141A20; --stripe:#141A20;
+  --ok:#1D7148; --ok-bg:#DDF0E5; --warn:#8F5A00; --warn-bg:#FCEBC7; --bad:#A8231B; --bad-bg:#F8DEDB;
+  --shadow:0 1px 2px rgba(20,26,32,.06),0 8px 24px rgba(20,26,32,.06);
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11161B; --surface:#1A2128; --ink:#E8ECEF; --muted:#9BA7B2; --line:#2D363F;
+  --signal:#F9B320; --on-signal:#141A20; --ok:#5BC994; --ok-bg:#163327; --warn:#F2B04E; --warn-bg:#3A2C12; --bad:#F37C70; --bad-bg:#3D1C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161B; --surface:#1A2128; --ink:#E8ECEF; --muted:#9BA7B2; --line:#2D363F;
+  --signal:#F9B320; --on-signal:#141A20; --ok:#5BC994; --ok-bg:#163327; --warn:#F2B04E; --warn-bg:#3A2C12; --bad:#F37C70; --bad-bg:#3D1C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.05;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(2.6rem,6vw,4.4rem);text-transform:uppercase}
+h2{font-size:clamp(1.9rem,3.6vw,2.6rem);text-transform:uppercase}
+h3{font-size:1.35rem}
+p{margin:0}
+a{color:inherit}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.stripe{height:6px;background:repeating-linear-gradient(-45deg,var(--signal) 0 10px,var(--stripe) 10px 20px)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap;padding-block:6px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-display);font-size:1.45rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.logo i{width:26px;height:26px;background:var(--signal);display:grid;place-items:center;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.logo i::after{content:"!";font-style:normal;font-size:.95rem;color:var(--on-signal);margin-top:6px}
+.nav nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav nav a{text-decoration:none;padding:8px 12px;border-radius:6px;font-weight:500}
+.nav nav a[aria-current="page"]{background:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 1rem var(--f-body);padding:12px 18px;border-radius:8px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;min-height:46px}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:var(--on-signal)}
+.btn.small{padding:7px 12px;min-height:36px;font-size:.92rem}
+.btn.ghost{border-color:var(--line)}
+.btn.danger{color:var(--bad);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+#sec-preise,#sec-demo{scroll-margin-top:72px}
+section.band{padding-block:clamp(48px,8vw,88px)}
+section.band+section.band{border-top:1px solid var(--line)}
+/* Hero */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:48px;align-items:center}
+.hero>*{min-width:0}
+.hero .lead{font-size:1.2rem;max-width:58ch;margin-top:20px;color:var(--muted)}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.law{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.law span{font-family:var(--f-mono);font-size:.8rem;border:1px solid var(--line);border-radius:4px;padding:3px 8px;background:var(--surface)}
+.cert{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.cert .head{padding:18px 20px;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:12px;align-items:start}
+.cert dl{margin:0;padding:12px 20px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:.95rem}
+.cert dt{color:var(--muted)}
+.cert dd{margin:0;font-weight:500}
+.cert .sig{padding:8px 20px 18px;display:flex;justify-content:space-between;align-items:end;gap:12px}
+.cert svg{width:150px;height:50px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.76rem;font-weight:500;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.neutral{background:var(--bg);color:var(--muted)}
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:36px;counter-reset:s}
+.steps li{list-style:none;border-top:3px solid var(--ink);padding-top:14px;min-width:0}
+.steps li::before{counter-increment:s;content:"Schritt " counter(s);display:block;font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.steps p{color:var(--muted);margin-top:6px;font-size:.98rem}
+.steps{padding:0}
+.note{margin-top:36px;display:grid;grid-template-columns:auto 1fr;gap:18px;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--signal);padding:20px 22px;border-radius:8px}
+.note b{font-family:var(--f-display);font-size:1.25rem;text-transform:uppercase;display:block;margin-bottom:4px}
+.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:36px}
+.feat div{background:var(--surface);padding:20px;min-width:0}
+.feat h3{font-size:1.2rem;margin-bottom:6px}
+.feat p{color:var(--muted);font-size:.95rem}
+/* Pricing */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px;align-items:stretch}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.plan.rec{border:2px solid var(--signal);box-shadow:var(--shadow)}
+.plan .price{font-family:var(--f-display);font-size:3rem;font-weight:700;line-height:1}
+.plan .per{font-size:.9rem;color:var(--muted)}
+.plan ul{margin:0;padding-left:20px;display:grid;gap:6px;font-size:.97rem}
+.plan .tag{align-self:flex-start}
+.extras{margin-top:24px;display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.plan .plus{font-weight:600;border-top:1px dashed var(--line);padding-top:10px}
+.extras div{border-top:1px solid var(--line);padding-top:12px}
+.calc{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.calc label{font-weight:600}
+.calc input[type=range]{flex:1;min-width:180px;accent-color:var(--signal)}
+.calc output{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);font-size:.92rem}
+footer .wrap{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}
+/* App */
+.apphead{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;padding-block:32px 8px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:120px}
+.stat b{display:block;font-family:var(--f-display);font-size:1.9rem;line-height:1}
+.stat span{font-size:.85rem;color:var(--muted)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:24px;padding-block:20px 56px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.panel>header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel>header h3{font-size:1.25rem;text-transform:uppercase}
+.site{padding:16px 18px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.site:last-child{border-bottom:0}
+.site .meta{font-size:.92rem;color:var(--muted)}
+.site .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.empty{padding:28px 18px;display:grid;gap:12px;justify-items:start}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.94rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+th{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td .sub{display:block;color:var(--muted);font-size:.84rem}
+select,input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:84px;resize:vertical}
+.mode{font-size:.85rem}
+/* Modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,14,18,.55);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 24px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) max(16px,env(safe-area-inset-left,0px))}
+.modal .box{background:var(--surface);border-radius:12px;max-width:640px;width:100%;box-shadow:var(--shadow);overflow:hidden}
+.modal .box>header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal .body{padding:20px;display:grid;gap:14px}
+.modal footer{border:0;padding:14px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--line)}
+.field{display:grid;gap:6px}
+.field>span{font-weight:600;font-size:.95rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.checks label,.chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.checks input,.chk input{width:20px;height:20px;accent-color:var(--signal);margin-top:3px;flex:none}
+#qr-box{display:grid;place-items:center;background:#fff;padding:16px;border-radius:8px;justify-self:center}
+.doc dl{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;margin:0}
+.doc dt{color:var(--muted)}
+.doc dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.doc .sigimg{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px;max-width:300px}
+/* Flow */
+.flow{max-width:720px;margin:0 auto;padding-block:24px 64px}
+.fhead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:14px 0 22px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--signal);transition:width .25s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:clamp(18px,4vw,30px);display:grid;gap:18px}
+.card h2{font-size:clamp(1.8rem,5vw,2.4rem)}
+.langs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.langs button{font:600 1.15rem var(--f-body);padding:20px 16px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;text-align:left;min-height:72px}
+.langs button small{display:block;font:400 .82rem var(--f-mono);color:var(--muted);margin-top:4px}
+.langs button:hover{border-color:var(--signal)}
+.rules{margin:0;padding:0;display:grid;gap:14px;list-style:none}
+.rules li{display:grid;grid-template-columns:34px 1fr;gap:12px;font-size:1.12rem;align-items:start}
+.rules li::before{content:"";width:28px;height:28px;margin-top:2px;background:var(--signal);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.infos{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0}
+.infos dt{color:var(--muted)}
+.infos dd{margin:0;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.nums{display:flex;gap:8px;flex-wrap:wrap}
+.nums span{font-family:var(--f-mono);background:var(--bad-bg);color:var(--bad);padding:4px 10px;border-radius:6px;font-weight:500}
+.q{display:grid;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0}
+.q b{font-size:1.08rem}
+.q label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;cursor:pointer}
+.q label:has(input:checked){border-color:var(--signal);background:var(--bg)}
+.q input{accent-color:var(--signal);width:18px;height:18px;flex:none}
+.q.wrong label:has(input:checked){border-color:var(--bad);background:var(--bad-bg)}
+.q .err{color:var(--bad);font-size:.92rem}
+.sigpad{position:relative;border:1.5px dashed var(--muted);border-radius:10px;background:#fff;touch-action:none}
+.sigpad canvas{display:block;width:100%;height:170px;border-radius:10px}
+.sigpad span{position:absolute;left:14px;bottom:10px;font-size:.85rem;color:#6b7680;pointer-events:none}
+.fnav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px}
+.done{text-align:center;justify-items:center}
+.done .ok{width:84px;height:84px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center;font-size:2.6rem;font-weight:700}
+.listen{justify-self:start}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:8px;z-index:60;max-width:calc(100% - 32px);font-weight:500}
+/* Bestellung, Rechtliches, Cookie-Banner */
+input[type=email],input[type=tel]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.nav .cta{margin-left:6px}
+.order{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start;padding-block:12px 56px}
+.ofm{padding:18px;display:grid;gap:16px}
+.osum{padding:18px;display:grid;gap:8px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}
+.planpick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.planpick label{position:relative;border:1.5px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;display:grid;gap:2px;background:var(--bg)}
+.planpick label:has(input:checked){border-color:var(--signal);box-shadow:inset 0 0 0 2px var(--signal)}
+.planpick label:has(input:focus-visible){outline:3px solid var(--signal);outline-offset:2px}
+.planpick input{position:absolute;opacity:0;pointer-events:none}
+.planpick b{font-family:var(--f-display);font-size:1.3rem;text-transform:uppercase}
+.planpick span{font-size:.88rem;color:var(--muted)}
+.pays{display:grid;gap:8px}
+.pays label{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:12px;cursor:pointer}
+.pays label:has(input:checked){border-color:var(--signal)}
+.pays input{accent-color:var(--signal);width:18px;height:18px;margin-top:3px;flex:none}
+.sumrow{display:flex;justify-content:space-between;gap:12px;font-size:.95rem}
+.sumrow span:last-child{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sumrow.total{font-weight:700;font-size:1.1rem;border-top:1px solid var(--line);padding-top:10px}
+.sumh{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.small{font-size:.86rem}
+.bank{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--bg);border-radius:10px;padding:16px}
+.bank .qr{background:#fff;padding:8px;border-radius:6px;width:176px}
+.bank .qr img,.bank .qr canvas{display:block;width:160px!important;height:160px!important}
+.legal{max-width:760px;padding-block:32px 64px;display:grid;gap:12px}
+.legal h3{margin-top:14px;text-transform:uppercase}
+.legal ol{margin:0;padding-left:20px;display:grid;gap:8px}
+.ph{background:var(--warn-bg);color:var(--warn);padding:0 4px;border-radius:3px}
+.lead-form{display:grid;gap:14px;max-width:760px;margin-top:28px}
+#cookie{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--surface);border-top:3px solid var(--signal);box-shadow:var(--shadow);padding-block:16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+#cookie .wrap{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#cookie p{max-width:70ch;font-size:.95rem}
+.footlinks{display:flex;gap:14px;flex-wrap:wrap;width:100%}
+.footlinks a,.footlinks button{color:inherit;background:none;border:0;padding:0;font:inherit;text-decoration:underline;cursor:pointer}
+@media (max-width:900px){.order{grid-template-columns:1fr}.osum{position:static}}
+@media (max-width:560px){.planpick{grid-template-columns:1fr}.bank{grid-template-columns:1fr}.nav .cta{display:none}}
+/* Film, Quiz, Unterlagen */
+.film{display:grid;gap:10px}
+.stage{position:relative;border-radius:10px;overflow:hidden;background:#D9E5EC;aspect-ratio:16/9;max-width:100%}
+.stage svg{display:block;width:100%;height:100%}
+.ov{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,26,32,.38);padding:10px}
+.bigplay{font:700 1.15rem var(--f-body);padding:14px 24px;border-radius:999px;border:0;background:var(--signal);color:var(--on-signal);cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.stopq{background:var(--surface);color:var(--ink);border-radius:10px;padding:12px 14px;display:grid;gap:8px;max-width:94%;text-align:center;box-shadow:var(--shadow)}
+.stopq b{font-family:var(--f-display);font-size:1.45rem;text-transform:uppercase;line-height:1.1}
+.stopq .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.msg{min-height:1.2em;margin:0}.msg.ok,.fb.ok{color:var(--ok);font-weight:600}.msg.bad,.fb.bad{color:var(--bad);font-weight:600}
+.ov.clear{background:transparent;place-items:start;pointer-events:none}
+.stopbadge{background:#C62828;color:#fff;font:700 1.15rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:4px 12px;border-radius:6px;animation:blink 1s steps(2,start) 3}
+.cap .stopq{box-shadow:none;padding:0;max-width:none;background:transparent;justify-items:center}
+.cap{font-size:1.12rem;font-weight:500;min-height:3.3em;background:var(--bg);border-radius:8px;padding:10px 14px;margin:0}
+.fctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dots{display:flex;gap:6px;flex:1;min-width:120px}
+.dots i{height:6px;flex:1;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--signal)}.dots i.seen{background:var(--muted)}
+.score{font-family:var(--f-mono);font-weight:500;background:var(--warn-bg);color:var(--warn);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.merke{border-left:6px solid var(--signal);padding-left:14px;display:grid;gap:12px}
+.qblock{display:grid;gap:10px}
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pick{padding:0;border:3px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:#D9E5EC;display:block}
+.pick svg{display:block;width:100%;height:auto}
+.pick.right{border-color:var(--ok)}.pick.wrongp{border-color:var(--bad);animation:shake .4s}
+.opts{display:grid;gap:8px}
+.opt{font:500 1.05rem var(--f-body);text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);cursor:pointer}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}.opt.wrongp{border-color:var(--bad);background:var(--bad-bg);animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.miss{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:12px 14px}
+.miss.good{background:var(--ok-bg);color:var(--ok)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.fs{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px;margin:0;min-width:0}
+.fs legend{font-family:var(--f-display);font-weight:700;text-transform:uppercase;padding:0 6px;font-size:1.1rem}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.grid4 .field>span{font-size:.85rem}
+input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.baukg-res{display:grid;gap:6px;background:var(--bg);border-radius:8px;padding:12px}
+.baukg-res div{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:20px;padding-block:24px 20px}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.dcard .thumb{background:#D9E5EC}
+.dcard .thumb svg{display:block;width:100%;height:auto}
+.dcard .in{padding:16px 18px;display:grid;gap:10px}
+.dcard ul{margin:0;padding-left:18px;font-size:.95rem;display:grid;gap:4px}
+.dcard dl{margin:0;display:grid;gap:2px;font-size:.93rem}
+.dcard dt{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.dcard dd{margin:0}
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kg div{background:var(--surface);padding:16px;min-width:0}
+.kg b{font-family:var(--f-display);text-transform:uppercase;font-size:1.15rem;display:block;margin-bottom:4px}
+.kg p{font-size:.93rem;color:var(--muted)}
+video.sitevid{width:100%;border-radius:10px;background:#000;max-height:360px}
+/* Animationen in den Filmszenen */
+.walk{animation:walk 4s ease-in-out infinite alternate}
+@keyframes walk{from{transform:translateX(-26px)}to{transform:translateX(26px)}}
+.walkto{animation:walkto 3.2s ease-out both}
+@keyframes walkto{from{transform:translateX(-90px)}to{transform:none}}
+.swing{transform-box:fill-box;transform-origin:50% 0;animation:swing 2.4s ease-in-out infinite alternate}
+@keyframes swing{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .5s 1.2s both cubic-bezier(.3,1.6,.5,1)}
+.pop.d2{animation-delay:1.9s}.pop.d3{animation-delay:2.6s}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.blink{animation:blink 1s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.2}}
+.puff circle{transform-box:fill-box;transform-origin:center;animation:puff 1.8s ease-out infinite}
+.puff circle:nth-child(2){animation-delay:.45s}.puff circle:nth-child(3){animation-delay:.9s}.puff circle:nth-child(4){animation-delay:1.35s}
+@keyframes puff{from{transform:scale(.3);opacity:.95}to{transform:scale(1.7);opacity:0}}
+.wave path{animation:wave 1.2s ease-out infinite}.wave path:nth-child(2){animation-delay:.3s}.wave path:nth-child(3){animation-delay:.6s}
+@keyframes wave{from{opacity:1}to{opacity:0}}
+.drop circle{animation:drop .9s linear infinite}.drop circle:nth-child(odd){animation-delay:.45s}
+@keyframes drop{from{transform:translateY(-6px);opacity:1}to{transform:translateY(14px);opacity:0}}
+@media (max-width:900px){.kg{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.kg,.extras{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}.stopq b{font-size:1.15rem}.stopq .btn{min-height:40px;padding:8px 12px}}
+
+@media (max-width:900px){
+  .hero,.cols{grid-template-columns:1fr}
+  .steps,.feat{grid-template-columns:1fr 1fr}
+  .prices,.extras{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .steps,.feat,.grid2,.checks,.langs{grid-template-columns:1fr}
+  .note{grid-template-columns:1fr}
+  .nav nav{margin-left:0;width:100%;gap:0}
+  .nav nav a{padding:6px 8px;font-size:.95rem}
+  .nav{gap:4px;min-height:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="top">
+  <div class="stripe"></div>
+  <div class="wrap nav">
+    <a class="logo" href="#start"><i></i>Sicherstart Bau</a>
+    <nav aria-label="Hauptmenü">
+      <a href="#start" data-nav="start">Produkt</a>
+      <a href="#preise" data-nav="preise">Preise</a>
+      <a href="#unterlagen" data-nav="unterlagen">Unterlagen</a>
+      <a href="#app" data-nav="app">Demo-App</a>
+      <a class="btn small primary cta" href="#bestellen">Bestellen</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- LANDING -->
+<div id="v-start">
+  <section class="band"><div class="wrap hero">
+    <div>
+      <p class="eyebrow">Sicherheitsunterweisung für Baufirmen in Österreich</p>
+      <h1 style="margin-top:14px">Unterwiesen vor dem ersten Handgriff.</h1>
+      <p class="lead">Der Polier erklärt, Sicherstart macht es kurzweilig: Kurzfilme in der Sprache des Arbeiters, Stopp-Fragen mitten im Film, Bild-Quiz nach jedem Thema und ein Nachweis, der zeigt, was wirklich verstanden wurde.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#bestellen">Jetzt bestellen</a>
+        <a class="btn" href="#app">Demo ausprobieren</a>
+        <a class="btn ghost" href="#demo">Demo-Termin</a>
+      </div>
+      <div class="law"><span>§ 14 ASchG</span><span>§ 154 BauV</span><span>BauKG</span><span>DSGVO · EU-Hosting</span></div>
+    </div>
+    <div class="cert" aria-label="Beispiel eines Nachweises">
+      <div class="head">
+        <div><p class="eyebrow">Nachweis · Beispiel</p><h3 style="margin-top:4px">Sicherheitsunterweisung Baustelle</h3></div>
+        <span class="pill ok">gültig</span>
+      </div>
+      <dl>
+        <dt>Baustelle</dt><dd>Wohnhausanlage Am Mühlbach</dd>
+        <dt>Arbeiter</dt><dd>J. Kovač · Fa. Beispielbau</dd>
+        <dt>Sprache</dt><dd>Bosanski / Hrvatski / Srpski</dd>
+        <dt>Zwischenfragen</dt><dd>20 / 21 beim 1. Versuch</dd>
+        <dt>Nachbesprochen</dt><dd>Absturz, Gerüst und Leitern</dd>
+        <dt>Polier</dt><dd>mündlich erläutert ✓</dd>
+        <dt>Gültig bis</dt><dd class="mono">23.11.2027</dd>
+      </dl>
+      <div class="sig">
+        <svg viewBox="0 0 150 50" aria-hidden="true"><path d="M6 36c10-22 18-26 20-14s-4 18 2 10 12-24 18-18-6 22 2 16 10-14 16-12 4 10 12 6 14-10 22-8 10 6 20 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="mono muted" style="font-size:.8rem">Nr. R7K2Q9 · 23.11.2026</span>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="band"><div class="wrap">
+    <p class="eyebrow">Ablauf</p>
+    <h2 style="margin-top:10px">So läuft eine Unterweisung</h2>
+    <ol class="steps">
+      <li><h3>Baustelle anlegen</h3><p>Adresse, Sammelplatz, Ersthelfer, Polier, Baustellenkoordinator. Der BauKG-Check zeigt, ob Vorankündigung und SiGe-Plan nötig sind.</p></li>
+      <li><h3>Kurzfilm pro Thema</h3><p>Am Tablet oder per QR-Code. Jedes Thema startet mit einem animierten Kurzfilm in der Sprache des Arbeiters. Mittendrin hält er an: „Stopp! Ist das sicher?“</p></li>
+      <li><h3>Zwischenfragen</h3><p>Nach jedem Thema ein Bild-Quiz und eine Frage. Punkte motivieren. Der Polier sieht genau, welches Thema nicht sofort verstanden wurde, und bespricht es nach.</p></li>
+      <li><h3>Nachweis und Fristen</h3><p>Unterschrift, Bestätigung durch den Polier, Nachweis mit Verständnis-Auswertung im Archiv. Vor Ablauf kommt eine Erinnerung.</p></li>
+    </ol>
+    <div class="note">
+      <div><b>Warum mit Polier?</b></div>
+      <p>Das Zentral-Arbeitsinspektorat sieht eine rein elektronische Unterweisung nur als Ergänzung (Erlass 2010). Sicherstart ersetzt den Polier deshalb nicht. Es macht seine Unterweisung verständlich, prüfbar und lückenlos dokumentiert, auch für Arbeiter, die kaum Deutsch sprechen.</p>
+    </div>
+    <div class="feat">
+      <div><h3>Kurzfilme</h3><p>7 animierte Filme zu je etwa 20 Sekunden, mit Untertitel und Sprecher in 4 Sprachen.</p></div>
+      <div><h3>Stopp-Fragen</h3><p>Der Film hält an und fragt: Ist das sicher? Wer nicht aufpasst, merkt es sofort.</p></div>
+      <div><h3>Bild-Quiz</h3><p>Nach jedem Thema: Welches Bild zeigt sicheres Arbeiten? Dazu eine kurze Frage mit Punkten.</p></div>
+      <div><h3>Verständnis sichtbar</h3><p>Der Polier sieht pro Person, welche Themen beim ersten Versuch falsch waren, und bespricht genau die nach.</p></div>
+      <div><h3>BauKG eingebaut</h3><p>Eigenes Thema für Arbeiter, Koordinator und SiGe-Plan pro Baustelle, Prüfung von Vorankündigung und SiGe-Plan-Pflicht.</p></div>
+      <div><h3>Unterweisungsmappe</h3><p>Leitfaden für Poliere als PDF, Aushang mit QR-Code pro Baustelle, Unterschriftenliste als Papier-Reserve.</p></div>
+      <div><h3>4 Sprachen und Vorlesen</h3><p>Deutsch, Bosnisch/Kroatisch/Serbisch, Rumänisch, Ungarisch. Jede Seite wird auf Knopfdruck vorgelesen.</p></div>
+      <div><h3>Eigenes Baustellenvideo</h3><p>Der Polier filmt einen Rundgang mit dem Handy, die App zeigt ihn bei den Baustellen-Infos.</p></div>
+    </div>
+  </div></section>
+
+  <section class="band" id="sec-preise"><div class="wrap">
+    <p class="eyebrow">Preise</p>
+    <h2 style="margin-top:10px">Bezahlt wird pro Mitarbeiter</h2>
+    <p class="muted" style="margin-top:12px;max-width:64ch">Jedes Paket besteht aus einer monatlichen Grundpauschale pro Betrieb und einem Betrag pro aktivem Mitarbeiter. Aktiv ist, wer im Monat auf einer Baustelle unterwiesen oder geführt wird. Die Grundpauschale deckt Plattform, Aktualisierung der Vorlagen bei Rechtsänderungen, Support und Hosting in der EU. Alle Preise exkl. USt.</p>
+    <div class="prices">
+      <div class="plan">
+        <h3>Basis</h3>
+        <div><span class="price">49 €</span> <span class="per">Grundpauschale / Monat</span></div>
+        <p class="plus">+ 6 € pro Mitarbeiter / Monat</p>
+        <ul><li>7 Bau-Themen inkl. BauKG</li><li>Kurzfilme und Zwischenfragen</li><li>4 Sprachen</li><li>QR-Code und Aushang pro Baustelle</li><li>PDF-Nachweis und Archiv</li></ul>
+        <a class="btn " href="#bestellen" data-plan="basis" style="margin-top:auto">Basis bestellen</a>
+      </div>
+      <div class="plan rec">
+        <span class="pill warn tag">Empfohlen</span>
+        <h3>Profi</h3>
+        <div><span class="price">99 €</span> <span class="per">Grundpauschale / Monat</span></div>
+        <p class="plus">+ 9 € pro Mitarbeiter / Monat</p>
+        <ul><li>Alles aus Basis</li><li>12+ Sprachen mit geprüfter Übersetzung</li><li>Vorlesefunktion</li><li>Polier-Modus mit Verständnis-Auswertung</li><li>Eigene Inhalte, Fotos und Baustellenvideos</li><li>Unterweisungsmappe und Fristen-Erinnerung</li></ul>
+        <a class="btn primary" href="#bestellen" data-plan="profi" style="margin-top:auto">Profi bestellen</a>
+      </div>
+      <div class="plan">
+        <h3>Generalunternehmer</h3>
+        <div><span class="price">199 €</span> <span class="per">Grundpauschale / Monat</span></div>
+        <p class="plus">+ 12 € pro Mitarbeiter / Monat</p>
+        <ul><li>Alles aus Profi</li><li>BauKG-Check pro Baustelle</li><li>Subfirmen-Portal</li><li>Export für Baustellenkoordination und Arbeitsinspektorat</li><li>Persönlicher Ansprechpartner</li></ul>
+        <a class="btn " href="#bestellen" data-plan="gu" style="margin-top:auto">GU bestellen</a>
+      </div>
+    </div>
+    <div class="extras">
+      <div><b>Einrichtung</b><p class="muted">490 € einmalig, inkl. Import der Mitarbeiter und Einschulung der Poliere.</p></div>
+      <div><b>Unterweisung erstellen lassen</b><p class="muted">ab 390 € pro Thema, abgestimmt mit Ihrer Sicherheitsfachkraft.</p></div>
+      <div><b>Baustellenfilm</b><p class="muted">Dreh und Schnitt auf Ihrer Baustelle, ab 890 €.</p></div>
+      <div><b>Jahreszahlung</b><p class="muted">15 % günstiger bei jährlicher Vorauszahlung.</p></div>
+    </div>
+    <div class="calc">
+      <label for="calc-n">Ihre Mitarbeiter</label>
+      <input type="range" id="calc-n" min="5" max="200" step="5" value="25">
+      <output id="calc-out" for="calc-n"></output>
+    </div>
+    <p class="muted" style="margin-top:12px;font-size:.92rem">Zum Vergleich: Ein Präsenzseminar zur Sicherheitsunterweisung kostet ab etwa 190 € pro Person, E-Learning-Kurse 14 bis 35 € pro Person und Kurs.</p>
+  </div></section>
+  <section class="band" id="sec-demo"><div class="wrap">
+    <p class="eyebrow">Demo-Termin</p>
+    <h2 style="margin-top:10px">Lieber zuerst persönlich ansehen?</h2>
+    <p class="muted" style="margin-top:12px;max-width:62ch">Wir zeigen Ihnen Sicherstart Bau in 20 Minuten online oder direkt auf Ihrer Baustelle. Unverbindlich.</p>
+    <form class="lead-form" id="f-lead" novalidate>
+      <div class="grid2">
+        <label class="field"><span>Name *</span><input type="text" id="l-name" autocomplete="name"></label>
+        <label class="field"><span>Firma *</span><input type="text" id="l-firma" autocomplete="organization"></label>
+        <label class="field"><span>E-Mail *</span><input type="email" id="l-email" autocomplete="email"></label>
+        <label class="field"><span>Telefon</span><input type="tel" id="l-tel" autocomplete="tel"></label>
+      </div>
+      <label class="field"><span>Nachricht</span><textarea id="l-msg" placeholder="z. B. Anzahl Mitarbeiter, Sprachen, Wunschtermin"></textarea></label>
+      <input type="text" id="l-bot" hidden tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="chk"><input type="checkbox" id="l-ok"> <span>Meine Angaben dürfen zur Bearbeitung der Anfrage verwendet werden (<a href="#datenschutz">Datenschutz</a>).</span></label>
+      <p class="fb" id="l-out" aria-live="polite"></p>
+      <button class="btn primary" type="submit" style="justify-self:start">Demo anfragen</button>
+    </form>
+  </div></section>
+</div>
+
+<!-- APP -->
+<div id="v-app" hidden>
+  <div class="wrap">
+    <div class="apphead">
+      <div>
+        <p class="eyebrow">Demo-App · Betrieb</p>
+        <h2 style="margin-top:8px">Baustellen und Nachweise</h2>
+        <p class="mode muted" id="mode" style="margin-top:8px"></p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost small" type="button" id="btn-export">Daten sichern</button><label class="btn ghost small" for="imp-file">Daten laden</label><input type="file" id="imp-file" accept="application/json,.json" hidden><button class="btn primary" id="btn-new" type="button">+ Neue Baustelle</button></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="cols">
+      <div class="panel">
+        <header><h3>Baustellen</h3></header>
+        <div id="sites"></div>
+      </div>
+      <div class="panel">
+        <header><h3>Nachweise</h3><select id="rec-filter" aria-label="Nach Baustelle filtern" style="width:auto;min-width:200px"><option value="">Alle Baustellen</option></select></header>
+        <div class="tablewrap" id="recs"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BESTELLEN -->
+<div id="v-order" hidden><div class="wrap">
+  <div class="apphead"><div>
+    <p class="eyebrow">Bestellung · nur für Unternehmen</p>
+    <h2 style="margin-top:8px">Sicherstart Bau bestellen</h2>
+    <p class="muted" style="margin-top:8px">Monatlich kündbar. Alle Preise zzgl. USt.</p>
+  </div></div>
+  <div class="order" id="order-wrap">
+    <form class="panel ofm" id="f-order" novalidate>
+      <fieldset class="fs"><legend>1. Paket</legend>
+        <div class="planpick">
+          <label><input type="radio" name="plan" id="o-basis" value="basis"><b>Basis</b><span>49 € + 6 € pro Mitarbeiter</span></label>
+          <label><input type="radio" name="plan" id="o-profi" value="profi" checked><b>Profi</b><span>99 € + 9 € pro Mitarbeiter</span></label>
+          <label><input type="radio" name="plan" id="o-gu" value="gu"><b>GU</b><span>199 € + 12 € pro Mitarbeiter</span></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>Aktive Mitarbeiter</span><input type="number" id="o-n" min="1" max="5000" value="25"></label>
+          <label class="field"><span>Zahlweise</span><select id="o-int"><option value="monat">monatlich</option><option value="jahr">jährlich, 15 % günstiger</option></select></label>
+        </div>
+      </fieldset>
+      <fieldset class="fs"><legend>2. Zusatzleistungen</legend>
+        <p class="muted small">Einrichtung und Einschulung der Poliere sind mit 490 € einmalig immer dabei.</p>
+        <div class="grid2">
+          <label class="field"><span>Eigene Unterweisungsthemen (je 390 €)</span><input type="number" id="o-themen" min="0" max="50" value="0"></label>
+          <label class="field"><span>Baustellenfilm vor Ort (je 890 €)</span><input type="number" id="o-film" min="0" max="20" value="0"></label>
+        </div>
+      </fieldset>
+      <fieldset class="fs"><legend>3. Firmendaten</legend>
+        <div class="grid2">
+          <label class="field"><span>Firma *</span><input type="text" id="o-firma" autocomplete="organization"></label>
+          <label class="field"><span>UID-Nummer</span><input type="text" id="o-uid" placeholder="ATU12345678"></label>
+          <label class="field"><span>Ansprechperson *</span><input type="text" id="o-name" autocomplete="name"></label>
+          <label class="field"><span>E-Mail für die Rechnung *</span><input type="email" id="o-email" autocomplete="email"></label>
+          <label class="field"><span>Telefon</span><input type="tel" id="o-tel" autocomplete="tel"></label>
+          <label class="field"><span>Land</span><select id="o-land"><option>Österreich</option><option>Deutschland</option><option>Schweiz</option></select></label>
+          <label class="field"><span>Straße und Hausnummer *</span><input type="text" id="o-str" autocomplete="street-address"></label>
+          <label class="field"><span>PLZ und Ort *</span><input type="text" id="o-ort" autocomplete="address-level2"></label>
+        </div>
+      </fieldset>
+      <fieldset class="fs"><legend>4. Zahlung</legend>
+        <div class="pays">
+          <label><input type="radio" name="pay" id="o-pay-ueb" value="ueberweisung" checked><span><b>Überweisung auf Rechnung</b><br><small class="muted">Zahlbar in 14 Tagen, mit QR-Code für Ihre Banking-App.</small></span></label>
+          <label id="o-pay-online-l" hidden><input type="radio" name="pay" id="o-pay-online" value="online"><span><b>Online bezahlen</b><br><small class="muted">Kreditkarte oder SEPA-Lastschrift über Stripe. Laufende Beträge werden automatisch abgebucht.</small></span></label>
+        </div>
+      </fieldset>
+      <input type="text" id="o-bot" hidden tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="chk"><input type="checkbox" id="o-agb"> <span>Ich bestelle als Unternehmer und akzeptiere die <a href="#agb">AGB</a>. Die <a href="#datenschutz">Datenschutzerklärung</a> habe ich gelesen.</span></label>
+      <p class="fb bad" id="o-err" aria-live="polite"></p>
+      <button class="btn primary" type="submit" id="o-submit" style="justify-self:start">Zahlungspflichtig bestellen</button>
+    </form>
+    <aside class="panel osum" id="o-sum" aria-live="polite"></aside>
+  </div>
+  <div id="order-done" hidden></div>
+</div></div>
+
+<!-- RECHTLICHES -->
+<div id="v-legal" hidden><div class="wrap"><article class="legal" id="legal"></article></div></div>
+
+<!-- UNTERLAGEN -->
+<div id="v-docs" hidden>
+  <div class="wrap">
+    <div class="apphead">
+      <div>
+        <p class="eyebrow">Für Poliere und Sicherheitsfachkräfte</p>
+        <h2 style="margin-top:8px">Unterweisungsunterlagen</h2>
+        <p class="muted" style="margin-top:8px;max-width:64ch">Pro Thema ein Kurzfilm, die Kernaussagen, ein Leitfaden für das Gespräch und die Rechtsgrundlagen. Als PDF gibt es die Unterweisungsmappe mit Unterschriftenliste. Den Aushang mit QR-Code erstellen Sie pro Baustelle in der Demo-App.</p>
+      </div>
+      <button class="btn primary" id="btn-mappe" type="button" hidden>Unterweisungsmappe als PDF</button>
+    </div>
+    <h3 style="margin:10px 0 12px;text-transform:uppercase">BauKG im Überblick</h3>
+    <div class="kg" id="kg"></div>
+    <div class="docs" id="docs"></div>
+    <p class="muted" style="padding-bottom:48px;font-size:.92rem">Rechtsangaben vereinfacht. Vor dem Einsatz von einer Sicherheitsfachkraft prüfen lassen.</p>
+  </div>
+</div>
+
+<!-- FLOW -->
+<div id="v-flow" hidden><div class="wrap"><div class="flow" id="flow"></div></div></div>
+</main>
+
+<footer><div class="wrap">
+  <span>© 2026 Sicherstart Bau. Die Vorlagen ersetzen nicht die Evaluierung und die Prüfung durch eine Sicherheitsfachkraft.</span>
+  <span>Kontakt: <span class="mono" id="mail">stefan.freudenthaler@aon.at</span> <button class="btn small ghost" type="button" id="copy-mail">Kopieren</button></span>
+  <nav class="footlinks" aria-label="Rechtliches"><a href="#impressum">Impressum</a><a href="#datenschutz">Datenschutz</a><a href="#agb">AGB</a><a href="#demo">Demo anfragen</a><button type="button" id="cookie-open">Cookie-Einstellungen</button></nav>
+</div></footer>
+
+<!-- Modals -->
+<div class="modal" id="m-site" hidden role="dialog" aria-modal="true" aria-labelledby="m-site-t">
+  <form class="box" id="f-site">
+    <header><h3 id="m-site-t">Neue Baustelle</h3><button class="btn small ghost" type="button" data-close>Schließen</button></header>
+    <div class="body">
+      <label class="field"><span>Bezeichnung</span><input type="text" id="s-name" required placeholder="z. B. Wohnhausanlage Am Mühlbach, Bauteil B"></label>
+      <label class="field"><span>Adresse</span><input type="text" id="s-addr" required placeholder="Straße, PLZ Ort"></label>
+      <div class="grid2">
+        <label class="field"><span>Polier</span><input type="text" id="s-polier" placeholder="Name"></label>
+        <label class="field"><span>Ersthelfer</span><input type="text" id="s-eh" placeholder="Name, Standort"></label>
+      </div>
+      <label class="field"><span>Sammelplatz</span><input type="text" id="s-sammel" placeholder="z. B. Parkplatz Einfahrt Nord"></label>
+      <div class="field"><span>Themen der Unterweisung</span><div class="checks" id="s-mods"></div></div>
+      <label class="field"><span>Besonderheiten dieser Baustelle</span><textarea id="s-extra" placeholder="z. B. Kranbetrieb 7–16 Uhr, Zufahrt nur über …"></textarea><small class="muted">Wird auf Deutsch angezeigt. Im Profi-Paket automatisch übersetzt.</small></label>
+      <fieldset class="fs"><legend>BauKG</legend>
+        <div class="grid2">
+          <label class="field"><span>Baustellenkoordinator</span><input type="text" id="s-koord" placeholder="Name, Telefon"></label>
+          <label class="field"><span>SiGe-Plan liegt auf</span><input type="text" id="s-sige" placeholder="z. B. Aushang Baubüro"></label>
+        </div>
+        <div class="grid4">
+          <label class="field"><span>Arbeitstage</span><input type="number" id="s-days" min="0" value="60"></label>
+          <label class="field"><span>Max. gleichzeitig</span><input type="number" id="s-max" min="0" value="12"></label>
+          <label class="field"><span>Personentage</span><input type="number" id="s-pt" min="0" value="400"></label>
+          <label class="field"><span>Firmen</span><input type="number" id="s-firms" min="1" value="3"></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="s-danger"> <span>Arbeiten mit besonderen Gefahren (z. B. Absturzgefahr über 7 m, Verschüttung, Arbeiten nahe Hochspannung)</span></label>
+        <div class="baukg-res" id="baukg-res" aria-live="polite"></div>
+      </fieldset>
+      <label class="field" id="s-video-f" hidden><span>Eigenes Baustellenvideo (optional)</span><input type="file" id="s-video" accept="video/*"><small class="muted">Wird bei den Baustellen-Infos gezeigt, z. B. ein Rundgang des Poliers mit dem Handy.</small></label>
+      <label class="field"><span>Wiederholung</span><select id="s-int"><option value="6">alle 6 Monate</option><option value="12" selected>alle 12 Monate</option><option value="24">alle 24 Monate</option></select></label>
+    </div>
+    <footer><button class="btn ghost" type="button" data-close>Abbrechen</button><button class="btn primary" type="submit" id="s-save">Baustelle speichern</button></footer>
+  </form>
+</div>
+
+<div class="modal" id="m-qr" hidden role="dialog" aria-modal="true" aria-labelledby="m-qr-t">
+  <div class="box">
+    <header><h3 id="m-qr-t">QR-Code für die Baustelle</h3><button class="btn small ghost" type="button" data-close>Schließen</button></header>
+    <div class="body">
+      <p id="qr-site" style="font-weight:600"></p>
+      <div id="qr-box"></div>
+      <label class="field"><span>Link</span><input type="text" id="qr-link" readonly></label>
+      <button class="btn small ghost" type="button" id="qr-copy" style="justify-self:start">Link kopieren</button>
+      <p class="muted" style="font-size:.92rem">Ausdrucken und an der Baustelleneinfahrt aufhängen. In dieser Demo öffnet der Link die Unterweisung nur mit Ihrem eigenen claude.ai-Login. Im fertigen Produkt brauchen Arbeiter kein Konto.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="m-doc" hidden role="dialog" aria-modal="true" aria-labelledby="m-doc-t">
+  <div class="box">
+    <header><h3 id="m-doc-t">Nachweis</h3><button class="btn small ghost" type="button" data-close>Schließen</button></header>
+    <div class="body doc" id="doc-body"></div>
+    <footer><button class="btn primary" type="button" id="doc-pdf" hidden>Als PDF speichern</button><button class="btn ghost" type="button" data-close>Schließen</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="m-film" hidden role="dialog" aria-modal="true" aria-labelledby="m-film-t">
+  <div class="box">
+    <header><h3 id="m-film-t">Kurzfilm</h3><div style="display:flex;gap:8px;align-items:center"><select id="film-lang" aria-label="Sprache des Films" style="width:auto"><option value="de">Deutsch</option><option value="bks">BKS</option><option value="ro">Română</option><option value="hu">Magyar</option></select><button class="btn small ghost" type="button" data-close>Schließen</button></div></header>
+    <div class="body" id="film-body"></div>
+  </div>
+</div>
+
+<div id="cookie" hidden role="region" aria-label="Cookie-Einstellungen"><div class="wrap">
+  <p>Wir nutzen Google Ads, um zu messen, ob unsere Werbung zu Anfragen führt. Google setzt dafür Cookies, aber nur mit Ihrer Zustimmung. Mehr in der <a href="#datenschutz">Datenschutzerklärung</a>.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" type="button" id="cookie-no">Nur notwendige</button><button class="btn primary" type="button" id="cookie-yes">Akzeptieren</button></div>
+</div></div>
+<!-- Formular-Vorlagen für Netlify Forms (werden beim Deploy erkannt, nicht angezeigt) -->
+<form name="bestellung" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true">
+  <input name="bot-field"><input name="bestellnummer"><input name="paket"><input name="mitarbeiter"><input name="zahlweise"><input name="themen"><input name="filme"><input name="firma"><input name="uid"><input name="ansprechperson"><input name="email"><input name="telefon"><input name="strasse"><input name="ort"><input name="land"><input name="zahlungsart"><input name="erste_rechnung_netto"><input name="erste_rechnung_brutto"><input name="laufend_netto">
+</form>
+<form name="anfrage" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true">
+  <input name="bot-field"><input name="name"><input name="firma"><input name="email"><input name="telefon"><textarea name="nachricht"></textarea>
+</form>
+<div id="toast" hidden role="status"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<g id="p-w"><rect x="-7" y="-28" width="5.5" height="28" rx="2" fill="#2F3B48"/><rect x="1.5" y="-28" width="5.5" height="28" rx="2" fill="#2F3B48"/><rect x="-9" y="-3" width="8" height="4" rx="1.5" fill="#1B2128"/><rect x="1" y="-3" width="8" height="4" rx="1.5" fill="#1B2128"/><rect x="-14" y="-50" width="5" height="22" rx="2.5" fill="var(--vest)"/><rect x="9" y="-50" width="5" height="22" rx="2.5" fill="var(--vest)"/><rect x="-10" y="-53" width="20" height="28" rx="5" fill="var(--vest)"/><rect x="-10" y="-42" width="20" height="3" fill="#EEF2F5"/><rect x="-10" y="-35" width="20" height="3" fill="#EEF2F5"/><circle cx="0" cy="-61" r="8" fill="#E2AE88"/></g>
+<g id="p-hat"><path d="M-9.5 -63a9.5 8.5 0 0 1 19 0h3v2.6h-25v-2.6z" fill="var(--hat)"/></g>
+<g id="p-ear"><path d="M-9 -64a9 9 0 0 1 18 0" fill="none" stroke="#C62828" stroke-width="2"/><rect x="-11.5" y="-65" width="5" height="8" rx="2.5" fill="#C62828"/><rect x="6.5" y="-65" width="5" height="8" rx="2.5" fill="#C62828"/></g>
+<g id="p-mask"><rect x="-5.5" y="-59" width="11" height="6" rx="3" fill="#F5F7F8" stroke="#8A97A3" stroke-width=".8"/></g>
+<g id="p-crane"><g fill="none" stroke="#E0A100" stroke-width="2"><path d="M0 0V-135M10 0V-135M0 -10L10 -25L0 -40L10 -55L0 -70L10 -85L0 -100L10 -115L0 -130"/><path d="M-30 -135H170M-30 -141H120M5 -152L-30 -135M5 -152L170 -135"/></g><rect x="-34" y="-136" width="18" height="12" fill="#5B6670"/><rect x="-6" y="-3" width="22" height="4" fill="#5B6670"/></g>
+<g id="p-cont"><rect x="0" y="-38" width="74" height="38" fill="#3E6E8E"/><rect x="0" y="-38" width="74" height="4" fill="#2C5470"/><rect x="8" y="-28" width="20" height="12" fill="#BFD7E6"/><rect x="50" y="-30" width="14" height="30" fill="#2C5470"/></g>
+<g id="p-plan"><rect x="-10" y="-13" width="20" height="26" fill="#fff" stroke="#556270"/><path d="M-6 -6h12M-6 -1h12M-6 4h8M-6 9h10" stroke="#8A97A3" stroke-width="1.2"/><rect x="-4" y="-15" width="8" height="4" fill="#556270"/></g>
+<g id="p-rail"><path d="M0 0V-32M30 0V-32M60 0V-32" stroke="#C62828" stroke-width="3"/><path d="M-2 -30H62M-2 -16H62" stroke="#C62828" stroke-width="3"/><path d="M8 -30H18M38 -30H48M8 -16H18M38 -16H48" stroke="#fff" stroke-width="3"/><rect x="-2" y="-5" width="64" height="5" fill="#E0A100"/></g>
+<g id="p-slab"><rect x="0" y="0" width="190" height="10" fill="#9AA3AB"/><rect x="0" y="10" width="190" height="50" fill="#C3C9CE"/><path d="M20 10V60M80 10V60M140 10V60" stroke="#9AA3AB" stroke-width="6"/></g>
+<g id="p-scaf"><path d="M0 0V-128M42 0V-128M84 0V-128" stroke="#7D8A96" stroke-width="2.5"/><path d="M-2 -50H86M-2 -100H86" stroke="#A1887F" stroke-width="5"/><path d="M0 -75H84M0 -125H84M0 0L42 -50L84 -100" stroke="#7D8A96" stroke-width="1.5" fill="none"/></g>
+<g id="p-tag"><rect x="-9" y="-12" width="18" height="24" rx="2" fill="#2E7D32"/><path d="M-4 0l3 3 6-7" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>
+<g id="p-ladder"><path d="M0 0L18 -90M20 0L38 -90" stroke="#B0763B" stroke-width="3"/><path d="M2 -10H22M4.4 -22H24.4M6.8 -34H26.8M9.2 -46H29.2M11.6 -58H31.6M14 -70H34M16.4 -82H36.4" stroke="#B0763B" stroke-width="2.5"/></g>
+<g id="p-saw"><rect x="-26" y="-14" width="52" height="14" fill="#9E9E9E"/><circle cx="0" cy="-26" r="14" fill="#CFD8DC" stroke="#455A64" stroke-width="2"/><path d="M-15 -26A15 15 0 0 1 15 -26z" fill="#F57C00"/><rect x="10" y="-44" width="30" height="10" rx="3" fill="#F57C00"/></g>
+<g id="p-box"><rect x="-16" y="-50" width="32" height="40" rx="3" fill="#F6C000" stroke="#7A6000"/><rect x="-10" y="-44" width="20" height="11" fill="#fff"/><text x="0" y="-35.5" font-size="8" text-anchor="middle" font-family="sans-serif" font-weight="700" fill="#222">FI</text><path d="M-6 -10V0M6 -10V0" stroke="#555" stroke-width="3"/></g>
+<g id="p-ext"><rect x="-7" y="-34" width="14" height="34" rx="5" fill="#D32F2F"/><rect x="-4" y="-40" width="8" height="7" fill="#333"/><path d="M4 -38q10 0 10 10" stroke="#333" stroke-width="2" fill="none"/><rect x="-7" y="-22" width="14" height="7" fill="#fff"/></g>
+<g id="p-aid"><rect x="-16" y="-24" width="32" height="24" rx="3" fill="#2E7D32"/><path d="M0 -19V-5M-7 -12H7" stroke="#fff" stroke-width="4"/><rect x="-6" y="-28" width="12" height="5" rx="2" fill="#1B5E20"/></g>
+<g id="p-pallet"><rect x="-22" y="-5" width="44" height="5" fill="#A1887F"/><g fill="#C0573E" stroke="#8E3B28" stroke-width=".8"><rect x="-20" y="-15" width="13" height="10"/><rect x="-6.5" y="-15" width="13" height="10"/><rect x="7" y="-15" width="13" height="10"/><rect x="-13" y="-25" width="13" height="10"/><rect x="0.5" y="-25" width="13" height="10"/></g></g>
+<g id="p-bottle"><path d="M-3 -40h6v8l4 6v26h-14v-26l4-6z" fill="#558B2F"/></g>
+<g id="p-ban"><circle r="24" fill="none" stroke="#C62828" stroke-width="6"/><path d="M-17 -17L17 17" stroke="#C62828" stroke-width="6"/></g>
+<g id="p-phone"><rect x="-26" y="-48" width="52" height="96" rx="8" fill="#263238"/><rect x="-21" y="-38" width="42" height="72" rx="2" fill="#ECEFF1"/><circle cx="0" cy="41" r="3" fill="#90A4AE"/></g>
+<g id="p-fence"><rect x="0" y="-44" width="56" height="44" fill="none" stroke="#90A4AE" stroke-width="2.5"/><path d="M0 -30H56M0 -15H56M14 -44V0M28 -44V0M42 -44V0" stroke="#B0BEC5" stroke-width="1"/><rect x="-3" y="-2" width="10" height="4" fill="#546E7A"/><rect x="49" y="-2" width="10" height="4" fill="#546E7A"/></g>
+<g id="p-mand-h"><circle r="13" fill="#1565C0"/><path d="M-7 3a7 7 0 0 1 14 0h2v2.5h-18V3z" fill="#fff"/></g>
+<g id="p-mand-e"><circle r="13" fill="#1565C0"/><path d="M-6 2a6 7 0 0 1 12 0" fill="none" stroke="#fff" stroke-width="2"/><rect x="-8.5" y="0" width="5" height="7" rx="2" fill="#fff"/><rect x="3.5" y="0" width="5" height="7" rx="2" fill="#fff"/></g>
+<g id="p-mand-b"><circle r="13" fill="#1565C0"/><path d="M-6 -7h5v8l7 2q2 1 2 3v2h-14z" fill="#fff"/></g>
+<g id="p-exit"><rect x="-20" y="-12" width="40" height="24" rx="2" fill="#2E7D32"/><path d="M-10 0H8M2 -6L8 0L2 6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="p-sammel"><rect x="0" y="-60" width="3" height="60" fill="#78909C"/><rect x="-14" y="-62" width="30" height="30" rx="2" fill="#2E7D32"/><g fill="#fff"><circle cx="-4" cy="-52" r="3"/><circle cx="6" cy="-52" r="3"/><rect x="-7" y="-48" width="6" height="9" rx="2"/><rect x="3" y="-48" width="6" height="9" rx="2"/></g></g>
+<g id="p-ghs"><rect x="-15" y="-15" width="30" height="30" transform="rotate(45)" fill="#fff" stroke="#D32F2F" stroke-width="4"/><text y="8" font-size="22" font-weight="800" text-anchor="middle" font-family="sans-serif" fill="#111">!</text></g>
+<g id="p-can"><rect x="-14" y="-40" width="28" height="40" rx="3" fill="#1E88E5"/><rect x="-4" y="-46" width="8" height="6" fill="#0D47A1"/></g>
+<g id="p-talk"><path d="M-14 -12h28a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4h-16l-6 6v-6h-6a4 4 0 0 1-4-4v-12a4 4 0 0 1 4-4z" fill="#fff" stroke="#90A4AE"/><path d="M-8 -3h16M-8 2h10" stroke="#90A4AE" stroke-width="1.5"/></g>
+<g id="p-extsign"><rect x="-12" y="-12" width="24" height="24" rx="2" fill="#D32F2F"/><rect x="-3" y="-7" width="6" height="14" rx="2" fill="#fff"/></g>
+</defs></svg>
+
+<script src="vendor/qrcode.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script>
+"use strict";
+const APP_URL = "";
+const LANGS = {
+  de:{label:"Deutsch", hint:"Unterweisung auf Deutsch", tts:"de-AT"},
+  bks:{label:"Bosanski / Hrvatski / Srpski", hint:"Obuka na našem jeziku", tts:"hr-HR"},
+  ro:{label:"Română", hint:"Instruire în limba română", tts:"ro-RO"},
+  hu:{label:"Magyar", hint:"Oktatás magyarul", tts:"hu-HU"}
+};
+const MODS = ["baustelle","baukg","psa","absturz","maschinen","staub","notfall"];
+const T = {
+de:{ui:{lang:"Sprache wählen",next:"Weiter",back:"Zurück",listen:"Vorlesen",stop:"Stopp",quizT:"Verständnis-Check",quizI:"Beantworte alle Fragen richtig.",wrong:"Falsch. Lies die Seite nochmal und wähle eine andere Antwort.",check:"Antworten prüfen",name:"Vor- und Nachname",firm:"Firma",sign:"Hier unterschreiben",clear:"Löschen",confirm:"Ich habe die Unterweisung verstanden und halte mich an die Regeln.",send:"Unterschreiben",done:"Fertig. Du darfst auf der Baustelle arbeiten.",ask:"Fragen? Wende dich an den Polier:",assembly:"Sammelplatz",firstaid:"Ersthelfer",emergency:"Notruf",polier:"Polier",info:"Baustellen-Infos",address:"Adresse",extra:"Besonderheiten"},
+m:{baustelle:["Baustellenordnung und Zutritt","Melde dich vor Arbeitsbeginn beim Polier. Zutritt nur nach der Unterweisung.","Halte Verkehrs- und Fluchtwege frei. Entferne nie Absperrungen oder Schilder.","Kein Alkohol und keine Drogen. Rauchen nur an gekennzeichneten Plätzen."],
+psa:["Persönliche Schutzausrüstung (PSA)","Schutzhelm, Sicherheitsschuhe S3 und Warnkleidung sind auf der ganzen Baustelle Pflicht.","Je nach Arbeit zusätzlich: Schutzbrille, Gehörschutz, Handschuhe, Atemschutz FFP2 oder FFP3.","Beschädigte PSA sofort tauschen und dem Polier melden."],
+absturz:["Absturz, Gerüst und Leitern","Absturzsicherung: bei Bodenöffnungen immer, an Stiegen und Wandöffnungen ab 1 m, sonst ab 2 m Absturzhöhe.","Gerüst nur benutzen, wenn es freigegeben ist. Nichts selbst umbauen.","Leitern nur für kurze Arbeiten. Immer drei Kontaktpunkte."],
+maschinen:["Maschinen, Strom und Kran","Maschinen nur nach Einweisung bedienen. Schutzeinrichtungen nie entfernen.","Strom nur vom Baustromverteiler mit FI-Schutz. Beschädigte Kabel sofort melden.","Nie unter schwebenden Lasten aufhalten. Abstand zu Bagger und Kran halten."],
+staub:["Staub, Lärm und Gefahrstoffe","Beim Schneiden und Schleifen Wasser oder Absaugung verwenden und Atemschutz tragen.","Ab 85 dB(A) Gehörschutz tragen. Laute Maschinen sind gekennzeichnet.","Gefahrstoffe nur laut Sicherheitsdatenblatt verwenden. Verdacht auf Asbest: Arbeit sofort stoppen."],
+notfall:["Notfall, Erste Hilfe und Brand","Notruf: Rettung 144, Feuerwehr 122, Polizei 133, Euronotruf 112.","Bei einem Unfall: absichern, Erste Hilfe leisten, Ersthelfer und Polier holen. Jeden Unfall melden.","Wisse, wo die Feuerlöscher sind. Bei Alarm zum Sammelplatz."]},
+q:[["Ab welcher Absturzhöhe brauchst du an einer normalen Arbeitskante eine Absturzsicherung?","ab 2 m","ab 5 m","nie, wenn ich aufpasse"],
+["Was ist auf dieser Baustelle immer Pflicht?","Helm, S3-Schuhe, Warnkleidung","nur Handschuhe","Helm nur bei Regen"],
+["Wo hältst du dich nie auf?","unter schwebenden Lasten","im Baucontainer","am Sammelplatz"],
+["Welche Nummer hat die Rettung in Österreich?","144","122","133"]]},
+bks:{ui:{lang:"Izaberi jezik",next:"Dalje",back:"Nazad",listen:"Pročitaj naglas",stop:"Stop",quizT:"Provjera razumijevanja",quizI:"Odgovori tačno na sva pitanja.",wrong:"Netačno. Pročitaj stranicu ponovo i izaberi drugi odgovor.",check:"Provjeri odgovore",name:"Ime i prezime",firm:"Firma",sign:"Ovdje potpiši",clear:"Obriši",confirm:"Razumio/la sam obuku i pridržavam se pravila.",send:"Potpiši",done:"Gotovo. Smiješ raditi na gradilištu.",ask:"Pitanja? Obrati se poslovođi:",assembly:"Zborno mjesto",firstaid:"Prva pomoć",emergency:"Hitni pozivi",polier:"Poslovođa",info:"Informacije o gradilištu",address:"Adresa",extra:"Posebnosti"},
+m:{baustelle:["Red na gradilištu i ulaz","Prije početka rada javi se poslovođi. Ulaz samo nakon obuke.","Prolaze i puteve za bijeg drži slobodnim. Nikada ne uklanjaj ograde ni znakove.","Bez alkohola i droga. Pušenje samo na označenim mjestima."],
+psa:["Lična zaštitna oprema","Zaštitna kaciga, zaštitne cipele S3 i reflektirajuća odjeća obavezni su na cijelom gradilištu.","Zavisno od posla još: zaštitne naočale, zaštita sluha, rukavice, maska FFP2 ili FFP3.","Oštećenu opremu odmah zamijeni i prijavi poslovođi."],
+absturz:["Pad s visine, skele i ljestve","Zaštita od pada: kod otvora u podu uvijek, na stepeništu i otvorima u zidu od 1 m, inače od 2 m visine.","Skelu koristi samo kad je odobrena. Ništa ne prepravljaj sam.","Ljestve samo za kratke radove. Uvijek tri tačke oslonca."],
+maschinen:["Mašine, struja i kran","Mašine koristi samo nakon uputstva. Nikada ne uklanjaj zaštitne naprave.","Struju uzimaj samo s gradilišnog razvodnog ormara sa FI-zaštitom. Oštećene kablove odmah prijavi.","Nikada ne stoj ispod visećeg tereta. Drži razmak od bagera i krana."],
+staub:["Prašina, buka i opasne tvari","Kod rezanja i brušenja koristi vodu ili usisavanje i nosi zaštitu za disanje.","Od 85 dB(A) nosi zaštitu sluha. Bučne mašine su označene.","Opasne tvari koristi samo prema sigurnosnom listu. Sumnja na azbest: odmah prekini rad."],
+notfall:["Hitni slučaj, prva pomoć i požar","Hitni pozivi: Hitna pomoć 144, Vatrogasci 122, Policija 133, Evropski broj 112.","Kod nesreće: osiguraj mjesto, pruži prvu pomoć, pozovi pružaoca prve pomoći i poslovođu. Prijavi svaku nesreću.","Znaj gdje su aparati za gašenje. Kod uzbune idi na zborno mjesto."]},
+q:[["Od koje visine pada na običnoj radnoj ivici trebaš zaštitu od pada?","od 2 m","od 5 m","nikad, ako pazim"],
+["Šta je na ovom gradilištu uvijek obavezno?","kaciga, cipele S3, reflektirajuća odjeća","samo rukavice","kaciga samo kad pada kiša"],
+["Gdje se nikada ne zadržavaš?","ispod visećeg tereta","u kontejneru gradilišta","na zbornom mjestu"],
+["Koji je broj Hitne pomoći u Austriji?","144","122","133"]]},
+ro:{ui:{lang:"Alege limba",next:"Înainte",back:"Înapoi",listen:"Citește cu voce tare",stop:"Stop",quizT:"Verificarea înțelegerii",quizI:"Răspunde corect la toate întrebările.",wrong:"Greșit. Citește pagina din nou și alege alt răspuns.",check:"Verifică răspunsurile",name:"Prenume și nume",firm:"Firma",sign:"Semnează aici",clear:"Șterge",confirm:"Am înțeles instruirea și respect regulile.",send:"Semnează",done:"Gata. Poți lucra pe șantier.",ask:"Întrebări? Adresează-te maistrului:",assembly:"Punct de adunare",firstaid:"Prim ajutor",emergency:"Urgențe",polier:"Maistru",info:"Informații despre șantier",address:"Adresa",extra:"Particularități"},
+m:{baustelle:["Regulamentul șantierului și accesul","Anunță-te la maistru înainte de a începe lucrul. Accesul doar după instruire.","Păstrează libere căile de circulație și de evacuare. Nu îndepărta niciodată barierele sau indicatoarele.","Fără alcool și droguri. Fumatul doar în locurile marcate."],
+psa:["Echipament individual de protecție","Casca, încălțămintea de protecție S3 și vesta reflectorizantă sunt obligatorii pe tot șantierul.","În funcție de lucrare, în plus: ochelari de protecție, antifoane, mănuși, mască FFP2 sau FFP3.","Înlocuiește imediat echipamentul deteriorat și anunță maistrul."],
+absturz:["Căderi de la înălțime, schele și scări","Protecție la cădere: la goluri în pardoseală întotdeauna, la scări și goluri în pereți de la 1 m, în rest de la 2 m înălțime.","Folosește schela doar dacă a fost aprobată. Nu modifica nimic singur.","Scările doar pentru lucrări scurte. Întotdeauna trei puncte de sprijin."],
+maschinen:["Utilaje, curent electric și macara","Folosește utilajele doar după instruire. Nu îndepărta niciodată dispozitivele de protecție.","Curent doar din tabloul de șantier cu protecție diferențială. Anunță imediat cablurile deteriorate.","Nu sta niciodată sub sarcini suspendate. Păstrează distanța față de excavator și macara."],
+staub:["Praf, zgomot și substanțe periculoase","La tăiere și șlefuire folosește apă sau aspirare și poartă mască.","De la 85 dB(A) poartă antifoane. Utilajele zgomotoase sunt marcate.","Substanțele periculoase doar conform fișei cu date de securitate. Suspiciune de azbest: oprește imediat lucrul."],
+notfall:["Urgențe, prim ajutor și incendiu","Urgențe: Ambulanța 144, Pompierii 122, Poliția 133, Numărul european 112.","La un accident: asigură locul, acordă primul ajutor, cheamă persoana de prim ajutor și maistrul. Raportează orice accident.","Știi unde sunt stingătoarele. La alarmă mergi la punctul de adunare."]},
+q:[["De la ce înălțime ai nevoie de protecție la cădere la o margine de lucru obișnuită?","de la 2 m","de la 5 m","niciodată, dacă sunt atent"],
+["Ce este întotdeauna obligatoriu pe acest șantier?","cască, încălțăminte S3, vestă reflectorizantă","doar mănuși","casca doar când plouă"],
+["Unde nu stai niciodată?","sub sarcini suspendate","în containerul de șantier","la punctul de adunare"],
+["Care este numărul ambulanței în Austria?","144","122","133"]]},
+hu:{ui:{lang:"Válassz nyelvet",next:"Tovább",back:"Vissza",listen:"Felolvasás",stop:"Stop",quizT:"Megértés ellenőrzése",quizI:"Válaszolj helyesen minden kérdésre.",wrong:"Helytelen. Olvasd el újra az oldalt, és válassz másik választ.",check:"Válaszok ellenőrzése",name:"Vezeték- és keresztnév",firm:"Cég",sign:"Itt írd alá",clear:"Törlés",confirm:"Megértettem az oktatást, és betartom a szabályokat.",send:"Aláírás",done:"Kész. Dolgozhatsz az építkezésen.",ask:"Kérdésed van? Fordulj a művezetőhöz:",assembly:"Gyülekezési pont",firstaid:"Elsősegély",emergency:"Segélyhívás",polier:"Művezető",info:"Az építkezés adatai",address:"Cím",extra:"Különlegességek"},
+m:{baustelle:["Építési rend és belépés","Munkakezdés előtt jelentkezz a művezetőnél. Belépés csak oktatás után.","Tartsd szabadon a közlekedési és menekülési utakat. Soha ne távolítsd el a korlátokat vagy táblákat.","Alkohol és drog tilos. Dohányozni csak a kijelölt helyeken szabad."],
+psa:["Egyéni védőeszközök","Védősisak, S3 védőcipő és láthatósági ruházat az egész építkezésen kötelező.","A munkától függően még: védőszemüveg, hallásvédő, kesztyű, FFP2 vagy FFP3 légzésvédő.","A sérült védőeszközt azonnal cseréld ki, és jelentsd a művezetőnek."],
+absturz:["Leesés, állványok és létrák","Leesés elleni védelem: födémnyílásoknál mindig, lépcsőknél és falnyílásoknál 1 m-től, egyébként 2 m magasságtól.","Állványt csak jóváhagyás után használj. Semmit ne alakíts át magad.","Létrát csak rövid munkákhoz használj. Mindig három ponton támaszkodj."],
+maschinen:["Gépek, áram és daru","Gépeket csak betanítás után kezelj. A védőberendezéseket soha ne távolítsd el.","Áramot csak FI-relés építési elosztóból vegyél. A sérült kábelt azonnal jelentsd.","Soha ne állj függő teher alatt. Tarts távolságot a kotrótól és a darutól."],
+staub:["Por, zaj és veszélyes anyagok","Vágásnál és csiszolásnál használj vizet vagy elszívást, és viselj légzésvédőt.","85 dB(A) felett viselj hallásvédőt. A zajos gépek meg vannak jelölve.","Veszélyes anyagokat csak a biztonsági adatlap szerint használj. Azbeszt gyanúja: azonnal hagyd abba a munkát."],
+notfall:["Vészhelyzet, elsősegély és tűz","Segélyhívás: Mentők 144, Tűzoltóság 122, Rendőrség 133, Európai segélyhívó 112.","Baleset esetén: biztosítsd a helyszínt, nyújts elsősegélyt, hívd az elsősegélynyújtót és a művezetőt. Minden balesetet jelents.","Tudd, hol vannak a tűzoltó készülékek. Riasztáskor menj a gyülekezési pontra."]},
+q:[["Szokásos munkaélnél milyen magasságtól kell leesés elleni védelem?","2 m-től","5 m-től","soha, ha vigyázok"],
+["Mi mindig kötelező ezen az építkezésen?","sisak, S3 cipő, láthatósági ruha","csak kesztyű","sisak csak esőben"],
+["Hol nem tartózkodsz soha?","függő teher alatt","az építési konténerben","a gyülekezési ponton"],
+["Mi a mentők száma Ausztriában?","144","122","133"]]}
+};
+
+/* ---------- extra content: BauKG, Einstieg, Zwischenfragen ---------- */
+const EXTRA = {
+de:{hook:{baustelle:"Bevor du loslegst: Diese Regeln gelten für alle auf der Baustelle.",baukg:"Hier arbeiten viele Firmen gleichzeitig. Damit niemand den anderen gefährdet, wird die Sicherheit koordiniert.",psa:"Deine Schutzausrüstung ist deine Lebensversicherung. Sie wirkt nur, wenn du sie trägst.",absturz:"Abstürze sind die häufigste Ursache für tödliche Unfälle am Bau.",maschinen:"Maschinen, Strom und Kran sind starke Helfer. Falsch benutzt sind sie lebensgefährlich.",staub:"Staub und Lärm merkst du heute kaum. Die Schäden kommen Jahre später.",notfall:"Im Notfall zählt jede Sekunde. Wer vorbereitet ist, hilft schneller."},
+baukg:["BauKG: Koordination der Firmen","Kenne den Baustellenkoordinator und den SiGe-Plan. Beides findest du beim Baubüro.","Schutzeinrichtungen anderer Firmen nie entfernen oder verändern. Mängel sofort melden.","Arbeiten, die andere gefährden können, vorher mit dem Polier abstimmen."],
+q:{baustelle:["Was tust du, bevor du auf der Baustelle zu arbeiten beginnst?","beim Polier melden","sofort loslegen","nur einem Kollegen Bescheid sagen"],baukg:["Ein Geländer einer anderen Firma stört dich bei der Arbeit. Was tust du?","Polier oder Koordinator fragen","Geländer kurz abbauen","Geländer selbst versetzen"],staub:["Wie schneidest du Ziegel oder Beton richtig?","mit Wasser oder Absaugung und Atemschutz","trocken, dafür schnell","ohne Schutz, wenn es nur kurz dauert"]},
+ui:{film:"Kurzfilm",play:"▶ Film starten",replay:"↺ Nochmal ansehen",sound:"Ton",pick:"Welches Bild zeigt sicheres Arbeiten?",right:"Richtig!",stopQ:"Stopp! Ist das sicher?",yes:"Ja, sicher",no:"Nein, gefährlich",merke:"Merke",points:"Punkte",watch:"Erst den Film ansehen, dann geht es weiter.",quizT2:"Zwischenfragen",koord:"Baustellenkoordinator",sige:"SiGe-Plan",great:"Super, alles beim ersten Mal verstanden!"}},
+bks:{hook:{baustelle:"Prije nego počneš: ova pravila važe za sve na gradilištu.",baukg:"Ovdje radi više firmi u isto vrijeme. Da niko ne ugrozi drugoga, sigurnost se koordinira.",psa:"Tvoja zaštitna oprema je tvoje životno osiguranje. Djeluje samo ako je nosiš.",absturz:"Padovi su najčešći uzrok smrtnih nesreća u građevini.",maschinen:"Mašine, struja i kran su jaki pomagači. Pogrešno korišteni opasni su po život.",staub:"Prašinu i buku danas jedva primijetiš. Posljedice dolaze godinama kasnije.",notfall:"U hitnom slučaju važna je svaka sekunda. Ko je pripremljen, pomaže brže."},
+baukg:["BauKG: koordinacija firmi","Upoznaj koordinatora gradilišta i plan zaštite (SiGe-Plan). Oboje nađeš kod kancelarije gradilišta.","Nikada ne uklanjaj niti mijenjaj zaštitne naprave drugih firmi. Nedostatke odmah prijavi.","Radove koji mogu ugroziti druge prvo dogovori s poslovođom."],
+q:{baustelle:["Šta radiš prije nego počneš raditi na gradilištu?","javim se poslovođi","odmah počnem","kažem samo kolegi"],baukg:["Ograda druge firme ti smeta pri radu. Šta radiš?","pitam poslovođu ili koordinatora","nakratko skinem ogradu","sam premjestim ogradu"],staub:["Kako pravilno režeš ciglu ili beton?","s vodom ili usisavanjem i zaštitom za disanje","na suho, ali brzo","bez zaštite, ako kratko traje"]},
+ui:{film:"Kratki film",play:"▶ Pokreni film",replay:"↺ Pogledaj ponovo",sound:"Zvuk",pick:"Koja slika pokazuje siguran rad?",right:"Tačno!",stopQ:"Stani! Je li ovo sigurno?",yes:"Da, sigurno",no:"Ne, opasno",merke:"Zapamti",points:"Bodovi",watch:"Prvo pogledaj film, onda idemo dalje.",quizT2:"Pitanja",koord:"Koordinator gradilišta",sige:"Plan zaštite (SiGe-Plan)",great:"Super, sve si razumio/la iz prve!"}},
+ro:{hook:{baustelle:"Înainte să începi: aceste reguli sunt valabile pentru toți cei de pe șantier.",baukg:"Aici lucrează mai multe firme în același timp. Ca nimeni să nu-i pună pe alții în pericol, siguranța este coordonată.",psa:"Echipamentul de protecție este asigurarea ta de viață. Funcționează doar dacă îl porți.",absturz:"Căderile de la înălțime sunt cea mai frecventă cauză a accidentelor mortale în construcții.",maschinen:"Utilajele, curentul și macaraua sunt ajutoare puternice. Folosite greșit, sunt periculoase pentru viață.",staub:"Praful și zgomotul abia le observi azi. Urmările apar după ani.",notfall:"În caz de urgență contează fiecare secundă. Cine este pregătit ajută mai repede."},
+baukg:["BauKG: coordonarea firmelor","Cunoaște coordonatorul de șantier și planul de securitate (SiGe-Plan). Le găsești la biroul șantierului.","Nu îndepărta și nu modifica niciodată protecțiile altor firme. Anunță imediat defectele.","Lucrările care îi pot pune pe alții în pericol se stabilesc înainte cu maistrul."],
+q:{baustelle:["Ce faci înainte să începi lucrul pe șantier?","mă anunț la maistru","încep imediat","îi spun doar unui coleg"],baukg:["Balustrada altei firme te încurcă la lucru. Ce faci?","întreb maistrul sau coordonatorul","o demontez puțin","o mut singur"],staub:["Cum tai corect cărămida sau betonul?","cu apă sau aspirare și mască","uscat, dar repede","fără protecție, dacă durează puțin"]},
+ui:{film:"Film scurt",play:"▶ Pornește filmul",replay:"↺ Privește din nou",sound:"Sunet",pick:"Care imagine arată lucrul în siguranță?",right:"Corect!",stopQ:"Stop! Este sigur?",yes:"Da, sigur",no:"Nu, periculos",merke:"Reține",points:"Puncte",watch:"Mai întâi privește filmul, apoi mergem mai departe.",quizT2:"Întrebări",koord:"Coordonator de șantier",sige:"Plan de securitate (SiGe-Plan)",great:"Super, ai înțeles totul din prima!"}},
+hu:{hook:{baustelle:"Mielőtt nekikezdesz: ezek a szabályok mindenkire vonatkoznak az építkezésen.",baukg:"Itt egyszerre több cég dolgozik. Hogy senki ne veszélyeztesse a másikat, a biztonságot összehangolják.",psa:"A védőfelszerelésed az életbiztosításod. Csak akkor véd, ha viseled.",absturz:"Az építőiparban a leesés a halálos balesetek leggyakoribb oka.",maschinen:"A gépek, az áram és a daru erős segítők. Rosszul használva életveszélyesek.",staub:"A port és a zajt ma alig veszed észre. A károk évekkel később jönnek.",notfall:"Vészhelyzetben minden másodperc számít. Aki felkészült, gyorsabban segít."},
+baukg:["BauKG: a cégek összehangolása","Ismerd az építési koordinátort és a biztonsági tervet (SiGe-Plan). Mindkettőt az építési irodánál találod.","Más cégek védőberendezéseit soha ne távolítsd el és ne változtasd meg. A hibákat azonnal jelentsd.","A másokat veszélyeztető munkákat előre egyeztesd a művezetővel."],
+q:{baustelle:["Mit teszel, mielőtt munkába állsz az építkezésen?","jelentkezem a művezetőnél","azonnal nekikezdek","csak egy kollégának szólok"],baukg:["Egy másik cég korlátja zavar a munkában. Mit teszel?","megkérdezem a művezetőt vagy a koordinátort","rövid időre leszerelem","magam helyezem át"],staub:["Hogyan vágsz helyesen téglát vagy betont?","vízzel vagy elszívással és légzésvédővel","szárazon, de gyorsan","védelem nélkül, ha rövid ideig tart"]},
+ui:{film:"Rövidfilm",play:"▶ Film indítása",replay:"↺ Újra megnézem",sound:"Hang",pick:"Melyik kép mutat biztonságos munkát?",right:"Helyes!",stopQ:"Állj! Ez biztonságos?",yes:"Igen, biztonságos",no:"Nem, veszélyes",merke:"Jegyezd meg",points:"Pont",watch:"Előbb nézd meg a filmet, aztán megyünk tovább.",quizT2:"Kérdések",koord:"Építési koordinátor",sige:"Biztonsági terv (SiGe-Plan)",great:"Szuper, elsőre mindent megértettél!"}}
+};
+const QMAP = {absturz:0, psa:1, maschinen:2, notfall:3};
+Object.keys(EXTRA).forEach(l => {
+  const e = EXTRA[l], t = T[l];
+  t.m.baukg = e.baukg; t.hook = e.hook; Object.assign(t.ui, e.ui);
+  t.mq = Object.assign({}, e.q);
+  Object.entries(QMAP).forEach(([k, i]) => { t.mq[k] = t.q[i]; });
+});
+const GUIDE = {
+  baustelle:{recht:"§ 14 ASchG, § 154 BauV", zeigen:"Zufahrt, Baubüro, Sanitär- und Aufenthaltsräume, Lagerflächen, Fluchtwege.", fragen:"Wo melde ich mich bei Krankheit? Wo darf ich parken? Wann ist Arbeitsbeginn?"},
+  baukg:{recht:"BauKG §§ 3 bis 8", zeigen:"SiGe-Plan-Aushang, Kontakt des Baustellenkoordinators, gemeinsame Schutzeinrichtungen wie Gerüst, Geländer und Baustrom.", fragen:"Wem melde ich einen Mangel am Gerüst einer anderen Firma? Was tue ich, wenn über mir eine andere Firma arbeitet?"},
+  psa:{recht:"ASchG §§ 69 und 70, PSA-Verordnung", zeigen:"Helm richtig einstellen, Kinnriemen bei Arbeiten in der Höhe, Gehörschutz richtig einsetzen, Dichtsitz der FFP-Maske prüfen.", fragen:"Wo bekomme ich Ersatz? Muss ich im Container einen Helm tragen?"},
+  absturz:{recht:"BauV §§ 7 ff. (Absturz), Gerüste und Leitern laut BauV", zeigen:"Gesicherte Kanten und Öffnungen, Freigabe-Kennzeichnung am Gerüst, Anschlagpunkte, Leiter richtig aufstellen.", fragen:"Was tue ich, wenn eine Abdeckung fehlt? Wer gibt das Gerüst frei?"},
+  maschinen:{recht:"AM-VO (Arbeitsmittel), Elektroschutzverordnung, BauV (Krane und Hebezeuge)", zeigen:"Baustromverteiler mit FI, Prüfplaketten, Schwenkbereich von Kran und Bagger, Not-Aus-Schalter.", fragen:"Darf ich die Maschine eines Kollegen benutzen? Wer prüft Kabel und Geräte?"},
+  staub:{recht:"VOLV (Lärm, 80 und 85 dB(A)), Grenzwerteverordnung (Quarzstaub), ASchG §§ 40 ff. (Arbeitsstoffe)", zeigen:"Absaugung und Wasser an den Geräten, Ablage der Sicherheitsdatenblätter, Kennzeichnung lauter Bereiche.", fragen:"Welche Maske für welchen Staub? Was tue ich bei Verdacht auf Asbest?"},
+  notfall:{recht:"ASchG § 25 (Brandschutz) und § 26 (Erste Hilfe)", zeigen:"Erste-Hilfe-Kasten, Feuerlöscher, Sammelplatz, Notrufnummern, Zufahrt für die Rettung.", fragen:"Wer ist Ersthelfer? Wie beschreibe ich der Rettung den Weg zur Baustelle?"}
+};
+const BAUKG = [
+  ["Baustellenkoordinator (§ 3)", "Werden auf einer Baustelle Arbeitnehmer mehrerer Arbeitgeber tätig, bestellt der Bauherr einen Planungs- und einen Baustellenkoordinator. Der Baustellenkoordinator stimmt die Schutzmaßnahmen der Firmen ab und passt den SiGe-Plan an."],
+  ["Vorankündigung (§ 6)", "Nötig, wenn die Arbeiten länger als 30 Arbeitstage dauern und mehr als 20 Arbeitnehmer gleichzeitig beschäftigt sind, oder wenn mehr als 500 Personentage anfallen. Elektronisch an die Baustellendatenbank, spätestens zwei Wochen vor Beginn, und sichtbar auf der Baustelle aushängen."],
+  ["SiGe-Plan (§ 7)", "Sicherheits- und Gesundheitsschutzplan. Vor Eröffnung der Baustelle zu erstellen, wenn eine Vorankündigung nötig ist oder Arbeiten mit besonderen Gefahren anfallen. Muss auf der Baustelle für alle zugänglich sein."],
+  ["Unterlage für spätere Arbeiten (§ 8)", "Hält fest, wie spätere Arbeiten am fertigen Bauwerk sicher möglich sind, zum Beispiel Wartung am Dach oder an der Fassade."]
+];
+
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = p => p + Math.random().toString(36).slice(2, 8).toUpperCase();
+const fmtD = iso => new Date(iso).toLocaleDateString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric"});
+const fmtDT = iso => new Date(iso).toLocaleString("de-AT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+const addMonths = (d, m) => { const x = new Date(d); x.setMonth(x.getMonth() + m); return x; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3800); }
+async function copy(text, input) {
+  try { await navigator.clipboard.writeText(text); toast("Kopiert."); }
+  catch (e) { if (input) { input.focus(); input.select(); } toast("Bitte manuell kopieren."); }
+}
+function status(rec) {
+  const days = (new Date(rec.valid) - Date.now()) / 864e5;
+  if (days < 0) return ["bad", "abgelaufen"];
+  if (days <= 30) return ["warn", "läuft ab in " + Math.ceil(days) + " T."];
+  return ["ok", "gültig"];
+}
+const title = k => T.de.m[k][0];
+
+/* ---------- storage: claude.ai account (db) or this browser ---------- */
+const LS_KEY = "sicherstart-v1";
+const Store = {
+  mode: "local", col: null, items: new Map(),
+  loadLocal() { try { JSON.parse(localStorage.getItem(LS_KEY) || "[]").forEach(o => this.items.set(o.id, o)); } catch (e) {} },
+  saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify([...this.items.values()])); } catch (e) {} },
+  list(kind) { return [...this.items.values()].filter(o => o.kind === kind); },
+  get(id) { return this.items.get(id); },
+  async put(o) {
+    this.items.set(o.id, o);
+    if (this.mode === "cloud") { try { await this.col.doc(o.id).set(o); } catch (e) { this.fallback(); } } else this.saveLocal();
+    changed();
+  },
+  async del(id) {
+    this.items.delete(id);
+    if (this.mode === "cloud") { try { await this.col.doc(id).delete(); } catch (e) { this.fallback(); } } else this.saveLocal();
+    changed();
+  },
+  fallback() { this.mode = "local"; this.saveLocal(); updateMode(); toast("Speichern im Konto nicht möglich. Die Daten bleiben in diesem Browser."); },
+  async connect() {
+    if (!window.claude || !window.claude.use) return;
+    try {
+      const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      const col = db.collection("data/users/" + id);
+      col.onSnapshot(snap => {
+        this.col = col; this.mode = "cloud";
+        this.items = new Map(snap.docs.map(d => [d.id, d.data()]));
+        updateMode(); changed();
+      }, () => {});
+    } catch (e) {}
+  }
+};
+function updateMode() {
+  $("#mode").textContent = Store.mode === "cloud"
+    ? "● Gespeichert in Ihrem claude.ai-Konto, auf all Ihren Geräten sichtbar."
+    : "● Daten bleiben auf diesem Gerät. Sichern Sie sie regelmäßig mit „Daten sichern“.";
+}
+
+/* ---------- capabilities: downloads, tts, assets ---------- */
+let DL = null, TTS = null, ASSETS = null;
+if (window.claude && window.claude.use) {
+  claude.use("downloads").then(d => { DL = d; refreshCaps(); }).catch(() => {});
+  claude.use("tts").then(t => { TTS = t; }).catch(() => {});
+  claude.use("assets").then(a => { ASSETS = a; }).catch(() => {});
+} else {
+  DL = {save: async ({filename, data}) => {
+    const blob = data instanceof Blob ? data : new Blob([data], {type: filename.endsWith(".pdf") ? "application/pdf" : "application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }};
+}
+function refreshCaps() { if (!$("#v-app").hidden) renderApp(); if (!$("#v-docs").hidden) renderDocs(); }
+let speaking = false, sayTok = 0;
+function stopSpeak() {
+  speaking = false;
+  try { TTS && TTS.stop(); } catch (e) {}
+  try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {}
+}
+function stopVoice() { sayTok++; stopSpeak(); }
+function speak(text, lang, btn) {
+  if (speaking) { stopVoice(); if (btn) btn.textContent = "🔊 " + T[lang].ui.listen; return; }
+  stopVoice(); speaking = true; if (btn) btn.textContent = "■ " + T[lang].ui.stop;
+  const end = () => { speaking = false; if (btn && btn.isConnected) btn.textContent = "🔊 " + T[lang].ui.listen; };
+  const browser = () => {
+    if (!window.speechSynthesis) { end(); toast("Vorlesen ist auf diesem Gerät nicht verfügbar."); return; }
+    const ut = new SpeechSynthesisUtterance(text); ut.lang = LANGS[lang].tts; ut.rate = .95; ut.onend = end; ut.onerror = end;
+    speechSynthesis.speak(ut);
+  };
+  if (TTS) TTS.speak(text, {language: LANGS[lang].tts}).then(end).catch(e => { if (e && e.code === "viewer_stopped") end(); else browser(); });
+  else browser();
+}
+function say(text, lang, onEnd) {
+  const t = ++sayTok; let fired = false;
+  const end = () => { if (!fired && t === sayTok) { fired = true; onEnd(); } };
+  const maxT = setTimeout(end, Math.max(4500, text.length * 95));
+  const browser = () => {
+    if (!window.speechSynthesis) return;
+    try { speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(text); ut.lang = LANGS[lang].tts; ut.rate = .95; ut.onend = () => { clearTimeout(maxT); end(); }; speechSynthesis.speak(ut); } catch (e) {}
+  };
+  if (TTS) TTS.speak(text, {language: LANGS[lang].tts}).then(() => { clearTimeout(maxT); end(); }).catch(() => { if (t === sayTok) browser(); });
+  else browser();
+}
+
+/* ---------- illustrated short films ---------- */
+let MARKS = true;
+const BG = '<rect width="320" height="180" fill="#D9E5EC"/><circle cx="272" cy="32" r="13" fill="#FFF1BF"/><rect y="150" width="320" height="30" fill="#B49A7A"/><rect y="149" width="320" height="2.5" fill="#97805F"/>';
+const u = (id, x, y) => `<use href="#p-${id}" x="${x}" y="${y}"/>`;
+const g = (x, y, inner, cls = "", s = 1) => `<g transform="translate(${x} ${y})${s !== 1 ? ` scale(${s})` : ""}"><g class="${cls}">${inner}</g></g>`;
+const W = (x, y, o = {}) => g(x, y, `<g style="--vest:${o.vest || "#F28C28"};--hat:${o.hat || "#F6C000"}"${o.flip ? ' transform="scale(-1 1)"' : ""}><use href="#p-w"/>${o.nohat ? "" : '<use href="#p-hat"/>'}${o.ear ? '<use href="#p-ear"/>' : ""}${o.mask ? '<use href="#p-mask"/>' : ""}</g>`, o.cls || "", o.s || 1);
+const OK = (x, y) => MARKS ? g(x, y, '<circle r="15" fill="#2E7D32" stroke="#fff" stroke-width="2"/><path d="M-7 0l5 5 9-10" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>', "pop") : "";
+const NO = (x, y) => MARKS ? g(x, y, '<circle r="15" fill="#C62828" stroke="#fff" stroke-width="2"/><path d="M-6 -6l12 12M6 -6l-12 12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>', "pop") : "";
+const LOAD = (x, len) => g(x, 16, `<line x1="0" y1="0" x2="0" y2="${len}" stroke="#37474F" stroke-width="1.3"/><rect x="-17" y="${len}" width="34" height="18" fill="#8D6E63" stroke="#5D4037"/>`, "swing");
+const DUST = (x, y) => g(x, y, [0, 1, 2, 3].map(i => `<circle cx="${i * 9}" cy="${-i * 6}" r="${9 + i * 2}" fill="#BDB6AE"/>`).join(""), "puff");
+const DROPS = (x, y) => g(x, y, [0, 1, 2, 3, 4, 5].map(i => `<circle cx="${i * 4 - 10}" cy="${(i % 2) * 5}" r="1.8" fill="#1E88E5"/>`).join(""), "drop");
+const WAVES = (x, y) => g(x, y, [10, 18, 26].map(r => `<path d="M0 ${-r}A${r} ${r} 0 0 1 0 ${r}" fill="none" stroke="#455A64" stroke-width="2.5"/>`).join(""), "wave");
+const TXT = (x, y, t, size = 14, fill = "#141A20") => `<text x="${x}" y="${y}" font-size="${size}" font-weight="700" font-family="Barlow Condensed, Arial Narrow, sans-serif" text-anchor="middle" fill="${fill}">${t}</text>`;
+const PATHW = '<rect y="152" width="320" height="9" fill="#9CCC65"/>';
+const SC = {
+  b1: () => u("fence", 14, 150) + u("fence", 72, 150) + g(170, 150, '<rect x="-2" y="-62" width="4" height="62" fill="#78909C"/>' + u("mand-h", 0, -76)) + W(250, 150, {cls: "walk"}),
+  b2: () => u("cont", 16, 150) + W(130, 150, {hat: "#FFFFFF", vest: "#1565C0"}) + W(175, 150, {flip: true}) + u("talk", 152, 70) + OK(270, 60),
+  path_ok: () => u("exit", 160, 48) + PATHW + g(44, 147, u("pallet", 0, 0), "", .8) + g(290, 147, u("pallet", 0, 0), "", .8) + W(160, 152, {cls: "walk"}) + OK(270, 92),
+  path_bad: () => u("exit", 160, 48) + PATHW + u("pallet", 160, 157) + u("pallet", 206, 157) + u("pallet", 183, 147) + W(100, 152) + NO(270, 92),
+  b4: () => g(160, 92, u("bottle", 0, 20) + u("ban", 0, 0), "", 1.6) + W(60, 150) + W(260, 150, {flip: true}),
+  k1: () => u("crane", 236, 150) + W(60, 150) + W(110, 150, {vest: "#43A047", hat: "#FFFFFF"}) + W(160, 150, {vest: "#1E88E5", hat: "#E53935"}) + g(110, 52, u("talk", 0, 0), "pop"),
+  k2: () => u("cont", 30, 150) + g(88, 128, u("plan", 0, 0), "pop") + W(150, 150, {flip: true}) + OK(270, 60),
+  rail_ok: () => u("slab", 0, 90) + u("rail", 128, 90) + W(100, 90) + OK(270, 60),
+  rail_bad: () => u("slab", 0, 90) + '<g transform="translate(200 150) rotate(-8) scale(.8)"><use href="#p-rail"/></g>' + W(178, 90, {flip: true}) + NO(270, 60),
+  k4: () => W(120, 150, {vest: "#43A047"}) + W(200, 150, {flip: true, vest: "#1E88E5", hat: "#FFFFFF"}) + u("talk", 134, 70) + '<g transform="translate(186 70) scale(-1 1)"><use href="#p-talk"/></g>' + OK(160, 34),
+  p1: () => W(160, 150, {s: 1.5}) + g(78, 56, u("mand-h", 0, 0), "pop") + g(78, 104, u("mand-e", 0, 0), "pop d2") + g(242, 80, u("mand-b", 0, 0), "pop d3"),
+  ppe_ok: () => W(160, 150, {s: 1.5}) + OK(250, 50),
+  ppe_bad: () => W(160, 150, {s: 1.5, nohat: true}) + NO(250, 50),
+  p3: () => W(110, 150, {s: 1.4, ear: true, mask: true}) + u("saw", 230, 150) + WAVES(258, 106),
+  p4: () => g(90, 235, '<g style="--hat:#F6C000"><use href="#p-hat"/></g><path d="M-2 -71l3 4-3 3 3 4" stroke="#263238" stroke-width="1.2" fill="none"/>', "", 2.2) + '<path d="M140 92h36M166 82l10 10-10 10" stroke="#141A20" stroke-width="4" fill="none" stroke-linecap="round"/>' + g(230, 235, '<g style="--hat:#F6C000"><use href="#p-hat"/></g>', "pop", 2.2) + NO(90, 56) + OK(230, 56),
+  a1: () => u("slab", 0, 90) + u("rail", 128, 90) + W(140, 90, {cls: "walk"}),
+  edge_ok: () => u("slab", 0, 90) + u("rail", 128, 90) + W(160, 90) + OK(270, 60),
+  edge_bad: () => u("slab", 0, 90) + W(178, 90) + NO(270, 60),
+  a3: () => u("scaf", 110, 150) + W(150, 100) + g(110, 88, u("tag", 0, 0), "pop") + OK(270, 60),
+  a4: () => u("slab", -40, 90) + '<g transform="translate(190 150) scale(-1 1)"><use href="#p-ladder"/></g>' + W(174, 118, {s: .9}) + OK(270, 50),
+  m1: () => u("crane", 40, 150) + LOAD(160, 50) + W(262, 150),
+  m2: () => u("saw", 170, 150) + g(170, 124, '<circle r="21" fill="none" stroke="#2E7D32" stroke-width="3" stroke-dasharray="5 4"/>', "blink") + W(96, 150, {ear: true, mask: true}) + OK(270, 60),
+  m3: () => u("box", 70, 150) + '<path d="M76 150Q140 132 200 150T300 147" stroke="#263238" stroke-width="3" fill="none"/>' + g(200, 146, '<path d="M0 -11l3 7 8-2-5 6 6 5-8 1-1 8-3-7-8 3 4-7-6-5 8-1z" fill="#FFC107" stroke="#E65100"/>', "blink") + NO(200, 100) + W(276, 150, {flip: true}),
+  load_ok: () => u("crane", 40, 150) + LOAD(150, 40) + '<path d="M112 152h76" stroke="#C62828" stroke-width="3" stroke-dasharray="6 5"/>' + W(262, 150) + OK(262, 52),
+  load_bad: () => u("crane", 40, 150) + LOAD(150, 40) + W(150, 150) + NO(262, 52),
+  s1: () => u("saw", 160, 150) + DUST(178, 116) + W(92, 150),
+  dust_ok: () => u("saw", 165, 150) + DROPS(165, 100) + W(96, 150, {mask: true}) + OK(268, 50),
+  dust_bad: () => u("saw", 165, 150) + DUST(182, 116) + W(96, 150) + NO(268, 50),
+  s3: () => W(110, 150, {s: 1.4, ear: true}) + WAVES(176, 92) + g(252, 74, '<rect x="-38" y="-17" width="76" height="34" rx="5" fill="#263238"/>' + TXT(0, 6, "85 dB(A)", 16, "#F6A800")),
+  s4: () => u("can", 96, 150) + g(96, 124, u("ghs", 0, 0), "", .55) + g(220, 82, u("ghs", 0, 0), "pop", 1.5) + W(40, 150),
+  n1: () => g(160, 94, u("phone", 0, 0) + g(0, -8, TXT(0, 0, "144", 24, "#C62828"), "blink") + TXT(0, 18, "122 · 133", 13) + TXT(0, 34, "112", 13)) + W(70, 150),
+  n2: () => g(92, 94, u("phone", 0, 0) + TXT(0, 6, "144", 26, "#C62828")) + W(176, 150, {flip: true}) + g(262, 94, '<rect x="-44" y="-44" width="88" height="88" rx="6" fill="#fff" stroke="#90A4AE"/>' + TXT(0, -16, "144", 18, "#C62828") + TXT(0, 4, "122", 16) + TXT(0, 22, "133", 16) + TXT(0, 40, "112", 16)),
+  n3: () => u("aid", 160, 150) + W(98, 150, {vest: "#1E88E5"}) + W(222, 150, {flip: true}) + g(160, 88, '<path d="M0 -12V12M-12 0H12" stroke="#2E7D32" stroke-width="7"/>', "blink"),
+  n4: () => u("sammel", 250, 150) + W(150, 150, {cls: "walkto"}) + W(196, 150, {cls: "walkto", vest: "#43A047"}) + u("ext", 40, 150),
+  ext_ok: () => u("extsign", 140, 84) + u("ext", 140, 150) + W(80, 150) + OK(268, 60),
+  ext_bad: () => u("extsign", 140, 84) + u("ext", 140, 150) + u("pallet", 162, 150) + u("pallet", 162, 125) + W(80, 150) + NO(268, 60)
+};
+const FILM = {baustelle:["b1","b2","path_ok","b4"], baukg:["k1","k2","rail_ok","k4"], psa:["p1","ppe_ok","p3","p4"], absturz:["a1","edge_ok","a3","a4"], maschinen:["m1","m2","m3","load_ok"], staub:["s1","dust_ok","s3","s4"], notfall:["n1","n2","n3","n4"]};
+const PQ = {baustelle:["path_ok","path_bad"], baukg:["rail_ok","rail_bad"], psa:["ppe_ok","ppe_bad"], absturz:["edge_ok","edge_bad"], maschinen:["load_ok","load_bad"], staub:["dust_ok","dust_bad"], notfall:["ext_ok","ext_bad"]};
+function scene(id, marks = true) { MARKS = marks; const s = BG + SC[id](); MARKS = true; return s; }
+
+let ACTIVE = null, PREV = null, FILMKEY = null;
+function mountFilm(root, key, lang, o = {}) {
+  const L = T[lang], ui = L.ui, caps = [L.hook[key], ...L.m[key].slice(1)], scenes = FILM[key];
+  const st = {i: 0, playing: false, tok: 0, stopDone: !o.stop, done: !!o.done, sound: true, dead: false};
+  root.innerHTML = `<div class="film"><div class="stage"><svg viewBox="0 0 320 180" role="img" aria-label="${esc(ui.film + ": " + L.m[key][0])}"></svg><div class="ov"></div></div>
+    <div class="cap" aria-live="polite"></div>
+    <div class="fctl"><button type="button" class="btn small ghost f-tog" disabled aria-label="Pause">❚❚</button><div class="dots">${scenes.map(() => "<i></i>").join("")}</div><label class="chk"><input type="checkbox" class="f-snd" checked> ${esc(ui.sound)}</label></div></div>`;
+  const svg = $("svg", root), ov = $(".ov", root), cap = $(".cap", root), tog = $(".f-tog", root), dots = [...root.querySelectorAll(".dots i")];
+  const draw = (id, c, marks = true) => { svg.innerHTML = scene(id, marks); cap.textContent = c; };
+  const mark = () => dots.forEach((d, j) => { d.className = st.done || j < st.i ? "seen" : j === st.i ? "on" : ""; });
+  const overlay = html => { ov.classList.remove("clear"); ov.innerHTML = html; ov.hidden = !html; };
+  const startBtn = label => {
+    overlay(`<button type="button" class="bigplay">${esc(label)}</button>`);
+    $("button", ov).onclick = () => { st.i = 0; overlay(""); st.playing = true; tog.disabled = false; tog.textContent = "❚❚"; show(); };
+  };
+  function show() {
+    mark(); draw(scenes[st.i], caps[st.i]);
+    if (!st.playing) return;
+    const tok = ++st.tok, adv = () => { if (tok === st.tok && st.playing && !st.dead) next(); };
+    if (st.sound) say(caps[st.i], lang, () => setTimeout(adv, 700)); else setTimeout(adv, 5200);
+  }
+  function next() {
+    if (st.i === 1 && !st.stopDone) return askStop();
+    if (st.i < scenes.length - 1) { st.i++; show(); return; }
+    st.playing = false; st.done = true; tog.disabled = true; mark();
+    startBtn(ui.replay); if (o.onDone) o.onDone();
+  }
+  function askStop() {
+    st.playing = false; tog.disabled = true; stopVoice();
+    const good = Math.random() < .5;
+    draw(PQ[key][good ? 0 : 1], "", false);
+    overlay(`<span class="stopbadge">${esc(ui.stopQ.split(/[!?]/)[0])}</span>`); ov.classList.add("clear");
+    cap.innerHTML = (`<div class="stopq" role="group" aria-label="${esc(ui.stopQ)}"><b>${esc(ui.stopQ)}</b><div class="row"><button type="button" class="btn primary" data-v="1">✓ ${esc(ui.yes)}</button><button type="button" class="btn" data-v="0">✗ ${esc(ui.no)}</button></div><p class="msg" aria-live="polite"></p></div>`);
+    cap.querySelectorAll("[data-v]").forEach(b => b.onclick = () => {
+      const right = (b.dataset.v === "1") === good, msg = $(".msg", cap);
+      if (o.onAnswer) o.onAnswer(right);
+      if (right) {
+        msg.textContent = ui.right + (o.points ? " +10" : ""); msg.className = "msg ok";
+        cap.querySelectorAll("[data-v]").forEach(x => x.disabled = true);
+        setTimeout(() => { if (st.dead) return; st.stopDone = true; overlay(""); st.playing = true; tog.disabled = false; st.i++; show(); }, 1100);
+      } else { msg.textContent = ui.wrong; msg.className = "msg bad"; b.disabled = true; }
+    });
+  }
+  tog.onclick = () => {
+    if (st.playing) { st.playing = false; st.tok++; stopVoice(); tog.textContent = "▶"; tog.setAttribute("aria-label", "Weiter abspielen"); }
+    else { st.playing = true; tog.textContent = "❚❚"; tog.setAttribute("aria-label", "Pause"); show(); }
+  };
+  $(".f-snd", root).onchange = e => { st.sound = e.target.checked; if (!st.sound) stopVoice(); if (st.playing) { st.tok++; show(); } };
+  mark(); draw(scenes[0], caps[0]); startBtn(st.done ? ui.replay : ui.play);
+  return {destroy() { st.dead = true; st.playing = false; st.tok++; stopVoice(); }};
+}
+
+/* ---------- routing ---------- */
+function route() {
+  const h = location.hash.slice(1);
+  stopVoice();
+  if (ACTIVE) { ACTIVE.destroy(); ACTIVE = null; }
+  const view = h === "app" ? "app" : h === "unterlagen" ? "docs" : h === "bestellen" || h === "danke" ? "order" : ["impressum", "datenschutz", "agb"].includes(h) ? "legal" : h.startsWith("b-") ? "flow" : "start";
+  $("#v-order").hidden = view !== "order";
+  $("#v-legal").hidden = view !== "legal";
+  $("#v-start").hidden = view !== "start";
+  $("#v-app").hidden = view !== "app";
+  $("#v-docs").hidden = view !== "docs";
+  $("#v-flow").hidden = view !== "flow";
+  document.querySelectorAll("[data-nav]").forEach(a => { if (a.dataset.nav === (h || "start")) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if (view === "app") renderApp();
+  if (view === "docs") renderDocs();
+  if (view === "flow") startFlow(h.slice(2));
+  if (view === "order") { if (h === "danke") showThanks(); else openOrder(); }
+  if (view === "legal") renderLegal(h);
+  if (h === "preise") $("#sec-preise").scrollIntoView({behavior:"smooth"});
+  else if (h === "demo") $("#sec-demo").scrollIntoView({behavior:"smooth"});
+  else window.scrollTo(0, 0);
+}
+function changed() {
+  if (!$("#v-app").hidden) renderApp();
+  if (!$("#v-flow").hidden && !F) startFlow(location.hash.slice(3));
+}
+
+/* ---------- landing: calculator ---------- */
+const PLANS = [["Basis", 49, 6], ["Profi", 99, 9], ["GU", 199, 12]];
+function calc() {
+  const n = +$("#calc-n").value;
+  $("#calc-out").textContent = n + " Mitarbeiter: " + PLANS.map(([p, b, m]) => p + " " + (b + n * m).toLocaleString("de-AT") + " €").join(" · ") + " pro Monat";
+}
+
+/* ---------- app ---------- */
+function renderApp() {
+  updateMode();
+  const sites = Store.list("site").sort((a, b) => b.created.localeCompare(a.created));
+  const recs = Store.list("rec").sort((a, b) => b.at.localeCompare(a.at));
+  const st = recs.map(status);
+  const warn = st.filter(s => s[0] === "warn").length, bad = st.filter(s => s[0] === "bad").length;
+  $("#stats").innerHTML =
+    `<div class="stat"><b>${sites.length}</b><span>Baustellen</span></div>
+     <div class="stat"><b>${recs.length}</b><span>Nachweise</span></div>
+     <div class="stat"><b>${st.length - warn - bad}</b><span>gültig</span></div>
+     <div class="stat"><b style="color:var(--warn)">${warn}</b><span>läuft bald ab</span></div>
+     <div class="stat"><b style="color:var(--bad)">${bad}</b><span>abgelaufen</span></div>`;
+  const pdfOk = DL && window.jspdf;
+  $("#sites").innerHTML = sites.length ? sites.map(s => {
+    const n = recs.filter(r => r.siteId === s.id).length;
+    const kg = s.baukg ? [s.baukg.koord && "Koordinator", s.baukg.vorank && "Vorankündigung", s.baukg.sige && "SiGe-Plan"].filter(Boolean) : [];
+    return `<div class="site">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h3>${esc(s.name)}</h3>${s.example ? '<span class="pill neutral">Beispiel</span>' : ""}</div>
+      <div class="meta">${esc(s.address)}<br>Polier: ${esc(s.polier || "–")} · Koordinator: ${esc(s.koord || "–")}<br>${s.mods.length} Themen · alle ${s.interval} Monate · <span class="mono">${n}</span> Nachweise${s.video ? " · mit Video" : ""}</div>
+      ${kg.length ? `<div class="chips">${kg.map(x => `<span class="pill warn">BauKG: ${x}</span>`).join("")}</div>` : ""}
+      <div class="acts">
+        <a class="btn small primary" href="#b-${s.id}">Unterweisung starten</a>
+        <button class="btn small ghost" type="button" data-qr="${s.id}">QR-Code</button>
+        ${pdfOk ? `<button class="btn small ghost" type="button" data-aushang="${s.id}">Aushang (PDF)</button>` : ""}
+        <button class="btn small ghost" type="button" data-filter="${s.id}">Nachweise</button>
+        <button class="btn small danger" type="button" data-del="${s.id}">Löschen</button>
+      </div></div>`;
+  }).join("") : `<div class="empty">
+      <p><b>Noch keine Baustelle angelegt.</b></p>
+      <p class="muted">Legen Sie Ihre erste Baustelle an oder laden Sie eine Beispiel-Baustelle mit drei Beispiel-Nachweisen, um den Ablauf zu sehen.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary small" type="button" id="btn-example">Beispiel laden</button><button class="btn small" type="button" data-open-new>Neue Baustelle</button></div>
+    </div>`;
+  const sel = $("#rec-filter"), cur = sel.value;
+  sel.innerHTML = `<option value="">Alle Baustellen</option>` + sites.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  sel.value = sites.some(s => s.id === cur) ? cur : "";
+  const shown = recs.filter(r => !sel.value || r.siteId === sel.value);
+  $("#recs").innerHTML = shown.length ? `<table><thead><tr><th>Person</th><th>Baustelle</th><th>Datum</th><th>Verständnis</th><th>Status</th><th></th></tr></thead><tbody>${
+    shown.map(r => { const [c, l] = status(r), q = r.quiz, v = q.first !== undefined ? q.first + "/" + q.total : q.total + "/" + q.total; return `<tr>
+      <td>${esc(r.name)}<span class="sub">${esc(r.firm)} · ${esc(LANGS[r.lang].label.split(" ")[0])}</span></td>
+      <td>${esc(r.siteName)}</td>
+      <td class="mono">${fmtD(r.at)}<span class="sub">bis ${fmtD(r.valid)}</span></td>
+      <td class="mono">${v}${r.miss && r.miss.length ? `<span class="sub">nachbesprochen: ${r.miss.length}</span>` : ""}</td>
+      <td><span class="pill ${c}">${l}</span></td>
+      <td><button class="btn small ghost" type="button" data-doc="${r.id}">Ansehen</button></td></tr>`; }).join("")
+  }</tbody></table>` : `<div class="empty"><p class="muted">Noch keine Nachweise. Starten Sie bei einer Baustelle die Unterweisung, um den ersten Nachweis zu erzeugen.</p></div>`;
+}
+
+function exampleData() {
+  const now = new Date(), id = uid("S");
+  const site = {kind:"site", id, example:true, created:now.toISOString(), name:"Wohnhausanlage Am Mühlbach, Bauteil B", address:"Mühlbachgasse 7, 4020 Linz", polier:"M. Huber", ersthelfer:"A. Novak, Baucontainer 1", sammelplatz:"Parkplatz Einfahrt Nord, neben Kran 1", koord:"Ing. K. Berger", sige:"Aushang Baubüro, Container 1", extra:"Kranbetrieb Mo bis Fr 7 bis 16 Uhr. Zufahrt nur über die Mühlbachgasse. Tiefgarage: Absturzkante bei Achse 4 ist gesichert, Absperrung nicht entfernen.", mods:[...MODS], interval:12, baukg:{days:180, max:35, pt:4200, firms:6, danger:true, koord:true, vorank:true, sige:true}};
+  const mk = (name, firm, lang, monthsAgo, miss) => { const at = addMonths(now, -monthsAgo), tot = MODS.length * 3, first = tot - miss.length; return {kind:"rec", id:uid("R"), example:true, siteId:id, siteName:site.name, siteAddress:site.address, name, firm, lang, mods:[...MODS], quiz:{total:tot, first, score:first * 10, max:tot * 10}, miss, films:MODS.length, sig:null, polier:"M. Huber", oral:true, at:at.toISOString(), valid:addMonths(at, 12).toISOString()}; };
+  return [site, mk("J. Kovač (Beispiel)", "Beispielbau GmbH", "bks", 1, []), mk("A. Popescu (Beispiel)", "Fassaden Beispiel KG", "ro", 11.5, ["absturz"]), mk("L. Szabó (Beispiel)", "Beispielbau GmbH", "hu", 13, ["staub", "baukg"])];
+}
+
+/* site form */
+function baukgCheck() {
+  const n = id => Math.max(0, +$(id).value || 0);
+  const r = {days:n("#s-days"), max:n("#s-max"), pt:n("#s-pt"), firms:n("#s-firms"), danger:$("#s-danger").checked};
+  r.koord = r.firms >= 2; r.vorank = (r.days > 30 && r.max > 20) || r.pt > 500; r.sige = r.vorank || r.danger;
+  return r;
+}
+function renderBaukg() {
+  const r = baukgCheck();
+  const row = (l, on, note) => `<div><span>${l}</span><span class="pill ${on ? "warn" : "ok"}">${on ? "erforderlich" : "nicht erforderlich"}</span></div>${on ? `<small class="muted">${note}</small>` : ""}`;
+  $("#baukg-res").innerHTML = row("Baustellenkoordinator (§ 3)", r.koord, "Bestellung durch den Bauherrn.") + row("Vorankündigung (§ 6)", r.vorank, "Elektronisch an die Baustellendatenbank, spätestens 2 Wochen vor Beginn, auf der Baustelle aushängen.") + row("SiGe-Plan (§ 7)", r.sige, "Vor Eröffnung der Baustelle erstellen und auf der Baustelle zugänglich machen.") + `<small class="muted">Vereinfachte Prüfung nach BauKG, ersetzt keine Rechtsberatung.</small>`;
+}
+function openNew() {
+  $("#f-site").reset();
+  $("#s-mods").innerHTML = MODS.map(k => `<label><input type="checkbox" id="mod-${k}" value="${k}" checked> ${esc(title(k))}</label>`).join("");
+  $("#s-video-f").hidden = !ASSETS;
+  renderBaukg();
+  $("#m-site").hidden = false; $("#s-name").focus();
+}
+$("#f-site").addEventListener("submit", async e => {
+  e.preventDefault();
+  const mods = MODS.filter(k => $("#mod-" + k).checked);
+  if (!mods.length) { toast("Bitte mindestens ein Thema auswählen."); return; }
+  const btn = $("#s-save"); btn.disabled = true; btn.textContent = "Speichere …";
+  let video = null; const f = $("#s-video").files[0];
+  if (f && ASSETS) { try { const r = await ASSETS.upload(f); video = {id: r.id, url: r.url}; } catch (err) { toast("Video konnte nicht hochgeladen werden. Die Baustelle wird ohne Video gespeichert."); } }
+  await Store.put({kind:"site", id:uid("S"), created:new Date().toISOString(), name:$("#s-name").value.trim(), address:$("#s-addr").value.trim(), polier:$("#s-polier").value.trim(), ersthelfer:$("#s-eh").value.trim(), sammelplatz:$("#s-sammel").value.trim(), koord:$("#s-koord").value.trim(), sige:$("#s-sige").value.trim(), extra:$("#s-extra").value.trim(), mods, interval:+$("#s-int").value, baukg:baukgCheck(), video});
+  btn.disabled = false; btn.textContent = "Baustelle speichern";
+  $("#m-site").hidden = true; toast("Baustelle gespeichert.");
+});
+
+/* QR */
+const siteLink = id => (APP_URL || location.href.split("#")[0]) + "#b-" + id;
+function openQR(id) {
+  const s = Store.get(id); if (!s) return;
+  const link = siteLink(id);
+  $("#qr-site").textContent = s.name;
+  $("#qr-link").value = link;
+  const box = $("#qr-box"); box.innerHTML = "";
+  if (window.QRCode) new QRCode(box, {text: link, width: 220, height: 220, colorDark: "#141A20", colorLight: "#ffffff"});
+  else box.textContent = "QR-Code konnte nicht geladen werden.";
+  $("#m-qr").hidden = false;
+}
+
+/* ---------- PDF: Nachweis, Aushang, Unterweisungsmappe ---------- */
+const pdfSafe = s => [...String(s ?? "").replace(/[–—]/g, "-").replace(/[•→]/g, "-").replace(/…/g, "...").replace(/[„“”]/g, '"').replace(/✓/g, "ok").replace(/[đĐ]/g, c => c === "đ" ? "d" : "D").replace(/[łŁ]/g, c => c === "ł" ? "l" : "L")]
+  .map(ch => ch.charCodeAt(0) <= 255 ? ch : (ch.normalize("NFD").replace(/[̀-ͯ]/g, "") || "?")).map(ch => ch.charCodeAt(0) <= 255 ? ch : "?").join("");
+const fileSafe = s => pdfSafe(s).replace(/[^A-Za-z0-9]+/g, "_").slice(0, 40);
+function newPDF() { return new window.jspdf.jsPDF({unit: "mm", format: "a4"}); }
+function pdfHead(d, t, sub) {
+  d.setFillColor(246, 168, 0); d.rect(0, 0, 210, 6, "F"); d.setTextColor(20);
+  d.setFont("helvetica", "bold"); d.setFontSize(18); d.text(pdfSafe(t), 20, 22, {maxWidth: 170});
+  if (sub) { d.setFont("helvetica", "normal"); d.setFontSize(10); d.setTextColor(90); d.text(pdfSafe(sub), 20, 29, {maxWidth: 170}); }
+  d.setTextColor(20); d.setFont("helvetica", "normal");
+}
+function pdfRows(d, rows, y, kx = 20, vx = 70, w = 120) {
+  d.setFontSize(11);
+  rows.forEach(([k, v]) => { const lines = d.splitTextToSize(pdfSafe(v), w); d.setTextColor(100); d.text(pdfSafe(k), kx, y); d.setTextColor(20); d.text(lines, vx, y); y += Math.max(1, lines.length) * 5.5 + 3; });
+  return y;
+}
+function para(d, text, y, x = 20, w = 170) { const lines = d.splitTextToSize(pdfSafe(text), w); d.text(lines, x, y); return y + lines.length * 5.2; }
+function block(d, t, text, y) {
+  d.setFont("helvetica", "bold"); d.setFontSize(12); d.setTextColor(20); d.text(pdfSafe(t), 20, y); y += 6;
+  d.setFont("helvetica", "normal"); d.setFontSize(11); d.setTextColor(40);
+  String(text).split("\n").forEach(p => { y = para(d, p, y); });
+  return y + 5;
+}
+function pdfFoot(d, txt) { d.setFontSize(8); d.setTextColor(120); d.text(pdfSafe(txt || "Erstellt mit Sicherstart Bau (Demo). Vorlagen ersetzen nicht Evaluierung und Prüfung durch eine Sicherheitsfachkraft."), 20, 287); }
+async function savePDFDoc(d, name) {
+  if (!DL) { toast("Download ist in dieser Ansicht nicht verfügbar."); return; }
+  try { await DL.save({filename: name, data: d.output("arraybuffer")}); toast("PDF gespeichert."); }
+  catch (e) { if (!e || e.code !== "declined") toast("PDF konnte hier nicht gespeichert werden."); }
+}
+function qrDataURL(text) {
+  if (!window.QRCode) return null;
+  const div = document.createElement("div");
+  new QRCode(div, {text, width: 512, height: 512, colorDark: "#141A20", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
+  const c = $("canvas", div); return c ? c.toDataURL("image/png") : null;
+}
+function aushang(id) {
+  const s = Store.get(id); if (!s || !window.jspdf) return;
+  const d = newPDF();
+  pdfHead(d, "Baustelle: " + s.name, s.address);
+  d.setFont("helvetica", "bold"); d.setFontSize(24); d.text(pdfSafe("Sicherheitsunterweisung vor Arbeitsbeginn"), 20, 46, {maxWidth: 170});
+  d.setFont("helvetica", "normal"); d.setFontSize(12); d.setTextColor(80);
+  d.text(pdfSafe("Unterweisung · Obuka · Instruire · Oktatás: QR-Code scannen oder beim Polier melden."), 20, 70, {maxWidth: 170});
+  const q = qrDataURL(siteLink(id)); if (q) d.addImage(q, "PNG", 20, 80, 70, 70);
+  pdfRows(d, [["Polier", s.polier || "–"], ["Ersthelfer", s.ersthelfer || "–"], ["Sammelplatz", s.sammelplatz || "–"], ["Koordinator", s.koord || "–"], ["SiGe-Plan", s.sige || "–"]], 88, 100, 132, 58);
+  d.setFillColor(248, 222, 219); d.roundedRect(20, 162, 170, 24, 3, 3, "F");
+  d.setTextColor(168, 35, 27); d.setFont("helvetica", "bold"); d.setFontSize(12);
+  d.text("Notruf:   Rettung 144   ·   Feuerwehr 122   ·   Polizei 133   ·   Euronotruf 112", 105, 176, {align: "center"});
+  pdfFoot(d); savePDFDoc(d, "Aushang_" + fileSafe(s.name) + ".pdf");
+}
+function mappe() {
+  if (!window.jspdf) return;
+  const d = newPDF();
+  pdfHead(d, "Unterweisungsmappe Bau", "Sicherstart Bau · Stand " + fmtD(new Date().toISOString()) + " · § 14 ASchG, § 154 BauV, BauKG");
+  d.setFontSize(11); d.setTextColor(40);
+  let y = para(d, "Diese Mappe begleitet die Unterweisung durch den Polier. Pro Thema: Einstieg, Kernaussagen, was gezeigt wird, typische Fragen und die Zwischenfrage mit Lösung. Am Ende eine Unterschriftenliste als Papier-Reserve.", 42);
+  y += 6; d.setFont("helvetica", "bold"); d.setFontSize(12); d.setTextColor(20); d.text("Inhalt", 20, y); y += 7; d.setFont("helvetica", "normal"); d.setFontSize(11);
+  ["BauKG im Überblick", ...MODS.map(title), "Unterschriftenliste"].forEach((t, i) => { d.text(pdfSafe((i + 1) + ". " + t), 24, y); y += 6.5; });
+  pdfFoot(d);
+  d.addPage(); pdfHead(d, "BauKG im Überblick", "Bauarbeitenkoordinationsgesetz, vereinfacht");
+  y = 40; BAUKG.forEach(([t, x]) => { y = block(d, t, x, y); });
+  pdfFoot(d);
+  MODS.forEach((k, i) => {
+    d.addPage(); const m = T.de.m[k], gd = GUIDE[k], q = T.de.mq[k];
+    pdfHead(d, (i + 2) + ". " + m[0], "Rechtsgrundlage: " + gd.recht);
+    let yy = 40;
+    yy = block(d, "Einstieg", T.de.hook[k], yy);
+    yy = block(d, "Kernaussagen", m.slice(1).map(x => "- " + x).join("\n"), yy);
+    yy = block(d, "Zeigen und erklären", gd.zeigen, yy);
+    yy = block(d, "Typische Fragen", gd.fragen, yy);
+    block(d, "Zwischenfrage", q[0] + "\nLösung: " + q[1], yy);
+    pdfFoot(d);
+  });
+  d.addPage(); pdfHead(d, "Unterschriftenliste", "Papier-Reserve, falls kein Gerät verfügbar ist");
+  d.setFontSize(10); d.setFont("helvetica", "bold");
+  [["Nr.", 20], ["Name", 30], ["Firma", 80], ["Sprache", 118], ["Datum", 140], ["Unterschrift", 160]].forEach(([c, x]) => d.text(c, x, 42));
+  d.setFont("helvetica", "normal"); d.setDrawColor(200);
+  for (let r = 0; r < 19; r++) { const yy = 54 + r * 11.5; d.line(20, yy, 190, yy); d.text(String(r + 1), 20, yy - 3); }
+  d.text("Polier / unterweisende Person: ____________________________   Datum: ____________", 20, 274);
+  pdfFoot(d);
+  savePDFDoc(d, "Unterweisungsmappe_Bau.pdf");
+}
+
+/* Nachweis */
+let docRec = null;
+function docRows(r) {
+  const q = r.quiz, nm = r.mods.length;
+  return [["Nachweis-Nr.", r.id], ["Baustelle", r.siteName + (r.siteAddress ? ", " + r.siteAddress : "")], ["Person", r.name], ["Firma", r.firm], ["Datum", fmtDT(r.at)], ["Sprache", LANGS[r.lang].label],
+    ["Inhalte", r.mods.map(title).join(", ")],
+    ["Kurzfilme", (r.films ?? nm) + " von " + nm + " vollständig angesehen"],
+    ["Verständnis", q.first !== undefined ? `${q.first} von ${q.total} Zwischenfragen beim ersten Versuch richtig, am Ende alle richtig beantwortet (${q.score} von ${q.max} Punkten)` : `bestanden, ${q.total} von ${q.total} richtig`],
+    ["Nachbesprochen", r.miss && r.miss.length ? r.miss.map(title).join(", ") : "nicht nötig, alles beim ersten Versuch verstanden"],
+    ["Unterweisende Person", r.polier + ", mündliche Erläuterung und Beantwortung von Rückfragen bestätigt"],
+    ["Gültig bis", fmtD(r.valid)]];
+}
+function openDoc(id) {
+  const r = Store.get(id); if (!r) return; docRec = r;
+  const [c, l] = status(r);
+  $("#doc-body").innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap">
+      <div><p class="eyebrow">gemäß § 14 ASchG und § 154 BauV</p><h3 style="margin-top:4px;font-size:1.5rem;text-transform:uppercase">Nachweis Sicherheitsunterweisung</h3></div>
+      <span class="pill ${c}">${l}</span>
+    </div>
+    <dl>${docRows(r).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}
+      <dt>Unterschrift</dt><dd>${r.sig ? `<img class="sigimg" src="${r.sig}" alt="Unterschrift von ${esc(r.name)}">` : '<span class="muted">Beispieldaten, keine Unterschrift</span>'}</dd></dl>`;
+  $("#doc-pdf").hidden = !DL || !window.jspdf;
+  $("#m-doc").hidden = false;
+}
+function savePDF() {
+  const r = docRec; if (!r || !window.jspdf) return;
+  const d = newPDF();
+  pdfHead(d, "Nachweis Sicherheitsunterweisung", "gemäß § 14 ASchG und § 154 BauV · Nachweis-Nr. " + r.id);
+  let y = pdfRows(d, docRows(r).slice(1), 42);
+  y += 4; d.setTextColor(100); d.text("Unterschrift", 20, y); d.setTextColor(20);
+  if (r.sig) { try { d.addImage(r.sig, "PNG", 70, y - 5, 75, 30); } catch (e) {} } else d.text("Beispieldaten, keine Unterschrift", 70, y);
+  d.setDrawColor(180); d.line(70, y + 27, 160, y + 27);
+  pdfFoot(d);
+  savePDFDoc(d, "Nachweis_" + fileSafe(r.name) + "_" + r.at.slice(0, 10) + ".pdf");
+}
+
+/* ---------- Unterlagen ---------- */
+function renderDocs() {
+  $("#btn-mappe").hidden = !DL || !window.jspdf;
+  $("#kg").innerHTML = BAUKG.map(([t, x]) => `<div><b>${esc(t)}</b><p>${esc(x)}</p></div>`).join("");
+  $("#docs").innerHTML = MODS.map((k, i) => {
+    const m = T.de.m[k], gd = GUIDE[k], q = T.de.mq[k];
+    return `<article class="dcard"><div class="thumb"><svg viewBox="0 0 320 180" aria-hidden="true">${scene(FILM[k][0])}</svg></div><div class="in">
+      <p class="eyebrow mono">Thema ${i + 1} von ${MODS.length}</p><h3>${esc(m[0])}</h3>
+      <ul>${m.slice(1).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <dl><dt>Zeigen und erklären</dt><dd>${esc(gd.zeigen)}</dd><dt>Typische Fragen</dt><dd>${esc(gd.fragen)}</dd><dt>Zwischenfrage</dt><dd>${esc(q[0])} <b>${esc(q[1])}</b></dd><dt>Rechtsgrundlage</dt><dd>${esc(gd.recht)}</dd></dl>
+      <button class="btn small" type="button" data-film="${k}" style="justify-self:start">▶ Kurzfilm ansehen</button></div></article>`;
+  }).join("");
+}
+function openFilm(k) { FILMKEY = k; $("#m-film-t").textContent = title(k); $("#m-film").hidden = false; mountPrev(); }
+function mountPrev() { if (PREV) PREV.destroy(); PREV = mountFilm($("#film-body"), FILMKEY, $("#film-lang").value, {stop: true}); }
+function closeModal(m) { m.hidden = true; if (m.id === "m-film" && PREV) { PREV.destroy(); PREV = null; } }
+
+/* ---------- worker flow ---------- */
+let F = null;
+function startFlow(id) {
+  const s = Store.get(id);
+  if (!s) {
+    F = null;
+    $("#flow").innerHTML = `<div class="card"><h2>Baustelle nicht gefunden</h2><p class="muted">Dieser Link gehört zu einer Baustelle, die in diesem Konto oder Browser nicht gespeichert ist. Falls die Daten noch laden, erscheint die Unterweisung gleich.</p><a class="btn" href="#app" style="justify-self:start">Zur Übersicht</a></div>`;
+    return;
+  }
+  F = {site: s, polier: s.polier || ""};
+  newPerson();
+}
+function newPerson() {
+  const s = F.site, N = s.mods.length;
+  Object.assign(F, {lang: null, i: 0, steps: ["lang", "info", ...s.mods.flatMap(k => ["film:" + k, "quiz:" + k]), "sign", "polier", "done"], films: {}, qs: {}, ans: {}, score: 0, first: 0, total: N * 3, max: N * 30, miss: new Set(), name: "", firm: "", sig: null, rec: null});
+  renderFlow();
+}
+function track(key, slot, right) {
+  const a = F.ans[key] || (F.ans[key] = {});
+  if (slot in a) return;
+  a[slot] = right;
+  if (right) { F.score += 10; F.first++; } else F.miss.add(key);
+  const sc = $("#score"); if (sc) sc.textContent = "★ " + F.score;
+}
+function go(d) { stopVoice(); F.i = Math.max(0, Math.min(F.steps.length - 1, F.i + d)); renderFlow(); window.scrollTo(0, 0); }
+
+function renderFlow() {
+  if (ACTIVE) { ACTIVE.destroy(); ACTIVE = null; }
+  const step = F.steps[F.i], [kind, key] = step.split(":"), L = F.lang ? T[F.lang] : T.de, ui = L.ui, s = F.site, N = s.mods.length;
+  const pct = Math.round(F.i / (F.steps.length - 1) * 100);
+  let body = "", nav = "";
+  const back = F.i > 0 && kind !== "done" ? `<button class="btn ghost" type="button" data-go="-1">← ${esc(ui.back)}</button>` : "<span></span>";
+  if (kind === "lang") {
+    body = `<div class="card"><p class="eyebrow">Sprache · Jezik · Limba · Nyelv</p><h2>${esc(s.name)}</h2>
+      <div class="langs">${Object.entries(LANGS).map(([k, v]) => `<button type="button" data-lang="${k}">${esc(v.label)}<small>${esc(v.hint)}</small></button>`).join("")}</div></div>`;
+  } else if (kind === "info") {
+    const rows = [[ui.address, s.address], [ui.assembly, s.sammelplatz || "–"], [ui.firstaid, s.ersthelfer || "–"], [ui.polier, s.polier || "–"], [ui.koord, s.koord || "–"], [ui.sige, s.sige || "–"]];
+    const txt = [ui.info, ...rows.map(([k, v]) => k + ": " + v), ui.emergency + ": 144, 122, 133, 112"].join(". ");
+    body = `<div class="card"><p class="eyebrow">${esc(ui.info)}</p><h2>${esc(s.name)}</h2>
+      <button class="btn small ghost listen" type="button" data-speak="${esc(txt)}">🔊 ${esc(ui.listen)}</button>
+      ${s.video ? `<video class="sitevid" controls playsinline preload="metadata" src="${esc(s.video.url || "/_blob/" + s.video.id)}"></video>` : ""}
+      <dl class="infos">${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}<dt>${esc(ui.emergency)}</dt><dd><div class="nums"><span>144</span><span>122</span><span>133</span><span>112</span></div></dd></dl>
+      ${s.extra ? `<div><p class="eyebrow">${esc(ui.extra)}${F.lang !== "de" ? " · Deutsch" : ""}</p><p style="margin-top:6px">${esc(s.extra)}</p></div>` : ""}</div>`;
+    nav = `<button class="btn primary" type="button" data-go="1">${esc(ui.next)} →</button>`;
+  } else if (kind === "film") {
+    const n = s.mods.indexOf(key) + 1, m = L.m[key], seen = !!F.films[key];
+    body = `<div class="card"><p class="eyebrow mono">${n} / ${N} · ${esc(ui.film)}</p><h2>${esc(m[0])}</h2><div id="filmbox"></div>
+      <div class="merke" id="merke"${seen ? "" : " hidden"}><p class="eyebrow">${esc(ui.merke)}</p><button class="btn small ghost listen" type="button" data-speak="${esc(m.slice(1).join(" "))}">🔊 ${esc(ui.listen)}</button><ul class="rules">${m.slice(1).map(p => `<li><span>${esc(p)}</span></li>`).join("")}</ul></div>
+      <p class="muted" id="watch-note"${seen ? " hidden" : ""}>${esc(ui.watch)}</p></div>`;
+    nav = `<button class="btn primary" type="button" data-go="1" id="film-next"${seen ? "" : " disabled"}>${esc(ui.quizT2)} →</button>`;
+  } else if (kind === "quiz") {
+    const n = s.mods.indexOf(key) + 1, m = L.m[key], q = L.mq[key];
+    const z = F.qs[key] || (F.qs[key] = {order: Math.random() < .5 ? ["ok", "bad"] : ["bad", "ok"], pick: null, wp: [], topts: shuffle([0, 1, 2]), tsel: null, wt: []});
+    const pd = z.pick === "ok", td = z.tsel === 0;
+    body = `<div class="card"><p class="eyebrow mono">${n} / ${N} · ${esc(ui.quizT2)}</p><h2>${esc(m[0])}</h2>
+      <div class="qblock"><b>1. ${esc(ui.pick)}</b><div class="picks">${z.order.map((v, vi) => `<button type="button" class="pick${pd && v === "ok" ? " right" : ""}${z.wp.includes(v) ? " wrongp" : ""}" data-pick="${v}" aria-label="Bild ${vi + 1}"${pd || z.wp.includes(v) ? " disabled" : ""}><svg viewBox="0 0 320 180" aria-hidden="true">${scene(PQ[key][v === "ok" ? 0 : 1], pd || z.wp.includes(v))}</svg></button>`).join("")}</div>
+      ${pd ? `<p class="fb ok">✓ ${esc(ui.right)}</p>` : z.wp.length ? `<p class="fb bad">${esc(ui.wrong)}</p>` : ""}</div>
+      <div class="qblock"><b>2. ${esc(q[0])}</b><div class="opts">${z.topts.map(oi => `<button type="button" class="opt${td && oi === 0 ? " right" : ""}${z.wt.includes(oi) ? " wrongp" : ""}" data-topt="${oi}"${td || z.wt.includes(oi) ? " disabled" : ""}>${esc(q[1 + oi])}</button>`).join("")}</div>
+      ${td ? `<p class="fb ok">✓ ${esc(ui.right)}</p>` : z.wt.length ? `<p class="fb bad">${esc(ui.wrong)}</p>` : ""}</div></div>`;
+    nav = `<button class="btn primary" type="button" data-go="1"${pd && td ? "" : " disabled"}>${esc(ui.next)} →</button>`;
+  } else if (kind === "sign") {
+    body = `<div class="card"><h2>${esc(ui.send)}</h2>
+      <div class="grid2"><label class="field"><span>${esc(ui.name)}</span><input type="text" id="w-name" value="${esc(F.name)}" autocomplete="name"></label>
+      <label class="field"><span>${esc(ui.firm)}</span><input type="text" id="w-firm" value="${esc(F.firm)}" autocomplete="organization"></label></div>
+      <div class="sigpad"><canvas id="sig" aria-label="${esc(ui.sign)}"></canvas><span>${esc(ui.sign)}</span></div>
+      <button class="btn small ghost" type="button" id="sig-clear" style="justify-self:start">${esc(ui.clear)}</button>
+      <label class="chk"><input type="checkbox" id="w-ok"> <span>${esc(ui.confirm)}</span></label></div>`;
+    nav = `<button class="btn primary" type="button" id="sign-go" disabled>${esc(ui.send)} →</button>`;
+  } else if (kind === "polier") {
+    const miss = [...F.miss].map(title);
+    body = `<div class="card"><p class="eyebrow">Für den Polier</p><h2>Bestätigung der Unterweisung</h2>
+      <p>${esc(F.name)} (${esc(F.firm)}) hat ${N} Themen auf ${esc(LANGS[F.lang].label)} durchgearbeitet: <b>${F.first} von ${F.total}</b> Zwischenfragen beim ersten Versuch richtig, ${F.score} von ${F.max} Punkten.</p>
+      ${miss.length ? `<div class="miss"><b>Bitte mündlich nachbesprechen:</b> ${esc(miss.join(", "))}</div>` : `<div class="miss good"><b>Alle Zwischenfragen beim ersten Versuch richtig.</b></div>`}
+      <label class="field"><span>Name Polier oder unterweisende Person</span><input type="text" id="p-name" value="${esc(F.polier)}"></label>
+      <label class="chk"><input type="checkbox" id="p-ok"> <span>Ich habe die Inhalte mündlich erläutert, Rückfragen beantwortet${miss.length ? ", die markierten Themen nachbesprochen" : ""} und mich vom Verständnis überzeugt.</span></label></div>`;
+    nav = `<button class="btn primary" type="button" id="p-go" disabled>Nachweis speichern</button>`;
+  } else if (kind === "done") {
+    body = `<div class="card done"><div class="ok">✓</div><h2>${esc(ui.done)}</h2>
+      <p class="score" style="font-size:1.1rem">★ ${F.score} / ${F.max} ${esc(ui.points)}</p>
+      ${F.miss.size === 0 ? `<p><b>${esc(ui.great)}</b></p>` : ""}
+      <p class="muted">${esc(ui.ask)} <b>${esc(s.polier || F.polier || "–")}</b></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn primary" type="button" id="next-person">Nächste Person unterweisen</button>
+      ${F.rec ? `<button class="btn" type="button" data-doc="${F.rec}">Nachweis ansehen</button>` : ""}
+      <a class="btn ghost" href="#app">Zur Übersicht</a></div></div>`;
+  }
+  const langSw = F.lang && kind !== "done" ? `<select id="lang-sw" aria-label="Sprache" style="width:auto">${Object.entries(LANGS).map(([k, v]) => `<option value="${k}"${k === F.lang ? " selected" : ""}>${esc(v.label)}</option>`).join("")}</select>` : "";
+  const score = F.lang ? `<span class="score" id="score">★ ${F.score}</span>` : "";
+  $("#flow").innerHTML = `<div class="fhead"><div><p class="eyebrow">Sicherheitsunterweisung · Polier-Modus</p><p style="font-weight:600">${esc(s.name)}</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${score}${langSw}</div></div>
+    <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>${body}
+    ${kind === "lang" || kind === "done" ? "" : `<div class="fnav">${back}${nav}</div>`}`;
+  if (kind === "sign") initSig();
+  if (kind === "film") ACTIVE = mountFilm($("#filmbox"), key, F.lang, {stop: true, points: true, done: !!F.films[key], onAnswer: r => track(key, "stop", r), onDone: () => {
+    F.films[key] = true;
+    const mk = $("#merke"), nb = $("#film-next"), wn = $("#watch-note");
+    if (mk) mk.hidden = false; if (nb) nb.disabled = false; if (wn) wn.hidden = true;
+  }});
+}
+
+function initSig() {
+  const cv = $("#sig"), ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+  const r0 = cv.getBoundingClientRect(); cv.width = r0.width * dpr; cv.height = r0.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#141A20";
+  let drawing = false, ink = false, last = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const check = () => { $("#sign-go").disabled = !(ink && $("#w-name").value.trim() && $("#w-firm").value.trim() && $("#w-ok").checked); };
+  cv.addEventListener("pointerdown", e => { drawing = true; last = pos(e); cv.setPointerCapture(e.pointerId); e.preventDefault(); });
+  cv.addEventListener("pointermove", e => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke(); last = p; if (!ink) { ink = true; check(); } });
+  const up = () => { drawing = false; };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  $("#sig-clear").onclick = () => { ctx.clearRect(0, 0, cv.width, cv.height); ink = false; check(); };
+  ["#w-name", "#w-firm", "#w-ok"].forEach(s => $(s).addEventListener("input", check));
+  $("#sign-go").onclick = () => {
+    F.name = $("#w-name").value.trim(); F.firm = $("#w-firm").value.trim();
+    const out = document.createElement("canvas"); out.width = 375; out.height = 150;
+    const o = out.getContext("2d"); o.fillStyle = "#fff"; o.fillRect(0, 0, 375, 150); o.drawImage(cv, 0, 0, 375, 150);
+    F.sig = out.toDataURL("image/png"); go(1);
+  };
+}
+
+/* ---------- Konfiguration (auf der Website aus config.js) ---------- */
+const CFG_IN = window.SICHERSTART_CONFIG || {};
+const C = Object.assign({firma: "Sicherstart Bau", inhaber: "Stefan Freudenthaler", email: "stefan.freudenthaler@aon.at", telefon: "", adresse: "", uid: "", firmenbuch: "", gewerbe: "", behoerde: "", kammer: "", iban: "", bic: "", kontoinhaber: "", ust: 0.2, onlinePayment: false}, CFG_IN);
+C.googleAds = Object.assign({id: "", bestellung: "", anfrage: ""}, CFG_IN.googleAds || {});
+const IN_CLAUDE = !!window.claude;
+
+/* ---------- Bestellung ---------- */
+const PLAN = {basis: {name: "Basis", base: 49, per: 6}, profi: {name: "Profi", base: 99, per: 9}, gu: {name: "Generalunternehmer", base: 199, per: 12}};
+const YEAR = 10.2; /* 12 Monate minus 15 % */
+const r2 = x => Math.round(x * 100) / 100;
+const clampInt = (x, a, b) => Math.min(b, Math.max(a, Math.floor(+x || 0)));
+const eur = x => x.toLocaleString("de-AT", {style: "currency", currency: "EUR"});
+const mailOk = s => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s);
+let ORDER_PLAN = null, LAST_ORDER = null;
+function orderData() {
+  const v = id => $(id).value.trim(), r = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+  return {plan: r("plan") || "profi", n: clampInt($("#o-n").value, 1, 5000), int: $("#o-int").value, themen: clampInt($("#o-themen").value, 0, 50), film: clampInt($("#o-film").value, 0, 20),
+    firma: v("#o-firma"), uid: v("#o-uid"), name: v("#o-name"), email: v("#o-email"), tel: v("#o-tel"), land: $("#o-land").value, str: v("#o-str"), ort: v("#o-ort"), pay: r("pay") || "ueberweisung"};
+}
+function quote(o) {
+  const p = PLAN[o.plan], yearly = o.int === "jahr";
+  const baseP = yearly ? r2(p.base * YEAR) : p.base, perP = yearly ? r2(p.per * YEAR) : p.per;
+  const period = r2(baseP + o.n * perP), once = 490 + o.themen * 390 + o.film * 890;
+  const rc = o.land === "Schweiz" || (o.land === "Deutschland" && /^DE\d{9}$/i.test(o.uid.replace(/\s/g, "")));
+  const rate = rc ? 0 : C.ust, net = r2(period + once), vat = r2(net * rate);
+  return {p, yearly, baseP, perP, period, once, rc, rate, net, vat, gross: r2(net + vat), perGross: r2(period * (1 + rate)), monthly: p.base + o.n * p.per};
+}
+function openOrder() {
+  $("#order-done").hidden = true; $("#order-wrap").hidden = false;
+  if (ORDER_PLAN && $("#o-" + ORDER_PLAN)) { $("#o-" + ORDER_PLAN).checked = true; ORDER_PLAN = null; }
+  renderSum();
+}
+function renderSum() {
+  const o = orderData(), q = quote(o), unit = q.yearly ? "Jahr" : "Monat";
+  const row = (a, b) => `<div class="sumrow"><span>${a}</span><span>${b}</span></div>`;
+  $("#o-sum").innerHTML = `<h3 style="text-transform:uppercase">Ihre Bestellung</h3>
+    <div class="sumh">Laufend, ${q.yearly ? "jährlich" : "monatlich"}</div>
+    ${row(esc(q.p.name) + ", Grundpauschale", eur(q.baseP))}
+    ${row(o.n + " Mitarbeiter × " + eur(q.perP), eur(r2(o.n * q.perP)))}
+    ${row("<b>Laufend netto</b>", eur(q.period) + " / " + unit)}
+    ${q.yearly ? `<p class="muted small">Entspricht ${eur(r2(q.period / 12))} pro Monat statt ${eur(q.monthly)}.</p>` : ""}
+    <div class="sumh">Einmalig</div>
+    ${row("Einrichtung und Einschulung", eur(490))}
+    ${o.themen ? row(o.themen + " × eigenes Thema", eur(o.themen * 390)) : ""}
+    ${o.film ? row(o.film + " × Baustellenfilm", eur(o.film * 890)) : ""}
+    <div class="sumh">Erste Rechnung</div>
+    ${row("Netto", eur(q.net))}
+    ${row(q.rc ? "USt (Reverse Charge)" : "USt " + Math.round(q.rate * 100) + " %", eur(q.vat))}
+    <div class="sumrow total"><span>Gesamt</span><span>${eur(q.gross)}</span></div>
+    ${q.rc ? `<p class="muted small">${o.land === "Schweiz" ? "Leistung in Österreich nicht steuerbar." : "Steuerschuldnerschaft geht auf den Leistungsempfänger über."}</p>` : o.land === "Deutschland" ? `<p class="muted small">Mit gültiger deutscher UID-Nummer ohne österreichische USt (Reverse Charge).</p>` : ""}
+    <p class="muted small">Danach ${eur(q.perGross)} brutto pro ${unit}. ${q.yearly ? "Kündbar zum Ende des bezahlten Jahres." : "Monatlich kündbar."}</p>`;
+}
+async function sendForm(name, data) {
+  if (IN_CLAUDE) return false;
+  try {
+    const body = new URLSearchParams({"form-name": name});
+    Object.entries(data).forEach(([k, v]) => body.set(k, String(v ?? "")));
+    const r = await fetch("/", {method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: body.toString()});
+    return r.ok;
+  } catch (e) { return false; }
+}
+function conv(kind, value, id) {
+  const a = C.googleAds;
+  if (!a.id || !a[kind] || typeof window.gtag !== "function") return;
+  window.gtag("event", "conversion", {send_to: a.id + "/" + a[kind], value: value || 0, currency: "EUR", transaction_id: id});
+}
+function saveLast(o) { try { localStorage.setItem("sicherstart-last-order", JSON.stringify(o)); } catch (e) {} }
+async function submitOrder(e) {
+  e.preventDefault();
+  if ($("#o-bot").value) return;
+  const o = orderData(), err = $("#o-err");
+  const miss = [["#o-firma", "Firma"], ["#o-name", "Ansprechperson"], ["#o-email", "E-Mail"], ["#o-str", "Straße"], ["#o-ort", "PLZ und Ort"]].filter(([id]) => !$(id).value.trim()).map(x => x[1]);
+  if (miss.length) { err.textContent = "Bitte ausfüllen: " + miss.join(", ") + "."; return; }
+  if (!mailOk(o.email)) { err.textContent = "Bitte eine gültige E-Mail-Adresse angeben."; return; }
+  if (!$("#o-agb").checked) { err.textContent = "Bitte die AGB akzeptieren."; return; }
+  err.textContent = "";
+  const btn = $("#o-submit"), reset = () => { btn.disabled = false; btn.textContent = "Zahlungspflichtig bestellen"; };
+  btn.disabled = true; btn.textContent = "Wird gesendet …";
+  const q = quote(o), nr = "SB-" + new Date().toISOString().slice(2, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const order = Object.assign({nr, at: new Date().toISOString()}, o, {q: {net: q.net, vat: q.vat, gross: q.gross, period: q.period, once: q.once, rc: q.rc}});
+  order.sent = await sendForm("bestellung", {bestellnummer: nr, paket: q.p.name, mitarbeiter: o.n, zahlweise: o.int, themen: o.themen, filme: o.film, firma: o.firma, uid: o.uid, ansprechperson: o.name, email: o.email, telefon: o.tel, strasse: o.str, ort: o.ort, land: o.land, zahlungsart: o.pay, erste_rechnung_netto: q.net.toFixed(2), erste_rechnung_brutto: q.gross.toFixed(2), laufend_netto: q.period.toFixed(2)});
+  LAST_ORDER = order; saveLast(order);
+  if (o.pay === "online") {
+    try {
+      const r = await fetch("/.netlify/functions/checkout", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({nr}, o))});
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.url) { location.href = j.url; return; }
+      err.textContent = (j.error || "Online-Zahlung ist gerade nicht möglich.") + " Bitte wählen Sie Überweisung.";
+    } catch (e2) { err.textContent = "Online-Zahlung ist gerade nicht möglich. Bitte wählen Sie Überweisung."; }
+    reset(); return;
+  }
+  conv("bestellung", q.net, nr); order.convDone = true; saveLast(order);
+  reset(); showDone(order);
+}
+function ibanValid(iban) {
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(iban)) return false;
+  const s = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, c => c.charCodeAt(0) - 55);
+  let m = 0; for (const ch of s) m = (m * 10 + +ch) % 97;
+  return m === 1;
+}
+const IBAN = () => C.iban.replace(/\s/g, "").toUpperCase();
+const fmtIban = i => i.replace(/(.{4})/g, "$1 ").trim();
+/* EPC-QR (Zahlschein-QR) nach EPC069-12, Version 002 */
+function epcPayload(amount, ref) {
+  return ["BCD", "002", "1", "SCT", C.bic.replace(/\s/g, ""), (C.kontoinhaber || C.firma).slice(0, 70), IBAN(), "EUR" + amount.toFixed(2), "", "", ("Sicherstart Bau " + ref).slice(0, 140)].join("\n");
+}
+function showDone(o) {
+  $("#order-wrap").hidden = true;
+  const d = $("#order-done"), q = o.q, bank = ibanValid(IBAN());
+  d.hidden = false;
+  d.innerHTML = `<div class="card" style="max-width:820px">
+    <div class="ok" style="width:72px;height:72px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center;font-size:2.2rem;font-weight:700">✓</div>
+    <h2>Danke, Ihre Bestellung ist eingegangen.</h2>
+    <p>Bestellnummer <b class="mono">${esc(o.nr)}</b> · ${esc(PLAN[o.plan].name)} · ${o.n} Mitarbeiter · ${o.int === "jahr" ? "jährlich" : "monatlich"}</p>
+    ${o.sent ? "" : `<div class="miss">${IN_CLAUDE ? "Vorschau in claude.ai: Hier wird nichts übermittelt. Auf der Website kommt die Bestellung per E-Mail an." : `Die Bestellung konnte nicht automatisch übermittelt werden. Bitte senden Sie die Auftragsbestätigung an <b>${esc(C.email)}</b>.`}</div>`}
+    <h3 style="text-transform:uppercase">Zahlung per Überweisung</h3>
+    ${bank ? `<div class="bank"><div class="qr" id="epc-qr" role="img" aria-label="QR-Code für die Banking-App"></div><dl class="infos">
+        <dt>Empfänger</dt><dd>${esc(C.kontoinhaber || C.firma)}</dd><dt>IBAN</dt><dd class="mono">${esc(fmtIban(IBAN()))}</dd>${C.bic ? `<dt>BIC</dt><dd class="mono">${esc(C.bic)}</dd>` : ""}<dt>Betrag</dt><dd class="mono">${eur(q.gross)}</dd><dt>Verwendungszweck</dt><dd class="mono">${esc(o.nr)}</dd></dl></div>
+        <p class="muted">Den QR-Code mit der Banking-App scannen, dann sind alle Daten ausgefüllt. Zahlbar innerhalb von 14 Tagen. Die Rechnung kommt zusätzlich per E-Mail.</p>`
+      : `<p>Die Rechnung über <b>${eur(q.gross)}</b> mit allen Bankdaten kommt in Kürze per E-Mail an <b>${esc(o.email)}</b>.</p>`}
+    <h3 style="text-transform:uppercase">So geht es weiter</h3>
+    <ol style="margin:0;padding-left:20px;display:grid;gap:6px"><li>Wir melden uns innerhalb eines Werktags und vereinbaren die Einrichtung.</li><li>Wir legen Ihre Baustellen an und schulen Ihre Poliere ein.</li><li>Ab dann unterweisen Ihre Poliere mit Sicherstart Bau.</li></ol>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="button" id="o-pdf">Auftragsbestätigung als PDF</button><a class="btn ghost" href="#start">Zur Startseite</a></div></div>`;
+  if (bank && window.QRCode) new QRCode($("#epc-qr"), {text: epcPayload(q.gross, o.nr), width: 320, height: 320, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
+  $("#o-pdf").hidden = !DL || !window.jspdf;
+  window.scrollTo(0, 0);
+}
+function showThanks() {
+  let o = null; try { o = JSON.parse(localStorage.getItem("sicherstart-last-order") || "null"); } catch (e) {}
+  $("#order-wrap").hidden = true;
+  const d = $("#order-done"); d.hidden = false;
+  d.innerHTML = `<div class="card" style="max-width:820px"><h2>Danke, die Zahlung ist eingerichtet.</h2>
+    <p>${o ? `Bestellnummer <b class="mono">${esc(o.nr)}</b>. ` : ""}Die Rechnung kommt per E-Mail von Stripe. Wir melden uns innerhalb eines Werktags für die Einrichtung.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${o ? `<button class="btn primary" type="button" id="o-pdf">Auftragsbestätigung als PDF</button>` : ""}<a class="btn ghost" href="#start">Zur Startseite</a></div></div>`;
+  if (o && !o.convDone) { conv("bestellung", o.q.net, o.nr); o.convDone = true; saveLast(o); }
+  LAST_ORDER = o;
+  if ($("#o-pdf")) $("#o-pdf").hidden = !DL || !window.jspdf;
+}
+function orderPDF(o) {
+  if (!o || !window.jspdf) return;
+  const d = newPDF(), q = o.q, p = PLAN[o.plan], yearly = o.int === "jahr";
+  pdfHead(d, "Auftragsbestätigung " + o.nr, C.firma + " · " + fmtD(o.at));
+  let y = pdfRows(d, [["Kunde", o.firma + (o.uid ? ", UID " + o.uid : "")], ["Ansprechperson", o.name + ", " + o.email + (o.tel ? ", " + o.tel : "")], ["Adresse", o.str + ", " + o.ort + ", " + o.land],
+    ["Paket", p.name + ", " + o.n + " aktive Mitarbeiter, " + (yearly ? "jährlich" : "monatlich")], ["Laufend netto", eur(q.period) + (yearly ? " pro Jahr" : " pro Monat")],
+    ["Einmalig netto", eur(q.once) + " (Einrichtung" + (o.themen ? ", " + o.themen + " eigene Themen" : "") + (o.film ? ", " + o.film + " Baustellenfilme" : "") + ")"],
+    ["Erste Zahlung", eur(q.net) + " netto + " + eur(q.vat) + (q.rc ? " USt (Reverse Charge)" : " USt") + " = " + eur(q.gross)], ["Zahlungsart", o.pay === "online" ? "Online über Stripe" : "Überweisung, zahlbar in 14 Tagen"]], 42);
+  if (o.pay !== "online" && ibanValid(IBAN())) {
+    y = pdfRows(d, [["Empfänger", C.kontoinhaber || C.firma], ["IBAN", fmtIban(IBAN())], ["BIC", C.bic || "-"], ["Verwendungszweck", o.nr]], y + 4);
+    const qr = qrDataURL(epcPayload(q.gross, o.nr));
+    if (qr) { d.addImage(qr, "PNG", 20, y, 42, 42); d.setFontSize(9); d.setTextColor(90); d.text(pdfSafe("QR-Code mit der Banking-App scannen"), 68, y + 8); y += 48; }
+  }
+  d.setFontSize(9); d.setTextColor(90);
+  para(d, "Diese Auftragsbestätigung ist keine Rechnung. Die Rechnung mit fortlaufender Rechnungsnummer erhalten Sie gesondert per E-Mail. Es gelten unsere AGB.", y + 4);
+  pdfFoot(d, C.firma + " · " + C.email + (C.uid ? " · UID " + C.uid : ""));
+  savePDFDoc(d, "Auftragsbestaetigung_" + o.nr + ".pdf");
+}
+
+/* ---------- Demo-Anfrage ---------- */
+async function submitLead(e) {
+  e.preventDefault();
+  if ($("#l-bot").value) return;
+  const out = $("#l-out"), v = id => $(id).value.trim(), say2 = (cls, t) => { out.className = "fb " + cls; out.textContent = t; };
+  if (!v("#l-name") || !v("#l-firma") || !mailOk(v("#l-email"))) return say2("bad", "Bitte Name, Firma und eine gültige E-Mail angeben.");
+  if (!$("#l-ok").checked) return say2("bad", "Bitte der Verwendung Ihrer Angaben zustimmen.");
+  const ok = await sendForm("anfrage", {name: v("#l-name"), firma: v("#l-firma"), email: v("#l-email"), telefon: v("#l-tel"), nachricht: v("#l-msg")});
+  if (ok) { conv("anfrage", 0, "L" + Date.now()); $("#f-lead").reset(); say2("ok", "Danke! Wir melden uns innerhalb eines Werktags."); }
+  else say2("bad", IN_CLAUDE ? "Vorschau in claude.ai: Hier wird nichts gesendet." : "Senden hat nicht geklappt. Bitte schreiben Sie an " + C.email + ".");
+}
+
+/* ---------- Cookie-Einwilligung und Google Ads ---------- */
+const CONSENT_KEY = "sicherstart-consent";
+function getConsent() { try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; } }
+function setConsent(v) { try { localStorage.setItem(CONSENT_KEY, v); } catch (e) {} $("#cookie").hidden = true; if (v === "all") loadAds(); else toast("Google Ads bleibt deaktiviert."); }
+function loadAds() {
+  if (IN_CLAUDE || !C.googleAds.id || typeof window.gtag === "function") return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  window.gtag("consent", "default", {ad_storage: "granted", ad_user_data: "granted", ad_personalization: "denied", analytics_storage: "denied"});
+  window.gtag("js", new Date());
+  window.gtag("config", C.googleAds.id);
+  const s = document.createElement("script"); s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(C.googleAds.id);
+  document.head.appendChild(s);
+}
+
+/* ---------- Impressum, Datenschutz, AGB ---------- */
+const ph = (v, label) => v ? esc(v) : `<span class="ph">[${esc(label)} ergänzen]</span>`;
+function renderLegal(k) {
+  const F2 = ph(C.firma, "Firma"), who = `${F2}, Inhaber ${ph(C.inhaber, "Inhaber")}, ${ph(C.adresse, "Anschrift")}, ${esc(C.email)}`;
+  const L = {
+    impressum: `<p class="eyebrow">Rechtliches</p><h2>Impressum</h2><p class="muted">Informationen nach § 5 ECG, § 14 UGB und § 25 MedienG</p>
+      <dl class="infos"><dt>Medieninhaber</dt><dd>${F2}<br>Inhaber: ${ph(C.inhaber, "Inhaber")}</dd><dt>Anschrift</dt><dd>${ph(C.adresse, "Anschrift")}</dd>
+      <dt>Kontakt</dt><dd>${esc(C.email)}${C.telefon ? "<br>" + esc(C.telefon) : ""}</dd><dt>UID-Nummer</dt><dd>${ph(C.uid, "UID-Nummer")}</dd>
+      <dt>Firmenbuch</dt><dd>${C.firmenbuch ? esc(C.firmenbuch) : "nicht eingetragen"}</dd><dt>Unternehmensgegenstand</dt><dd>Software und Dienstleistungen für Sicherheitsunterweisungen</dd>
+      <dt>Gewerbe</dt><dd>${ph(C.gewerbe, "Gewerbewortlaut")}</dd><dt>Gewerbebehörde</dt><dd>${ph(C.behoerde, "Bezirkshauptmannschaft oder Magistrat")}</dd>
+      <dt>Kammer</dt><dd>${ph(C.kammer, "Wirtschaftskammer und Fachgruppe")}</dd><dt>Rechtsvorschriften</dt><dd>Gewerbeordnung, abrufbar unter www.ris.bka.gv.at</dd></dl>
+      <h3>Blattlinie</h3><p>Information über das Produkt Sicherstart Bau und über Sicherheitsunterweisungen auf Baustellen.</p>
+      <h3>Hinweis zu den Inhalten</h3><p>Die Unterweisungsvorlagen wurden sorgfältig erstellt. Sie ersetzen nicht die Arbeitsplatzevaluierung und die Prüfung durch eine Sicherheitsfachkraft.</p>`,
+    datenschutz: `<p class="eyebrow">Rechtliches</p><h2>Datenschutzerklärung</h2><p class="muted">Stand November 2026</p>
+      <h3>1. Verantwortlicher</h3><p>${who}</p>
+      <h3>2. Hosting</h3><p>Diese Website wird bei Netlify, Inc. (USA) gehostet. Beim Aufruf verarbeitet Netlify technisch notwendige Daten wie IP-Adresse, Zeitpunkt und aufgerufene Seite, um die Website auszuliefern und abzusichern (Art. 6 Abs. 1 lit. f DSGVO). Die Übermittlung in die USA erfolgt auf Grundlage des EU-US Data Privacy Framework beziehungsweise von Standardvertragsklauseln.</p>
+      <h3>3. Schriftarten</h3><p>Alle Schriftarten werden von dieser Website selbst geladen. Es besteht keine Verbindung zu Google Fonts.</p>
+      <h3>4. Demo-Anfrage und Bestellung</h3><p>Ihre Angaben aus den Formularen (Name, Firma, Kontaktdaten, Adresse, Bestelldaten) verarbeiten wir zur Bearbeitung Ihrer Anfrage und zur Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO). Die Formulare werden über Netlify Forms übermittelt. Bestell- und Rechnungsdaten bewahren wir sieben Jahre auf (§ 132 BAO), Anfragen ohne Vertrag löschen wir nach zwölf Monaten.</p>
+      <h3>5. Online-Zahlung</h3><p>Bei Online-Zahlung verarbeitet Stripe Payments Europe Ltd. (Irland) Ihre Zahlungsdaten direkt. Wir erhalten keine vollständigen Karten- oder Kontodaten (Art. 6 Abs. 1 lit. b DSGVO).</p>
+      <h3>6. Google Ads Conversion-Tracking</h3><p>Nur wenn Sie zustimmen, laden wir Google Ads von Google Ireland Limited. Google setzt Cookies, um zu messen, ob ein Besuch über eine Anzeige zu einer Anfrage oder Bestellung geführt hat (Art. 6 Abs. 1 lit. a DSGVO). Dabei können Daten an Google LLC in den USA übermittelt werden (EU-US Data Privacy Framework). Sie können die Einwilligung jederzeit über „Cookie-Einstellungen“ unten auf der Seite widerrufen.</p>
+      <h3>7. Demo-App</h3><p>Was Sie in der Demo-App eingeben (Baustellen, Namen, Unterschriften), bleibt im Speicher Ihres Browsers auf Ihrem Gerät und wird nicht an uns übermittelt. Sie können diese Daten jederzeit in den Browser-Einstellungen löschen.</p>
+      <h3>8. Ihre Rechte</h3><p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie auf Widerruf einer Einwilligung. Schreiben Sie an ${esc(C.email)}. Beschwerden richten Sie an die Österreichische Datenschutzbehörde, Barichgasse 40–42, 1030 Wien, www.dsb.gv.at.</p>`,
+    agb: `<p class="eyebrow">Rechtliches</p><h2>Allgemeine Geschäftsbedingungen</h2><p class="muted">Stand November 2026</p>
+      <ol>
+      <li><b>Geltung.</b> Diese AGB gelten für alle Verträge zwischen ${F2} (Anbieter) und Kunden über Sicherstart Bau. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne des § 1 KSchG. Abweichende Bedingungen des Kunden gelten nicht.</li>
+      <li><b>Leistungen.</b> Software zur Durchführung und Dokumentation von Sicherheitsunterweisungen mit Vorlagen, Kurzfilmen und Zwischenfragen im gewählten Paket sowie die bestellten Zusatzleistungen (Einrichtung, eigene Themen, Baustellenfilm).</li>
+      <li><b>Verantwortung des Kunden.</b> Die Pflicht zur Unterweisung nach § 14 ASchG und § 154 BauV sowie die Arbeitsplatzevaluierung bleiben beim Kunden als Arbeitgeber. Der Kunde prüft die Vorlagen für seine Baustellen und lässt sie bei Bedarf von seiner Sicherheitsfachkraft anpassen. Die Software unterstützt die persönliche Unterweisung durch den Polier und ersetzt sie nicht.</li>
+      <li><b>Vertragsschluss und Laufzeit.</b> Der Vertrag kommt mit der Auftragsbestätigung zustande. Bei monatlicher Zahlung ist er zum Ende jedes Monats kündbar, bei jährlicher Zahlung zum Ende des bezahlten Jahres. Die Kündigung per E-Mail genügt.</li>
+      <li><b>Preise und Zahlung.</b> Es gelten die Preise zum Zeitpunkt der Bestellung zuzüglich gesetzlicher Umsatzsteuer. Verrechnet werden Grundpauschale und aktive Mitarbeiter. Steigt die Zahl aktiver Mitarbeiter, wird ab dem Folgemonat der neue Stand verrechnet. Rechnungen sind innerhalb von 14 Tagen ohne Abzug zahlbar. Bei Online-Zahlung werden die Beträge über Stripe eingezogen. Bei Zahlungsverzug darf der Anbieter den Zugang nach Mahnung sperren und gesetzliche Verzugszinsen verrechnen.</li>
+      <li><b>Verfügbarkeit.</b> Der Anbieter strebt eine Verfügbarkeit von 99 % im Jahresmittel an, ausgenommen angekündigte Wartungen.</li>
+      <li><b>Datenschutz.</b> Personenbezogene Daten der Mitarbeiter des Kunden verarbeitet der Anbieter als Auftragsverarbeiter nach Art. 28 DSGVO auf Grundlage eines gesonderten Auftragsverarbeitungsvertrags. Nach Vertragsende werden die Daten nach Wahl des Kunden übergeben oder gelöscht.</li>
+      <li><b>Haftung.</b> Der Anbieter haftet nur für Vorsatz und grobe Fahrlässigkeit, ausgenommen Personenschäden. Die Haftung für entgangenen Gewinn und Folgeschäden ist ausgeschlossen und der Höhe nach mit dem Entgelt der letzten zwölf Monate begrenzt.</li>
+      <li><b>Schlussbestimmungen.</b> Es gilt österreichisches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand ist das für den Sitz des Anbieters sachlich zuständige Gericht.</li>
+      </ol>`
+  };
+  $("#legal").innerHTML = L[k];
+}
+
+/* ---------- Daten sichern und laden (Demo-App) ---------- */
+async function exportData() {
+  if (!DL) { toast("Download ist hier nicht verfügbar."); return; }
+  const data = JSON.stringify({version: 1, exported: new Date().toISOString(), items: [...Store.items.values()].filter(o => o.kind === "site" || o.kind === "rec")});
+  try { await DL.save({filename: "sicherstart-daten-" + new Date().toISOString().slice(0, 10) + ".json", data}); toast("Sicherung gespeichert."); }
+  catch (e) { if (!e || e.code !== "declined") toast("Sicherung konnte nicht gespeichert werden."); }
+}
+function importData(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    try { const items = (JSON.parse(rd.result).items || []).filter(o => o && o.id && (o.kind === "site" || o.kind === "rec")); items.forEach(o => Store.put(o)); toast(items.length + " Einträge geladen."); }
+    catch (e) { toast("Die Datei ist keine gültige Sicherung."); }
+  };
+  rd.readAsText(file);
+}
+
+function initSite() {
+  $("#o-pay-online-l").hidden = !C.onlinePayment || IN_CLAUDE;
+  $("#mail").textContent = C.email;
+  $("#f-order").addEventListener("submit", submitOrder);
+  $("#f-lead").addEventListener("submit", submitLead);
+  if (!IN_CLAUDE && C.googleAds.id) { const c = getConsent(); if (c === "all") loadAds(); else if (!c) $("#cookie").hidden = false; }
+  else $("#cookie-open").hidden = true;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button,a"); if (!t) return;
+  if (t.matches("[data-close]")) { closeModal(t.closest(".modal")); return; }
+  if (t.id === "btn-new" || t.matches("[data-open-new]")) return openNew();
+  if (t.id === "btn-example") { exampleData().forEach(o => Store.put(o)); toast("Beispiel-Baustelle geladen."); return; }
+  if (t.dataset.qr) return openQR(t.dataset.qr);
+  if (t.dataset.aushang) return aushang(t.dataset.aushang);
+  if (t.dataset.doc) return openDoc(t.dataset.doc);
+  if (t.dataset.film) return openFilm(t.dataset.film);
+  if (t.id === "btn-mappe") return mappe();
+  if (t.dataset.filter) { $("#rec-filter").value = t.dataset.filter; renderApp(); $("#recs").scrollIntoView({behavior:"smooth", block:"nearest"}); return; }
+  if (t.dataset.del) {
+    if (t.dataset.armed) { const id = t.dataset.del; Store.list("rec").filter(r => r.siteId === id).forEach(r => Store.del(r.id)); Store.del(id); toast("Baustelle gelöscht."); return; }
+    t.dataset.armed = "1"; t.textContent = "Wirklich löschen?"; setTimeout(() => { if (t.isConnected) { delete t.dataset.armed; t.textContent = "Löschen"; } }, 4000); return;
+  }
+  if (t.id === "qr-copy") return copy($("#qr-link").value, $("#qr-link"));
+  if (t.id === "copy-mail") return copy($("#mail").textContent);
+  if (t.id === "doc-pdf") return savePDF();
+  if (t.dataset.plan) { ORDER_PLAN = t.dataset.plan; if (location.hash === "#bestellen") openOrder(); }
+  if (t.id === "o-pdf") return orderPDF(LAST_ORDER);
+  if (t.id === "cookie-yes") return setConsent("all");
+  if (t.id === "cookie-no") return setConsent("necessary");
+  if (t.id === "cookie-open") { $("#cookie").hidden = false; return; }
+  if (t.id === "btn-export") return exportData();
+  if (t.dataset.speak) return speak(t.dataset.speak, (F && F.lang) || "de", t);
+  if (!F) return;
+  if (t.dataset.lang) { F.lang = t.dataset.lang; go(1); return; }
+  if (t.dataset.go) return go(+t.dataset.go);
+  if (t.dataset.pick) {
+    const k = F.steps[F.i].split(":")[1], z = F.qs[k]; if (!z || z.pick === "ok") return;
+    const right = t.dataset.pick === "ok"; track(k, "pick", right);
+    if (right) z.pick = "ok"; else z.wp.push(t.dataset.pick);
+    renderFlow(); return;
+  }
+  if (t.dataset.topt !== undefined) {
+    const k = F.steps[F.i].split(":")[1], z = F.qs[k], oi = +t.dataset.topt; if (!z || z.tsel === 0) return;
+    track(k, "text", oi === 0);
+    if (oi === 0) z.tsel = 0; else z.wt.push(oi);
+    renderFlow(); return;
+  }
+  if (t.id === "p-go") {
+    const now = new Date(), s = F.site;
+    const rec = {kind:"rec", id:uid("R"), siteId:s.id, siteName:s.name, siteAddress:s.address, name:F.name, firm:F.firm, lang:F.lang, mods:[...s.mods], quiz:{total:F.total, first:F.first, score:F.score, max:F.max}, miss:[...F.miss], films:Object.keys(F.films).length, sig:F.sig, polier:$("#p-name").value.trim(), oral:true, at:now.toISOString(), valid:addMonths(now, s.interval).toISOString()};
+    F.polier = rec.polier; F.rec = rec.id; Store.put(rec); go(1); return;
+  }
+  if (t.id === "next-person") return newPerson();
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "rec-filter") return renderApp();
+  if (t.id === "film-lang" && FILMKEY) return mountPrev();
+  if (t.id === "imp-file" && t.files[0]) { importData(t.files[0]); t.value = ""; return; }
+  if (t.id === "lang-sw" && F) { stopVoice(); F.lang = t.value; renderFlow(); }
+});
+document.addEventListener("input", e => {
+  const id = e.target.id;
+  if (id === "calc-n") calc();
+  if (id.startsWith("o-")) renderSum();
+  if (["s-days", "s-max", "s-pt", "s-firms", "s-danger"].includes(id)) renderBaukg();
+  if (id === "p-name" || id === "p-ok") $("#p-go").disabled = !($("#p-name").value.trim() && $("#p-ok").checked);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal:not([hidden])").forEach(closeModal); });
+
+/* ---------- boot ---------- */
+Store.loadLocal();
+calc();
+updateMode();
+window.addEventListener("hashchange", route);
+initSite();
+route();
+Store.connect();
+
+</script>
+
+</body>
+</html>
